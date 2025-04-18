@@ -166,3 +166,349 @@ func TestExecuteSendMessage(t *testing.T) {
 		t.Errorf("Expected result to be 5, got %v", result)
 	}
 }
+
+func TestExecutePushInstanceVariable(t *testing.T) {
+	// Create a VM
+	vm := NewVM()
+
+	// Create a class with an instance variable
+	class := NewClass("TestClass", nil)
+	class.InstanceVarNames = append(class.InstanceVarNames, "testVar")
+
+	// Create an instance with a value for the instance variable
+	instance := NewInstance(class)
+	instance.InstanceVars["testVar"] = NewInteger(42)
+
+	// Create a method
+	methodObj := NewMethod(NewSymbol("test"), class)
+	methodObj.Method.Bytecodes = []byte{
+		PUSH_INSTANCE_VARIABLE, 0, 0, 0, 0, // Push instance variable at index 0
+	}
+
+	// Create a context
+	context := NewContext(methodObj, instance, []*Object{}, nil)
+
+	// Execute the bytecode
+	err := vm.ExecutePushInstanceVariable(context)
+	if err != nil {
+		t.Errorf("ExecutePushInstanceVariable returned an error: %v", err)
+	}
+
+	// Check the stack
+	if context.StackPointer != 1 {
+		t.Errorf("Expected stack pointer to be 1, got %d", context.StackPointer)
+	}
+
+	// Check the value on the stack
+	value := context.Pop()
+	if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
+		t.Errorf("Expected 42 on the stack, got %v", value)
+	}
+}
+
+func TestExecutePushTemporaryVariable(t *testing.T) {
+	// Create a VM
+	vm := NewVM()
+
+	// Create a method with a temporary variable
+	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
+	methodObj.Method.TempVarNames = append(methodObj.Method.TempVarNames, "temp")
+	methodObj.Method.Bytecodes = []byte{
+		PUSH_TEMPORARY_VARIABLE, 0, 0, 0, 0, // Push temporary variable at index 0
+	}
+
+	// Create a context
+	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+
+	// Set the temporary variable
+	context.SetTempVar("temp", NewInteger(42))
+
+	// Execute the bytecode
+	err := vm.ExecutePushTemporaryVariable(context)
+	if err != nil {
+		t.Errorf("ExecutePushTemporaryVariable returned an error: %v", err)
+	}
+
+	// Check the stack
+	if context.StackPointer != 1 {
+		t.Errorf("Expected stack pointer to be 1, got %d", context.StackPointer)
+	}
+
+	// Check the value on the stack
+	value := context.Pop()
+	if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
+		t.Errorf("Expected 42 on the stack, got %v", value)
+	}
+}
+
+func TestExecuteStoreInstanceVariable(t *testing.T) {
+	// Create a VM
+	vm := NewVM()
+
+	// Create a class with an instance variable
+	class := NewClass("TestClass", nil)
+	class.InstanceVarNames = append(class.InstanceVarNames, "testVar")
+
+	// Create an instance
+	instance := NewInstance(class)
+
+	// Create a method
+	methodObj := NewMethod(NewSymbol("test"), class)
+	methodObj.Method.Bytecodes = []byte{
+		STORE_INSTANCE_VARIABLE, 0, 0, 0, 0, // Store into instance variable at index 0
+	}
+
+	// Create a context
+	context := NewContext(methodObj, instance, []*Object{}, nil)
+
+	// Push a value onto the stack
+	context.Push(NewInteger(42))
+
+	// Execute the bytecode
+	err := vm.ExecuteStoreInstanceVariable(context)
+	if err != nil {
+		t.Errorf("ExecuteStoreInstanceVariable returned an error: %v", err)
+	}
+
+	// Check the instance variable
+	value, ok := instance.InstanceVars["testVar"]
+	if !ok {
+		t.Errorf("Instance variable 'testVar' not found")
+	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
+		t.Errorf("Expected instance variable to be 42, got %v", value)
+	}
+
+	// Check the stack (the value should be pushed back onto the stack)
+	if context.StackPointer != 1 {
+		t.Errorf("Expected stack pointer to be 1, got %d", context.StackPointer)
+	}
+
+	// Check the value on the stack
+	stackValue := context.Pop()
+	if stackValue.Type != OBJ_INTEGER || stackValue.IntegerValue != 42 {
+		t.Errorf("Expected 42 on the stack, got %v", stackValue)
+	}
+}
+
+func TestExecuteStoreTemporaryVariable(t *testing.T) {
+	// Create a VM
+	vm := NewVM()
+
+	// Create a method with a temporary variable
+	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
+	methodObj.Method.TempVarNames = append(methodObj.Method.TempVarNames, "temp")
+	methodObj.Method.Bytecodes = []byte{
+		STORE_TEMPORARY_VARIABLE, 0, 0, 0, 0, // Store into temporary variable at index 0
+	}
+
+	// Create a context
+	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+
+	// Push a value onto the stack
+	context.Push(NewInteger(42))
+
+	// Execute the bytecode
+	err := vm.ExecuteStoreTemporaryVariable(context)
+	if err != nil {
+		t.Errorf("ExecuteStoreTemporaryVariable returned an error: %v", err)
+	}
+
+	// Check the temporary variable
+	value := context.GetTempVar("temp")
+	if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
+		t.Errorf("Expected temporary variable to be 42, got %v", value)
+	}
+
+	// Check the stack (the value should be pushed back onto the stack)
+	if context.StackPointer != 1 {
+		t.Errorf("Expected stack pointer to be 1, got %d", context.StackPointer)
+	}
+
+	// Check the value on the stack
+	stackValue := context.Pop()
+	if stackValue.Type != OBJ_INTEGER || stackValue.IntegerValue != 42 {
+		t.Errorf("Expected 42 on the stack, got %v", stackValue)
+	}
+}
+
+func TestExecuteReturnStackTop(t *testing.T) {
+	// Create a VM
+	vm := NewVM()
+
+	// Create a method
+	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
+
+	// Create a context
+	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+
+	// Push a value onto the stack
+	context.Push(NewInteger(42))
+
+	// Execute the bytecode
+	result, err := vm.ExecuteReturnStackTop(context)
+	if err != nil {
+		t.Errorf("ExecuteReturnStackTop returned an error: %v", err)
+	}
+
+	// Check the result
+	if result.Type != OBJ_INTEGER || result.IntegerValue != 42 {
+		t.Errorf("Expected result to be 42, got %v", result)
+	}
+
+	// Check the stack (the value should be popped)
+	if context.StackPointer != 0 {
+		t.Errorf("Expected stack pointer to be 0, got %d", context.StackPointer)
+	}
+}
+
+func TestExecuteJump(t *testing.T) {
+	// Create a VM
+	vm := NewVM()
+
+	// Create a method
+	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
+	methodObj.Method.Bytecodes = []byte{
+		JUMP, 0, 0, 0, 10, // Jump to offset 10
+	}
+
+	// Create a context
+	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+
+	// Execute the bytecode
+	skipIncrement, err := vm.ExecuteJump(context)
+	if err != nil {
+		t.Errorf("ExecuteJump returned an error: %v", err)
+	}
+
+	// Check the PC
+	if context.PC != 10 {
+		t.Errorf("Expected PC to be 10, got %d", context.PC)
+	}
+
+	// Check the skipIncrement flag
+	if !skipIncrement {
+		t.Errorf("Expected skipIncrement to be true")
+	}
+}
+
+func TestExecuteJumpIfTrue(t *testing.T) {
+	// Create a VM
+	vm := NewVM()
+
+	// Create a method
+	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
+	methodObj.Method.Bytecodes = []byte{
+		JUMP_IF_TRUE, 0, 0, 0, 10, // Jump to offset 10 if true
+	}
+
+	// Test with true condition
+	{
+		// Create a context
+		context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+
+		// Push a true value onto the stack
+		context.Push(NewBoolean(true))
+
+		// Execute the bytecode
+		skipIncrement, err := vm.ExecuteJumpIfTrue(context)
+		if err != nil {
+			t.Errorf("ExecuteJumpIfTrue returned an error: %v", err)
+		}
+
+		// Check the PC
+		if context.PC != 10 {
+			t.Errorf("Expected PC to be 10, got %d", context.PC)
+		}
+
+		// Check the skipIncrement flag
+		if !skipIncrement {
+			t.Errorf("Expected skipIncrement to be true")
+		}
+	}
+
+	// Test with false condition
+	{
+		// Create a context
+		context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+
+		// Push a false value onto the stack
+		context.Push(NewBoolean(false))
+
+		// Execute the bytecode
+		skipIncrement, err := vm.ExecuteJumpIfTrue(context)
+		if err != nil {
+			t.Errorf("ExecuteJumpIfTrue returned an error: %v", err)
+		}
+
+		// Check the PC (should not change)
+		if context.PC != 0 {
+			t.Errorf("Expected PC to be 0, got %d", context.PC)
+		}
+
+		// Check the skipIncrement flag
+		if skipIncrement {
+			t.Errorf("Expected skipIncrement to be false")
+		}
+	}
+}
+
+func TestExecuteJumpIfFalse(t *testing.T) {
+	// Create a VM
+	vm := NewVM()
+
+	// Create a method
+	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
+	methodObj.Method.Bytecodes = []byte{
+		JUMP_IF_FALSE, 0, 0, 0, 10, // Jump to offset 10 if false
+	}
+
+	// Test with false condition
+	{
+		// Create a context
+		context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+
+		// Push a false value onto the stack
+		context.Push(NewBoolean(false))
+
+		// Execute the bytecode
+		skipIncrement, err := vm.ExecuteJumpIfFalse(context)
+		if err != nil {
+			t.Errorf("ExecuteJumpIfFalse returned an error: %v", err)
+		}
+
+		// Check the PC
+		if context.PC != 10 {
+			t.Errorf("Expected PC to be 10, got %d", context.PC)
+		}
+
+		// Check the skipIncrement flag
+		if !skipIncrement {
+			t.Errorf("Expected skipIncrement to be true")
+		}
+	}
+
+	// Test with true condition
+	{
+		// Create a context
+		context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+
+		// Push a true value onto the stack
+		context.Push(NewBoolean(true))
+
+		// Execute the bytecode
+		skipIncrement, err := vm.ExecuteJumpIfFalse(context)
+		if err != nil {
+			t.Errorf("ExecuteJumpIfFalse returned an error: %v", err)
+		}
+
+		// Check the PC (should not change)
+		if context.PC != 0 {
+			t.Errorf("Expected PC to be 0, got %d", context.PC)
+		}
+
+		// Check the skipIncrement flag
+		if skipIncrement {
+			t.Errorf("Expected skipIncrement to be false")
+		}
+	}
+}
