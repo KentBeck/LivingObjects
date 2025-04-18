@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"fmt"
 )
 
@@ -42,6 +41,10 @@ func (vm *VM) LoadImage(path string) error {
 	vm.ObjectClass = NewClass("Object", nil)
 	vm.Globals["Object"] = vm.ObjectClass
 
+	// Create a method dictionary for the Object class
+	methodDict := NewDictionary()
+	vm.ObjectClass.InstanceVars["methodDict"] = methodDict
+
 	// Create a simple test method: 2 + 3
 	twoObj := NewInteger(2)
 	threeObj := NewInteger(3)
@@ -79,7 +82,9 @@ func (vm *VM) LoadImage(path string) error {
 }
 
 // Execute executes the current context
-func (vm *VM) Execute() error {
+func (vm *VM) Execute() (*Object, error) {
+	var finalResult *Object
+
 	for vm.CurrentContext != nil {
 		// Check if we need to collect garbage
 		if vm.ObjectMemory.ShouldCollect() {
@@ -89,7 +94,12 @@ func (vm *VM) Execute() error {
 		// Execute the current context
 		result, err := vm.ExecuteContext(vm.CurrentContext)
 		if err != nil {
-			return err
+			return nil, err
+		}
+
+		// Save the result if this is the top-level context
+		if vm.CurrentContext.Sender == nil {
+			finalResult = result
 		}
 
 		// Move to the sender context
@@ -104,7 +114,7 @@ func (vm *VM) Execute() error {
 		}
 	}
 
-	return nil
+	return finalResult, nil
 }
 
 // ExecuteContext executes a single context until it returns
@@ -122,177 +132,78 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 		size := InstructionSize(bytecode)
 
 		// Execute the bytecode
+		var err error
+		var skipIncrement bool
+		var returnValue *Object
+
 		switch bytecode {
 		case PUSH_LITERAL:
-			// Get the literal index (4 bytes)
-			index := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-			if index < 0 || index >= len(context.Method.Method.Literals) {
-				return nil, fmt.Errorf("literal index out of bounds: %d", index)
-			}
-
-			// Push the literal onto the stack
-			context.Push(context.Method.Method.Literals[index])
+			err = vm.ExecutePushLiteral(context)
 
 		case PUSH_INSTANCE_VARIABLE:
-			// Get the instance variable index (4 bytes)
-			index := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-			if index < 0 || index >= len(context.Receiver.Class.InstanceVarNames) {
-				return nil, fmt.Errorf("instance variable index out of bounds: %d", index)
-			}
-
-			// Get the instance variable name
-			name := context.Receiver.Class.InstanceVarNames[index]
-
-			// Push the instance variable onto the stack
-			if value, ok := context.Receiver.InstanceVars[name]; ok {
-				context.Push(value)
-			} else {
-				context.Push(vm.NilObject)
-			}
+			err = vm.ExecutePushInstanceVariable(context)
 
 		case PUSH_TEMPORARY_VARIABLE:
-			// Get the temporary variable index (4 bytes)
-			index := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-
-			// Push the temporary variable onto the stack
-			context.Push(context.GetTempVarByIndex(index))
+			err = vm.ExecutePushTemporaryVariable(context)
 
 		case PUSH_SELF:
-			// Push the receiver onto the stack
-			context.Push(context.Receiver)
+			err = vm.ExecutePushSelf(context)
 
 		case STORE_INSTANCE_VARIABLE:
-			// Get the instance variable index (4 bytes)
-			index := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-			if index < 0 || index >= len(context.Receiver.Class.InstanceVarNames) {
-				return nil, fmt.Errorf("instance variable index out of bounds: %d", index)
-			}
-
-			// Get the instance variable name
-			name := context.Receiver.Class.InstanceVarNames[index]
-
-			// Pop the value from the stack
-			value := context.Pop()
-
-			// Store the value in the instance variable
-			context.Receiver.InstanceVars[name] = value
-
-			// Push the value back onto the stack
-			context.Push(value)
+			err = vm.ExecuteStoreInstanceVariable(context)
 
 		case STORE_TEMPORARY_VARIABLE:
-			// Get the temporary variable index (4 bytes)
-			index := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-
-			// Pop the value from the stack
-			value := context.Pop()
-
-			// Store the value in the temporary variable
-			context.SetTempVarByIndex(index, value)
-
-			// Push the value back onto the stack
-			context.Push(value)
+			err = vm.ExecuteStoreTemporaryVariable(context)
 
 		case SEND_MESSAGE:
-			// Get the selector index (4 bytes)
-			selectorIndex := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-			if selectorIndex < 0 || selectorIndex >= len(context.Method.Method.Literals) {
-				return nil, fmt.Errorf("selector index out of bounds: %d", selectorIndex)
+			returnValue, err = vm.ExecuteSendMessage(context)
+			if err == nil {
+				if returnValue != nil {
+					// We got a result from a primitive method
+					return returnValue, nil
+				} else {
+					// A nil return value with no error means we've started a new context
+					return nil, nil
+				}
 			}
-
-			// Get the argument count (4 bytes)
-			argCount := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+5:]))
-
-			// Get the selector
-			selector := context.Method.Method.Literals[selectorIndex]
-			if selector.Type != OBJ_SYMBOL {
-				return nil, fmt.Errorf("selector is not a symbol: %s", selector)
-			}
-
-			// Pop the arguments from the stack
-			args := make([]*Object, argCount)
-			for i := argCount - 1; i >= 0; i-- {
-				args[i] = context.Pop()
-			}
-
-			// Pop the receiver
-			receiver := context.Pop()
-
-			// Handle primitive methods
-			if result := vm.executePrimitive(receiver, selector, args); result != nil {
-				context.Push(result)
-				break
-			}
-
-			// Look up the method
-			method := vm.lookupMethod(receiver, selector)
-			if method == nil {
-				return nil, fmt.Errorf("method not found: %s", selector.SymbolValue)
-			}
-
-			// Create a new context for the method
-			newContext := NewContext(method, receiver, args, context)
-
-			// Set the current context to the new context
-			vm.CurrentContext = newContext
-
-			// Return from this context execution to start executing the new context
-			return nil, nil
 
 		case RETURN_STACK_TOP:
-			// Pop the return value from the stack
-			returnValue := context.Pop()
-
-			// Return the value
-			return returnValue, nil
+			returnValue, err = vm.ExecuteReturnStackTop(context)
+			if err == nil {
+				return returnValue, nil
+			}
 
 		case JUMP:
-			// Get the jump target (4 bytes)
-			target := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-
-			// Set the PC to the target
-			context.PC = target
-
-			// Skip the normal PC increment
-			continue
+			skipIncrement, err = vm.ExecuteJump(context)
+			if err == nil && skipIncrement {
+				continue
+			}
 
 		case JUMP_IF_TRUE:
-			// Get the jump target (4 bytes)
-			target := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-
-			// Pop the condition from the stack
-			condition := context.Pop()
-
-			// If the condition is true, jump to the target
-			if condition.IsTrue() {
-				context.PC = target
+			skipIncrement, err = vm.ExecuteJumpIfTrue(context)
+			if err == nil && skipIncrement {
 				continue
 			}
 
 		case JUMP_IF_FALSE:
-			// Get the jump target (4 bytes)
-			target := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-
-			// Pop the condition from the stack
-			condition := context.Pop()
-
-			// If the condition is false, jump to the target
-			if !condition.IsTrue() {
-				context.PC = target
+			skipIncrement, err = vm.ExecuteJumpIfFalse(context)
+			if err == nil && skipIncrement {
 				continue
 			}
 
 		case POP:
-			// Pop the top value from the stack
-			context.Pop()
+			err = vm.ExecutePop(context)
 
 		case DUPLICATE:
-			// Duplicate the top value on the stack
-			value := context.Top()
-			context.Push(value)
+			err = vm.ExecuteDuplicate(context)
 
 		default:
 			return nil, fmt.Errorf("unknown bytecode: %d", bytecode)
+		}
+
+		// Check for errors
+		if err != nil {
+			return nil, err
 		}
 
 		// Increment the PC
