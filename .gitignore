@@ -1,2 +1,3 @@
 src/interpreter/smalltalk-vm
 src/interpreter/coverage.out
+src/interpreter/coverage.html
