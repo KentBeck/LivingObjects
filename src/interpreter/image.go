@@ -33,7 +33,8 @@ func (vm *VM) SaveImage(path string) error {
 		Version:     1,
 		ObjectCount: uint32(vm.ObjectMemory.AllocPtr),
 		GlobalCount: uint32(len(vm.Globals)),
-		RootObject:  0,
+		// RootObject will be used when we implement full image saving
+		// RootObject:  0,
 	}
 
 	// Write the header
@@ -62,7 +63,8 @@ func (vm *VM) LoadImageFromFile(path string) error {
 		Version:     binary.BigEndian.Uint32(data[4:8]),
 		ObjectCount: binary.BigEndian.Uint32(data[8:12]),
 		GlobalCount: binary.BigEndian.Uint32(data[12:16]),
-		RootObject:  binary.BigEndian.Uint32(data[16:20]),
+		// RootObject will be used when we implement full image loading
+		// RootObject:  binary.BigEndian.Uint32(data[16:20]),
 	}
 
 	// Check the magic number
