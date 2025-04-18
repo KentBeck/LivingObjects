@@ -138,15 +138,22 @@ func TestCollect(t *testing.T) {
 	// Add the root object to the VM's globals
 	vm.Globals["root"] = rootObj
 
-	// Create an unreachable object
+	// Create an unreachable object and keep a reference to verify it's collected
 	unreachableObj := NewInteger(99)
 	om.Allocate(unreachableObj)
+
+	// Mark the unreachable object so we can identify it later
+	unreachableObj.Moved = true // This flag should be reset during collection
 
 	// Check the allocation pointer before collection
 	beforeAllocPtr := om.AllocPtr
 	if beforeAllocPtr != 4 {
 		t.Errorf("Expected AllocPtr to be 4 before collection, got %d", beforeAllocPtr)
 	}
+
+	// Save the original from-space to check after collection
+	originalFromSpace := make([]*Object, len(om.FromSpace))
+	copy(originalFromSpace, om.FromSpace)
 
 	// Perform garbage collection
 	om.Collect(vm)
@@ -156,13 +163,52 @@ func TestCollect(t *testing.T) {
 		t.Errorf("Expected GCCount to be 1 after collection, got %d", om.GCCount)
 	}
 
-	// Check that the spaces have been swapped
-	// The new from-space should contain the live objects
+	// Verify that the spaces have been swapped
+	// The new from-space should contain only the live objects
 
-	// Check that the allocation pointer after collection is reasonable
-	// The exact number may vary depending on how many objects are created internally
-	if om.AllocPtr < 4 {
-		t.Errorf("Expected AllocPtr to be at least 4 after collection, got %d", om.AllocPtr)
+	// Check that all reachable objects are in the new from-space
+	foundRoot := false
+	foundInt := false
+	foundBool := false
+	foundStr := false
+
+	for i := 0; i < om.AllocPtr; i++ {
+		obj := om.FromSpace[i]
+		if obj == rootObj {
+			foundRoot = true
+		} else if obj == intObj {
+			foundInt = true
+		} else if obj == boolObj {
+			foundBool = true
+		} else if obj == strObj {
+			foundStr = true
+		}
+	}
+
+	if !foundRoot {
+		t.Errorf("Root object not found in from-space after collection")
+	}
+	if !foundInt {
+		t.Errorf("Integer object not found in from-space after collection")
+	}
+	if !foundBool {
+		t.Errorf("Boolean object not found in from-space after collection")
+	}
+	if !foundStr {
+		t.Errorf("String object not found in from-space after collection")
+	}
+
+	// Verify that the unreachable object is not in the new from-space
+	foundUnreachable := false
+	for i := 0; i < om.AllocPtr; i++ {
+		if om.FromSpace[i] == unreachableObj {
+			foundUnreachable = true
+			break
+		}
+	}
+
+	if foundUnreachable {
+		t.Errorf("Unreachable object found in from-space after collection")
 	}
 
 	// Check that the root object is still in the VM's globals
@@ -181,6 +227,19 @@ func TestCollect(t *testing.T) {
 
 	if rootObj.Elements[2] != strObj {
 		t.Errorf("Expected rootObj.Elements[2] to still be strObj")
+	}
+
+	// Verify that the values of the objects are preserved
+	if intObj.IntegerValue != 42 {
+		t.Errorf("Integer value changed after collection, expected 42, got %d", intObj.IntegerValue)
+	}
+
+	if !boolObj.BooleanValue {
+		t.Errorf("Boolean value changed after collection, expected true, got false")
+	}
+
+	if strObj.StringValue != "hello" {
+		t.Errorf("String value changed after collection, expected 'hello', got '%s'", strObj.StringValue)
 	}
 }
 
@@ -223,9 +282,10 @@ func TestCollectWithContexts(t *testing.T) {
 	om.Allocate(stackObj2)
 	om.Allocate(tempObj)
 
-	// Create an unreachable object
+	// Create an unreachable object and mark it
 	unreachableObj := NewInteger(99)
 	om.Allocate(unreachableObj)
+	unreachableObj.Moved = true // This flag should be reset during collection
 
 	// Check the allocation pointer before collection
 	beforeAllocPtr := om.AllocPtr
@@ -239,6 +299,69 @@ func TestCollectWithContexts(t *testing.T) {
 	// Check that the GC count has been incremented
 	if om.GCCount != 1 {
 		t.Errorf("Expected GCCount to be 1 after collection, got %d", om.GCCount)
+	}
+
+	// Verify that all reachable objects are in the new from-space
+	foundMethod := false
+	foundReceiver := false
+	foundArg1 := false
+	foundArg2 := false
+	foundStackObj1 := false
+	foundStackObj2 := false
+	foundTempObj := false
+
+	for i := 0; i < om.AllocPtr; i++ {
+		obj := om.FromSpace[i]
+		if obj == methodObj {
+			foundMethod = true
+		} else if obj == receiverObj {
+			foundReceiver = true
+		} else if obj == arg1 {
+			foundArg1 = true
+		} else if obj == arg2 {
+			foundArg2 = true
+		} else if obj == stackObj1 {
+			foundStackObj1 = true
+		} else if obj == stackObj2 {
+			foundStackObj2 = true
+		} else if obj == tempObj {
+			foundTempObj = true
+		}
+	}
+
+	if !foundMethod {
+		t.Errorf("Method object not found in from-space after collection")
+	}
+	if !foundReceiver {
+		t.Errorf("Receiver object not found in from-space after collection")
+	}
+	if !foundArg1 {
+		t.Errorf("Argument 1 not found in from-space after collection")
+	}
+	if !foundArg2 {
+		t.Errorf("Argument 2 not found in from-space after collection")
+	}
+	if !foundStackObj1 {
+		t.Errorf("Stack object 1 not found in from-space after collection")
+	}
+	if !foundStackObj2 {
+		t.Errorf("Stack object 2 not found in from-space after collection")
+	}
+	if !foundTempObj {
+		t.Errorf("Temporary variable object not found in from-space after collection")
+	}
+
+	// Verify that the unreachable object is not in the new from-space
+	foundUnreachable := false
+	for i := 0; i < om.AllocPtr; i++ {
+		if om.FromSpace[i] == unreachableObj {
+			foundUnreachable = true
+			break
+		}
+	}
+
+	if foundUnreachable {
+		t.Errorf("Unreachable object found in from-space after collection")
 	}
 
 	// Check that the context is still the VM's current context
@@ -286,6 +409,27 @@ func TestCollectWithContexts(t *testing.T) {
 	if context.GetTempVarByIndex(0) != tempObj {
 		t.Errorf("Expected context.GetTempVarByIndex(0) to still be tempObj")
 	}
+
+	// Verify that the values of the objects are preserved
+	if arg1.IntegerValue != 1 {
+		t.Errorf("Argument 1 value changed after collection, expected 1, got %d", arg1.IntegerValue)
+	}
+
+	if arg2.IntegerValue != 2 {
+		t.Errorf("Argument 2 value changed after collection, expected 2, got %d", arg2.IntegerValue)
+	}
+
+	if !stackObj1.BooleanValue {
+		t.Errorf("Stack object 1 value changed after collection, expected true, got false")
+	}
+
+	if stackObj2.StringValue != "stack" {
+		t.Errorf("Stack object 2 value changed after collection, expected 'stack', got '%s'", stackObj2.StringValue)
+	}
+
+	if tempObj.IntegerValue != 42 {
+		t.Errorf("Temporary variable value changed after collection, expected 42, got %d", tempObj.IntegerValue)
+	}
 }
 
 // TestCollectWithCycles tests garbage collection with cyclic references
@@ -304,18 +448,26 @@ func TestCollectWithCycles(t *testing.T) {
 	// Add obj1 to the VM's globals to make it reachable
 	vm.Globals["cycle"] = obj1
 
+	// Create another cycle that is unreachable
+	unreachableObj1 := NewArray(1)
+	unreachableObj2 := NewArray(1)
+	unreachableObj1.Elements[0] = unreachableObj2
+	unreachableObj2.Elements[0] = unreachableObj1
+
 	// Allocate the objects
 	om.Allocate(obj1)
 	om.Allocate(obj2)
+	om.Allocate(unreachableObj1)
+	om.Allocate(unreachableObj2)
 
-	// Create an unreachable object
-	unreachableObj := NewInteger(99)
-	om.Allocate(unreachableObj)
+	// Mark the unreachable objects so we can identify them later
+	unreachableObj1.Moved = true
+	unreachableObj2.Moved = true
 
 	// Check the allocation pointer before collection
 	beforeAllocPtr := om.AllocPtr
-	if beforeAllocPtr != 3 {
-		t.Errorf("Expected AllocPtr to be 3 before collection, got %d", beforeAllocPtr)
+	if beforeAllocPtr != 4 {
+		t.Errorf("Expected AllocPtr to be 4 before collection, got %d", beforeAllocPtr)
 	}
 
 	// Perform garbage collection
@@ -324,6 +476,46 @@ func TestCollectWithCycles(t *testing.T) {
 	// Check that the GC count has been incremented
 	if om.GCCount != 1 {
 		t.Errorf("Expected GCCount to be 1 after collection, got %d", om.GCCount)
+	}
+
+	// Verify that the reachable objects are in the new from-space
+	foundObj1 := false
+	foundObj2 := false
+
+	for i := 0; i < om.AllocPtr; i++ {
+		obj := om.FromSpace[i]
+		if obj == obj1 {
+			foundObj1 = true
+		} else if obj == obj2 {
+			foundObj2 = true
+		}
+	}
+
+	if !foundObj1 {
+		t.Errorf("obj1 not found in from-space after collection")
+	}
+	if !foundObj2 {
+		t.Errorf("obj2 not found in from-space after collection")
+	}
+
+	// Verify that the unreachable objects are not in the new from-space
+	foundUnreachable1 := false
+	foundUnreachable2 := false
+
+	for i := 0; i < om.AllocPtr; i++ {
+		obj := om.FromSpace[i]
+		if obj == unreachableObj1 {
+			foundUnreachable1 = true
+		} else if obj == unreachableObj2 {
+			foundUnreachable2 = true
+		}
+	}
+
+	if foundUnreachable1 {
+		t.Errorf("unreachableObj1 found in from-space after collection")
+	}
+	if foundUnreachable2 {
+		t.Errorf("unreachableObj2 found in from-space after collection")
 	}
 
 	// Check that obj1 is still in the VM's globals
@@ -408,6 +600,129 @@ func TestCollectTriggersGrowSpaces(t *testing.T) {
 	// more than 70% of the space is still in use, which would trigger growSpaces.
 	// However, this is difficult to set up reliably without knowing exactly
 	// how many objects will be created internally during collection.
+}
+
+// TestCollectEdgeCases tests edge cases in the garbage collector
+func TestCollectEdgeCases(t *testing.T) {
+	// Test with empty object memory
+	{
+		om := NewObjectMemory()
+		vm := NewVM()
+
+		// Clear the VM's globals to ensure no objects are reachable
+		vm.Globals = make(map[string]*Object)
+		vm.CurrentContext = nil
+
+		// Perform garbage collection on empty memory
+		om.Collect(vm)
+
+		// Check that the GC count has been incremented
+		if om.GCCount != 1 {
+			t.Errorf("Expected GCCount to be 1 after collection, got %d", om.GCCount)
+		}
+
+		// The allocation pointer might not be 0 because the VM might have created some objects
+		// during initialization. We just check that collection completed successfully.
+	}
+
+	// Test with nil objects in the from-space
+	{
+		om := NewObjectMemory()
+		vm := NewVM()
+
+		// Allocate some objects with nil slots in between
+		obj1 := NewInteger(1)
+		obj2 := NewInteger(2)
+
+		om.Allocate(obj1)
+		om.FromSpace[1] = nil // Create a nil slot
+		om.AllocPtr = 2       // Skip the nil slot
+		om.Allocate(obj2)
+
+		// Add objects to globals to make them reachable
+		vm.Globals["obj1"] = obj1
+		vm.Globals["obj2"] = obj2
+
+		// Perform garbage collection
+		om.Collect(vm)
+
+		// Check that both objects are still in the from-space
+		foundObj1 := false
+		foundObj2 := false
+
+		for i := 0; i < om.AllocPtr; i++ {
+			obj := om.FromSpace[i]
+			if obj == obj1 {
+				foundObj1 = true
+			} else if obj == obj2 {
+				foundObj2 = true
+			}
+		}
+
+		if !foundObj1 {
+			t.Errorf("obj1 not found in from-space after collection")
+		}
+		if !foundObj2 {
+			t.Errorf("obj2 not found in from-space after collection")
+		}
+	}
+
+	// Test with nil objects in the root set
+	{
+		om := NewObjectMemory()
+		vm := NewVM()
+
+		// Add a nil object to globals
+		vm.Globals["nil"] = nil
+
+		// Perform garbage collection
+		om.Collect(vm)
+
+		// Check that the collection completed without errors
+		if om.GCCount != 1 {
+			t.Errorf("Expected GCCount to be 1 after collection, got %d", om.GCCount)
+		}
+	}
+
+	// Test with a large number of objects
+	{
+		om := NewObjectMemory()
+		vm := NewVM()
+
+		// Set a small space size for testing
+		om.SpaceSize = 20
+		om.GCThreshold = 16
+		om.FromSpace = make([]*Object, 20)
+		om.ToSpace = make([]*Object, 20)
+
+		// Allocate many objects
+		for i := 0; i < 15; i++ {
+			obj := NewInteger(int64(i))
+			om.Allocate(obj)
+			vm.Globals[string(rune('a'+i))] = obj // Add to globals to make them reachable
+		}
+
+		// Perform garbage collection
+		om.Collect(vm)
+
+		// Check that all objects are still in the from-space
+		for i := 0; i < 15; i++ {
+			found := false
+			expectedValue := int64(i)
+
+			for j := 0; j < om.AllocPtr; j++ {
+				obj := om.FromSpace[j]
+				if obj != nil && obj.Type == OBJ_INTEGER && obj.IntegerValue == expectedValue {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				t.Errorf("Object with value %d not found in from-space after collection", expectedValue)
+			}
+		}
+	}
 }
 
 // TestCopyObject tests the copyObject method
