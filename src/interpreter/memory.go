@@ -101,10 +101,10 @@ func (om *ObjectMemory) Collect(vm *VM) {
 		}
 
 		// Copy the context's temporary variables
-		for name, obj := range context.TempVars {
+		for i, obj := range context.TempVars {
 			if obj != nil {
 				copied := om.copyObject(obj, &toPtr)
-				context.TempVars[name] = copied
+				context.TempVars[i] = copied
 			}
 		}
 
