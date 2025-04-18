@@ -5,7 +5,7 @@ type Context struct {
 	Method       *Object
 	Receiver     *Object
 	Arguments    []*Object
-	TempVars     map[string]*Object
+	TempVars     []*Object // Temporary variables stored by index
 	Sender       *Context
 	PC           int
 	Stack        []*Object
@@ -14,11 +14,21 @@ type Context struct {
 
 // NewContext creates a new method activation context
 func NewContext(method *Object, receiver *Object, arguments []*Object, sender *Context) *Context {
+	// Initialize temporary variables array with nil values
+	tempVarsSize := 0
+	if method != nil && method.Method != nil {
+		tempVarsSize = len(method.Method.TempVarNames)
+	}
+	tempVars := make([]*Object, tempVarsSize)
+	for i := range tempVars {
+		tempVars[i] = NewNil()
+	}
+
 	return &Context{
 		Method:       method,
 		Receiver:     receiver,
 		Arguments:    arguments,
-		TempVars:     make(map[string]*Object),
+		TempVars:     tempVars,
 		Sender:       sender,
 		PC:           0,
 		Stack:        make([]*Object, 100), // Initial stack size
@@ -34,7 +44,7 @@ func (c *Context) Push(obj *Object) {
 		copy(newStack, c.Stack)
 		c.Stack = newStack
 	}
-	
+
 	c.Stack[c.StackPointer] = obj
 	c.StackPointer++
 }
@@ -44,7 +54,7 @@ func (c *Context) Pop() *Object {
 	if c.StackPointer <= 0 {
 		return NewNil() // Stack underflow
 	}
-	
+
 	c.StackPointer--
 	return c.Stack[c.StackPointer]
 }
@@ -54,39 +64,55 @@ func (c *Context) Top() *Object {
 	if c.StackPointer <= 0 {
 		return NewNil() // Stack underflow
 	}
-	
+
 	return c.Stack[c.StackPointer-1]
 }
 
-// GetTempVar gets a temporary variable by name
+// GetTempVar gets a temporary variable by name (for backward compatibility)
 func (c *Context) GetTempVar(name string) *Object {
-	if obj, ok := c.TempVars[name]; ok {
-		return obj
+	// Find the index of the name in the method's temporary variable names
+	if c.Method == nil || c.Method.Method == nil {
+		return NewNil()
 	}
+
+	for i, tempName := range c.Method.Method.TempVarNames {
+		if tempName == name {
+			return c.GetTempVarByIndex(i)
+		}
+	}
+
 	return NewNil()
 }
 
-// SetTempVar sets a temporary variable by name
+// SetTempVar sets a temporary variable by name (for backward compatibility)
 func (c *Context) SetTempVar(name string, value *Object) {
-	c.TempVars[name] = value
+	// Find the index of the name in the method's temporary variable names
+	if c.Method == nil || c.Method.Method == nil {
+		return
+	}
+
+	for i, tempName := range c.Method.Method.TempVarNames {
+		if tempName == name {
+			c.SetTempVarByIndex(i, value)
+			return
+		}
+	}
 }
 
 // GetTempVarByIndex gets a temporary variable by index
 func (c *Context) GetTempVarByIndex(index int) *Object {
-	if index < 0 || index >= len(c.Method.Method.TempVarNames) {
+	if index < 0 || index >= len(c.TempVars) {
 		return NewNil()
 	}
-	
-	name := c.Method.Method.TempVarNames[index]
-	return c.GetTempVar(name)
+
+	return c.TempVars[index]
 }
 
 // SetTempVarByIndex sets a temporary variable by index
 func (c *Context) SetTempVarByIndex(index int, value *Object) {
-	if index < 0 || index >= len(c.Method.Method.TempVarNames) {
+	if index < 0 || index >= len(c.TempVars) {
 		return
 	}
-	
-	name := c.Method.Method.TempVarNames[index]
-	c.SetTempVar(name, value)
+
+	c.TempVars[index] = value
 }
