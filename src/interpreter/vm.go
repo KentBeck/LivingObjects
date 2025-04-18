@@ -251,17 +251,27 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 
 // lookupMethod looks up a method in a class hierarchy
 func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
+	// Check for nil receiver or selector
+	if receiver == nil || selector == nil {
+		return nil
+	}
+
 	// Get the class of the receiver
 	class := receiver
 	if receiver.Type != OBJ_CLASS {
 		class = receiver.Class
 	}
 
+	// Check for nil class
+	if class == nil {
+		return nil
+	}
+
 	// Look up the method in the class hierarchy
 	for class != nil {
 		// Check if the class has a method dictionary
 		methodDict := class.GetMethodDict()
-		if methodDict.Type == OBJ_DICTIONARY {
+		if methodDict != nil && methodDict.Type == OBJ_DICTIONARY && methodDict.Entries != nil {
 			// Check if the method dictionary has the selector
 			if method, ok := methodDict.Entries[selector.SymbolValue]; ok {
 				return method
