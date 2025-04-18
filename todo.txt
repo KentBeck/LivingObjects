@@ -1,4 +1,3 @@
-Milestone 1: Implement enough to run 2+3. Everything is externally compiled.
 
 Milestone 2: Implement enough to run tests. This requires closures, exceptions, collections.
 
@@ -9,3 +8,6 @@ Milestone 4: Fully self-hosted server. This requires all the networking stuff be
 To do:
 * Optimize sizeof(Object). Maybe write a test for it.
   * Singleton True & False
+
+Done:
+Milestone 1: Implement enough to run 2+3. Everything is externally compiled.
