@@ -202,37 +202,6 @@ func (o *Object) String() string {
 	}
 }
 
-// GetInstanceVar gets an instance variable by name (for backward compatibility)
-func (o *Object) GetInstanceVar(name string) *Object {
-	// Find the index of the name in the class's instance variable names
-	if o.Class == nil {
-		return NewNil()
-	}
-
-	for i, varName := range o.Class.InstanceVarNames {
-		if varName == name {
-			return o.GetInstanceVarByIndex(i)
-		}
-	}
-
-	return NewNil()
-}
-
-// SetInstanceVar sets an instance variable by name (for backward compatibility)
-func (o *Object) SetInstanceVar(name string, value *Object) {
-	// Find the index of the name in the class's instance variable names
-	if o.Class == nil {
-		return
-	}
-
-	for i, varName := range o.Class.InstanceVarNames {
-		if varName == name {
-			o.SetInstanceVarByIndex(i, value)
-			return
-		}
-	}
-}
-
 // GetInstanceVarByIndex gets an instance variable by index
 func (o *Object) GetInstanceVarByIndex(index int) *Object {
 	if index < 0 || index >= len(o.InstanceVars) {
