@@ -23,32 +23,32 @@ const (
 
 // Object represents a Smalltalk object
 type Object struct {
-	Type           ObjectType
-	Class          *Object
-	IntegerValue   int64
-	BooleanValue   bool
-	StringValue    string
-	SymbolValue    string
-	InstanceVars   map[string]*Object
-	Elements       []*Object
-	Entries        map[string]*Object
-	Method         *Method
-	Bytecodes      []byte
-	Literals       []*Object
-	Selector       *Object
-	SuperClass     *Object
+	Type             ObjectType
+	Class            *Object
+	IntegerValue     int64
+	BooleanValue     bool
+	StringValue      string
+	SymbolValue      string
+	InstanceVars     []*Object // Instance variables stored by index
+	Elements         []*Object
+	Entries          map[string]*Object
+	Method           *Method
+	Bytecodes        []byte
+	Literals         []*Object
+	Selector         *Object
+	SuperClass       *Object
 	InstanceVarNames []string
-	Moved          bool  // Used for garbage collection
-	ForwardingPtr  *Object // Used for garbage collection
+	Moved            bool    // Used for garbage collection
+	ForwardingPtr    *Object // Used for garbage collection
 }
 
 // Method represents a Smalltalk method
 type Method struct {
-	Bytecodes      []byte
-	Literals       []*Object
-	Selector       *Object
-	Class          *Object
-	TempVarNames   []string
+	Bytecodes    []byte
+	Literals     []*Object
+	Selector     *Object
+	Class        *Object
+	TempVarNames []string
 }
 
 // NewInteger creates a new integer object
@@ -108,21 +108,36 @@ func NewDictionary() *Object {
 
 // NewInstance creates a new instance of a class
 func NewInstance(class *Object) *Object {
+	// Initialize instance variables array with nil values
+	instVarsSize := 0
+	if class != nil && len(class.InstanceVarNames) > 0 {
+		instVarsSize = len(class.InstanceVarNames)
+	}
+	instVars := make([]*Object, instVarsSize)
+	for i := range instVars {
+		instVars[i] = NewNil()
+	}
+
 	return &Object{
 		Type:         OBJ_INSTANCE,
 		Class:        class,
-		InstanceVars: make(map[string]*Object),
+		InstanceVars: instVars,
 	}
 }
 
 // NewClass creates a new class object
 func NewClass(name string, superClass *Object) *Object {
+	// For classes, we need a special instance variable for the method dictionary
+	// We'll store it at index 0
+	instVars := make([]*Object, 1)
+	instVars[0] = NewDictionary() // methodDict at index 0
+
 	return &Object{
-		Type:            OBJ_CLASS,
-		SymbolValue:     name,
-		SuperClass:      superClass,
+		Type:             OBJ_CLASS,
+		SymbolValue:      name,
+		SuperClass:       superClass,
 		InstanceVarNames: make([]string, 0),
-		InstanceVars:    make(map[string]*Object),
+		InstanceVars:     instVars,
 	}
 }
 
@@ -135,7 +150,7 @@ func NewMethod(selector *Object, class *Object) *Object {
 		Class:        class,
 		TempVarNames: make([]string, 0),
 	}
-	
+
 	return &Object{
 		Type:   OBJ_METHOD,
 		Method: method,
@@ -185,4 +200,63 @@ func (o *Object) String() string {
 	default:
 		return "Unknown object"
 	}
+}
+
+// GetInstanceVar gets an instance variable by name (for backward compatibility)
+func (o *Object) GetInstanceVar(name string) *Object {
+	// Find the index of the name in the class's instance variable names
+	if o.Class == nil {
+		return NewNil()
+	}
+
+	for i, varName := range o.Class.InstanceVarNames {
+		if varName == name {
+			return o.GetInstanceVarByIndex(i)
+		}
+	}
+
+	return NewNil()
+}
+
+// SetInstanceVar sets an instance variable by name (for backward compatibility)
+func (o *Object) SetInstanceVar(name string, value *Object) {
+	// Find the index of the name in the class's instance variable names
+	if o.Class == nil {
+		return
+	}
+
+	for i, varName := range o.Class.InstanceVarNames {
+		if varName == name {
+			o.SetInstanceVarByIndex(i, value)
+			return
+		}
+	}
+}
+
+// GetInstanceVarByIndex gets an instance variable by index
+func (o *Object) GetInstanceVarByIndex(index int) *Object {
+	if index < 0 || index >= len(o.InstanceVars) {
+		return NewNil()
+	}
+
+	return o.InstanceVars[index]
+}
+
+// SetInstanceVarByIndex sets an instance variable by index
+func (o *Object) SetInstanceVarByIndex(index int, value *Object) {
+	if index < 0 || index >= len(o.InstanceVars) {
+		return
+	}
+
+	o.InstanceVars[index] = value
+}
+
+// GetMethodDict gets the method dictionary for a class
+func (o *Object) GetMethodDict() *Object {
+	if o.Type != OBJ_CLASS || len(o.InstanceVars) == 0 {
+		return NewNil()
+	}
+
+	// Method dictionary is stored at index 0 for classes
+	return o.InstanceVars[0]
 }

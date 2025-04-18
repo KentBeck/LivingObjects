@@ -6,24 +6,24 @@ import (
 
 // ObjectMemory manages the Smalltalk object memory with stop & copy garbage collection
 type ObjectMemory struct {
-	FromSpace    []*Object
-	ToSpace      []*Object
-	AllocPtr     int
-	SpaceSize    int
-	GCThreshold  int
-	GCCount      int
+	FromSpace   []*Object
+	ToSpace     []*Object
+	AllocPtr    int
+	SpaceSize   int
+	GCThreshold int
+	GCCount     int
 }
 
 // NewObjectMemory creates a new object memory
 func NewObjectMemory() *ObjectMemory {
 	spaceSize := 10000 // Initial space size
 	return &ObjectMemory{
-		FromSpace:    make([]*Object, spaceSize),
-		ToSpace:      make([]*Object, spaceSize),
-		AllocPtr:     0,
-		SpaceSize:    spaceSize,
-		GCThreshold:  spaceSize * 80 / 100, // 80% threshold
-		GCCount:      0,
+		FromSpace:   make([]*Object, spaceSize),
+		ToSpace:     make([]*Object, spaceSize),
+		AllocPtr:    0,
+		SpaceSize:   spaceSize,
+		GCThreshold: spaceSize * 80 / 100, // 80% threshold
+		GCCount:     0,
 	}
 }
 
@@ -34,11 +34,11 @@ func (om *ObjectMemory) Allocate(obj *Object) *Object {
 		// We'll let the VM handle collection
 		return obj
 	}
-	
+
 	// Allocate the object in the from-space
 	om.FromSpace[om.AllocPtr] = obj
 	om.AllocPtr++
-	
+
 	return obj
 }
 
@@ -51,12 +51,12 @@ func (om *ObjectMemory) ShouldCollect() bool {
 func (om *ObjectMemory) Collect(vm *VM) {
 	fmt.Printf("Starting garbage collection (cycle %d)...\n", om.GCCount)
 	om.GCCount++
-	
+
 	// Reset the to-space
 	for i := range om.ToSpace {
 		om.ToSpace[i] = nil
 	}
-	
+
 	// Reset forwarding pointers
 	for i := 0; i < om.AllocPtr; i++ {
 		if om.FromSpace[i] != nil {
@@ -64,10 +64,10 @@ func (om *ObjectMemory) Collect(vm *VM) {
 			om.FromSpace[i].ForwardingPtr = nil
 		}
 	}
-	
+
 	// Start with the root set
 	toPtr := 0
-	
+
 	// Add globals to the root set
 	for _, obj := range vm.Globals {
 		if obj != nil {
@@ -76,7 +76,7 @@ func (om *ObjectMemory) Collect(vm *VM) {
 			*obj = *copied
 		}
 	}
-	
+
 	// Add the current context and its chain to the root set
 	context := vm.CurrentContext
 	for context != nil {
@@ -85,13 +85,13 @@ func (om *ObjectMemory) Collect(vm *VM) {
 			copied := om.copyObject(context.Method, &toPtr)
 			context.Method = copied
 		}
-		
+
 		// Copy the context's receiver
 		if context.Receiver != nil {
 			copied := om.copyObject(context.Receiver, &toPtr)
 			context.Receiver = copied
 		}
-		
+
 		// Copy the context's arguments
 		for i, arg := range context.Arguments {
 			if arg != nil {
@@ -99,7 +99,7 @@ func (om *ObjectMemory) Collect(vm *VM) {
 				context.Arguments[i] = copied
 			}
 		}
-		
+
 		// Copy the context's temporary variables
 		for name, obj := range context.TempVars {
 			if obj != nil {
@@ -107,7 +107,7 @@ func (om *ObjectMemory) Collect(vm *VM) {
 				context.TempVars[name] = copied
 			}
 		}
-		
+
 		// Copy the context's stack
 		for i := 0; i < context.StackPointer; i++ {
 			if context.Stack[i] != nil {
@@ -115,11 +115,11 @@ func (om *ObjectMemory) Collect(vm *VM) {
 				context.Stack[i] = copied
 			}
 		}
-		
+
 		// Move to the sender context
 		context = context.Sender
 	}
-	
+
 	// Copy special objects
 	if vm.NilObject != nil {
 		vm.NilObject = om.copyObject(vm.NilObject, &toPtr)
@@ -133,27 +133,27 @@ func (om *ObjectMemory) Collect(vm *VM) {
 	if vm.ObjectClass != nil {
 		vm.ObjectClass = om.copyObject(vm.ObjectClass, &toPtr)
 	}
-	
+
 	// Scan the to-space for references
 	for i := 0; i < toPtr; i++ {
 		obj := om.ToSpace[i]
 		if obj == nil {
 			continue
 		}
-		
+
 		// Update references in the object
 		om.updateReferences(obj, &toPtr)
 	}
-	
+
 	// Swap the spaces
 	om.FromSpace, om.ToSpace = om.ToSpace, om.FromSpace
 	om.AllocPtr = toPtr
-	
+
 	// Grow the spaces if needed
-	if toPtr > om.SpaceSize * 70 / 100 { // If we're using more than 70% after GC
+	if toPtr > om.SpaceSize*70/100 { // If we're using more than 70% after GC
 		om.growSpaces()
 	}
-	
+
 	fmt.Printf("Garbage collection complete. Live objects: %d\n", toPtr)
 }
 
@@ -163,13 +163,13 @@ func (om *ObjectMemory) copyObject(obj *Object, toPtr *int) *Object {
 	if obj.Moved {
 		return obj.ForwardingPtr
 	}
-	
+
 	// Copy the object to the to-space
 	om.ToSpace[*toPtr] = obj
 	obj.Moved = true
 	obj.ForwardingPtr = om.ToSpace[*toPtr]
 	*toPtr++
-	
+
 	return obj.ForwardingPtr
 }
 
@@ -178,22 +178,22 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 	switch obj.Type {
 	case OBJ_INSTANCE, OBJ_CLASS:
 		// Update instance variables
-		for name, value := range obj.InstanceVars {
+		for i, value := range obj.InstanceVars {
 			if value != nil {
-				obj.InstanceVars[name] = om.copyObject(value, toPtr)
+				obj.InstanceVars[i] = om.copyObject(value, toPtr)
 			}
 		}
-		
+
 		// Update superclass reference
 		if obj.SuperClass != nil {
 			obj.SuperClass = om.copyObject(obj.SuperClass, toPtr)
 		}
-		
+
 		// Update class reference
 		if obj.Class != nil {
 			obj.Class = om.copyObject(obj.Class, toPtr)
 		}
-		
+
 	case OBJ_ARRAY:
 		// Update array elements
 		for i, elem := range obj.Elements {
@@ -201,7 +201,7 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 				obj.Elements[i] = om.copyObject(elem, toPtr)
 			}
 		}
-		
+
 	case OBJ_DICTIONARY:
 		// Update dictionary entries
 		for key, value := range obj.Entries {
@@ -209,7 +209,7 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 				obj.Entries[key] = om.copyObject(value, toPtr)
 			}
 		}
-		
+
 	case OBJ_METHOD:
 		// Update method literals
 		for i, lit := range obj.Method.Literals {
@@ -217,12 +217,12 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 				obj.Method.Literals[i] = om.copyObject(lit, toPtr)
 			}
 		}
-		
+
 		// Update method selector
 		if obj.Method.Selector != nil {
 			obj.Method.Selector = om.copyObject(obj.Method.Selector, toPtr)
 		}
-		
+
 		// Update method class
 		if obj.Method.Class != nil {
 			obj.Method.Class = om.copyObject(obj.Method.Class, toPtr)
@@ -234,14 +234,14 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 func (om *ObjectMemory) growSpaces() {
 	newSize := om.SpaceSize * 2
 	fmt.Printf("Growing spaces from %d to %d\n", om.SpaceSize, newSize)
-	
+
 	// Create new spaces
 	newFromSpace := make([]*Object, newSize)
 	newToSpace := make([]*Object, newSize)
-	
+
 	// Copy objects to the new from-space
 	copy(newFromSpace, om.FromSpace)
-	
+
 	// Update the spaces
 	om.FromSpace = newFromSpace
 	om.ToSpace = newToSpace

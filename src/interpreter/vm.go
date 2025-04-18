@@ -41,9 +41,7 @@ func (vm *VM) LoadImage(path string) error {
 	vm.ObjectClass = NewClass("Object", nil)
 	vm.Globals["Object"] = vm.ObjectClass
 
-	// Create a method dictionary for the Object class
-	methodDict := NewDictionary()
-	vm.ObjectClass.InstanceVars["methodDict"] = methodDict
+	// The method dictionary is already created in NewClass at index 0
 
 	// Create a simple test method: 2 + 3
 	twoObj := NewInteger(2)
@@ -262,7 +260,8 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 	// Look up the method in the class hierarchy
 	for class != nil {
 		// Check if the class has a method dictionary
-		if methodDict, ok := class.InstanceVars["methodDict"]; ok && methodDict.Type == OBJ_DICTIONARY {
+		methodDict := class.GetMethodDict()
+		if methodDict.Type == OBJ_DICTIONARY {
 			// Check if the method dictionary has the selector
 			if method, ok := methodDict.Entries[selector.SymbolValue]; ok {
 				return method

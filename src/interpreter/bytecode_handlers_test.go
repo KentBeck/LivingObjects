@@ -177,7 +177,7 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 
 	// Create an instance with a value for the instance variable
 	instance := NewInstance(class)
-	instance.InstanceVars["testVar"] = NewInteger(42)
+	instance.SetInstanceVarByIndex(0, NewInteger(42))
 
 	// Create a method
 	methodObj := NewMethod(NewSymbol("test"), class)
@@ -271,10 +271,8 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 	}
 
 	// Check the instance variable
-	value, ok := instance.InstanceVars["testVar"]
-	if !ok {
-		t.Errorf("Instance variable 'testVar' not found")
-	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
+	value := instance.GetInstanceVarByIndex(0)
+	if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
 		t.Errorf("Expected instance variable to be 42, got %v", value)
 	}
 

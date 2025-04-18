@@ -28,15 +28,9 @@ func (vm *VM) ExecutePushInstanceVariable(context *Context) error {
 		return fmt.Errorf("instance variable index out of bounds: %d", index)
 	}
 
-	// Get the instance variable name
-	name := context.Receiver.Class.InstanceVarNames[index]
-
 	// Push the instance variable onto the stack
-	if value, ok := context.Receiver.InstanceVars[name]; ok {
-		context.Push(value)
-	} else {
-		context.Push(vm.NilObject)
-	}
+	value := context.Receiver.GetInstanceVarByIndex(index)
+	context.Push(value)
 	return nil
 }
 
@@ -65,14 +59,11 @@ func (vm *VM) ExecuteStoreInstanceVariable(context *Context) error {
 		return fmt.Errorf("instance variable index out of bounds: %d", index)
 	}
 
-	// Get the instance variable name
-	name := context.Receiver.Class.InstanceVarNames[index]
-
 	// Pop the value from the stack
 	value := context.Pop()
 
 	// Store the value in the instance variable
-	context.Receiver.InstanceVars[name] = value
+	context.Receiver.SetInstanceVarByIndex(index, value)
 
 	// Push the value back onto the stack
 	context.Push(value)
