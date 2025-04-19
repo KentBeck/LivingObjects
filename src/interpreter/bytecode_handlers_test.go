@@ -378,9 +378,10 @@ func TestExecuteJump(t *testing.T) {
 		t.Errorf("ExecuteJump returned an error: %v", err)
 	}
 
-	// Check the PC
-	if context.PC != 10 {
-		t.Errorf("Expected PC to be 10, got %d", context.PC)
+	// Check the PC (should be PC + instruction size + offset)
+	expectedPC := 0 + InstructionSize(JUMP) + 10
+	if context.PC != expectedPC {
+		t.Errorf("Expected PC to be %d, got %d", expectedPC, context.PC)
 	}
 
 	// Check the skipIncrement flag
@@ -413,9 +414,10 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 			t.Errorf("ExecuteJumpIfTrue returned an error: %v", err)
 		}
 
-		// Check the PC
-		if context.PC != 10 {
-			t.Errorf("Expected PC to be 10, got %d", context.PC)
+		// Check the PC (should be PC + instruction size + offset)
+		expectedPC := 0 + InstructionSize(JUMP_IF_TRUE) + 10
+		if context.PC != expectedPC {
+			t.Errorf("Expected PC to be %d, got %d", expectedPC, context.PC)
 		}
 
 		// Check the skipIncrement flag
@@ -474,9 +476,10 @@ func TestExecuteJumpIfFalse(t *testing.T) {
 			t.Errorf("ExecuteJumpIfFalse returned an error: %v", err)
 		}
 
-		// Check the PC
-		if context.PC != 10 {
-			t.Errorf("Expected PC to be 10, got %d", context.PC)
+		// Check the PC (should be PC + instruction size + offset)
+		expectedPC := 0 + InstructionSize(JUMP_IF_FALSE) + 10
+		if context.PC != expectedPC {
+			t.Errorf("Expected PC to be %d, got %d", expectedPC, context.PC)
 		}
 
 		// Check the skipIncrement flag
