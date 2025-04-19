@@ -15,6 +15,7 @@ func (vm *VM) ExecutePushLiteral(context *Context) error {
 
 	// Push the literal onto the stack
 	literal := context.Method.Method.Literals[index]
+	fmt.Printf("PUSH_LITERAL: %v\n", literal)
 
 	context.Push(literal)
 	return nil
@@ -47,6 +48,7 @@ func (vm *VM) ExecutePushTemporaryVariable(context *Context) error {
 // ExecutePushSelf executes the PUSH_SELF bytecode
 func (vm *VM) ExecutePushSelf(context *Context) error {
 	// Push the receiver onto the stack
+	fmt.Printf("PUSH_SELF: %v\n", context.Receiver)
 	context.Push(context.Receiver)
 	return nil
 }
@@ -105,16 +107,21 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 	// Pop the arguments from the stack
 	args := make([]*Object, argCount)
+	fmt.Printf("Popping %d arguments from stack\n", argCount)
 	for i := argCount - 1; i >= 0; i-- {
 		args[i] = context.Pop()
+		fmt.Printf("Argument %d: %v\n", i, args[i])
 	}
 
 	// Pop the receiver
+	fmt.Printf("Stack pointer before popping receiver: %d\n", context.StackPointer)
 	receiver := context.Pop()
+	fmt.Printf("Popped receiver: %v\n", receiver)
 
 	// Handle primitive methods
+	fmt.Printf("SEND_MESSAGE: %v %s with %d args\n", receiver, selector.SymbolValue, argCount)
 	if result := vm.executePrimitive(receiver, selector, args); result != nil {
-
+		fmt.Printf("PRIMITIVE RESULT: %v\n", result)
 		context.Push(result)
 		return result, nil
 	}
@@ -147,6 +154,9 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 	// Push the result onto the stack
 	context.Push(result)
 
+	// Make sure the result is properly saved for the next bytecode
+	fmt.Printf("Pushed result %v onto stack, new stack pointer: %d\n", result, context.StackPointer)
+
 	// Return the result
 	return result, nil
 }
@@ -155,6 +165,7 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 func (vm *VM) ExecuteReturnStackTop(context *Context) (*Object, error) {
 	// Pop the return value from the stack
 	returnValue := context.Pop()
+	fmt.Printf("RETURN_STACK_TOP: %v\n", returnValue)
 
 	// Return the value
 	return returnValue, nil
@@ -201,11 +212,13 @@ func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
 
 	// Pop the condition from the stack
 	condition := context.Pop()
+	fmt.Printf("JUMP_IF_FALSE: condition=%v, offset=%d, current PC=%d\n", condition, offset, context.PC)
 
 	// If the condition is false, jump by the offset
 	if !condition.IsTrue() {
 		// Calculate the new PC by adding the offset to the current PC plus the size of this instruction
 		newPC := context.PC + InstructionSize(JUMP_IF_FALSE) + offset
+		fmt.Printf("Condition is false, jumping to PC=%d\n", newPC)
 		context.PC = newPC
 		return true, nil
 	}
@@ -224,6 +237,7 @@ func (vm *VM) ExecutePop(context *Context) error {
 func (vm *VM) ExecuteDuplicate(context *Context) error {
 	// Duplicate the top value on the stack
 	value := context.Top()
+	fmt.Printf("DUPLICATE: %v\n", value)
 
 	context.Push(value)
 	return nil
