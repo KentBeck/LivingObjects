@@ -56,7 +56,8 @@ func (c *Context) Pop() *Object {
 	}
 
 	c.StackPointer--
-	return c.Stack[c.StackPointer]
+	obj := c.Stack[c.StackPointer]
+	return obj
 }
 
 // Top returns the top object on the stack without popping it

@@ -779,7 +779,7 @@ func TestUpdateReferences(t *testing.T) {
 		class := NewClass("TestClass", nil)
 		instance := NewInstance(class)
 		instance.InstanceVars = make([]*Object, 2)
-		instance.InstanceVars[0] = NewInteger(1)
+		instance.InstanceVars[METHOD_DICTIONARY_IV] = NewInteger(1)
 		instance.InstanceVars[1] = NewInteger(2)
 
 		// Update references

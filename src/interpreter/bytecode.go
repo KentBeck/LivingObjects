@@ -3,27 +3,28 @@ package main
 // Bytecode constants
 const (
 	// Bytecodes
-	PUSH_LITERAL            byte = 0 // Push a literal from the literals array (followed by 4-byte index)
-	PUSH_INSTANCE_VARIABLE  byte = 1 // Push an instance variable value (followed by 4-byte offset)
-	PUSH_TEMPORARY_VARIABLE byte = 2 // Push a temporary variable value (followed by 4-byte offset)
-	PUSH_SELF               byte = 3 // Push self onto the stack
-	STORE_INSTANCE_VARIABLE byte = 4 // Store a value into an instance variable (followed by 4-byte offset)
-	STORE_TEMPORARY_VARIABLE byte = 5 // Store a value into a temporary variable (followed by 4-byte offset)
-	SEND_MESSAGE            byte = 6 // Send a message (followed by 4-byte selector index and 4-byte arg count)
-	RETURN_STACK_TOP        byte = 7 // Return the value on top of the stack
-	JUMP                    byte = 8 // Jump to a different bytecode (followed by 4-byte target)
-	JUMP_IF_TRUE            byte = 9 // Jump if top of stack is true (followed by 4-byte target)
-	JUMP_IF_FALSE           byte = 10 // Jump if top of stack is false (followed by 4-byte target)
-	POP                     byte = 11 // Pop the top value from the stack
-	DUPLICATE               byte = 12 // Duplicate the top value on the stack
+	PUSH_LITERAL             byte = 0  // Push a literal from the literals array (followed by 4-byte index)
+	PUSH_INSTANCE_VARIABLE   byte = 1  // Push an instance variable value (followed by 4-byte offset)
+	PUSH_TEMPORARY_VARIABLE  byte = 2  // Push a temporary variable value (followed by 4-byte offset)
+	PUSH_SELF                byte = 3  // Push self onto the stack
+	STORE_INSTANCE_VARIABLE  byte = 4  // Store a value into an instance variable (followed by 4-byte offset)
+	STORE_TEMPORARY_VARIABLE byte = 5  // Store a value into a temporary variable (followed by 4-byte offset)
+	SEND_MESSAGE             byte = 6  // Send a message (followed by 4-byte selector index and 4-byte arg count)
+	RETURN_STACK_TOP         byte = 7  // Return the value on top of the stack
+	JUMP                     byte = 8  // Jump to a different bytecode (followed by 4-byte target)
+	JUMP_IF_TRUE             byte = 9  // Jump if top of stack is true (followed by 4-byte target)
+	JUMP_IF_FALSE            byte = 10 // Jump if top of stack is false (followed by 4-byte target)
+	POP                      byte = 11 // Pop the top value from the stack
+	DUPLICATE                byte = 12 // Duplicate the top value on the stack
+	SET_CLASS                byte = 13 // Set the class of the top stack item (followed by 4-byte class index)
 )
 
 // InstructionSize returns the size of the instruction in bytes (including the opcode)
 func InstructionSize(bytecode byte) int {
 	switch bytecode {
-	case PUSH_LITERAL, PUSH_INSTANCE_VARIABLE, PUSH_TEMPORARY_VARIABLE, 
-	     STORE_INSTANCE_VARIABLE, STORE_TEMPORARY_VARIABLE, 
-	     JUMP, JUMP_IF_TRUE, JUMP_IF_FALSE:
+	case PUSH_LITERAL, PUSH_INSTANCE_VARIABLE, PUSH_TEMPORARY_VARIABLE,
+		STORE_INSTANCE_VARIABLE, STORE_TEMPORARY_VARIABLE,
+		JUMP, JUMP_IF_TRUE, JUMP_IF_FALSE, SET_CLASS:
 		return 5 // 1 byte opcode + 4 byte operand
 	case SEND_MESSAGE:
 		return 9 // 1 byte opcode + 4 byte selector index + 4 byte arg count
@@ -63,6 +64,8 @@ func BytecodeName(bytecode byte) string {
 		return "POP"
 	case DUPLICATE:
 		return "DUPLICATE"
+	case SET_CLASS:
+		return "SET_CLASS"
 	default:
 		return "UNKNOWN"
 	}

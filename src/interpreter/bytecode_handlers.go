@@ -15,7 +15,7 @@ func (vm *VM) ExecutePushLiteral(context *Context) error {
 
 	// Push the literal onto the stack
 	literal := context.Method.Method.Literals[index]
-	fmt.Printf("PUSH_LITERAL: %s\n", literal)
+
 	context.Push(literal)
 	return nil
 }
@@ -112,16 +112,17 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 	// Pop the receiver
 	receiver := context.Pop()
 
-	fmt.Printf("SEND_MESSAGE: %s %s with %d args\n", receiver, selector.SymbolValue, argCount)
-
 	// Handle primitive methods
 	if result := vm.executePrimitive(receiver, selector, args); result != nil {
-		fmt.Printf("PRIMITIVE RESULT: %s\n", result)
+
 		context.Push(result)
 		return result, nil
 	}
 
-	// Look up the method
+	// Check for nil receiver
+	if receiver == nil {
+		return nil, fmt.Errorf("nil receiver for message: %s", selector.SymbolValue)
+	}
 	method := vm.lookupMethod(receiver, selector)
 	if method == nil {
 		return nil, fmt.Errorf("method not found: %s", selector.SymbolValue)
@@ -134,7 +135,20 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 	vm.CurrentContext = newContext
 
 	// Return from this context execution to start executing the new context
-	return nil, nil
+	// We need to execute the new context immediately
+	result, err := vm.ExecuteContext(newContext)
+	if err != nil {
+		return nil, err
+	}
+
+	// Move back to the sender context
+	vm.CurrentContext = context
+
+	// Push the result onto the stack
+	context.Push(result)
+
+	// Return the result
+	return result, nil
 }
 
 // ExecuteReturnStackTop executes the RETURN_STACK_TOP bytecode
@@ -142,19 +156,20 @@ func (vm *VM) ExecuteReturnStackTop(context *Context) (*Object, error) {
 	// Pop the return value from the stack
 	returnValue := context.Pop()
 
-	fmt.Printf("RETURN_STACK_TOP: %s\n", returnValue)
-
 	// Return the value
 	return returnValue, nil
 }
 
 // ExecuteJump executes the JUMP bytecode
 func (vm *VM) ExecuteJump(context *Context) (bool, error) {
-	// Get the jump target (4 bytes)
-	target := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+	// Get the jump offset (4 bytes)
+	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
 
-	// Set the PC to the target
-	context.PC = target
+	// Calculate the new PC by adding the offset to the current PC plus the size of this instruction
+	newPC := context.PC + InstructionSize(JUMP) + offset
+
+	// Set the PC to the new position
+	context.PC = newPC
 
 	// Skip the normal PC increment
 	return true, nil
@@ -162,15 +177,17 @@ func (vm *VM) ExecuteJump(context *Context) (bool, error) {
 
 // ExecuteJumpIfTrue executes the JUMP_IF_TRUE bytecode
 func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
-	// Get the jump target (4 bytes)
-	target := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+	// Get the jump offset (4 bytes)
+	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
 
 	// Pop the condition from the stack
 	condition := context.Pop()
 
-	// If the condition is true, jump to the target
+	// If the condition is true, jump by the offset
 	if condition.IsTrue() {
-		context.PC = target
+		// Calculate the new PC by adding the offset to the current PC plus the size of this instruction
+		newPC := context.PC + InstructionSize(JUMP_IF_TRUE) + offset
+		context.PC = newPC
 		return true, nil
 	}
 
@@ -179,15 +196,17 @@ func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
 
 // ExecuteJumpIfFalse executes the JUMP_IF_FALSE bytecode
 func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
-	// Get the jump target (4 bytes)
-	target := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+	// Get the jump offset (4 bytes)
+	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
 
 	// Pop the condition from the stack
 	condition := context.Pop()
 
-	// If the condition is false, jump to the target
+	// If the condition is false, jump by the offset
 	if !condition.IsTrue() {
-		context.PC = target
+		// Calculate the new PC by adding the offset to the current PC plus the size of this instruction
+		newPC := context.PC + InstructionSize(JUMP_IF_FALSE) + offset
+		context.PC = newPC
 		return true, nil
 	}
 
@@ -205,6 +224,35 @@ func (vm *VM) ExecutePop(context *Context) error {
 func (vm *VM) ExecuteDuplicate(context *Context) error {
 	// Duplicate the top value on the stack
 	value := context.Top()
+
+	context.Push(value)
+	return nil
+}
+
+// ExecuteSetClass executes the SET_CLASS bytecode
+func (vm *VM) ExecuteSetClass(context *Context) error {
+	// Get the class index (4 bytes)
+	classIndex := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+	if classIndex < 0 || classIndex >= len(context.Method.Method.Literals) {
+		return fmt.Errorf("class index out of bounds: %d", classIndex)
+	}
+
+	// Get the class
+	class := context.Method.Method.Literals[classIndex]
+	if class.Type != OBJ_CLASS {
+		return fmt.Errorf("literal is not a class: %s", class)
+	}
+
+	// Get the top value on the stack
+	value := context.Pop()
+	if value == nil {
+		return fmt.Errorf("stack underflow")
+	}
+
+	// Set the class of the value
+	value.Class = class
+
+	// Push the value back onto the stack
 	context.Push(value)
 	return nil
 }

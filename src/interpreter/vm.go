@@ -106,9 +106,6 @@ func (vm *VM) Execute() (*Object, error) {
 		// If we have a sender, push the result onto its stack
 		if vm.CurrentContext != nil {
 			vm.CurrentContext.Push(result)
-		} else {
-			// No sender, print the result
-			fmt.Printf("Result: %s\n", result)
 		}
 	}
 
@@ -117,9 +114,11 @@ func (vm *VM) Execute() (*Object, error) {
 
 // ExecuteContext executes a single context until it returns
 func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
+
 	for {
 		// Check if we've reached the end of the method
 		if context.PC >= len(context.Method.Method.Bytecodes) {
+
 			return vm.NilObject, nil
 		}
 
@@ -195,6 +194,9 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 		case DUPLICATE:
 			err = vm.ExecuteDuplicate(context)
 
+		case SET_CLASS:
+			err = vm.ExecuteSetClass(context)
+
 		default:
 			return nil, fmt.Errorf("unknown bytecode: %d", bytecode)
 		}
@@ -211,24 +213,71 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 
 // executePrimitive executes a primitive method
 func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Object) *Object {
-	// Handle primitive methods like + - * / for integers
-	if receiver.Type == OBJ_INTEGER {
+	// Check for nil receiver or selector
+	if receiver == nil || selector == nil {
+		return nil
+	}
+
+	// First, check if the method is explicitly marked as a primitive
+	method := vm.lookupMethod(receiver, selector)
+	if method != nil && method.Type == OBJ_METHOD && method.Method.IsPrimitive {
+		// Execute the primitive based on its index
+		switch method.Method.PrimitiveIndex {
+		case 1: // Addition
+			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+				result := receiver.IntegerValue + args[0].IntegerValue
+				intObj := NewInteger(result)
+				intObj.Class = receiver.Class // Ensure the result has the same class
+				return intObj
+			}
+		case 2: // Multiplication
+			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+				result := receiver.IntegerValue * args[0].IntegerValue
+				intObj := NewInteger(result)
+				intObj.Class = receiver.Class // Ensure the result has the same class
+				return intObj
+			}
+		case 3: // Equality
+			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+				result := receiver.IntegerValue == args[0].IntegerValue
+				return NewBoolean(result)
+			}
+		case 4: // Subtraction
+			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+				result := receiver.IntegerValue - args[0].IntegerValue
+				intObj := NewInteger(result)
+				intObj.Class = receiver.Class // Ensure the result has the same class
+				return intObj
+			}
+		}
+	}
+
+	// If not a primitive method, handle built-in operations
+	if receiver.Type == OBJ_INTEGER && selector != nil {
 		switch selector.SymbolValue {
 		case "+":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return NewInteger(receiver.IntegerValue + args[0].IntegerValue)
+				intObj := NewInteger(receiver.IntegerValue + args[0].IntegerValue)
+				intObj.Class = receiver.Class // Ensure the result has the same class
+				return intObj
 			}
 		case "-":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return NewInteger(receiver.IntegerValue - args[0].IntegerValue)
+				intObj := NewInteger(receiver.IntegerValue - args[0].IntegerValue)
+				intObj.Class = receiver.Class // Ensure the result has the same class
+				return intObj
 			}
 		case "*":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return NewInteger(receiver.IntegerValue * args[0].IntegerValue)
+				intObj := NewInteger(receiver.IntegerValue * args[0].IntegerValue)
+				intObj.Class = receiver.Class // Ensure the result has the same class
+				return intObj
 			}
 		case "/":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER && args[0].IntegerValue != 0 {
-				return NewInteger(receiver.IntegerValue / args[0].IntegerValue)
+				intObj := NewInteger(receiver.IntegerValue / args[0].IntegerValue)
+				intObj.Class = receiver.Class // Ensure the result has the same class
+				return intObj
 			}
 		case "=":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {

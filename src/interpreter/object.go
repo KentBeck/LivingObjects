@@ -42,13 +42,17 @@ type Object struct {
 	ForwardingPtr    *Object // Used for garbage collection
 }
 
+const METHOD_DICTIONARY_IV = 0
+
 // Method represents a Smalltalk method
 type Method struct {
-	Bytecodes    []byte
-	Literals     []*Object
-	Selector     *Object
-	Class        *Object
-	TempVarNames []string
+	Bytecodes      []byte
+	Literals       []*Object
+	Selector       *Object
+	Class          *Object
+	TempVarNames   []string
+	IsPrimitive    bool
+	PrimitiveIndex int
 }
 
 // NewInteger creates a new integer object
@@ -227,5 +231,5 @@ func (o *Object) GetMethodDict() *Object {
 	}
 
 	// Method dictionary is stored at index 0 for classes
-	return o.InstanceVars[0]
+	return o.InstanceVars[METHOD_DICTIONARY_IV]
 }
