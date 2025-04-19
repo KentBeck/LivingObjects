@@ -8,6 +8,10 @@ Milestone 4: Fully self-hosted server. This requires all the networking stuff be
 To do:
 * Optimize sizeof(Object). Maybe write a test for it.
   * Singleton True & False
+* Class as a primitive instead of a bytecode
+* Invoke primitives after lookup
+* Fallback from primitive to regular method
+* Bytecode assembler
 
 Done:
 Milestone 1: Implement enough to run 2+3. Everything is externally compiled.
