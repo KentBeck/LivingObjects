@@ -157,7 +157,9 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 			if err == nil {
 				if returnValue != nil {
 					// We got a result from a primitive method
-					return returnValue, nil
+					// Continue execution in the current context
+					context.PC += size
+					continue
 				} else {
 					// A nil return value with no error means we've started a new context
 					return nil, nil

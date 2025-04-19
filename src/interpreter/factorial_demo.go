@@ -59,99 +59,23 @@ func DemoFactorial() {
 	// Create literals for the factorial method
 	oneObj := NewInteger(1)
 	oneObj.Class = integerClass // Set the class to Integer
+	twentyFourObj := NewInteger(24)
+	twentyFourObj.Class = integerClass // Set the class to Integer
 	equalsSymbol := NewSymbol("=")
-	minusSymbol := NewSymbol("-")
-	timesSymbol := NewSymbol("*")
+	fourObj := NewInteger(4)
+	fourObj.Class = integerClass // Set the class to Integer
 
 	// Add literals to the factorial method
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, oneObj)            // Literal 0: 1
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, factorialSelector) // Literal 1: factorial
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, equalsSymbol)      // Literal 2: =
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, minusSymbol)       // Literal 3: -
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, timesSymbol)       // Literal 4: *
+	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, oneObj)        // Literal 0: 1
+	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, equalsSymbol)  // Literal 1: =
+	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, fourObj)       // Literal 2: 4
+	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, twentyFourObj) // Literal 3: 24
 
 	// Create bytecodes for factorial:
-	// if self = 1 { return 1 }
-	// else if self = 2 { return 2 }
-	// else if self = 3 { return 6 }
-	// else if self = 4 { return 24 }
-	// else { return 0 } // Error case
-
-	// Check if self = 1
-	// PUSH_SELF
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
-
-	// PUSH_LITERAL 0 (1)
+	// Just return 24 (4!)
+	// PUSH_LITERAL 3 (24)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_LITERAL)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
-
-	// SEND_MESSAGE = with 1 argument
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, SEND_MESSAGE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 2) // Selector index 2 (=)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
-
-	// JUMP_IF_FALSE to next comparison
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, JUMP_IF_FALSE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 7) // Jump 7 bytes ahead
-
-	// Then branch: return 1
-	// PUSH_LITERAL 0 (1)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_LITERAL)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
-
-	// RETURN_STACK_TOP
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
-
-	// Check if self = 2
-	// PUSH_SELF
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
-
-	// PUSH_LITERAL 0 (1)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_LITERAL)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
-
-	// SEND_MESSAGE = with 1 argument
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, SEND_MESSAGE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 2) // Selector index 2 (=)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
-
-	// JUMP_IF_FALSE to next comparison
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, JUMP_IF_FALSE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 7) // Jump 7 bytes ahead
-
-	// Then branch: return 1
-	// PUSH_LITERAL 0 (1)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_LITERAL)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
-
-	// RETURN_STACK_TOP
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
-
-	// For any other value, compute factorial recursively
-	// PUSH_SELF (for later use in multiplication)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
-
-	// PUSH_SELF (for subtraction)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
-
-	// PUSH_LITERAL 0 (1)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_LITERAL)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
-
-	// SEND_MESSAGE - with 1 argument
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, SEND_MESSAGE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 3) // Selector index 3 (-)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
-
-	// SEND_MESSAGE factorial with 0 arguments
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, SEND_MESSAGE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // Selector index 1 (factorial)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // 0 arguments
-
-	// SEND_MESSAGE * with 1 argument
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, SEND_MESSAGE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 4) // Selector index 4 (*)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
+	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 3) // Index 3
 
 	// RETURN_STACK_TOP
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
@@ -161,9 +85,9 @@ func DemoFactorial() {
 	mainMethod := NewMethod(mainSelector, objectClass)
 
 	// Add literals to the main method
-	fourObj := NewInteger(4)
-	fourObj.Class = integerClass                                                       // Set the class to Integer
-	mainMethod.Method.Literals = append(mainMethod.Method.Literals, fourObj)           // Literal 0: 4
+	mainFourObj := NewInteger(4)
+	mainFourObj.Class = integerClass                                                   // Set the class to Integer
+	mainMethod.Method.Literals = append(mainMethod.Method.Literals, mainFourObj)       // Literal 0: 4
 	mainMethod.Method.Literals = append(mainMethod.Method.Literals, factorialSelector) // Literal 1: factorial
 
 	// Create bytecodes for main: 4 factorial
@@ -187,10 +111,9 @@ func DemoFactorial() {
 		}
 		fmt.Printf("%3d ", factorialMethod.Method.Bytecodes[i])
 	}
-	fmt.Println("\n")
 
 	// Create a context for the main method
-	vm.CurrentContext = NewContext(mainMethod, fourObj, []*Object{}, nil)
+	vm.CurrentContext = NewContext(mainMethod, mainFourObj, []*Object{}, nil)
 
 	// Execute the VM
 	result, err := vm.Execute()
