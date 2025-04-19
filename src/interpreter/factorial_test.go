@@ -1,38 +1,34 @@
 package main
 
 import (
-	"fmt"
+	"testing"
 )
 
-func DemoFactorial() {
-	fmt.Println("SmalltalkLSP Bytecode Interpreter Demo")
-
+func TestFactorial(t *testing.T) {
 	// Create a VM
 	vm := NewVM()
 
-	// Create basic classes
-	objectClass := NewClass("Object", nil)
-	vm.ObjectClass = objectClass
-	vm.Globals["Object"] = objectClass
+	// Create the Object class
+	objectClass := vm.ObjectClass
 
-	// Create Integer class
+	// Create the Integer class
 	integerClass := NewClass("Integer", objectClass)
-	vm.Globals["Integer"] = integerClass
 
-	// Add primitive methods to the Integer class
+	// Create the method dictionary for the Integer class
+	integerMethodDict := integerClass.GetMethodDict()
+
 	// + method
 	plusSelector := NewSymbol("+")
 	plusMethod := NewMethod(plusSelector, integerClass)
 	plusMethod.Method.IsPrimitive = true
 	plusMethod.Method.PrimitiveIndex = 1 // Addition
-	integerMethodDict := integerClass.GetMethodDict()
 	integerMethodDict.Entries[plusSelector.SymbolValue] = plusMethod
 
-	// - method (subtraction)
+	// - method
 	minusSelector := NewSymbol("-")
 	minusMethod := NewMethod(minusSelector, integerClass)
 	minusMethod.Method.IsPrimitive = true
-	minusMethod.Method.PrimitiveIndex = 4 // Subtraction (new primitive)
+	minusMethod.Method.PrimitiveIndex = 4 // Subtraction
 	integerMethodDict.Entries[minusSelector.SymbolValue] = minusMethod
 
 	// * method
@@ -49,7 +45,7 @@ func DemoFactorial() {
 	equalsMethod.Method.PrimitiveIndex = 3 // Equality
 	integerMethodDict.Entries[equalsSelector.SymbolValue] = equalsMethod
 
-	// Create a simple factorial method that returns a hardcoded value
+	// Create a simple factorial method
 	factorialSelector := NewSymbol("factorial")
 	factorialMethod := NewMethod(factorialSelector, integerClass)
 
@@ -59,23 +55,16 @@ func DemoFactorial() {
 	// Create literals for the factorial method
 	oneObj := NewInteger(1)
 	oneObj.Class = integerClass // Set the class to Integer
-	equalsSymbol := NewSymbol("=")
-	minusSymbol := NewSymbol("-")
-	timesSymbol := NewSymbol("*")
 
 	// Add literals to the factorial method
 	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, oneObj)            // Literal 0: 1
 	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, factorialSelector) // Literal 1: factorial
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, equalsSymbol)      // Literal 2: =
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, minusSymbol)       // Literal 3: -
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, timesSymbol)       // Literal 4: *
+	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, equalsSelector)    // Literal 2: =
+	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, minusSelector)     // Literal 3: -
+	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, timesSelector)     // Literal 4: *
 
 	// Create bytecodes for factorial:
-	// if self = 1 { return 1 }
-	// else if self = 2 { return 2 }
-	// else if self = 3 { return 6 }
-	// else if self = 4 { return 24 }
-	// else { return 0 } // Error case
+	// if self = 1 { return 1 } else { return self * (self - 1) factorial }
 
 	// Check if self = 1
 	// PUSH_SELF
@@ -90,7 +79,7 @@ func DemoFactorial() {
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 2) // Selector index 2 (=)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
 
-	// JUMP_IF_FALSE to next comparison
+	// JUMP_IF_FALSE to else branch
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, JUMP_IF_FALSE)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 7) // Jump 7 bytes ahead
 
@@ -102,9 +91,11 @@ func DemoFactorial() {
 	// RETURN_STACK_TOP
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
-	// For any other value, compute factorial recursively
-	// PUSH_SELF twice (once for subtraction, once for later multiplication)
+	// Else branch: return self * (self - 1) factorial
+	// PUSH_SELF (for later use in multiplication)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
+
+	// PUSH_SELF (for subtraction)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
 
 	// PUSH_LITERAL 0 (1)
@@ -129,47 +120,51 @@ func DemoFactorial() {
 	// RETURN_STACK_TOP
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
-	// Create a method to compute factorial of 4
-	mainSelector := NewSymbol("main")
-	mainMethod := NewMethod(mainSelector, objectClass)
+	// Test factorial of 1
+	t.Run("Factorial of 1", func(t *testing.T) {
+		// Create a context for the factorial method
+		oneObj := NewInteger(1)
+		oneObj.Class = integerClass
+		context := NewContext(factorialMethod, oneObj, []*Object{}, nil)
 
-	// Add literals to the main method
-	fourObj := NewInteger(4)
-	fourObj.Class = integerClass                                                       // Set the class to Integer
-	mainMethod.Method.Literals = append(mainMethod.Method.Literals, fourObj)           // Literal 0: 4
-	mainMethod.Method.Literals = append(mainMethod.Method.Literals, factorialSelector) // Literal 1: factorial
-
-	// Create bytecodes for main: 4 factorial
-	// PUSH_LITERAL 0 (4)
-	mainMethod.Method.Bytecodes = append(mainMethod.Method.Bytecodes, PUSH_LITERAL)
-	mainMethod.Method.Bytecodes = append(mainMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
-
-	// SEND_MESSAGE 1 ("factorial") with 0 arguments
-	mainMethod.Method.Bytecodes = append(mainMethod.Method.Bytecodes, SEND_MESSAGE)
-	mainMethod.Method.Bytecodes = append(mainMethod.Method.Bytecodes, 0, 0, 0, 1) // Selector index 1
-	mainMethod.Method.Bytecodes = append(mainMethod.Method.Bytecodes, 0, 0, 0, 0) // 0 arguments
-
-	// RETURN_STACK_TOP
-	mainMethod.Method.Bytecodes = append(mainMethod.Method.Bytecodes, RETURN_STACK_TOP)
-
-	// Print the bytecodes for debugging
-	fmt.Println("\nFactorial method bytecodes:")
-	for i := 0; i < len(factorialMethod.Method.Bytecodes); i++ {
-		if i%5 == 0 {
-			fmt.Printf("\n%3d: ", i)
+		// Execute the context
+		result, err := vm.ExecuteContext(context)
+		if err != nil {
+			t.Errorf("Error executing factorial of 1: %v", err)
+			return
 		}
-		fmt.Printf("%3d ", factorialMethod.Method.Bytecodes[i])
-	}
 
-	// Create a context for the main method
-	vm.CurrentContext = NewContext(mainMethod, fourObj, []*Object{}, nil)
+		// Check the result
+		if result.Type != OBJ_INTEGER {
+			t.Errorf("Expected result to be an integer, got %v", result.Type)
+		}
 
-	// Execute the VM
-	result, err := vm.Execute()
-	if err != nil {
-		fmt.Printf("Error executing: %s\n", err)
-		return
-	}
+		if result.IntegerValue != 1 {
+			t.Errorf("Expected result to be 1, got %d", result.IntegerValue)
+		}
+	})
 
-	fmt.Printf("Result: %s\n", result)
+	// Test factorial of 4
+	t.Run("Factorial of 4", func(t *testing.T) {
+		// Create a context for the factorial method
+		fourObj := NewInteger(4)
+		fourObj.Class = integerClass
+		context := NewContext(factorialMethod, fourObj, []*Object{}, nil)
+
+		// Execute the context
+		result, err := vm.ExecuteContext(context)
+		if err != nil {
+			t.Errorf("Error executing factorial of 4: %v", err)
+			return
+		}
+
+		// Check the result
+		if result.Type != OBJ_INTEGER {
+			t.Errorf("Expected result to be an integer, got %v", result.Type)
+		}
+
+		if result.IntegerValue != 24 {
+			t.Errorf("Expected result to be 24, got %d", result.IntegerValue)
+		}
+	})
 }

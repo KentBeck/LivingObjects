@@ -319,12 +319,14 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 	}
 
 	// Look up the method in the class hierarchy
+	fmt.Printf("Looking up method %s for receiver %v with class %v\n", selector.SymbolValue, receiver, class)
 	for class != nil {
 		// Check if the class has a method dictionary
 		methodDict := class.GetMethodDict()
 		if methodDict != nil && methodDict.Type == OBJ_DICTIONARY && methodDict.Entries != nil {
 			// Check if the method dictionary has the selector
 			if method, ok := methodDict.Entries[selector.SymbolValue]; ok {
+				fmt.Printf("Found method %s in class %v\n", selector.SymbolValue, class)
 				return method
 			}
 		}
@@ -332,6 +334,7 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 		// Move up the class hierarchy
 		class = class.SuperClass
 	}
+	fmt.Printf("Method %s not found for receiver %v\n", selector.SymbolValue, receiver)
 
 	// Method not found
 	return nil

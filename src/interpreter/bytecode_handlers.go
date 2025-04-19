@@ -107,12 +107,15 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 	// Pop the arguments from the stack
 	args := make([]*Object, argCount)
+	fmt.Printf("Popping %d arguments from stack\n", argCount)
 	for i := argCount - 1; i >= 0; i-- {
 		args[i] = context.Pop()
+		fmt.Printf("Argument %d: %v (class: %v)\n", i, args[i], args[i].Class)
 	}
 
 	// Pop the receiver
 	receiver := context.Pop()
+	fmt.Printf("Receiver: %v (class: %v)\n", receiver, receiver.Class)
 
 	// Handle primitive methods
 	if result := vm.executePrimitive(receiver, selector, args); result != nil {
