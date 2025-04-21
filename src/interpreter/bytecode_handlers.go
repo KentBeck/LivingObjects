@@ -262,31 +262,3 @@ func (vm *VM) ExecuteDuplicate(context *Context) error {
 	context.Push(value)
 	return nil
 }
-
-// ExecuteSetClass executes the SET_CLASS bytecode
-func (vm *VM) ExecuteSetClass(context *Context) error {
-	// Get the class index (4 bytes)
-	classIndex := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-	if classIndex < 0 || classIndex >= len(context.Method.Method.Literals) {
-		return fmt.Errorf("class index out of bounds: %d", classIndex)
-	}
-
-	// Get the class
-	class := context.Method.Method.Literals[classIndex]
-	if class.Type != OBJ_CLASS {
-		return fmt.Errorf("literal is not a class: %s", class)
-	}
-
-	// Get the top value on the stack
-	value := context.Pop()
-	if value == nil {
-		return fmt.Errorf("stack underflow")
-	}
-
-	// Set the class of the value
-	value.Class = class
-
-	// Push the value back onto the stack
-	context.Push(value)
-	return nil
-}

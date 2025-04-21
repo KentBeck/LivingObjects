@@ -16,7 +16,6 @@ const (
 	JUMP_IF_FALSE            byte = 10 // Jump if top of stack is false (followed by 4-byte target)
 	POP                      byte = 11 // Pop the top value from the stack
 	DUPLICATE                byte = 12 // Duplicate the top value on the stack
-	SET_CLASS                byte = 13 // Set the class of the top stack item (followed by 4-byte class index)
 )
 
 // InstructionSize returns the size of the instruction in bytes (including the opcode)
@@ -24,7 +23,7 @@ func InstructionSize(bytecode byte) int {
 	switch bytecode {
 	case PUSH_LITERAL, PUSH_INSTANCE_VARIABLE, PUSH_TEMPORARY_VARIABLE,
 		STORE_INSTANCE_VARIABLE, STORE_TEMPORARY_VARIABLE,
-		JUMP, JUMP_IF_TRUE, JUMP_IF_FALSE, SET_CLASS:
+		JUMP, JUMP_IF_TRUE, JUMP_IF_FALSE:
 		return 5 // 1 byte opcode + 4 byte operand
 	case SEND_MESSAGE:
 		return 9 // 1 byte opcode + 4 byte selector index + 4 byte arg count
@@ -64,8 +63,7 @@ func BytecodeName(bytecode byte) string {
 		return "POP"
 	case DUPLICATE:
 		return "DUPLICATE"
-	case SET_CLASS:
-		return "SET_CLASS"
+
 	default:
 		return "UNKNOWN"
 	}

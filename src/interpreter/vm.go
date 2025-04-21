@@ -32,6 +32,14 @@ func NewVM() *VM {
 	vm.ObjectClass = NewClass("Object", vm.NilObject)
 	vm.IntegerClass = vm.NewIntegerClass()
 
+	// Add basicClass method to Object class
+	objectMethodDict := vm.ObjectClass.GetMethodDict()
+	basicClassSelector := NewSymbol("basicClass")
+	basicClassMethod := NewMethod(basicClassSelector, vm.ObjectClass)
+	basicClassMethod.Method.IsPrimitive = true
+	basicClassMethod.Method.PrimitiveIndex = 5 // basicClass primitive
+	objectMethodDict.Entries[basicClassSelector.SymbolValue] = basicClassMethod
+
 	return vm
 }
 
@@ -252,9 +260,6 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 		case DUPLICATE:
 			err = vm.ExecuteDuplicate(context)
 
-		case SET_CLASS:
-			err = vm.ExecuteSetClass(context)
-
 		default:
 			return nil, fmt.Errorf("unknown bytecode: %d", bytecode)
 		}
@@ -300,6 +305,10 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 				result := receiver.IntegerValue - args[0].IntegerValue
 				return vm.NewInteger(result)
+			}
+		case 5: // basicClass - return the class of the receiver
+			if len(args) == 0 {
+				return receiver.Class
 			}
 		}
 	}
