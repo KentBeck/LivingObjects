@@ -99,7 +99,10 @@ func TestFactorial(t *testing.T) {
 
 	// JUMP past the false branch to the return
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, JUMP)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 30) // Jump to the return
+	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 35) // Jump to the return
+
+	// Add a debug message
+	fmt.Printf("Added JUMP with offset 35 at PC %d\n", len(factorialMethod.Method.Bytecodes)-5)
 
 	// False branch: [self * (self - 1) factorial]
 	// POP the boolean (we don't need it anymore)
@@ -139,6 +142,9 @@ func TestFactorial(t *testing.T) {
 
 	// Return the result
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
+
+	// Add a debug message
+	fmt.Printf("Added RETURN_STACK_TOP at PC %d\n", len(factorialMethod.Method.Bytecodes)-1)
 
 	// Test factorial of 1
 	t.Run("Factorial of 1", func(t *testing.T) {

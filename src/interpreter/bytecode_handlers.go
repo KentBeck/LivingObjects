@@ -190,10 +190,25 @@ func (vm *VM) ExecuteReturnStackTop(context *Context) (*Object, error) {
 // ExecuteJump executes the JUMP bytecode
 func (vm *VM) ExecuteJump(context *Context) (bool, error) {
 	// Get the jump offset (4 bytes)
+	if context.PC+1 >= len(context.Method.Method.Bytecodes) {
+		return false, fmt.Errorf("jump offset out of bounds")
+	}
 	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
 
-	// Calculate the new PC by adding the offset to the current PC plus the size of this instruction
+	// Debug output
+	fmt.Printf("JUMP - Offset: %v, PC: %v, Bytecode length: %v\n", offset, context.PC, len(context.Method.Method.Bytecodes))
+
+	// The offset is relative to the current instruction
+	// We need to add the size of the instruction to get past this instruction
 	newPC := context.PC + InstructionSize(JUMP) + offset
+
+	// Debug output
+	fmt.Printf("JUMP - New PC: %v\n", newPC)
+
+	// Check if the new PC is valid
+	if newPC < 0 || newPC >= len(context.Method.Method.Bytecodes) {
+		return false, fmt.Errorf("jump target out of bounds: %d", newPC)
+	}
 
 	// Set the PC to the new position
 	context.PC = newPC
@@ -205,15 +220,31 @@ func (vm *VM) ExecuteJump(context *Context) (bool, error) {
 // ExecuteJumpIfTrue executes the JUMP_IF_TRUE bytecode
 func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
 	// Get the jump offset (4 bytes)
+	if context.PC+1 >= len(context.Method.Method.Bytecodes) {
+		return false, fmt.Errorf("jump offset out of bounds")
+	}
 	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+
+	// Debug output
+	fmt.Printf("JUMP_IF_TRUE - Offset: %v, PC: %v, Bytecode length: %v\n", offset, context.PC, len(context.Method.Method.Bytecodes))
 
 	// Pop the condition from the stack
 	condition := context.Pop()
 
 	// If the condition is true, jump by the offset
-	if condition.IsTrue() {
-		// Calculate the new PC by adding the offset to the current PC plus the size of this instruction
+	isTrue := condition.IsTrue()
+	fmt.Printf("JUMP_IF_TRUE - IsTrue: %v\n", isTrue)
+	if isTrue {
+		// The offset is relative to the current instruction
+		// We need to add the size of the instruction to get past this instruction
 		newPC := context.PC + InstructionSize(JUMP_IF_TRUE) + offset
+		fmt.Printf("JUMP_IF_TRUE - New PC: %v\n", newPC)
+		// Check if the new PC is valid
+		if newPC < 0 || newPC >= len(context.Method.Method.Bytecodes) {
+			return false, fmt.Errorf("jump target out of bounds: %d", newPC)
+		}
+
+		// Set the PC to the new position
 		context.PC = newPC
 		return true, nil
 	}
@@ -224,7 +255,13 @@ func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
 // ExecuteJumpIfFalse executes the JUMP_IF_FALSE bytecode
 func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
 	// Get the jump offset (4 bytes)
+	if context.PC+1 >= len(context.Method.Method.Bytecodes) {
+		return false, fmt.Errorf("jump offset out of bounds")
+	}
 	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+
+	// Debug output
+	fmt.Printf("JUMP_IF_FALSE - Offset: %v, PC: %v, Bytecode length: %v\n", offset, context.PC, len(context.Method.Method.Bytecodes))
 
 	// Pop the condition from the stack
 	condition := context.Pop()
@@ -236,8 +273,16 @@ func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
 	isTrue := condition.IsTrue()
 	fmt.Printf("JUMP_IF_FALSE - IsTrue: %v\n", isTrue)
 	if !isTrue {
-		// Calculate the new PC by adding the offset to the current PC plus the size of this instruction
+		// The offset is relative to the current instruction
+		// We need to add the size of the instruction to get past this instruction
 		newPC := context.PC + InstructionSize(JUMP_IF_FALSE) + offset
+		fmt.Printf("JUMP_IF_FALSE - New PC: %v\n", newPC)
+		// Check if the new PC is valid
+		if newPC < 0 || newPC >= len(context.Method.Method.Bytecodes) {
+			return false, fmt.Errorf("jump target out of bounds: %d", newPC)
+		}
+
+		// Set the PC to the new position
 		context.PC = newPC
 		return true, nil
 	}

@@ -169,12 +169,23 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 	for {
 		// Check if we've reached the end of the method
 		if context.PC >= len(context.Method.Method.Bytecodes) {
+			// Debug output
+			fmt.Printf("Reached end of bytecode array at PC %d\n", context.PC)
+			fmt.Printf("Stack: %v\n", context.Stack[:context.StackPointer])
 
+			// If we've reached the end of the method, return the top of the stack
+			// This handles the case where we jump to the end of the bytecode array
+			if context.StackPointer > 0 {
+				returnValue := context.Pop()
+				fmt.Printf("Returning value from stack: %v\n", returnValue)
+				return returnValue, nil
+			}
 			return vm.NilObject, nil
 		}
 
 		// Get the current bytecode
 		bytecode := context.Method.Method.Bytecodes[context.PC]
+		fmt.Printf("Executing bytecode %s at PC %d\n", BytecodeName(bytecode), context.PC)
 
 		// Get the instruction size
 		size := InstructionSize(bytecode)
