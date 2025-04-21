@@ -15,8 +15,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		method := NewMethod(NewSymbol("test"), vm.ObjectClass)
 
 		// Create literals
-		twoObj := NewInteger(2)
-		threeObj := NewInteger(3)
+		twoObj := vm.NewIntegerWithClass(2, vm.IntegerClass)
+		threeObj := vm.NewIntegerWithClass(3, vm.IntegerClass)
 		plusSymbol := NewSymbol("+")
 
 		// Add literals to the method
@@ -90,8 +90,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		methodDict.Entries[factorialSelector.SymbolValue] = factorialMethod
 
 		// Create literals for the factorial method
-		oneObj := NewInteger(1)
-		oneObj.Class = integerClass
+		oneObj := vm.NewIntegerWithClass(1, integerClass)
 
 		// Add literals to the factorial method
 		factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, oneObj) // Index 0
@@ -109,8 +108,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		testMethod := NewMethod(NewSymbol("test"), objectClass)
 
 		// Create literals for the test method
-		fiveObj := NewInteger(5)
-		fiveObj.Class = integerClass
+		fiveObj := vm.NewIntegerWithClass(5, integerClass)
 
 		// Add literals to the test method
 		testMethod.Method.Literals = append(testMethod.Method.Literals, fiveObj)           // Index 0
@@ -168,7 +166,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		method := NewMethod(NewSymbol("test"), vm.ObjectClass)
 
 		// Create literals
-		receiver := NewInteger(2)
+		receiver := vm.NewIntegerWithClass(2, vm.IntegerClass)
 		unknownSelector := NewSymbol("unknown")
 
 		// Add literals to the method
@@ -261,7 +259,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		context := NewContext(method, vm.ObjectClass, []*Object{}, nil)
 
 		// Push a receiver onto the stack
-		context.Push(NewInteger(2))
+		context.Push(vm.NewIntegerWithClass(2, vm.IntegerClass))
 
 		// Execute the SEND_MESSAGE bytecode
 		context.PC = 0
@@ -278,8 +276,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		method := NewMethod(NewSymbol("test"), vm.ObjectClass)
 
 		// Create literals
-		receiver := NewInteger(2)
-		nonSymbolSelector := NewInteger(42)
+		receiver := vm.NewIntegerWithClass(2, vm.IntegerClass)
+		nonSymbolSelector := vm.NewIntegerWithClass(42, vm.IntegerClass)
 
 		// Add literals to the method
 		method.Method.Literals = append(method.Method.Literals, receiver)          // Index 0
@@ -327,9 +325,9 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		method := NewMethod(NewSymbol("test"), vm.ObjectClass)
 
 		// Create literals
-		twoObj := NewInteger(2)
-		threeObj := NewInteger(3)
-		fourObj := NewInteger(4)
+		twoObj := vm.NewIntegerWithClass(2, vm.IntegerClass)
+		threeObj := vm.NewIntegerWithClass(3, vm.IntegerClass)
+		fourObj := vm.NewIntegerWithClass(4, vm.IntegerClass)
 		plusSymbol := NewSymbol("+")
 
 		// Add literals to the method
