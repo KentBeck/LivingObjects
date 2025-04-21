@@ -103,9 +103,11 @@ func DemoFactorial() {
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
 	// For any other value, compute factorial recursively
-	// PUSH_SELF twice (once for subtraction, once for later multiplication)
+	// PUSH_SELF (for later use in multiplication)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
+
+	// DUPLICATE (to save a copy for later multiplication)
+	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, DUPLICATE)
 
 	// PUSH_LITERAL 0 (1)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_LITERAL)

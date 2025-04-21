@@ -11,10 +11,11 @@ type VM struct {
 	ObjectMemory   *ObjectMemory
 
 	// Special objects
-	NilObject   *Object
-	TrueObject  *Object
-	FalseObject *Object
-	ObjectClass *Object
+	NilObject    *Object
+	TrueObject   *Object
+	FalseObject  *Object
+	ObjectClass  *Object
+	IntegerClass *Object
 }
 
 // NewVM creates a new virtual machine
@@ -28,8 +29,19 @@ func NewVM() *VM {
 	vm.NilObject = NewNil()
 	vm.TrueObject = NewBoolean(true)
 	vm.FalseObject = NewBoolean(false)
+	vm.ObjectClass = NewClass("Object", vm.NilObject)
+	vm.IntegerClass = NewClass("Integer", vm.ObjectClass)
 
 	return vm
+}
+
+// NewIntegerWithClass creates a new integer object with a specified class
+func (vm *VM) NewIntegerWithClass(value int64, intClass *Object) *Object {
+	return &Object{
+		Type:         OBJ_INTEGER,
+		IntegerValue: value,
+		Class:        intClass,
+	}
 }
 
 // LoadImage loads a Smalltalk image from a file
@@ -228,16 +240,12 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		case 1: // Addition
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 				result := receiver.IntegerValue + args[0].IntegerValue
-				intObj := NewInteger(result)
-				intObj.Class = receiver.Class // Ensure the result has the same class
-				return intObj
+				return vm.NewIntegerWithClass(result, receiver.Class)
 			}
 		case 2: // Multiplication
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 				result := receiver.IntegerValue * args[0].IntegerValue
-				intObj := NewInteger(result)
-				intObj.Class = receiver.Class // Ensure the result has the same class
-				return intObj
+				return vm.NewIntegerWithClass(result, receiver.Class)
 			}
 		case 3: // Equality
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
@@ -247,9 +255,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		case 4: // Subtraction
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 				result := receiver.IntegerValue - args[0].IntegerValue
-				intObj := NewInteger(result)
-				intObj.Class = receiver.Class // Ensure the result has the same class
-				return intObj
+				return vm.NewIntegerWithClass(result, receiver.Class)
 			}
 		}
 	}
@@ -259,27 +265,19 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		switch selector.SymbolValue {
 		case "+":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				intObj := NewInteger(receiver.IntegerValue + args[0].IntegerValue)
-				intObj.Class = receiver.Class // Ensure the result has the same class
-				return intObj
+				return vm.NewIntegerWithClass(receiver.IntegerValue+args[0].IntegerValue, receiver.Class)
 			}
 		case "-":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				intObj := NewInteger(receiver.IntegerValue - args[0].IntegerValue)
-				intObj.Class = receiver.Class // Ensure the result has the same class
-				return intObj
+				return vm.NewIntegerWithClass(receiver.IntegerValue-args[0].IntegerValue, receiver.Class)
 			}
 		case "*":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				intObj := NewInteger(receiver.IntegerValue * args[0].IntegerValue)
-				intObj.Class = receiver.Class // Ensure the result has the same class
-				return intObj
+				return vm.NewIntegerWithClass(receiver.IntegerValue*args[0].IntegerValue, receiver.Class)
 			}
 		case "/":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER && args[0].IntegerValue != 0 {
-				intObj := NewInteger(receiver.IntegerValue / args[0].IntegerValue)
-				intObj.Class = receiver.Class // Ensure the result has the same class
-				return intObj
+				return vm.NewIntegerWithClass(receiver.IntegerValue/args[0].IntegerValue, receiver.Class)
 			}
 		case "=":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
