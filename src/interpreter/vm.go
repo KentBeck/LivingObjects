@@ -71,11 +71,8 @@ func (vm *VM) NewIntegerClass() *Object {
 }
 
 // NewIntegerWithClass creates a new integer object with the specified class or VM's IntegerClass
-func (vm *VM) NewIntegerWithClass(value int64, class ...*Object) *Object {
+func (vm *VM) NewIntegerWithClass(value int64) *Object {
 	intClass := vm.IntegerClass
-	if len(class) > 0 && class[0] != nil {
-		intClass = class[0]
-	}
 	return &Object{
 		Type:         OBJ_INTEGER,
 		IntegerValue: value,
@@ -279,12 +276,12 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		case 1: // Addition
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 				result := receiver.IntegerValue + args[0].IntegerValue
-				return vm.NewIntegerWithClass(result, receiver.Class)
+				return vm.NewIntegerWithClass(result)
 			}
 		case 2: // Multiplication
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 				result := receiver.IntegerValue * args[0].IntegerValue
-				return vm.NewIntegerWithClass(result, receiver.Class)
+				return vm.NewIntegerWithClass(result)
 			}
 		case 3: // Equality
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
@@ -294,7 +291,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		case 4: // Subtraction
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 				result := receiver.IntegerValue - args[0].IntegerValue
-				return vm.NewIntegerWithClass(result, receiver.Class)
+				return vm.NewIntegerWithClass(result)
 			}
 		}
 	}
@@ -304,19 +301,19 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		switch selector.SymbolValue {
 		case "+":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return vm.NewIntegerWithClass(receiver.IntegerValue+args[0].IntegerValue, receiver.Class)
+				return vm.NewIntegerWithClass(receiver.IntegerValue + args[0].IntegerValue)
 			}
 		case "-":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return vm.NewIntegerWithClass(receiver.IntegerValue-args[0].IntegerValue, receiver.Class)
+				return vm.NewIntegerWithClass(receiver.IntegerValue - args[0].IntegerValue)
 			}
 		case "*":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return vm.NewIntegerWithClass(receiver.IntegerValue*args[0].IntegerValue, receiver.Class)
+				return vm.NewIntegerWithClass(receiver.IntegerValue * args[0].IntegerValue)
 			}
 		case "/":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER && args[0].IntegerValue != 0 {
-				return vm.NewIntegerWithClass(receiver.IntegerValue/args[0].IntegerValue, receiver.Class)
+				return vm.NewIntegerWithClass(receiver.IntegerValue / args[0].IntegerValue)
 			}
 		case "=":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
