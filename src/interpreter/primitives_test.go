@@ -13,22 +13,11 @@ func testSubtractionPrimitive(t *testing.T) {
 	// Create a VM
 	vm := NewVM()
 
-	// Create the Integer class
-	integerClass := NewClass("Integer", vm.ObjectClass)
-
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
-
-	// Create the subtraction method
 	minusSelector := NewSymbol("-")
-	minusMethod := NewMethod(minusSelector, integerClass)
-	minusMethod.Method.IsPrimitive = true
-	minusMethod.Method.PrimitiveIndex = 4 // Subtraction
-	integerMethodDict.Entries[minusSelector.SymbolValue] = minusMethod
 
 	// Create two integer objects
-	five := vm.NewIntegerWithClass(5, integerClass)
-	two := vm.NewIntegerWithClass(2, integerClass)
+	five := vm.NewIntegerWithClass(5)
+	two := vm.NewIntegerWithClass(2)
 
 	// Execute the primitive
 	result := vm.executePrimitive(five, minusSelector, []*Object{two})
@@ -49,7 +38,7 @@ func testSubtractionPrimitive(t *testing.T) {
 	}
 
 	// Check that the class of the result is set correctly
-	if result.Class != integerClass {
+	if result.Class != vm.IntegerClass {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class)
 	}
 }
@@ -58,22 +47,11 @@ func testMultiplicationPrimitive(t *testing.T) {
 	// Create a VM
 	vm := NewVM()
 
-	// Create the Integer class
-	integerClass := NewClass("Integer", vm.ObjectClass)
-
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
-
-	// Create the multiplication method
 	timesSelector := NewSymbol("*")
-	timesMethod := NewMethod(timesSelector, integerClass)
-	timesMethod.Method.IsPrimitive = true
-	timesMethod.Method.PrimitiveIndex = 2 // Multiplication
-	integerMethodDict.Entries[timesSelector.SymbolValue] = timesMethod
 
 	// Create two integer objects
-	five := vm.NewIntegerWithClass(5, integerClass)
-	two := vm.NewIntegerWithClass(2, integerClass)
+	five := vm.NewIntegerWithClass(5)
+	two := vm.NewIntegerWithClass(2)
 
 	// Execute the primitive
 	result := vm.executePrimitive(five, timesSelector, []*Object{two})
@@ -94,7 +72,7 @@ func testMultiplicationPrimitive(t *testing.T) {
 	}
 
 	// Check that the class of the result is set correctly
-	if result.Class != integerClass {
+	if result.Class != vm.IntegerClass {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class)
 	}
 }

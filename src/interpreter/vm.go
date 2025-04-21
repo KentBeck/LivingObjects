@@ -30,13 +30,52 @@ func NewVM() *VM {
 	vm.TrueObject = NewBoolean(true)
 	vm.FalseObject = NewBoolean(false)
 	vm.ObjectClass = NewClass("Object", vm.NilObject)
-	vm.IntegerClass = NewClass("Integer", vm.ObjectClass)
+	vm.IntegerClass = vm.NewIntegerClass()
 
 	return vm
 }
 
-// NewIntegerWithClass creates a new integer object with a specified class
-func (vm *VM) NewIntegerWithClass(value int64, intClass *Object) *Object {
+func (vm *VM) NewIntegerClass() *Object {
+	result := NewClass("Integer", vm.ObjectClass)
+	// Add primitive methods to the Integer class
+	// + method
+	plusSelector := NewSymbol("+")
+	plusMethod := NewMethod(plusSelector, result)
+	plusMethod.Method.IsPrimitive = true
+	plusMethod.Method.PrimitiveIndex = 1 // Addition
+	integerMethodDict := result.GetMethodDict()
+	integerMethodDict.Entries[plusSelector.SymbolValue] = plusMethod
+
+	// - method (subtraction)
+	minusSelector := NewSymbol("-")
+	minusMethod := NewMethod(minusSelector, result)
+	minusMethod.Method.IsPrimitive = true
+	minusMethod.Method.PrimitiveIndex = 4 // Subtraction (new primitive)
+	integerMethodDict.Entries[minusSelector.SymbolValue] = minusMethod
+
+	// * method
+	timesSelector := NewSymbol("*")
+	timesMethod := NewMethod(timesSelector, result)
+	timesMethod.Method.IsPrimitive = true
+	timesMethod.Method.PrimitiveIndex = 2 // Multiplication
+	integerMethodDict.Entries[timesSelector.SymbolValue] = timesMethod
+
+	// = method
+	equalsSelector := NewSymbol("=")
+	equalsMethod := NewMethod(equalsSelector, result)
+	equalsMethod.Method.IsPrimitive = true
+	equalsMethod.Method.PrimitiveIndex = 3 // Equality
+	integerMethodDict.Entries[equalsSelector.SymbolValue] = equalsMethod
+
+	return result
+}
+
+// NewIntegerWithClass creates a new integer object with the specified class or VM's IntegerClass
+func (vm *VM) NewIntegerWithClass(value int64, class ...*Object) *Object {
+	intClass := vm.IntegerClass
+	if len(class) > 0 && class[0] != nil {
+		intClass = class[0]
+	}
 	return &Object{
 		Type:         OBJ_INTEGER,
 		IntegerValue: value,
@@ -56,8 +95,8 @@ func (vm *VM) LoadImage(path string) error {
 	// The method dictionary is already created in NewClass at index 0
 
 	// Create a simple test method: 2 + 3
-	twoObj := vm.NewIntegerWithClass(2, vm.IntegerClass)
-	threeObj := vm.NewIntegerWithClass(3, vm.IntegerClass)
+	twoObj := vm.NewIntegerWithClass(2)
+	threeObj := vm.NewIntegerWithClass(3)
 	plusSymbol := NewSymbol("+")
 
 	// Create a method that adds 2 and 3
@@ -174,7 +213,7 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 					continue
 				} else {
 					// A nil return value with no error means we've started a new context
-					return nil, nil
+					return vm.NilObject, nil
 				}
 			}
 

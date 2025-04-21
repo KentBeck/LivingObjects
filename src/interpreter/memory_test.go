@@ -42,7 +42,7 @@ func TestAllocate(t *testing.T) {
 	vm := NewVM()
 
 	// Allocate some objects
-	obj1 := vm.NewIntegerWithClass(42, vm.IntegerClass)
+	obj1 := vm.NewIntegerWithClass(42)
 	obj2 := NewBoolean(true)
 	obj3 := NewString("hello")
 
@@ -123,7 +123,7 @@ func TestCollect(t *testing.T) {
 	vm := NewVM()
 
 	// Create some objects
-	intObj := vm.NewIntegerWithClass(42, vm.IntegerClass)
+	intObj := vm.NewIntegerWithClass(42)
 	boolObj := NewBoolean(true)
 	strObj := NewString("hello")
 
@@ -142,7 +142,7 @@ func TestCollect(t *testing.T) {
 	vm.Globals["root"] = rootObj
 
 	// Create an unreachable object and keep a reference to verify it's collected
-	unreachableObj := vm.NewIntegerWithClass(99, vm.IntegerClass)
+	unreachableObj := vm.NewIntegerWithClass(99)
 	om.Allocate(unreachableObj)
 
 	// Mark the unreachable object so we can identify it later
@@ -257,8 +257,8 @@ func TestCollectWithContexts(t *testing.T) {
 
 	// Create some objects for the context
 	receiverObj := NewInstance(vm.ObjectClass)
-	arg1 := vm.NewIntegerWithClass(1, vm.IntegerClass)
-	arg2 := vm.NewIntegerWithClass(2, vm.IntegerClass)
+	arg1 := vm.NewIntegerWithClass(1)
+	arg2 := vm.NewIntegerWithClass(2)
 
 	// Create a context
 	context := NewContext(methodObj, receiverObj, []*Object{arg1, arg2}, nil)
@@ -270,7 +270,7 @@ func TestCollectWithContexts(t *testing.T) {
 	context.Push(stackObj2)
 
 	// Set a temporary variable
-	tempObj := vm.NewIntegerWithClass(42, vm.IntegerClass)
+	tempObj := vm.NewIntegerWithClass(42)
 	context.SetTempVarByIndex(0, tempObj)
 
 	// Set the context as the VM's current context
@@ -286,7 +286,7 @@ func TestCollectWithContexts(t *testing.T) {
 	om.Allocate(tempObj)
 
 	// Create an unreachable object and mark it
-	unreachableObj := vm.NewIntegerWithClass(99, vm.IntegerClass)
+	unreachableObj := vm.NewIntegerWithClass(99)
 	om.Allocate(unreachableObj)
 	unreachableObj.Moved = true // This flag should be reset during collection
 
@@ -557,7 +557,7 @@ func TestGrowSpaces(t *testing.T) {
 
 	// Fill the from-space with objects
 	for i := 0; i < 9; i++ {
-		om.FromSpace[i] = vm.NewIntegerWithClass(int64(i), vm.IntegerClass)
+		om.FromSpace[i] = vm.NewIntegerWithClass(int64(i))
 	}
 	om.AllocPtr = 9
 
@@ -637,8 +637,8 @@ func TestCollectEdgeCases(t *testing.T) {
 		vm := NewVM()
 
 		// Allocate some objects with nil slots in between
-		obj1 := vm.NewIntegerWithClass(1, vm.IntegerClass)
-		obj2 := vm.NewIntegerWithClass(2, vm.IntegerClass)
+		obj1 := vm.NewIntegerWithClass(1)
+		obj2 := vm.NewIntegerWithClass(2)
 
 		om.Allocate(obj1)
 		om.FromSpace[1] = nil // Create a nil slot
@@ -703,7 +703,7 @@ func TestCollectEdgeCases(t *testing.T) {
 
 		// Allocate many objects
 		for i := 0; i < 15; i++ {
-			obj := vm.NewIntegerWithClass(int64(i), vm.IntegerClass)
+			obj := vm.NewIntegerWithClass(int64(i))
 			om.Allocate(obj)
 			vm.Globals[string(rune('a'+i))] = obj // Add to globals to make them reachable
 		}
@@ -739,7 +739,7 @@ func TestCopyObject(t *testing.T) {
 	vm := NewVM()
 
 	// Create an object to copy
-	obj := vm.NewIntegerWithClass(42, vm.IntegerClass)
+	obj := vm.NewIntegerWithClass(42)
 
 	// Copy the object
 	toPtr := 0
@@ -791,8 +791,8 @@ func TestUpdateReferences(t *testing.T) {
 		class := NewClass("TestClass", nil)
 		instance := NewInstance(class)
 		instance.InstanceVars = make([]*Object, 2)
-		instance.InstanceVars[METHOD_DICTIONARY_IV] = vm.NewIntegerWithClass(1, vm.IntegerClass)
-		instance.InstanceVars[1] = vm.NewIntegerWithClass(2, vm.IntegerClass)
+		instance.InstanceVars[METHOD_DICTIONARY_IV] = vm.NewIntegerWithClass(1)
+		instance.InstanceVars[1] = vm.NewIntegerWithClass(2)
 
 		// Update references
 		toPtr := 0
@@ -825,8 +825,8 @@ func TestUpdateReferences(t *testing.T) {
 
 		// Create an array with elements
 		array := NewArray(2)
-		array.Elements[0] = vm.NewIntegerWithClass(1, vm.IntegerClass)
-		array.Elements[1] = vm.NewIntegerWithClass(2, vm.IntegerClass)
+		array.Elements[0] = vm.NewIntegerWithClass(1)
+		array.Elements[1] = vm.NewIntegerWithClass(2)
 
 		// Update references
 		toPtr := 0
@@ -854,8 +854,8 @@ func TestUpdateReferences(t *testing.T) {
 
 		// Create a dictionary with entries
 		dict := NewDictionary()
-		dict.Entries["key1"] = vm.NewIntegerWithClass(1, vm.IntegerClass)
-		dict.Entries["key2"] = vm.NewIntegerWithClass(2, vm.IntegerClass)
+		dict.Entries["key1"] = vm.NewIntegerWithClass(1)
+		dict.Entries["key2"] = vm.NewIntegerWithClass(2)
 
 		// Update references
 		toPtr := 0
@@ -883,8 +883,8 @@ func TestUpdateReferences(t *testing.T) {
 
 		// Create a method with literals and selector
 		method := NewMethod(NewSymbol("test"), NewClass("TestClass", nil))
-		method.Method.Literals = append(method.Method.Literals, vm.NewIntegerWithClass(1, vm.IntegerClass))
-		method.Method.Literals = append(method.Method.Literals, vm.NewIntegerWithClass(2, vm.IntegerClass))
+		method.Method.Literals = append(method.Method.Literals, vm.NewIntegerWithClass(1))
+		method.Method.Literals = append(method.Method.Literals, vm.NewIntegerWithClass(2))
 
 		// Update references
 		toPtr := 0

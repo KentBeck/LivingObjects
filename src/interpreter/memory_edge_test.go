@@ -15,7 +15,7 @@ func TestAllocateWithGCNeeded(t *testing.T) {
 	vm := NewVM()
 
 	// Allocate an object
-	obj := vm.NewIntegerWithClass(42, vm.IntegerClass)
+	obj := vm.NewIntegerWithClass(42)
 	result := om.Allocate(obj)
 
 	// Check that the object is returned as-is
@@ -254,7 +254,7 @@ func TestCollectWithNilInToSpace(t *testing.T) {
 	vm := NewVM()
 
 	// Create and allocate an object
-	obj := vm.NewIntegerWithClass(42, vm.IntegerClass)
+	obj := vm.NewIntegerWithClass(42)
 	om.Allocate(obj)
 
 	// Add the object to globals to make it reachable

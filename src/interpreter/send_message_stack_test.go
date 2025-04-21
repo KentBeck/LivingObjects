@@ -8,11 +8,8 @@ func TestSendMessageStackManagement(t *testing.T) {
 	// Create a VM
 	vm := NewVM()
 
-	// Create the Object class
-	objectClass := vm.ObjectClass
-
-	// Create the Integer class
-	integerClass := NewClass("Integer", objectClass)
+	// We'll use the VM's Object and Integer classes
+	integerClass := vm.IntegerClass
 
 	// Create the method dictionary for the Integer class
 	integerMethodDict := integerClass.GetMethodDict()
@@ -25,7 +22,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	integerMethodDict.Entries[returnValueSelector.SymbolValue] = returnValueMethod
 
 	// Create a literal for the method
-	valueObj := vm.NewIntegerWithClass(42, integerClass)
+	valueObj := vm.NewIntegerWithClass(42)
 
 	// Add the literal to the method
 	returnValueMethod.Method.Literals = append(returnValueMethod.Method.Literals, valueObj) // Literal 0: 42
@@ -46,7 +43,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	integerMethodDict.Entries[callerSelector.SymbolValue] = callerMethod
 
 	// Create literals for the caller method
-	receiverObj := vm.NewIntegerWithClass(10, integerClass)
+	receiverObj := vm.NewIntegerWithClass(10)
 
 	// Add literals to the caller method
 	callerMethod.Method.Literals = append(callerMethod.Method.Literals, receiverObj)         // Literal 0: 10
@@ -77,7 +74,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	callerMethod.Method.Bytecodes = append(callerMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
 	// Create a receiver for the caller method
-	receiver := vm.NewIntegerWithClass(5, integerClass)
+	receiver := vm.NewIntegerWithClass(5)
 
 	// Create a context for the caller method
 	context := NewContext(callerMethod, receiver, []*Object{}, nil)
@@ -104,11 +101,8 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	// Create a VM
 	vm := NewVM()
 
-	// Create the Object class
-	objectClass := vm.ObjectClass
-
-	// Create the Integer class
-	integerClass := NewClass("Integer", objectClass)
+	// We'll use the VM's Object and Integer classes
+	integerClass := vm.IntegerClass
 
 	// Create the method dictionary for the Integer class
 	integerMethodDict := integerClass.GetMethodDict()
@@ -121,7 +115,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	integerMethodDict.Entries[returnValueSelector.SymbolValue] = returnValueMethod
 
 	// Create a literal for the method
-	valueObj := vm.NewIntegerWithClass(42, integerClass)
+	valueObj := vm.NewIntegerWithClass(42)
 
 	// Add the literal to the method
 	returnValueMethod.Method.Literals = append(returnValueMethod.Method.Literals, valueObj) // Literal 0: 42
@@ -177,7 +171,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	multiplyMethod.Method.Bytecodes = append(multiplyMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
 	// Create a receiver for the multiply method
-	multiplyReceiver := vm.NewIntegerWithClass(5, integerClass)
+	multiplyReceiver := vm.NewIntegerWithClass(5)
 
 	// Create a context for the multiply method
 	multiplyContext := NewContext(multiplyMethod, multiplyReceiver, []*Object{}, nil)

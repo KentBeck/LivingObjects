@@ -10,7 +10,7 @@ func TestExecutePushLiteral(t *testing.T) {
 
 	// Create a method with literals
 	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
-	methodObj.Method.Literals = append(methodObj.Method.Literals, vm.NewIntegerWithClass(42, vm.IntegerClass))
+	methodObj.Method.Literals = append(methodObj.Method.Literals, vm.NewIntegerWithClass(42))
 	methodObj.Method.Bytecodes = []byte{
 		PUSH_LITERAL,
 		0, 0, 0, 0, // Index 0
@@ -79,7 +79,7 @@ func TestExecutePop(t *testing.T) {
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
 	// Push a value onto the stack
-	context.Push(vm.NewIntegerWithClass(42, vm.IntegerClass))
+	context.Push(vm.NewIntegerWithClass(42))
 
 	// Execute the bytecode
 	err := vm.ExecutePop(context)
@@ -104,7 +104,7 @@ func TestExecuteDuplicate(t *testing.T) {
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
 	// Push a value onto the stack
-	context.Push(vm.NewIntegerWithClass(42, vm.IntegerClass))
+	context.Push(vm.NewIntegerWithClass(42))
 
 	// Execute the bytecode
 	err := vm.ExecuteDuplicate(context)
@@ -134,9 +134,9 @@ func TestExecuteSendMessage(t *testing.T) {
 
 	// Create a method with literals
 	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
-	methodObj.Method.Literals = append(methodObj.Method.Literals, vm.NewIntegerWithClass(2, vm.IntegerClass)) // Literal 0
-	methodObj.Method.Literals = append(methodObj.Method.Literals, vm.NewIntegerWithClass(3, vm.IntegerClass)) // Literal 1
-	methodObj.Method.Literals = append(methodObj.Method.Literals, NewSymbol("+"))                             // Literal 2
+	methodObj.Method.Literals = append(methodObj.Method.Literals, vm.NewIntegerWithClass(2)) // Literal 0
+	methodObj.Method.Literals = append(methodObj.Method.Literals, vm.NewIntegerWithClass(3)) // Literal 1
+	methodObj.Method.Literals = append(methodObj.Method.Literals, NewSymbol("+"))            // Literal 2
 	methodObj.Method.Bytecodes = []byte{
 		PUSH_LITERAL, 0, 0, 0, 0, // Push 2
 		PUSH_LITERAL, 0, 0, 0, 1, // Push 3
@@ -150,8 +150,8 @@ func TestExecuteSendMessage(t *testing.T) {
 	context.PC = 10 // After the two PUSH_LITERAL instructions
 
 	// Push the receiver and argument onto the stack
-	context.Push(vm.NewIntegerWithClass(2, vm.IntegerClass)) // Receiver
-	context.Push(vm.NewIntegerWithClass(3, vm.IntegerClass)) // Argument
+	context.Push(vm.NewIntegerWithClass(2)) // Receiver
+	context.Push(vm.NewIntegerWithClass(3)) // Argument
 
 	// Execute the bytecode
 	result, err := vm.ExecuteSendMessage(context)
@@ -177,7 +177,7 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 
 	// Create an instance with a value for the instance variable
 	instance := NewInstance(class)
-	instance.SetInstanceVarByIndex(0, vm.NewIntegerWithClass(42, vm.IntegerClass))
+	instance.SetInstanceVarByIndex(0, vm.NewIntegerWithClass(42))
 
 	// Create a method
 	methodObj := NewMethod(NewSymbol("test"), class)
@@ -221,7 +221,7 @@ func TestExecutePushTemporaryVariable(t *testing.T) {
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
 	// Set the temporary variable
-	context.SetTempVar("temp", vm.NewIntegerWithClass(42, vm.IntegerClass))
+	context.SetTempVar("temp", vm.NewIntegerWithClass(42))
 
 	// Execute the bytecode
 	err := vm.ExecutePushTemporaryVariable(context)
@@ -262,7 +262,7 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 	context := NewContext(methodObj, instance, []*Object{}, nil)
 
 	// Push a value onto the stack
-	context.Push(vm.NewIntegerWithClass(42, vm.IntegerClass))
+	context.Push(vm.NewIntegerWithClass(42))
 
 	// Execute the bytecode
 	err := vm.ExecuteStoreInstanceVariable(context)
@@ -303,7 +303,7 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
 	// Push a value onto the stack
-	context.Push(vm.NewIntegerWithClass(42, vm.IntegerClass))
+	context.Push(vm.NewIntegerWithClass(42))
 
 	// Execute the bytecode
 	err := vm.ExecuteStoreTemporaryVariable(context)
@@ -340,7 +340,7 @@ func TestExecuteReturnStackTop(t *testing.T) {
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
 	// Push a value onto the stack
-	context.Push(vm.NewIntegerWithClass(42, vm.IntegerClass))
+	context.Push(vm.NewIntegerWithClass(42))
 
 	// Execute the bytecode
 	result, err := vm.ExecuteReturnStackTop(context)

@@ -13,7 +13,7 @@ func TestDuplicate(t *testing.T) {
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
 	// Create a test object
-	testObj := vm.NewIntegerWithClass(42, vm.IntegerClass)
+	testObj := vm.NewIntegerWithClass(42)
 
 	// Push the test object onto the stack
 	context.Push(testObj)

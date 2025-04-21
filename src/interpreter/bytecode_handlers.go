@@ -115,17 +115,21 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 	// Pop the receiver
 	receiver := context.Pop()
-	fmt.Printf("Receiver: %v (class: %v)\n", receiver, receiver.Class)
-
-	// Handle primitive methods
-	if result := vm.executePrimitive(receiver, selector, args); result != nil {
-		context.Push(result)
-		return result, nil
+	if receiver != nil {
+		fmt.Printf("Receiver: %v (class: %v)\n", receiver, receiver.Class)
+	} else {
+		fmt.Printf("Receiver: nil\n")
 	}
 
 	// Check for nil receiver
 	if receiver == nil {
 		return nil, fmt.Errorf("nil receiver for message: %s", selector.SymbolValue)
+	}
+
+	// Handle primitive methods
+	if result := vm.executePrimitive(receiver, selector, args); result != nil {
+		context.Push(result)
+		return result, nil
 	}
 	method := vm.lookupMethod(receiver, selector)
 	if method == nil {
@@ -144,6 +148,14 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Check for nil result
+	if result == nil {
+		return nil, fmt.Errorf("method not found: %s", selector.SymbolValue)
+	}
+
+	// Add debug output
+	fmt.Printf("Result of method call: %v\n", result)
 
 	// Move back to the sender context
 	vm.CurrentContext = context
