@@ -56,8 +56,8 @@ func (vm *VM) LoadImage(path string) error {
 	// The method dictionary is already created in NewClass at index 0
 
 	// Create a simple test method: 2 + 3
-	twoObj := NewInteger(2)
-	threeObj := NewInteger(3)
+	twoObj := vm.NewIntegerWithClass(2, vm.IntegerClass)
+	threeObj := vm.NewIntegerWithClass(3, vm.IntegerClass)
 	plusSymbol := NewSymbol("+")
 
 	// Create a method that adds 2 and 3

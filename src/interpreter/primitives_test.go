@@ -27,11 +27,8 @@ func testSubtractionPrimitive(t *testing.T) {
 	integerMethodDict.Entries[minusSelector.SymbolValue] = minusMethod
 
 	// Create two integer objects
-	five := NewInteger(5)
-	five.Class = integerClass
-
-	two := NewInteger(2)
-	two.Class = integerClass
+	five := vm.NewIntegerWithClass(5, integerClass)
+	two := vm.NewIntegerWithClass(2, integerClass)
 
 	// Execute the primitive
 	result := vm.executePrimitive(five, minusSelector, []*Object{two})
@@ -75,11 +72,8 @@ func testMultiplicationPrimitive(t *testing.T) {
 	integerMethodDict.Entries[timesSelector.SymbolValue] = timesMethod
 
 	// Create two integer objects
-	five := NewInteger(5)
-	five.Class = integerClass
-
-	two := NewInteger(2)
-	two.Class = integerClass
+	five := vm.NewIntegerWithClass(5, integerClass)
+	two := vm.NewIntegerWithClass(2, integerClass)
 
 	// Execute the primitive
 	result := vm.executePrimitive(five, timesSelector, []*Object{two})
