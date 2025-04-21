@@ -5,10 +5,8 @@ import (
 )
 
 func TestExecutePushLiteral(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
-	// Create a method with literals
 	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
 	methodObj.Method.Literals = append(methodObj.Method.Literals, vm.NewInteger(42))
 	methodObj.Method.Bytecodes = []byte{
@@ -16,21 +14,17 @@ func TestExecutePushLiteral(t *testing.T) {
 		0, 0, 0, 0, // Index 0
 	}
 
-	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
-	// Execute the bytecode
 	err := vm.ExecutePushLiteral(context)
 	if err != nil {
 		t.Errorf("ExecutePushLiteral returned an error: %v", err)
 	}
 
-	// Check the stack
 	if context.StackPointer != 1 {
 		t.Errorf("Expected stack pointer to be 1, got %d", context.StackPointer)
 	}
 
-	// Check the value on the stack
 	value := context.Pop()
 	if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
 		t.Errorf("Expected 42 on the stack, got %v", value)
@@ -38,30 +32,24 @@ func TestExecutePushLiteral(t *testing.T) {
 }
 
 func TestExecutePushSelf(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create a method
 	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
 
-	// Create a receiver
 	receiver := NewInstance(vm.ObjectClass)
 
-	// Create a context
 	context := NewContext(methodObj, receiver, []*Object{}, nil)
 
-	// Execute the bytecode
 	err := vm.ExecutePushSelf(context)
 	if err != nil {
 		t.Errorf("ExecutePushSelf returned an error: %v", err)
 	}
 
-	// Check the stack
 	if context.StackPointer != 1 {
 		t.Errorf("Expected stack pointer to be 1, got %d", context.StackPointer)
 	}
 
-	// Check the value on the stack
 	value := context.Pop()
 	if value != receiver {
 		t.Errorf("Expected receiver on the stack, got %v", value)
@@ -69,55 +57,42 @@ func TestExecutePushSelf(t *testing.T) {
 }
 
 func TestExecutePop(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
-	// Create a method
 	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
 
-	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
-	// Push a value onto the stack
 	context.Push(vm.NewInteger(42))
 
-	// Execute the bytecode
 	err := vm.ExecutePop(context)
 	if err != nil {
 		t.Errorf("ExecutePop returned an error: %v", err)
 	}
 
-	// Check the stack
 	if context.StackPointer != 0 {
 		t.Errorf("Expected stack pointer to be 0, got %d", context.StackPointer)
 	}
 }
 
 func TestExecuteDuplicate(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
-	// Create a method
 	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
 
-	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
-	// Push a value onto the stack
 	context.Push(vm.NewInteger(42))
 
-	// Execute the bytecode
 	err := vm.ExecuteDuplicate(context)
 	if err != nil {
 		t.Errorf("ExecuteDuplicate returned an error: %v", err)
 	}
 
-	// Check the stack
 	if context.StackPointer != 2 {
 		t.Errorf("Expected stack pointer to be 2, got %d", context.StackPointer)
 	}
 
-	// Check the values on the stack
 	value1 := context.Pop()
 	value2 := context.Pop()
 	if value1.Type != OBJ_INTEGER || value1.IntegerValue != 42 {
@@ -129,10 +104,8 @@ func TestExecuteDuplicate(t *testing.T) {
 }
 
 func TestExecuteSendMessage(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
-	// Create a method with literals
 	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
 	methodObj.Method.Literals = append(methodObj.Method.Literals, vm.NewInteger(2)) // Literal 0
 	methodObj.Method.Literals = append(methodObj.Method.Literals, vm.NewInteger(3)) // Literal 1
@@ -143,23 +116,18 @@ func TestExecuteSendMessage(t *testing.T) {
 		SEND_MESSAGE, 0, 0, 0, 2, 0, 0, 0, 1, // Send + with 1 arg
 	}
 
-	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
-	// Set up the context's PC to point to the SEND_MESSAGE bytecode
 	context.PC = 10 // After the two PUSH_LITERAL instructions
 
-	// Push the receiver and argument onto the stack
 	context.Push(vm.NewInteger(2)) // Receiver
 	context.Push(vm.NewInteger(3)) // Argument
 
-	// Execute the bytecode
 	result, err := vm.ExecuteSendMessage(context)
 	if err != nil {
 		t.Errorf("ExecuteSendMessage returned an error: %v", err)
 	}
 
-	// Check the result
 	if result == nil {
 		t.Errorf("Expected a result, got nil")
 	} else if result.Type != OBJ_INTEGER || result.IntegerValue != 5 {
@@ -168,7 +136,6 @@ func TestExecuteSendMessage(t *testing.T) {
 }
 
 func TestExecutePushInstanceVariable(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create a class with an instance variable
@@ -207,7 +174,6 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 }
 
 func TestExecutePushTemporaryVariable(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create a method with a temporary variable
@@ -242,7 +208,6 @@ func TestExecutePushTemporaryVariable(t *testing.T) {
 }
 
 func TestExecuteStoreInstanceVariable(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create a class with an instance variable
@@ -289,7 +254,6 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 }
 
 func TestExecuteStoreTemporaryVariable(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create a method with a temporary variable
@@ -330,7 +294,6 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 }
 
 func TestExecuteReturnStackTop(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create a method
@@ -360,7 +323,6 @@ func TestExecuteReturnStackTop(t *testing.T) {
 }
 
 func TestExecuteJump(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create a method with enough bytecode for the jump to be valid
@@ -395,7 +357,6 @@ func TestExecuteJump(t *testing.T) {
 }
 
 func TestExecuteJumpIfTrue(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create a method with enough bytecode for the jump to be valid
@@ -461,7 +422,6 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 }
 
 func TestExecuteJumpIfFalse(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create a method with enough bytecode for the jump to be valid
@@ -528,7 +488,6 @@ func TestExecuteJumpIfFalse(t *testing.T) {
 
 // TestComplexJumpScenario tests a more complex scenario with multiple jumps
 func TestComplexJumpScenario(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create a method that simulates a simple if-else-if structure
