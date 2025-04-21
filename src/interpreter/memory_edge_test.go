@@ -11,8 +11,11 @@ func TestAllocateWithGCNeeded(t *testing.T) {
 	// Set the allocation pointer to the GC threshold
 	om.AllocPtr = om.GCThreshold
 
+	// Create a VM for the integer class
+	vm := NewVM()
+
 	// Allocate an object
-	obj := NewInteger(42)
+	obj := vm.NewIntegerWithClass(42, vm.IntegerClass)
 	result := om.Allocate(obj)
 
 	// Check that the object is returned as-is
@@ -251,7 +254,7 @@ func TestCollectWithNilInToSpace(t *testing.T) {
 	vm := NewVM()
 
 	// Create and allocate an object
-	obj := NewInteger(42)
+	obj := vm.NewIntegerWithClass(42, vm.IntegerClass)
 	om.Allocate(obj)
 
 	// Add the object to globals to make it reachable

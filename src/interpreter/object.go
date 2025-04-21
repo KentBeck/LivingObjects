@@ -55,14 +55,6 @@ type Method struct {
 	PrimitiveIndex int
 }
 
-// NewInteger creates a new integer object
-func NewInteger(value int64) *Object {
-	return &Object{
-		Type:         OBJ_INTEGER,
-		IntegerValue: value,
-	}
-}
-
 // NewBoolean creates a new boolean object
 func NewBoolean(value bool) *Object {
 	return &Object{
