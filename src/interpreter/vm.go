@@ -261,7 +261,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 	}
 
 	// If not a primitive method, handle built-in operations
-	if receiver.Type == OBJ_INTEGER && selector != nil {
+	if receiver.Type == OBJ_INTEGER {
 		switch selector.SymbolValue {
 		case "+":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
