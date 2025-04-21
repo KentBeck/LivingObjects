@@ -15,8 +15,6 @@ func (vm *VM) ExecutePushLiteral(context *Context) error {
 
 	// Push the literal onto the stack
 	literal := context.Method.Method.Literals[index]
-	fmt.Printf("PUSH_LITERAL: %v\n", literal)
-
 	context.Push(literal)
 	return nil
 }
@@ -48,7 +46,6 @@ func (vm *VM) ExecutePushTemporaryVariable(context *Context) error {
 // ExecutePushSelf executes the PUSH_SELF bytecode
 func (vm *VM) ExecutePushSelf(context *Context) error {
 	// Push the receiver onto the stack
-	fmt.Printf("PUSH_SELF: %v\n", context.Receiver)
 	context.Push(context.Receiver)
 	return nil
 }
@@ -107,19 +104,12 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 	// Pop the arguments from the stack
 	args := make([]*Object, argCount)
-	fmt.Printf("Popping %d arguments from stack\n", argCount)
 	for i := argCount - 1; i >= 0; i-- {
 		args[i] = context.Pop()
-		fmt.Printf("Argument %d: %v (class: %v)\n", i, args[i], args[i].Class)
 	}
 
 	// Pop the receiver
 	receiver := context.Pop()
-	if receiver != nil {
-		fmt.Printf("Receiver: %v (class: %v)\n", receiver, receiver.Class)
-	} else {
-		fmt.Printf("Receiver: nil\n")
-	}
 
 	// Check for nil receiver
 	if receiver == nil {
@@ -144,8 +134,6 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 	// Return from this context execution to start executing the new context
 	// We need to execute the new context immediately
-	fmt.Printf("BEFORE ExecuteContext for method %s\n", selector.SymbolValue)
-	fmt.Printf("Current stack before method call: %v\n", context.Stack)
 	result, err := vm.ExecuteContext(newContext)
 	if err != nil {
 		return nil, err
@@ -156,17 +144,11 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 		return nil, fmt.Errorf("method not found: %s", selector.SymbolValue)
 	}
 
-	// Add debug output
-	fmt.Printf("AFTER ExecuteContext for method %s\n", selector.SymbolValue)
-	fmt.Printf("Result of method call: %v\n", result)
-
 	// Move back to the sender context
 	vm.CurrentContext = context
-	fmt.Printf("Current stack after returning to sender context: %v\n", context.Stack)
 
 	// Push the result onto the stack
 	context.Push(result)
-	fmt.Printf("Current stack after pushing result: %v\n", context.Stack)
 
 	// Return the result
 	return result, nil
@@ -174,14 +156,8 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 // ExecuteReturnStackTop executes the RETURN_STACK_TOP bytecode
 func (vm *VM) ExecuteReturnStackTop(context *Context) (*Object, error) {
-	// Debug output
-	fmt.Printf("ExecuteReturnStackTop - Stack before pop: %v\n", context.Stack)
-
 	// Pop the return value from the stack
 	returnValue := context.Pop()
-
-	// Debug output
-	fmt.Printf("ExecuteReturnStackTop - Return value: %v\n", returnValue)
 
 	// Return the value
 	return returnValue, nil
@@ -195,15 +171,9 @@ func (vm *VM) ExecuteJump(context *Context) (bool, error) {
 	}
 	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
 
-	// Debug output
-	fmt.Printf("JUMP - Offset: %v, PC: %v, Bytecode length: %v\n", offset, context.PC, len(context.Method.Method.Bytecodes))
-
 	// The offset is relative to the current instruction
 	// We need to add the size of the instruction to get past this instruction
 	newPC := context.PC + InstructionSize(JUMP) + offset
-
-	// Debug output
-	fmt.Printf("JUMP - New PC: %v\n", newPC)
 
 	// Check if the new PC is valid
 	if newPC < 0 || newPC >= len(context.Method.Method.Bytecodes) {
@@ -225,20 +195,15 @@ func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
 	}
 	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
 
-	// Debug output
-	fmt.Printf("JUMP_IF_TRUE - Offset: %v, PC: %v, Bytecode length: %v\n", offset, context.PC, len(context.Method.Method.Bytecodes))
-
 	// Pop the condition from the stack
 	condition := context.Pop()
 
 	// If the condition is true, jump by the offset
 	isTrue := condition.IsTrue()
-	fmt.Printf("JUMP_IF_TRUE - IsTrue: %v\n", isTrue)
 	if isTrue {
 		// The offset is relative to the current instruction
 		// We need to add the size of the instruction to get past this instruction
 		newPC := context.PC + InstructionSize(JUMP_IF_TRUE) + offset
-		fmt.Printf("JUMP_IF_TRUE - New PC: %v\n", newPC)
 		// Check if the new PC is valid
 		if newPC < 0 || newPC >= len(context.Method.Method.Bytecodes) {
 			return false, fmt.Errorf("jump target out of bounds: %d", newPC)
@@ -260,23 +225,15 @@ func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
 	}
 	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
 
-	// Debug output
-	fmt.Printf("JUMP_IF_FALSE - Offset: %v, PC: %v, Bytecode length: %v\n", offset, context.PC, len(context.Method.Method.Bytecodes))
-
 	// Pop the condition from the stack
 	condition := context.Pop()
 
-	// Debug output
-	fmt.Printf("JUMP_IF_FALSE - Condition: %v (type: %v)\n", condition, condition.Type)
-
 	// If the condition is false, jump by the offset
 	isTrue := condition.IsTrue()
-	fmt.Printf("JUMP_IF_FALSE - IsTrue: %v\n", isTrue)
 	if !isTrue {
 		// The offset is relative to the current instruction
 		// We need to add the size of the instruction to get past this instruction
 		newPC := context.PC + InstructionSize(JUMP_IF_FALSE) + offset
-		fmt.Printf("JUMP_IF_FALSE - New PC: %v\n", newPC)
 		// Check if the new PC is valid
 		if newPC < 0 || newPC >= len(context.Method.Method.Bytecodes) {
 			return false, fmt.Errorf("jump target out of bounds: %d", newPC)

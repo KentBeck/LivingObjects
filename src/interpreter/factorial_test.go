@@ -101,9 +101,6 @@ func TestFactorial(t *testing.T) {
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, JUMP)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 35) // Jump to the return
 
-	// Add a debug message
-	fmt.Printf("Added JUMP with offset 35 at PC %d\n", len(factorialMethod.Method.Bytecodes)-5)
-
 	// False branch: [self * (self - 1) factorial]
 	// POP the boolean (we don't need it anymore)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, POP)
@@ -129,22 +126,13 @@ func TestFactorial(t *testing.T) {
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // Selector index 1 (factorial)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // 0 arguments
 
-	// Add a debug message
-	fmt.Printf("Added factorial message with selector index 1\n")
-
 	// SEND_MESSAGE * with 1 argument (the factorial result is already on the stack)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, SEND_MESSAGE)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 4) // Selector index 4 (*)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
 
-	// Add a debug message
-	fmt.Printf("Added * message with selector index 4\n")
-
 	// Return the result
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
-
-	// Add a debug message
-	fmt.Printf("Added RETURN_STACK_TOP at PC %d\n", len(factorialMethod.Method.Bytecodes)-1)
 
 	// Test factorial of 1
 	t.Run("Factorial of 1", func(t *testing.T) {
@@ -176,7 +164,6 @@ func TestFactorial(t *testing.T) {
 		context := NewContext(factorialMethod, fourObj, []*Object{}, nil)
 
 		// Execute the context
-		fmt.Printf("Executing factorial of 4...\n")
 		result, err := vm.ExecuteContext(context)
 		if err != nil {
 			t.Errorf("Error executing factorial of 4: %v", err)

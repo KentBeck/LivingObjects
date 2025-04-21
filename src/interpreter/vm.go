@@ -162,22 +162,17 @@ func (vm *VM) Execute() (*Object, error) {
 
 // ExecuteContext executes a single context until it returns
 func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
-	// Debug output
-	fmt.Printf("Starting ExecuteContext for method %v\n", context.Method.Selector)
-	fmt.Printf("Initial stack: %v\n", context.Stack)
+	// Execute the context
 
 	for {
 		// Check if we've reached the end of the method
 		if context.PC >= len(context.Method.Method.Bytecodes) {
-			// Debug output
-			fmt.Printf("Reached end of bytecode array at PC %d\n", context.PC)
-			fmt.Printf("Stack: %v\n", context.Stack[:context.StackPointer])
+			// Reached end of bytecode array
 
 			// If we've reached the end of the method, return the top of the stack
 			// This handles the case where we jump to the end of the bytecode array
 			if context.StackPointer > 0 {
 				returnValue := context.Pop()
-				fmt.Printf("Returning value from stack: %v\n", returnValue)
 				return returnValue, nil
 			}
 			return vm.NilObject, nil
@@ -185,7 +180,6 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 
 		// Get the current bytecode
 		bytecode := context.Method.Method.Bytecodes[context.PC]
-		fmt.Printf("Executing bytecode %s at PC %d\n", BytecodeName(bytecode), context.PC)
 
 		// Get the instruction size
 		size := InstructionSize(bytecode)
@@ -367,14 +361,12 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 	}
 
 	// Look up the method in the class hierarchy
-	fmt.Printf("Looking up method %s for receiver %v with class %v\n", selector.SymbolValue, receiver, class)
 	for class != nil {
 		// Check if the class has a method dictionary
 		methodDict := class.GetMethodDict()
 		if methodDict != nil && methodDict.Type == OBJ_DICTIONARY && methodDict.Entries != nil {
 			// Check if the method dictionary has the selector
 			if method, ok := methodDict.Entries[selector.SymbolValue]; ok {
-				fmt.Printf("Found method %s in class %v\n", selector.SymbolValue, class)
 				return method
 			}
 		}
@@ -382,7 +374,6 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 		// Move up the class hierarchy
 		class = class.SuperClass
 	}
-	fmt.Printf("Method %s not found for receiver %v\n", selector.SymbolValue, receiver)
 
 	// Method not found
 	return nil

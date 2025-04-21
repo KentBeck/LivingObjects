@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 // ObjectMemory manages the Smalltalk object memory with stop & copy garbage collection
 type ObjectMemory struct {
 	FromSpace   []*Object
@@ -49,7 +45,6 @@ func (om *ObjectMemory) ShouldCollect() bool {
 
 // Collect performs a stop & copy garbage collection
 func (om *ObjectMemory) Collect(vm *VM) {
-	fmt.Printf("Starting garbage collection (cycle %d)...\n", om.GCCount)
 	om.GCCount++
 
 	// Reset the to-space
@@ -153,8 +148,6 @@ func (om *ObjectMemory) Collect(vm *VM) {
 	if toPtr > om.SpaceSize*70/100 { // If we're using more than 70% after GC
 		om.growSpaces()
 	}
-
-	fmt.Printf("Garbage collection complete. Live objects: %d\n", toPtr)
 }
 
 // copyObject copies an object to the to-space
@@ -233,7 +226,6 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 // growSpaces grows the from-space and to-space
 func (om *ObjectMemory) growSpaces() {
 	newSize := om.SpaceSize * 2
-	fmt.Printf("Growing spaces from %d to %d\n", om.SpaceSize, newSize)
 
 	// Create new spaces
 	newFromSpace := make([]*Object, newSize)
