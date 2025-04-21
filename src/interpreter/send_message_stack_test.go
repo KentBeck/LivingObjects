@@ -22,7 +22,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	integerMethodDict.Entries[returnValueSelector.SymbolValue] = returnValueMethod
 
 	// Create a literal for the method
-	valueObj := vm.NewIntegerWithClass(42)
+	valueObj := vm.NewInteger(42)
 
 	// Add the literal to the method
 	returnValueMethod.Method.Literals = append(returnValueMethod.Method.Literals, valueObj) // Literal 0: 42
@@ -43,7 +43,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	integerMethodDict.Entries[callerSelector.SymbolValue] = callerMethod
 
 	// Create literals for the caller method
-	receiverObj := vm.NewIntegerWithClass(10)
+	receiverObj := vm.NewInteger(10)
 
 	// Add literals to the caller method
 	callerMethod.Method.Literals = append(callerMethod.Method.Literals, receiverObj)         // Literal 0: 10
@@ -74,7 +74,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	callerMethod.Method.Bytecodes = append(callerMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
 	// Create a receiver for the caller method
-	receiver := vm.NewIntegerWithClass(5)
+	receiver := vm.NewInteger(5)
 
 	// Create a context for the caller method
 	context := NewContext(callerMethod, receiver, []*Object{}, nil)
@@ -115,7 +115,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	integerMethodDict.Entries[returnValueSelector.SymbolValue] = returnValueMethod
 
 	// Create a literal for the method
-	valueObj := vm.NewIntegerWithClass(42)
+	valueObj := vm.NewInteger(42)
 
 	// Add the literal to the method
 	returnValueMethod.Method.Literals = append(returnValueMethod.Method.Literals, valueObj) // Literal 0: 42
@@ -171,7 +171,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	multiplyMethod.Method.Bytecodes = append(multiplyMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
 	// Create a receiver for the multiply method
-	multiplyReceiver := vm.NewIntegerWithClass(5)
+	multiplyReceiver := vm.NewInteger(5)
 
 	// Create a context for the multiply method
 	multiplyContext := NewContext(multiplyMethod, multiplyReceiver, []*Object{}, nil)

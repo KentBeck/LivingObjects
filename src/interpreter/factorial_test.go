@@ -51,7 +51,7 @@ func TestFactorial(t *testing.T) {
 	integerMethodDict.Entries[factorialSelector.SymbolValue] = factorialMethod
 
 	// Create literals for the factorial method
-	oneObj := vm.NewIntegerWithClass(1)
+	oneObj := vm.NewInteger(1)
 
 	// Add literals to the factorial method
 	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, oneObj)            // Literal 0: 1
@@ -149,7 +149,7 @@ func TestFactorial(t *testing.T) {
 	// Test factorial of 1
 	t.Run("Factorial of 1", func(t *testing.T) {
 		// Create a context for the factorial method
-		oneObj := vm.NewIntegerWithClass(1)
+		oneObj := vm.NewInteger(1)
 		context := NewContext(factorialMethod, oneObj, []*Object{}, nil)
 
 		// Execute the context
@@ -172,7 +172,7 @@ func TestFactorial(t *testing.T) {
 	// Test factorial of 4
 	t.Run("Factorial of 4", func(t *testing.T) {
 		// Create a context for the factorial method
-		fourObj := vm.NewIntegerWithClass(4)
+		fourObj := vm.NewInteger(4)
 		context := NewContext(factorialMethod, fourObj, []*Object{}, nil)
 
 		// Execute the context

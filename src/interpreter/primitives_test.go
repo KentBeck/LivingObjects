@@ -16,8 +16,8 @@ func testSubtractionPrimitive(t *testing.T) {
 	minusSelector := NewSymbol("-")
 
 	// Create two integer objects
-	five := vm.NewIntegerWithClass(5)
-	two := vm.NewIntegerWithClass(2)
+	five := vm.NewInteger(5)
+	two := vm.NewInteger(2)
 
 	// Execute the primitive
 	result := vm.executePrimitive(five, minusSelector, []*Object{two})
@@ -50,8 +50,8 @@ func testMultiplicationPrimitive(t *testing.T) {
 	timesSelector := NewSymbol("*")
 
 	// Create two integer objects
-	five := vm.NewIntegerWithClass(5)
-	two := vm.NewIntegerWithClass(2)
+	five := vm.NewInteger(5)
+	two := vm.NewInteger(2)
 
 	// Execute the primitive
 	result := vm.executePrimitive(five, timesSelector, []*Object{two})

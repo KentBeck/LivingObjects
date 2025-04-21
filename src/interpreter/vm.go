@@ -70,8 +70,8 @@ func (vm *VM) NewIntegerClass() *Object {
 	return result
 }
 
-// NewIntegerWithClass creates a new integer object with the specified class or VM's IntegerClass
-func (vm *VM) NewIntegerWithClass(value int64) *Object {
+// NewInteger creates a new integer object with the specified class or VM's IntegerClass
+func (vm *VM) NewInteger(value int64) *Object {
 	intClass := vm.IntegerClass
 	return &Object{
 		Type:         OBJ_INTEGER,
@@ -92,8 +92,8 @@ func (vm *VM) LoadImage(path string) error {
 	// The method dictionary is already created in NewClass at index 0
 
 	// Create a simple test method: 2 + 3
-	twoObj := vm.NewIntegerWithClass(2)
-	threeObj := vm.NewIntegerWithClass(3)
+	twoObj := vm.NewInteger(2)
+	threeObj := vm.NewInteger(3)
 	plusSymbol := NewSymbol("+")
 
 	// Create a method that adds 2 and 3
@@ -290,12 +290,12 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		case 1: // Addition
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 				result := receiver.IntegerValue + args[0].IntegerValue
-				return vm.NewIntegerWithClass(result)
+				return vm.NewInteger(result)
 			}
 		case 2: // Multiplication
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 				result := receiver.IntegerValue * args[0].IntegerValue
-				return vm.NewIntegerWithClass(result)
+				return vm.NewInteger(result)
 			}
 		case 3: // Equality
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
@@ -305,7 +305,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		case 4: // Subtraction
 			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 				result := receiver.IntegerValue - args[0].IntegerValue
-				return vm.NewIntegerWithClass(result)
+				return vm.NewInteger(result)
 			}
 		}
 	}
@@ -315,19 +315,19 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		switch selector.SymbolValue {
 		case "+":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return vm.NewIntegerWithClass(receiver.IntegerValue + args[0].IntegerValue)
+				return vm.NewInteger(receiver.IntegerValue + args[0].IntegerValue)
 			}
 		case "-":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return vm.NewIntegerWithClass(receiver.IntegerValue - args[0].IntegerValue)
+				return vm.NewInteger(receiver.IntegerValue - args[0].IntegerValue)
 			}
 		case "*":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return vm.NewIntegerWithClass(receiver.IntegerValue * args[0].IntegerValue)
+				return vm.NewInteger(receiver.IntegerValue * args[0].IntegerValue)
 			}
 		case "/":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER && args[0].IntegerValue != 0 {
-				return vm.NewIntegerWithClass(receiver.IntegerValue / args[0].IntegerValue)
+				return vm.NewInteger(receiver.IntegerValue / args[0].IntegerValue)
 			}
 		case "=":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {

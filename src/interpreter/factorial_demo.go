@@ -24,7 +24,7 @@ func DemoFactorial() {
 	integerMethodDict.Entries[factorialSelector.SymbolValue] = factorialMethod
 
 	// Create literals for the factorial method
-	oneObj := vm.NewIntegerWithClass(1)
+	oneObj := vm.NewInteger(1)
 	equalsSymbol := NewSymbol("=")
 	minusSymbol := NewSymbol("-")
 	timesSymbol := NewSymbol("*")
@@ -100,7 +100,7 @@ func DemoFactorial() {
 	mainMethod := NewMethod(mainSelector, objectClass)
 
 	// Add literals to the main method
-	fourObj := vm.NewIntegerWithClass(4)
+	fourObj := vm.NewInteger(4)
 	mainMethod.Method.Literals = append(mainMethod.Method.Literals, fourObj)           // Literal 0: 4
 	mainMethod.Method.Literals = append(mainMethod.Method.Literals, factorialSelector) // Literal 1: factorial
 
