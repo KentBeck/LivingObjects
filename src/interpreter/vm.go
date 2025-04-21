@@ -162,6 +162,9 @@ func (vm *VM) Execute() (*Object, error) {
 
 // ExecuteContext executes a single context until it returns
 func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
+	// Debug output
+	fmt.Printf("Starting ExecuteContext for method %v\n", context.Method.Selector)
+	fmt.Printf("Initial stack: %v\n", context.Stack)
 
 	for {
 		// Check if we've reached the end of the method

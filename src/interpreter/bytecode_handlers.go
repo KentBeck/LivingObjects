@@ -144,6 +144,8 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 	// Return from this context execution to start executing the new context
 	// We need to execute the new context immediately
+	fmt.Printf("BEFORE ExecuteContext for method %s\n", selector.SymbolValue)
+	fmt.Printf("Current stack before method call: %v\n", context.Stack)
 	result, err := vm.ExecuteContext(newContext)
 	if err != nil {
 		return nil, err
@@ -155,13 +157,16 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 	}
 
 	// Add debug output
+	fmt.Printf("AFTER ExecuteContext for method %s\n", selector.SymbolValue)
 	fmt.Printf("Result of method call: %v\n", result)
 
 	// Move back to the sender context
 	vm.CurrentContext = context
+	fmt.Printf("Current stack after returning to sender context: %v\n", context.Stack)
 
 	// Push the result onto the stack
 	context.Push(result)
+	fmt.Printf("Current stack after pushing result: %v\n", context.Stack)
 
 	// Return the result
 	return result, nil
@@ -169,8 +174,14 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 // ExecuteReturnStackTop executes the RETURN_STACK_TOP bytecode
 func (vm *VM) ExecuteReturnStackTop(context *Context) (*Object, error) {
+	// Debug output
+	fmt.Printf("ExecuteReturnStackTop - Stack before pop: %v\n", context.Stack)
+
 	// Pop the return value from the stack
 	returnValue := context.Pop()
+
+	// Debug output
+	fmt.Printf("ExecuteReturnStackTop - Return value: %v\n", returnValue)
 
 	// Return the value
 	return returnValue, nil
@@ -218,8 +229,13 @@ func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
 	// Pop the condition from the stack
 	condition := context.Pop()
 
+	// Debug output
+	fmt.Printf("JUMP_IF_FALSE - Condition: %v (type: %v)\n", condition, condition.Type)
+
 	// If the condition is false, jump by the offset
-	if !condition.IsTrue() {
+	isTrue := condition.IsTrue()
+	fmt.Printf("JUMP_IF_FALSE - IsTrue: %v\n", isTrue)
+	if !isTrue {
 		// Calculate the new PC by adding the offset to the current PC plus the size of this instruction
 		newPC := context.PC + InstructionSize(JUMP_IF_FALSE) + offset
 		context.PC = newPC

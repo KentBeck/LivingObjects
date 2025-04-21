@@ -37,11 +37,9 @@ func DemoFactorial() {
 	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, timesSymbol)       // Literal 4: *
 
 	// Create bytecodes for factorial:
-	// if self = 1 { return 1 }
-	// else if self = 2 { return 2 }
-	// else if self = 3 { return 6 }
-	// else if self = 4 { return 24 }
-	// else { return 0 } // Error case
+	// ^ self = 1
+	//   ifTrue: [1]
+	//   ifFalse: [self * (self - 1) factorial]
 
 	// Check if self = 1
 	// PUSH_SELF

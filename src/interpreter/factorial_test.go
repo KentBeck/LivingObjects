@@ -64,9 +64,11 @@ func TestFactorial(t *testing.T) {
 	fmt.Printf("Literals: %v\n", factorialMethod.Method.Literals)
 
 	// Create bytecodes for factorial:
-	// if self = 1 { return 1 } else { return self * (self - 1) factorial }
+	// ^ self = 1
+	//   ifTrue: [1]
+	//   ifFalse: [self * (self - 1) factorial]
 
-	// Check if self = 1
+	// First, compute self = 1
 	// PUSH_SELF
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
 
@@ -79,22 +81,34 @@ func TestFactorial(t *testing.T) {
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 2) // Selector index 2 (=)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
 
-	// JUMP_IF_FALSE to else branch
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, JUMP_IF_FALSE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 7) // Jump 7 bytes ahead
+	// Now we have a boolean on the stack
+	// We need to duplicate it for the two branches
+	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, DUPLICATE)
 
-	// Then branch: return 1
+	// JUMP_IF_FALSE to the false branch
+	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, JUMP_IF_FALSE)
+	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 12) // Jump past the true branch
+
+	// True branch: [1]
+	// POP the boolean (we don't need it anymore)
+	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, POP)
+
 	// PUSH_LITERAL 0 (1)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_LITERAL)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
 
-	// RETURN_STACK_TOP
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
+	// JUMP past the false branch to the return
+	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, JUMP)
+	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 30) // Jump to the return
 
-	// Else branch: return self * (self - 1) factorial
+	// False branch: [self * (self - 1) factorial]
+	// POP the boolean (we don't need it anymore)
+	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, POP)
+
 	// PUSH_SELF (for later use in multiplication)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
 
+	// Compute (self - 1) factorial
 	// PUSH_SELF (for subtraction)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
 
@@ -115,7 +129,7 @@ func TestFactorial(t *testing.T) {
 	// Add a debug message
 	fmt.Printf("Added factorial message with selector index 1\n")
 
-	// SEND_MESSAGE * with 1 argument
+	// SEND_MESSAGE * with 1 argument (the factorial result is already on the stack)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, SEND_MESSAGE)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 4) // Selector index 4 (*)
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
@@ -123,7 +137,7 @@ func TestFactorial(t *testing.T) {
 	// Add a debug message
 	fmt.Printf("Added * message with selector index 4\n")
 
-	// RETURN_STACK_TOP
+	// Return the result
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
 	// Test factorial of 1
