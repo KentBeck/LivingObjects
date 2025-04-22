@@ -122,13 +122,14 @@ func testLessThanPrimitive(t *testing.T) {
 	vm := NewVM()
 
 	lessSelector := NewSymbol("<")
+	method := vm.lookupMethod(vm.IntegerClass, lessSelector)
 
 	// Create two integer objects
 	two := vm.NewInteger(2)
 	five := vm.NewInteger(5)
 
 	// Execute the primitive
-	result := vm.executePrimitive(two, lessSelector, []*Object{five}, nil)
+	result := vm.executePrimitive(two, lessSelector, []*Object{five}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -146,7 +147,7 @@ func testLessThanPrimitive(t *testing.T) {
 	}
 
 	// Test the opposite case
-	result = vm.executePrimitive(five, lessSelector, []*Object{two}, nil)
+	result = vm.executePrimitive(five, lessSelector, []*Object{two}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -169,13 +170,14 @@ func testGreaterThanPrimitive(t *testing.T) {
 	vm := NewVM()
 
 	greaterSelector := NewSymbol(">")
+	method := vm.lookupMethod(vm.IntegerClass, greaterSelector)
 
 	// Create two integer objects
 	five := vm.NewInteger(5)
 	two := vm.NewInteger(2)
 
 	// Execute the primitive
-	result := vm.executePrimitive(five, greaterSelector, []*Object{two}, nil)
+	result := vm.executePrimitive(five, greaterSelector, []*Object{two}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -193,7 +195,7 @@ func testGreaterThanPrimitive(t *testing.T) {
 	}
 
 	// Test the opposite case
-	result = vm.executePrimitive(two, greaterSelector, []*Object{five}, nil)
+	result = vm.executePrimitive(two, greaterSelector, []*Object{five}, method)
 
 	// Check that the result is not nil
 	if result == nil {

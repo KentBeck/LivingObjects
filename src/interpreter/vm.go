@@ -87,6 +87,20 @@ func (vm *VM) NewIntegerClass() *Object {
 	equalsMethod.Method.PrimitiveIndex = 3 // Equality
 	integerMethodDict.Entries[equalsSelector.SymbolValue] = equalsMethod
 
+	// < method
+	lessSelector := NewSymbol("<")
+	lessMethod := NewMethod(lessSelector, result)
+	lessMethod.Method.IsPrimitive = true
+	lessMethod.Method.PrimitiveIndex = 6 // Less than
+	integerMethodDict.Entries[lessSelector.SymbolValue] = lessMethod
+
+	// > method
+	greaterSelector := NewSymbol(">")
+	greaterMethod := NewMethod(greaterSelector, result)
+	greaterMethod.Method.IsPrimitive = true
+	greaterMethod.Method.PrimitiveIndex = 7 // Greater than
+	integerMethodDict.Entries[greaterSelector.SymbolValue] = greaterMethod
+
 	return result
 }
 
@@ -283,6 +297,16 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			if len(args) == 0 {
 				fmt.Printf("executePrimitive: basicClass returning %v\n", receiver.Class)
 				return receiver.Class
+			}
+		case 6: // Less than
+			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+				result := receiver.IntegerValue < args[0].IntegerValue
+				return NewBoolean(result)
+			}
+		case 7: // Greater than
+			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+				result := receiver.IntegerValue > args[0].IntegerValue
+				return NewBoolean(result)
 			}
 		default:
 			panic("executePrimitive: unknown primitive index\n")
