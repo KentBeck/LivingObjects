@@ -292,26 +292,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 	// If not a primitive method, handle built-in operations
 	if receiver.Type == OBJ_INTEGER {
 		switch selector.SymbolValue {
-		case "+":
-			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return vm.NewInteger(receiver.IntegerValue + args[0].IntegerValue)
-			}
-		case "-":
-			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return vm.NewInteger(receiver.IntegerValue - args[0].IntegerValue)
-			}
-		case "*":
-			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return vm.NewInteger(receiver.IntegerValue * args[0].IntegerValue)
-			}
-		case "/":
-			if len(args) == 1 && args[0].Type == OBJ_INTEGER && args[0].IntegerValue != 0 {
-				return vm.NewInteger(receiver.IntegerValue / args[0].IntegerValue)
-			}
-		case "=":
-			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return NewBoolean(receiver.IntegerValue == args[0].IntegerValue)
-			}
+
 		case "<":
 			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
 				return NewBoolean(receiver.IntegerValue < args[0].IntegerValue)
@@ -338,7 +319,7 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 		panic("lookupMethod: nil  selector\n")
 	}
 
-	// Get the class of the receiver
+	// Get the class of the receiver -- this should call the same code used for basicClass
 	class := receiver
 	if receiver.Type != OBJ_CLASS {
 		class = receiver.Class
