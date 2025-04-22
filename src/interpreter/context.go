@@ -52,7 +52,7 @@ func (c *Context) Push(obj *Object) {
 // Pop pops an object from the stack
 func (c *Context) Pop() *Object {
 	if c.StackPointer <= 0 {
-		return NewNil() // Stack underflow
+		panic("stack underflow")
 	}
 
 	c.StackPointer--
@@ -63,47 +63,16 @@ func (c *Context) Pop() *Object {
 // Top returns the top object on the stack without popping it
 func (c *Context) Top() *Object {
 	if c.StackPointer <= 0 {
-		return NewNil() // Stack underflow
+		panic("stack underflow")
 	}
 
 	return c.Stack[c.StackPointer-1]
 }
 
-// GetTempVar gets a temporary variable by name (for backward compatibility)
-func (c *Context) GetTempVar(name string) *Object {
-	// Find the index of the name in the method's temporary variable names
-	if c.Method == nil || c.Method.Method == nil {
-		return NewNil()
-	}
-
-	for i, tempName := range c.Method.Method.TempVarNames {
-		if tempName == name {
-			return c.GetTempVarByIndex(i)
-		}
-	}
-
-	return NewNil()
-}
-
-// SetTempVar sets a temporary variable by name (for backward compatibility)
-func (c *Context) SetTempVar(name string, value *Object) {
-	// Find the index of the name in the method's temporary variable names
-	if c.Method == nil || c.Method.Method == nil {
-		return
-	}
-
-	for i, tempName := range c.Method.Method.TempVarNames {
-		if tempName == name {
-			c.SetTempVarByIndex(i, value)
-			return
-		}
-	}
-}
-
 // GetTempVarByIndex gets a temporary variable by index
 func (c *Context) GetTempVarByIndex(index int) *Object {
 	if index < 0 || index >= len(c.TempVars) {
-		return NewNil()
+		panic("index out of bounds")
 	}
 
 	return c.TempVars[index]

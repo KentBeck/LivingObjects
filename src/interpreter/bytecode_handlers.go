@@ -116,14 +116,15 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 		return nil, fmt.Errorf("nil receiver for message: %s", selector.SymbolValue)
 	}
 
-	// Handle primitive methods
-	if result := vm.executePrimitive(receiver, selector, args); result != nil {
-		context.Push(result)
-		return result, nil
-	}
 	method := vm.lookupMethod(receiver, selector)
 	if method == nil {
 		return nil, fmt.Errorf("method not found: %s", selector.SymbolValue)
+	}
+
+	// Handle primitive methods
+	if result := vm.executePrimitive(receiver, selector, args, method); result != nil {
+		context.Push(result)
+		return result, nil
 	}
 
 	// Create a new context for the method

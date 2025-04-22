@@ -14,13 +14,14 @@ func testSubtractionPrimitive(t *testing.T) {
 	vm := NewVM()
 
 	minusSelector := NewSymbol("-")
+	method := vm.lookupMethod(vm.IntegerClass, minusSelector)
 
 	// Create two integer objects
 	five := vm.NewInteger(5)
 	two := vm.NewInteger(2)
 
 	// Execute the primitive
-	result := vm.executePrimitive(five, minusSelector, []*Object{two})
+	result := vm.executePrimitive(five, minusSelector, []*Object{two}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -48,13 +49,14 @@ func testMultiplicationPrimitive(t *testing.T) {
 	vm := NewVM()
 
 	timesSelector := NewSymbol("*")
+	method := vm.lookupMethod(vm.IntegerClass, timesSelector)
 
 	// Create two integer objects
 	five := vm.NewInteger(5)
 	two := vm.NewInteger(2)
 
 	// Execute the primitive
-	result := vm.executePrimitive(five, timesSelector, []*Object{two})
+	result := vm.executePrimitive(five, timesSelector, []*Object{two}, method)
 
 	// Check that the result is not nil
 	if result == nil {

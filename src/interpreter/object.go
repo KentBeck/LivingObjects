@@ -201,7 +201,7 @@ func (o *Object) String() string {
 // GetInstanceVarByIndex gets an instance variable by index
 func (o *Object) GetInstanceVarByIndex(index int) *Object {
 	if index < 0 || index >= len(o.InstanceVars) {
-		return NewNil()
+		panic("index out of bounds")
 	}
 
 	return o.InstanceVars[index]
@@ -210,7 +210,7 @@ func (o *Object) GetInstanceVarByIndex(index int) *Object {
 // SetInstanceVarByIndex sets an instance variable by index
 func (o *Object) SetInstanceVarByIndex(index int, value *Object) {
 	if index < 0 || index >= len(o.InstanceVars) {
-		return
+		panic("index out of bounds")
 	}
 
 	o.InstanceVars[index] = value
@@ -219,7 +219,7 @@ func (o *Object) SetInstanceVarByIndex(index int, value *Object) {
 // GetMethodDict gets the method dictionary for a class
 func (o *Object) GetMethodDict() *Object {
 	if o.Type != OBJ_CLASS || len(o.InstanceVars) == 0 {
-		return NewNil()
+		panic("object is not a class or has no instance variables")
 	}
 
 	// Method dictionary is stored at index 0 for classes

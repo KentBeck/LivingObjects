@@ -179,7 +179,7 @@ func TestExecutePushTemporaryVariable(t *testing.T) {
 
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
-	context.SetTempVar("temp", vm.NewInteger(42))
+	context.SetTempVarByIndex(0, vm.NewInteger(42))
 
 	err := vm.ExecutePushTemporaryVariable(context)
 	if err != nil {
@@ -251,7 +251,7 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 		t.Errorf("ExecuteStoreTemporaryVariable returned an error: %v", err)
 	}
 
-	value := context.GetTempVar("temp")
+	value := context.GetTempVarByIndex(0)
 	if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
 		t.Errorf("Expected temporary variable to be 42, got %v", value)
 	}
@@ -334,7 +334,7 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 	{
 		context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
-		context.Push(NewBoolean(true))
+		context.Push(vm.TrueObject)
 
 		skipIncrement, err := vm.ExecuteJumpIfTrue(context)
 		if err != nil {

@@ -12,8 +12,11 @@ type VM struct {
 
 	// Special objects
 	NilObject    *Object
+	NilClass     *Object
 	TrueObject   *Object
+	TrueClass    *Object
 	FalseObject  *Object
+	FalseClass   *Object
 	ObjectClass  *Object
 	IntegerClass *Object
 }
@@ -26,21 +29,30 @@ func NewVM() *VM {
 	}
 
 	// Initialize special objects
+	vm.ObjectClass = vm.NewObjectClass()
+	vm.NilClass = NewClass("UndefinedObject", vm.ObjectClass) // ci
 	vm.NilObject = NewNil()
-	vm.TrueObject = NewBoolean(true)
-	vm.FalseObject = NewBoolean(false)
-	vm.ObjectClass = NewClass("Object", vm.NilObject)
+	vm.TrueClass = NewClass("True", vm.ObjectClass)
+	vm.TrueObject = &Object{Type: OBJ_BOOLEAN, BooleanValue: true, Class: vm.TrueClass}
+	vm.FalseClass = NewClass("False", vm.ObjectClass)
+	vm.FalseObject = &Object{Type: OBJ_BOOLEAN, BooleanValue: false, Class: vm.FalseClass}
 	vm.IntegerClass = vm.NewIntegerClass()
 
+	return vm
+}
+
+func (vm *VM) NewObjectClass() *Object {
+	result := NewClass("Object", nil) // patch this up later. then even later when we have real images all this initialization can go away
+
 	// Add basicClass method to Object class
-	objectMethodDict := vm.ObjectClass.GetMethodDict()
+	objectMethodDict := result.GetMethodDict()
 	basicClassSelector := NewSymbol("basicClass")
-	basicClassMethod := NewMethod(basicClassSelector, vm.ObjectClass)
+	basicClassMethod := NewMethod(basicClassSelector, result)
 	basicClassMethod.Method.IsPrimitive = true
 	basicClassMethod.Method.PrimitiveIndex = 5 // basicClass primitive
 	objectMethodDict.Entries[basicClassSelector.SymbolValue] = basicClassMethod
 
-	return vm
+	return result
 }
 
 func (vm *VM) NewIntegerClass() *Object {
@@ -90,47 +102,7 @@ func (vm *VM) NewInteger(value int64) *Object {
 
 // LoadImage loads a Smalltalk image from a file
 func (vm *VM) LoadImage(path string) error {
-	// For now, we'll just create a simple test image in memory
-	// In a real implementation, this would load from a file
-
-	// Create basic classes
-	vm.ObjectClass = NewClass("Object", nil)
 	vm.Globals["Object"] = vm.ObjectClass
-
-	// The method dictionary is already created in NewClass at index 0
-
-	// Create a simple test method: 2 + 3
-	twoObj := vm.NewInteger(2)
-	threeObj := vm.NewInteger(3)
-	plusSymbol := NewSymbol("+")
-
-	// Create a method that adds 2 and 3
-	methodObj := NewMethod(plusSymbol, vm.ObjectClass)
-
-	// Add literals
-	methodObj.Method.Literals = append(methodObj.Method.Literals, twoObj)
-	methodObj.Method.Literals = append(methodObj.Method.Literals, threeObj)
-	methodObj.Method.Literals = append(methodObj.Method.Literals, plusSymbol)
-
-	// Create bytecodes for: 2 + 3
-	// PUSH_LITERAL 0 (2)
-	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, PUSH_LITERAL)
-	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, 0, 0, 0, 0) // Index 0
-
-	// PUSH_LITERAL 1 (3)
-	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, PUSH_LITERAL)
-	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, 0, 0, 0, 1) // Index 1
-
-	// SEND_MESSAGE 2 ("+") with 1 argument
-	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, SEND_MESSAGE)
-	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, 0, 0, 0, 2) // Selector index 2
-	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
-
-	// RETURN_STACK_TOP
-	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, RETURN_STACK_TOP)
-
-	// Create a context for this method
-	vm.CurrentContext = NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
 	return nil
 }
@@ -275,14 +247,15 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 }
 
 // executePrimitive executes a primitive method
-func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Object) *Object {
-	// Check for nil receiver or selector
-	if receiver == nil || selector == nil {
-		return nil
+func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Object, method *Object) *Object {
+	if receiver == nil {
+		panic("executePrimitive: nil receiver\n")
+	}
+	if selector == nil {
+		panic("executePrimitive: nil selector\n")
 	}
 
 	// First, check if the method is explicitly marked as a primitive
-	method := vm.lookupMethod(receiver, selector)
 	if method != nil && method.Type == OBJ_METHOD && method.Method.IsPrimitive {
 		// Execute the primitive based on its index
 		switch method.Method.PrimitiveIndex {
@@ -308,8 +281,11 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			}
 		case 5: // basicClass - return the class of the receiver
 			if len(args) == 0 {
+				fmt.Printf("executePrimitive: basicClass returning %v\n", receiver.Class)
 				return receiver.Class
 			}
+		default:
+			panic("executePrimitive: unknown primitive index\n")
 		}
 	}
 
@@ -354,8 +330,12 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 // lookupMethod looks up a method in a class hierarchy
 func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 	// Check for nil receiver or selector
-	if receiver == nil || selector == nil {
-		return nil
+	if receiver == nil {
+		panic("lookupMethod: nil receiver\n")
+	}
+
+	if selector == nil {
+		panic("lookupMethod: nil  selector\n")
 	}
 
 	// Get the class of the receiver
@@ -366,7 +346,7 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 
 	// Check for nil class
 	if class == nil {
-		return nil
+		panic("lookupMethod: nil class\n")
 	}
 
 	// Look up the method in the class hierarchy
@@ -378,6 +358,8 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 			if method, ok := methodDict.Entries[selector.SymbolValue]; ok {
 				return method
 			}
+		} else {
+			panic("method dictionary is nil or not a dictionary")
 		}
 
 		// Move up the class hierarchy
