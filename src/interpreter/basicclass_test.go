@@ -14,6 +14,10 @@ func TestBasicClassPrimitive(t *testing.T) {
 	intObjClass := intObj.Class
 
 	// Create a test method that will send the basicClass message
+	EnsureObjectIsClass(t, vm, intObj, intObjClass)
+}
+
+func EnsureObjectIsClass(t *testing.T, vm *VM, intObj *Object, intObjClass *Object) {
 	testMethod := NewMethod(NewSymbol("test"), vm.ObjectClass)
 
 	// Add the basicClass selector to the literals
