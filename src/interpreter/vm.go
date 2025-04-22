@@ -31,7 +31,8 @@ func NewVM() *VM {
 	// Initialize special objects
 	vm.ObjectClass = vm.NewObjectClass()
 	vm.NilClass = NewClass("UndefinedObject", vm.ObjectClass)
-	vm.NilObject = NewNil()
+	// Use immediate nil value
+	vm.NilObject = MakeNilImmediate()
 	vm.TrueClass = NewClass("True", vm.ObjectClass)
 	vm.TrueObject = &Object{Type: OBJ_BOOLEAN, BooleanValue: true, Class: vm.TrueClass}
 	vm.FalseClass = NewClass("False", vm.ObjectClass)

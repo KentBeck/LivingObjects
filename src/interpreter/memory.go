@@ -116,9 +116,10 @@ func (om *ObjectMemory) Collect(vm *VM) {
 	}
 
 	// Copy special objects
-	if vm.NilObject != nil {
-		vm.NilObject = om.copyObject(vm.NilObject, &toPtr)
-	}
+	// Note: NilObject is now an immediate value, so we don't need to copy it
+	// if vm.NilObject != nil {
+	// 	vm.NilObject = om.copyObject(vm.NilObject, &toPtr)
+	// }
 	if vm.TrueObject != nil {
 		vm.TrueObject = om.copyObject(vm.TrueObject, &toPtr)
 	}
@@ -152,6 +153,12 @@ func (om *ObjectMemory) Collect(vm *VM) {
 
 // copyObject copies an object to the to-space
 func (om *ObjectMemory) copyObject(obj *Object, toPtr *int) *Object {
+	// Check if it's an immediate value
+	if IsImmediate(obj) {
+		// Immediate values don't need to be copied
+		return obj
+	}
+
 	// Check if the object has already been moved
 	if obj.Moved {
 		return obj.ForwardingPtr
@@ -168,6 +175,11 @@ func (om *ObjectMemory) copyObject(obj *Object, toPtr *int) *Object {
 
 // updateReferences updates references in an object
 func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
+	// Check if it's an immediate value
+	if IsImmediate(obj) {
+		// Immediate values don't have references
+		return
+	}
 	switch obj.Type {
 	case OBJ_INSTANCE, OBJ_CLASS:
 		// Update instance variables

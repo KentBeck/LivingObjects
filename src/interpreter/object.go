@@ -64,10 +64,9 @@ func NewBoolean(value bool) *Object {
 }
 
 // NewNil creates a new nil object
+// This now returns an immediate nil value
 func NewNil() *Object {
-	return &Object{
-		Type: OBJ_NIL,
-	}
+	return MakeNilImmediate()
 }
 
 // NewString creates a new string object
@@ -155,6 +154,17 @@ func NewMethod(selector *Object, class *Object) *Object {
 
 // IsTrue returns true if the object is considered true in Smalltalk
 func (o *Object) IsTrue() bool {
+	// Check if it's an immediate value
+	if IsImmediate(o) {
+		// Immediate nil is false
+		if IsNilImmediate(o) {
+			return false
+		}
+		// Other immediate types will be added later
+		return true
+	}
+
+	// Regular objects
 	if o.Type == OBJ_BOOLEAN {
 		return o.BooleanValue
 	}
@@ -163,6 +173,17 @@ func (o *Object) IsTrue() bool {
 
 // String returns a string representation of the object
 func (o *Object) String() string {
+	// Check if it's an immediate value
+	if IsImmediate(o) {
+		// Immediate nil
+		if IsNilImmediate(o) {
+			return "nil"
+		}
+		// Other immediate types will be added later
+		return "Immediate value"
+	}
+
+	// Regular objects
 	switch o.Type {
 	case OBJ_INTEGER:
 		return fmt.Sprintf("%d", o.IntegerValue)

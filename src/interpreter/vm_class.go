@@ -7,12 +7,24 @@ func (vm *VM) GetClass(obj *Object) *Object {
 		panic("GetClass: nil object")
 	}
 
+	// Check if it's an immediate value
+	if IsImmediate(obj) {
+		// Handle immediate nil
+		if IsNilImmediate(obj) {
+			return vm.NilClass
+		}
+		// Other immediate types will be added later
+		panic("GetClass: unknown immediate type")
+	}
+
+	// If it's a regular object, proceed as before
+
 	// If the object is a class, return itself
 	if obj.Type == OBJ_CLASS {
 		return obj
 	}
 
-	// Special case for nil object
+	// Special case for nil object (legacy non-immediate nil)
 	if obj.Type == OBJ_NIL {
 		return vm.NilClass
 	}
