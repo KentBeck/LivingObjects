@@ -302,8 +302,9 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		}
 	case 5: // basicClass - return the class of the receiver
 		if len(args) == 0 {
-			fmt.Printf("executePrimitive: basicClass returning %v\n", receiver.Class)
-			return receiver.Class
+			class := vm.GetClass(receiver)
+			fmt.Printf("executePrimitive: basicClass returning %v\n", class)
+			return class
 		}
 	case 6: // Less than
 		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
@@ -332,11 +333,8 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 		panic("lookupMethod: nil  selector\n")
 	}
 
-	// Get the class of the receiver -- this should call the same code used for basicClass
-	class := receiver
-	if receiver.Type != OBJ_CLASS {
-		class = receiver.Class
-	}
+	// Get the class of the receiver using the central GetClass function
+	class := vm.GetClass(receiver)
 
 	// Check for nil class
 	if class == nil {
