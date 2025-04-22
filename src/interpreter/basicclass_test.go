@@ -9,12 +9,8 @@ func TestBasicClassPrimitive(t *testing.T) {
 	// Create a VM
 	vm := NewVM()
 
-	// Test with an integer object
-	intObj := vm.NewInteger(42)
-	intObjClass := intObj.Class
-
-	// Create a test method that will send the basicClass message
-	EnsureObjectIsClass(t, vm, intObj, intObjClass)
+	EnsureObjectIsClass(t, vm, vm.NewInteger(42), vm.IntegerClass)
+	// EnsureObjectIsClass(t, vm, NewNil(), vm.NilClass) also Boolean
 }
 
 func EnsureObjectIsClass(t *testing.T, vm *VM, intObj *Object, intObjClass *Object) {
