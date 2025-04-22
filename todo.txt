@@ -6,7 +6,7 @@ Milestone 3: Run the compiler in process so we can communicate changes via strin
 Milestone 4: Fully self-hosted server. This requires all the networking stuff be written in Server Smalltalk.
 
 To do:
-* Optimize sizeof(Object). Maybe write a test for it.
+* Optimize sizeof(Object). 
   * Singleton True & False
 * Immediate integer
 * Immediate nil, true, false
