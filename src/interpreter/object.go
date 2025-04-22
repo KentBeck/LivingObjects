@@ -56,11 +56,12 @@ type Method struct {
 }
 
 // NewBoolean creates a new boolean object
+// This now returns an immediate value
 func NewBoolean(value bool) *Object {
-	return &Object{
-		Type:         OBJ_BOOLEAN,
-		BooleanValue: value,
+	if value {
+		return MakeTrueImmediate()
 	}
+	return MakeFalseImmediate()
 }
 
 // NewNil creates a new nil object
@@ -160,6 +161,14 @@ func (o *Object) IsTrue() bool {
 		if IsNilImmediate(o) {
 			return false
 		}
+		// Immediate true is true
+		if IsTrueImmediate(o) {
+			return true
+		}
+		// Immediate false is false
+		if IsFalseImmediate(o) {
+			return false
+		}
 		// Other immediate types will be added later
 		return true
 	}
@@ -178,6 +187,14 @@ func (o *Object) String() string {
 		// Immediate nil
 		if IsNilImmediate(o) {
 			return "nil"
+		}
+		// Immediate true
+		if IsTrueImmediate(o) {
+			return "true"
+		}
+		// Immediate false
+		if IsFalseImmediate(o) {
+			return "false"
 		}
 		// Other immediate types will be added later
 		return "Immediate value"

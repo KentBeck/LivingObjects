@@ -138,11 +138,12 @@ func testLessThanPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is correct
-	if result.Type != OBJ_BOOLEAN {
-		t.Errorf("Expected result to be a boolean, got %v", result.Type)
+	// For immediate values, we can't access the Type field directly
+	if !IsTrueImmediate(result) && !IsFalseImmediate(result) {
+		t.Errorf("Expected result to be a boolean immediate value")
 	}
 
-	if !result.BooleanValue {
+	if !result.IsTrue() {
 		t.Errorf("Expected result to be true, got false")
 	}
 
@@ -156,11 +157,12 @@ func testLessThanPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is correct
-	if result.Type != OBJ_BOOLEAN {
-		t.Errorf("Expected result to be a boolean, got %v", result.Type)
+	// For immediate values, we can't access the Type field directly
+	if !IsTrueImmediate(result) && !IsFalseImmediate(result) {
+		t.Errorf("Expected result to be a boolean immediate value")
 	}
 
-	if result.BooleanValue {
+	if result.IsTrue() {
 		t.Errorf("Expected result to be false, got true")
 	}
 }
@@ -186,11 +188,12 @@ func testGreaterThanPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is correct
-	if result.Type != OBJ_BOOLEAN {
-		t.Errorf("Expected result to be a boolean, got %v", result.Type)
+	// For immediate values, we can't access the Type field directly
+	if !IsTrueImmediate(result) && !IsFalseImmediate(result) {
+		t.Errorf("Expected result to be a boolean immediate value")
 	}
 
-	if !result.BooleanValue {
+	if !result.IsTrue() {
 		t.Errorf("Expected result to be true, got false")
 	}
 
@@ -204,11 +207,12 @@ func testGreaterThanPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is correct
-	if result.Type != OBJ_BOOLEAN {
-		t.Errorf("Expected result to be a boolean, got %v", result.Type)
+	// For immediate values, we can't access the Type field directly
+	if !IsTrueImmediate(result) && !IsFalseImmediate(result) {
+		t.Errorf("Expected result to be a boolean immediate value")
 	}
 
-	if result.BooleanValue {
+	if result.IsTrue() {
 		t.Errorf("Expected result to be false, got true")
 	}
 }

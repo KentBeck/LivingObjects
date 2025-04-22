@@ -116,16 +116,16 @@ func (om *ObjectMemory) Collect(vm *VM) {
 	}
 
 	// Copy special objects
-	// Note: NilObject is now an immediate value, so we don't need to copy it
+	// Note: NilObject, TrueObject, and FalseObject are now immediate values, so we don't need to copy them
 	// if vm.NilObject != nil {
 	// 	vm.NilObject = om.copyObject(vm.NilObject, &toPtr)
 	// }
-	if vm.TrueObject != nil {
-		vm.TrueObject = om.copyObject(vm.TrueObject, &toPtr)
-	}
-	if vm.FalseObject != nil {
-		vm.FalseObject = om.copyObject(vm.FalseObject, &toPtr)
-	}
+	// if vm.TrueObject != nil {
+	// 	vm.TrueObject = om.copyObject(vm.TrueObject, &toPtr)
+	// }
+	// if vm.FalseObject != nil {
+	// 	vm.FalseObject = om.copyObject(vm.FalseObject, &toPtr)
+	// }
 	if vm.ObjectClass != nil {
 		vm.ObjectClass = om.copyObject(vm.ObjectClass, &toPtr)
 	}

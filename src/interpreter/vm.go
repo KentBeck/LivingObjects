@@ -34,9 +34,11 @@ func NewVM() *VM {
 	// Use immediate nil value
 	vm.NilObject = MakeNilImmediate()
 	vm.TrueClass = NewClass("True", vm.ObjectClass)
-	vm.TrueObject = &Object{Type: OBJ_BOOLEAN, BooleanValue: true, Class: vm.TrueClass}
+	// Use immediate true value
+	vm.TrueObject = MakeTrueImmediate()
 	vm.FalseClass = NewClass("False", vm.ObjectClass)
-	vm.FalseObject = &Object{Type: OBJ_BOOLEAN, BooleanValue: false, Class: vm.FalseClass}
+	// Use immediate false value
+	vm.FalseObject = MakeFalseImmediate()
 	vm.IntegerClass = vm.NewIntegerClass()
 
 	return vm
