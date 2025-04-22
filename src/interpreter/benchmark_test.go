@@ -126,7 +126,12 @@ func BenchmarkFactorial10(b *testing.B) {
 		}
 
 		// Verify the result (factorial of 10 = 3628800)
-		if result.Type != OBJ_INTEGER || result.IntegerValue != 3628800 {
+		if IsIntegerImmediate(result) {
+			intValue := GetIntegerImmediate(result)
+			if intValue != 3628800 {
+				b.Fatalf("Expected factorial of 10 to be 3628800, got %d", intValue)
+			}
+		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 3628800 {
 			b.Fatalf("Expected factorial of 10 to be 3628800, got %v", result)
 		}
 	}
@@ -259,7 +264,12 @@ func BenchmarkFactorial19(b *testing.B) {
 		}
 
 		// Verify the result (factorial of 19 = 121645100408832000)
-		if result.Type != OBJ_INTEGER || result.IntegerValue != 121645100408832000 {
+		if IsIntegerImmediate(result) {
+			intValue := GetIntegerImmediate(result)
+			if intValue != 121645100408832000 {
+				b.Fatalf("Expected factorial of 19 to be 121645100408832000, got %d", intValue)
+			}
+		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 121645100408832000 {
 			b.Fatalf("Expected factorial of 19 to be 121645100408832000, got %v", result)
 		}
 
