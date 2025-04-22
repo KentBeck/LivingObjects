@@ -6,8 +6,6 @@ import (
 
 // TestExecuteSendMessageExtended tests the ExecuteSendMessage function with more complex scenarios
 func TestExecuteSendMessageExtended(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	// Create a VM
 	vm := NewVM()
 
@@ -64,7 +62,12 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		}
 
 		// Check the result
-		if result.Type != OBJ_INTEGER || result.IntegerValue != 5 {
+		if IsIntegerImmediate(result) {
+			intValue := GetIntegerImmediate(result)
+			if intValue != 5 {
+				t.Errorf("Expected 5, got %d", intValue)
+			}
+		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 5 {
 			t.Errorf("Expected 5, got %s", result)
 		}
 
@@ -73,8 +76,15 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 			t.Errorf("Expected stack pointer to be 1, got %d", context.StackPointer)
 		}
 
-		if context.Stack[0].Type != OBJ_INTEGER || context.Stack[0].IntegerValue != 5 {
-			t.Errorf("Expected stack top to be 5, got %s", context.Stack[0])
+		// Check the stack top
+		stackTop := context.Stack[0]
+		if IsIntegerImmediate(stackTop) {
+			intValue := GetIntegerImmediate(stackTop)
+			if intValue != 5 {
+				t.Errorf("Expected stack top to be 5, got %d", intValue)
+			}
+		} else if stackTop.Type != OBJ_INTEGER || stackTop.IntegerValue != 5 {
+			t.Errorf("Expected stack top to be 5, got %s", stackTop)
 		}
 	})
 
@@ -149,7 +159,12 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		}
 
 		// Check the result
-		if result.Type != OBJ_INTEGER || result.IntegerValue != 1 {
+		if IsIntegerImmediate(result) {
+			intValue := GetIntegerImmediate(result)
+			if intValue != 1 {
+				t.Errorf("Expected 1, got %d", intValue)
+			}
+		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 1 {
 			t.Errorf("Expected 1, got %s", result)
 		}
 
@@ -158,8 +173,15 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 			t.Errorf("Expected stack pointer to be 1, got %d", context.StackPointer)
 		}
 
-		if context.Stack[0].Type != OBJ_INTEGER || context.Stack[0].IntegerValue != 1 {
-			t.Errorf("Expected stack top to be 1, got %s", context.Stack[0])
+		// Check the stack top
+		stackTop := context.Stack[0]
+		if IsIntegerImmediate(stackTop) {
+			intValue := GetIntegerImmediate(stackTop)
+			if intValue != 1 {
+				t.Errorf("Expected stack top to be 1, got %d", intValue)
+			}
+		} else if stackTop.Type != OBJ_INTEGER || stackTop.IntegerValue != 1 {
+			t.Errorf("Expected stack top to be 1, got %s", stackTop)
 		}
 	})
 
@@ -278,6 +300,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 	})
 
 	t.Run("non-symbol selector", func(t *testing.T) {
+		t.Skip("Skipping test until immediate values are fully implemented")
 		// Create a method with a SEND_MESSAGE bytecode with a non-symbol selector
 		method := NewMethod(NewSymbol("test"), vm.ObjectClass)
 
@@ -322,8 +345,6 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 // TestExecuteSendMessageWithMultipleArguments tests the ExecuteSendMessage function with multiple arguments
 func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	// Create a VM
 	vm := NewVM()
 
@@ -391,7 +412,12 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		context.PC += InstructionSize(SEND_MESSAGE)
 
 		// Check the intermediate result
-		if result.Type != OBJ_INTEGER || result.IntegerValue != 5 {
+		if IsIntegerImmediate(result) {
+			intValue := GetIntegerImmediate(result)
+			if intValue != 5 {
+				t.Errorf("Expected 5, got %d", intValue)
+			}
+		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 5 {
 			t.Errorf("Expected 5, got %s", result)
 		}
 
@@ -408,7 +434,12 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		}
 
 		// Check the final result
-		if result.Type != OBJ_INTEGER || result.IntegerValue != 9 {
+		if IsIntegerImmediate(result) {
+			intValue := GetIntegerImmediate(result)
+			if intValue != 9 {
+				t.Errorf("Expected 9, got %d", intValue)
+			}
+		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 9 {
 			t.Errorf("Expected 9, got %s", result)
 		}
 
@@ -417,8 +448,15 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 			t.Errorf("Expected stack pointer to be 1, got %d", context.StackPointer)
 		}
 
-		if context.Stack[0].Type != OBJ_INTEGER || context.Stack[0].IntegerValue != 9 {
-			t.Errorf("Expected stack top to be 9, got %s", context.Stack[0])
+		// Check the stack top
+		stackTop := context.Stack[0]
+		if IsIntegerImmediate(stackTop) {
+			intValue := GetIntegerImmediate(stackTop)
+			if intValue != 9 {
+				t.Errorf("Expected stack top to be 9, got %d", intValue)
+			}
+		} else if stackTop.Type != OBJ_INTEGER || stackTop.IntegerValue != 9 {
+			t.Errorf("Expected stack top to be 9, got %s", stackTop)
 		}
 	})
 }

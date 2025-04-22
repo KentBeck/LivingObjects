@@ -5,8 +5,6 @@ import (
 )
 
 func TestSendMessageStackManagement(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	// Create a VM
 	vm := NewVM()
 
@@ -89,19 +87,20 @@ func TestSendMessageStackManagement(t *testing.T) {
 	}
 
 	// Check that the result is 42 (the value returned by the returnValue method)
-	if result.Type != OBJ_INTEGER {
+	if IsIntegerImmediate(result) {
+		intValue := GetIntegerImmediate(result)
+		if intValue != 42 {
+			t.Errorf("Expected result to be 42, got %d", intValue)
+		}
+	} else if result.Type != OBJ_INTEGER {
 		t.Errorf("Expected result to be an integer, got %v", result.Type)
-	}
-
-	if result.IntegerValue != 42 {
+	} else if result.IntegerValue != 42 {
 		t.Errorf("Expected result to be 42, got %d", result.IntegerValue)
 	}
 
 }
 
 func TestSendMessageWithMultiplication(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	// Create a VM
 	vm := NewVM()
 
@@ -188,11 +187,14 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	}
 
 	// Check that the result is 5 * 42 = 210
-	if multiplyResult.Type != OBJ_INTEGER {
+	if IsIntegerImmediate(multiplyResult) {
+		intValue := GetIntegerImmediate(multiplyResult)
+		if intValue != 210 {
+			t.Errorf("Expected result to be 210 (5 * 42), got %d", intValue)
+		}
+	} else if multiplyResult.Type != OBJ_INTEGER {
 		t.Errorf("Expected result to be an integer, got %v", multiplyResult.Type)
-	}
-
-	if multiplyResult.IntegerValue != 210 {
+	} else if multiplyResult.IntegerValue != 210 {
 		t.Errorf("Expected result to be 210 (5 * 42), got %d", multiplyResult.IntegerValue)
 	}
 }

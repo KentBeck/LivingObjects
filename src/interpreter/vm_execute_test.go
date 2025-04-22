@@ -27,8 +27,6 @@ func TestExecuteContextEmptyMethod(t *testing.T) {
 }
 
 func TestExecuteContextWithStackValue(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	// Create a VM for testing
 	vm := NewVM()
 
@@ -50,7 +48,12 @@ func TestExecuteContextWithStackValue(t *testing.T) {
 	}
 
 	// Method should return the value on the stack
-	if result.Type != OBJ_INTEGER || result.IntegerValue != 42 {
+	if IsIntegerImmediate(result) {
+		intValue := GetIntegerImmediate(result)
+		if intValue != 42 {
+			t.Errorf("Expected 42, got %d", intValue)
+		}
+	} else if result.Type != OBJ_INTEGER || result.IntegerValue != 42 {
 		t.Errorf("Expected 42, got %v", result)
 	}
 }

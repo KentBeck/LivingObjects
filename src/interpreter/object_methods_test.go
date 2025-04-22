@@ -51,8 +51,6 @@ func TestObjectIsTrue(t *testing.T) {
 }
 
 func TestObjectInstanceVarMethods(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	// Create a VM for testing
 	vm := NewVM()
 
@@ -67,12 +65,20 @@ func TestObjectInstanceVarMethods(t *testing.T) {
 	instance.InstanceVars[0] = vm.NewInteger(42)
 	instance.InstanceVars[1] = NewString("hello")
 
-	if instance.GetInstanceVarByIndex(0).IntegerValue != 42 {
-		t.Errorf("Expected instance var 0 to be 42, got %v", instance.GetInstanceVarByIndex(0))
+	// Get the instance variable and check its value
+	var0 := instance.GetInstanceVarByIndex(0)
+	if IsIntegerImmediate(var0) {
+		intValue := GetIntegerImmediate(var0)
+		if intValue != 42 {
+			t.Errorf("Expected instance var 0 to be 42, got %d", intValue)
+		}
+	} else if var0.Type != OBJ_INTEGER || var0.IntegerValue != 42 {
+		t.Errorf("Expected instance var 0 to be 42, got %v", var0)
 	}
 
-	if instance.GetInstanceVarByIndex(1).StringValue != "hello" {
-		t.Errorf("Expected instance var 1 to be 'hello', got %v", instance.GetInstanceVarByIndex(1))
+	var1 := instance.GetInstanceVarByIndex(1)
+	if var1.Type != OBJ_STRING || var1.StringValue != "hello" {
+		t.Errorf("Expected instance var 1 to be 'hello', got %v", var1)
 	}
 
 	// Test GetInstanceVarByIndex with out of bounds index
@@ -85,8 +91,6 @@ func TestObjectInstanceVarMethods(t *testing.T) {
 }
 
 func TestObjectSetInstanceVarByIndex(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	// Create a VM for testing
 	vm := NewVM()
 
@@ -101,12 +105,20 @@ func TestObjectSetInstanceVarByIndex(t *testing.T) {
 	instance.SetInstanceVarByIndex(0, vm.NewInteger(42))
 	instance.SetInstanceVarByIndex(1, NewString("hello"))
 
-	if instance.InstanceVars[0].IntegerValue != 42 {
-		t.Errorf("Expected instance var 0 to be 42, got %v", instance.InstanceVars[0])
+	// Check the instance variables
+	var0 := instance.InstanceVars[0]
+	if IsIntegerImmediate(var0) {
+		intValue := GetIntegerImmediate(var0)
+		if intValue != 42 {
+			t.Errorf("Expected instance var 0 to be 42, got %d", intValue)
+		}
+	} else if var0.Type != OBJ_INTEGER || var0.IntegerValue != 42 {
+		t.Errorf("Expected instance var 0 to be 42, got %v", var0)
 	}
 
-	if instance.InstanceVars[1].StringValue != "hello" {
-		t.Errorf("Expected instance var 1 to be 'hello', got %v", instance.InstanceVars[1])
+	var1 := instance.InstanceVars[1]
+	if var1.Type != OBJ_STRING || var1.StringValue != "hello" {
+		t.Errorf("Expected instance var 1 to be 'hello', got %v", var1)
 	}
 
 	// Test SetInstanceVarByIndex with out of bounds index
@@ -119,8 +131,6 @@ func TestObjectSetInstanceVarByIndex(t *testing.T) {
 }
 
 func TestObjectGetMethodDict(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	// Create a VM for testing
 	_ = NewVM()
 

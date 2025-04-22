@@ -5,8 +5,6 @@ import (
 )
 
 func TestIntegerPrimitives(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	t.Run("Addition", testAdditionPrimitive)
 	t.Run("Subtraction", testSubtractionPrimitive)
 	t.Run("Multiplication", testMultiplicationPrimitive)
@@ -35,16 +33,19 @@ func testSubtractionPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is correct
-	if result.Type != OBJ_INTEGER {
+	if IsIntegerImmediate(result) {
+		intValue := GetIntegerImmediate(result)
+		if intValue != 3 {
+			t.Errorf("Expected result to be 3, got %d", intValue)
+		}
+	} else if result.Type != OBJ_INTEGER {
 		t.Errorf("Expected result to be an integer, got %v", result.Type)
-	}
-
-	if result.IntegerValue != 3 {
+	} else if result.IntegerValue != 3 {
 		t.Errorf("Expected result to be 3, got %d", result.IntegerValue)
 	}
 
-	// Check that the class of the result is set correctly
-	if result.Class != vm.IntegerClass {
+	// For immediate values, we don't check the class as it's encoded in the tag bits
+	if !IsIntegerImmediate(result) && result.Class != vm.IntegerClass {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class)
 	}
 }
@@ -70,16 +71,19 @@ func testMultiplicationPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is correct
-	if result.Type != OBJ_INTEGER {
+	if IsIntegerImmediate(result) {
+		intValue := GetIntegerImmediate(result)
+		if intValue != 10 {
+			t.Errorf("Expected result to be 10, got %d", intValue)
+		}
+	} else if result.Type != OBJ_INTEGER {
 		t.Errorf("Expected result to be an integer, got %v", result.Type)
-	}
-
-	if result.IntegerValue != 10 {
+	} else if result.IntegerValue != 10 {
 		t.Errorf("Expected result to be 10, got %d", result.IntegerValue)
 	}
 
-	// Check that the class of the result is set correctly
-	if result.Class != vm.IntegerClass {
+	// For immediate values, we don't check the class as it's encoded in the tag bits
+	if !IsIntegerImmediate(result) && result.Class != vm.IntegerClass {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class)
 	}
 }
@@ -105,16 +109,19 @@ func testAdditionPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is correct
-	if result.Type != OBJ_INTEGER {
+	if IsIntegerImmediate(result) {
+		intValue := GetIntegerImmediate(result)
+		if intValue != 7 {
+			t.Errorf("Expected result to be 7, got %d", intValue)
+		}
+	} else if result.Type != OBJ_INTEGER {
 		t.Errorf("Expected result to be an integer, got %v", result.Type)
-	}
-
-	if result.IntegerValue != 7 {
+	} else if result.IntegerValue != 7 {
 		t.Errorf("Expected result to be 7, got %d", result.IntegerValue)
 	}
 
-	// Check that the class of the result is set correctly
-	if result.Class != vm.IntegerClass {
+	// For immediate values, we don't check the class as it's encoded in the tag bits
+	if !IsIntegerImmediate(result) && result.Class != vm.IntegerClass {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class)
 	}
 }
