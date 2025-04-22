@@ -4,9 +4,12 @@ import (
 	"testing"
 )
 
-func TestPrimitives(t *testing.T) {
+func TestIntegerPrimitives(t *testing.T) {
+	t.Run("Addition", testAdditionPrimitive)
 	t.Run("Subtraction", testSubtractionPrimitive)
 	t.Run("Multiplication", testMultiplicationPrimitive)
+	t.Run("LessThan", testLessThanPrimitive)
+	t.Run("GreaterThan", testGreaterThanPrimitive)
 }
 
 func testSubtractionPrimitive(t *testing.T) {
@@ -76,5 +79,134 @@ func testMultiplicationPrimitive(t *testing.T) {
 	// Check that the class of the result is set correctly
 	if result.Class != vm.IntegerClass {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class)
+	}
+}
+
+func testAdditionPrimitive(t *testing.T) {
+	// Create a VM
+	vm := NewVM()
+
+	plusSelector := NewSymbol("+")
+	method := vm.lookupMethod(vm.IntegerClass, plusSelector)
+
+	// Create two integer objects
+	three := vm.NewInteger(3)
+	four := vm.NewInteger(4)
+
+	// Execute the primitive
+	result := vm.executePrimitive(three, plusSelector, []*Object{four}, method)
+
+	// Check that the result is not nil
+	if result == nil {
+		t.Errorf("Addition primitive returned nil")
+		return
+	}
+
+	// Check that the result is correct
+	if result.Type != OBJ_INTEGER {
+		t.Errorf("Expected result to be an integer, got %v", result.Type)
+	}
+
+	if result.IntegerValue != 7 {
+		t.Errorf("Expected result to be 7, got %d", result.IntegerValue)
+	}
+
+	// Check that the class of the result is set correctly
+	if result.Class != vm.IntegerClass {
+		t.Errorf("Expected result class to be Integer, got %v", result.Class)
+	}
+}
+
+func testLessThanPrimitive(t *testing.T) {
+	// Create a VM
+	vm := NewVM()
+
+	lessSelector := NewSymbol("<")
+
+	// Create two integer objects
+	two := vm.NewInteger(2)
+	five := vm.NewInteger(5)
+
+	// Execute the primitive
+	result := vm.executePrimitive(two, lessSelector, []*Object{five}, nil)
+
+	// Check that the result is not nil
+	if result == nil {
+		t.Errorf("Less than primitive returned nil")
+		return
+	}
+
+	// Check that the result is correct
+	if result.Type != OBJ_BOOLEAN {
+		t.Errorf("Expected result to be a boolean, got %v", result.Type)
+	}
+
+	if !result.BooleanValue {
+		t.Errorf("Expected result to be true, got false")
+	}
+
+	// Test the opposite case
+	result = vm.executePrimitive(five, lessSelector, []*Object{two}, nil)
+
+	// Check that the result is not nil
+	if result == nil {
+		t.Errorf("Less than primitive returned nil")
+		return
+	}
+
+	// Check that the result is correct
+	if result.Type != OBJ_BOOLEAN {
+		t.Errorf("Expected result to be a boolean, got %v", result.Type)
+	}
+
+	if result.BooleanValue {
+		t.Errorf("Expected result to be false, got true")
+	}
+}
+
+func testGreaterThanPrimitive(t *testing.T) {
+	// Create a VM
+	vm := NewVM()
+
+	greaterSelector := NewSymbol(">")
+
+	// Create two integer objects
+	five := vm.NewInteger(5)
+	two := vm.NewInteger(2)
+
+	// Execute the primitive
+	result := vm.executePrimitive(five, greaterSelector, []*Object{two}, nil)
+
+	// Check that the result is not nil
+	if result == nil {
+		t.Errorf("Greater than primitive returned nil")
+		return
+	}
+
+	// Check that the result is correct
+	if result.Type != OBJ_BOOLEAN {
+		t.Errorf("Expected result to be a boolean, got %v", result.Type)
+	}
+
+	if !result.BooleanValue {
+		t.Errorf("Expected result to be true, got false")
+	}
+
+	// Test the opposite case
+	result = vm.executePrimitive(two, greaterSelector, []*Object{five}, nil)
+
+	// Check that the result is not nil
+	if result == nil {
+		t.Errorf("Greater than primitive returned nil")
+		return
+	}
+
+	// Check that the result is correct
+	if result.Type != OBJ_BOOLEAN {
+		t.Errorf("Expected result to be a boolean, got %v", result.Type)
+	}
+
+	if result.BooleanValue {
+		t.Errorf("Expected result to be false, got true")
 	}
 }
