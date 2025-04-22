@@ -3,3 +3,4 @@ src/interpreter/coverage.out
 src/interpreter/coverage.html
 src/interpreter/interpreter
 src/interpreter/vm.go
+src/.DS_Store
