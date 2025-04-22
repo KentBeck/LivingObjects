@@ -303,7 +303,6 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 	case 5: // basicClass - return the class of the receiver
 		if len(args) == 0 {
 			class := vm.GetClass(receiver)
-			fmt.Printf("executePrimitive: basicClass returning %v\n", class)
 			return class
 		}
 	case 6: // Less than

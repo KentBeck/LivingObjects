@@ -10,7 +10,9 @@ func TestBasicClassPrimitive(t *testing.T) {
 	vm := NewVM()
 
 	EnsureObjectIsClass(t, vm, vm.NewInteger(42), vm.IntegerClass)
-	// EnsureObjectIsClass(t, vm, NewNil(), vm.NilClass) also Boolean
+	EnsureObjectIsClass(t, vm, NewNil(), vm.NilClass)
+	EnsureObjectIsClass(t, vm, vm.TrueObject, vm.TrueClass)
+	EnsureObjectIsClass(t, vm, vm.FalseObject, vm.FalseClass)
 }
 
 func EnsureObjectIsClass(t *testing.T, vm *VM, intObj *Object, intObjClass *Object) {

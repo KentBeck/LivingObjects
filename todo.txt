@@ -7,7 +7,6 @@ Milestone 4: Fully self-hosted server. This requires all the networking stuff be
 
 To do:
 * Optimize sizeof(Object). 
-  * Singleton True & False
 * Immediate integer
 * Immediate nil, true, false
 * Immediate float
