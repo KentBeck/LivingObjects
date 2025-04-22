@@ -107,8 +107,16 @@ func (vm *VM) NewIntegerClass() *Object {
 	return result
 }
 
-// NewInteger creates a new integer object with the specified class or VM's IntegerClass
+// NewInteger creates a new integer object
+// This now returns an immediate value for integers that fit in 62 bits
 func (vm *VM) NewInteger(value int64) *Object {
+	// Check if the value fits in 62 bits
+	if value <= 0x1FFFFFFFFFFFFFFF && value >= -0x2000000000000000 {
+		// Use immediate integer
+		return MakeIntegerImmediate(value)
+	}
+
+	// Fall back to heap-allocated integer for large values
 	intClass := vm.IntegerClass
 	return &Object{
 		Type:         OBJ_INTEGER,
@@ -284,23 +292,107 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 	// Execute the primitive based on its index
 	switch method.Method.PrimitiveIndex {
 	case 1: // Addition
+		// Handle immediate integers
+		if IsIntegerImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 + val2
+			return vm.NewInteger(result)
+		}
+		// Handle regular integers
 		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 			result := receiver.IntegerValue + args[0].IntegerValue
 			return vm.NewInteger(result)
 		}
+		// Handle mixed case (immediate and regular)
+		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := args[0].IntegerValue
+			result := val1 + val2
+			return vm.NewInteger(result)
+		}
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := receiver.IntegerValue
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 + val2
+			return vm.NewInteger(result)
+		}
 	case 2: // Multiplication
+		// Handle immediate integers
+		if IsIntegerImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 * val2
+			return vm.NewInteger(result)
+		}
+		// Handle regular integers
 		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 			result := receiver.IntegerValue * args[0].IntegerValue
 			return vm.NewInteger(result)
 		}
+		// Handle mixed case (immediate and regular)
+		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := args[0].IntegerValue
+			result := val1 * val2
+			return vm.NewInteger(result)
+		}
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := receiver.IntegerValue
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 * val2
+			return vm.NewInteger(result)
+		}
 	case 3: // Equality
+		// Handle immediate integers
+		if IsIntegerImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 == val2
+			return NewBoolean(result)
+		}
+		// Handle regular integers
 		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 			result := receiver.IntegerValue == args[0].IntegerValue
 			return NewBoolean(result)
 		}
+		// Handle mixed case (immediate and regular)
+		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := args[0].IntegerValue
+			result := val1 == val2
+			return NewBoolean(result)
+		}
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := receiver.IntegerValue
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 == val2
+			return NewBoolean(result)
+		}
 	case 4: // Subtraction
+		// Handle immediate integers
+		if IsIntegerImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 - val2
+			return vm.NewInteger(result)
+		}
+		// Handle regular integers
 		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 			result := receiver.IntegerValue - args[0].IntegerValue
+			return vm.NewInteger(result)
+		}
+		// Handle mixed case (immediate and regular)
+		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := args[0].IntegerValue
+			result := val1 - val2
+			return vm.NewInteger(result)
+		}
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := receiver.IntegerValue
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 - val2
 			return vm.NewInteger(result)
 		}
 	case 5: // basicClass - return the class of the receiver
@@ -309,13 +401,55 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			return class
 		}
 	case 6: // Less than
+		// Handle immediate integers
+		if IsIntegerImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 < val2
+			return NewBoolean(result)
+		}
+		// Handle regular integers
 		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 			result := receiver.IntegerValue < args[0].IntegerValue
 			return NewBoolean(result)
 		}
+		// Handle mixed case (immediate and regular)
+		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := args[0].IntegerValue
+			result := val1 < val2
+			return NewBoolean(result)
+		}
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := receiver.IntegerValue
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 < val2
+			return NewBoolean(result)
+		}
 	case 7: // Greater than
+		// Handle immediate integers
+		if IsIntegerImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 > val2
+			return NewBoolean(result)
+		}
+		// Handle regular integers
 		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
 			result := receiver.IntegerValue > args[0].IntegerValue
+			return NewBoolean(result)
+		}
+		// Handle mixed case (immediate and regular)
+		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			val1 := GetIntegerImmediate(receiver)
+			val2 := args[0].IntegerValue
+			result := val1 > val2
+			return NewBoolean(result)
+		}
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := receiver.IntegerValue
+			val2 := GetIntegerImmediate(args[0])
+			result := val1 > val2
 			return NewBoolean(result)
 		}
 	default:

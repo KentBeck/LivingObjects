@@ -26,7 +26,13 @@ func TestExecutePushLiteral(t *testing.T) {
 	}
 
 	value := context.Pop()
-	if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
+	// Check for immediate integer
+	if IsIntegerImmediate(value) {
+		intValue := GetIntegerImmediate(value)
+		if intValue != 42 {
+			t.Errorf("Expected 42 on the stack, got %d", intValue)
+		}
+	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
 		t.Errorf("Expected 42 on the stack, got %v", value)
 	}
 }
@@ -95,10 +101,24 @@ func TestExecuteDuplicate(t *testing.T) {
 
 	value1 := context.Pop()
 	value2 := context.Pop()
-	if value1.Type != OBJ_INTEGER || value1.IntegerValue != 42 {
+
+	// Check for immediate integer
+	if IsIntegerImmediate(value1) {
+		intValue := GetIntegerImmediate(value1)
+		if intValue != 42 {
+			t.Errorf("Expected 42 on the stack, got %d", intValue)
+		}
+	} else if value1.Type != OBJ_INTEGER || value1.IntegerValue != 42 {
 		t.Errorf("Expected 42 on the stack, got %v", value1)
 	}
-	if value2.Type != OBJ_INTEGER || value2.IntegerValue != 42 {
+
+	// Check for immediate integer
+	if IsIntegerImmediate(value2) {
+		intValue := GetIntegerImmediate(value2)
+		if intValue != 42 {
+			t.Errorf("Expected 42 on the stack, got %d", intValue)
+		}
+	} else if value2.Type != OBJ_INTEGER || value2.IntegerValue != 42 {
 		t.Errorf("Expected 42 on the stack, got %v", value2)
 	}
 }
@@ -130,6 +150,11 @@ func TestExecuteSendMessage(t *testing.T) {
 
 	if result == nil {
 		t.Errorf("Expected a result, got nil")
+	} else if IsIntegerImmediate(result) {
+		intValue := GetIntegerImmediate(result)
+		if intValue != 5 {
+			t.Errorf("Expected result to be 5, got %d", intValue)
+		}
 	} else if result.Type != OBJ_INTEGER || result.IntegerValue != 5 {
 		t.Errorf("Expected result to be 5, got %v", result)
 	}
@@ -163,7 +188,13 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 	}
 
 	value := context.Pop()
-	if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
+	// Check for immediate integer
+	if IsIntegerImmediate(value) {
+		intValue := GetIntegerImmediate(value)
+		if intValue != 42 {
+			t.Errorf("Expected 42 on the stack, got %d", intValue)
+		}
+	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
 		t.Errorf("Expected 42 on the stack, got %v", value)
 	}
 }
@@ -191,7 +222,13 @@ func TestExecutePushTemporaryVariable(t *testing.T) {
 	}
 
 	value := context.Pop()
-	if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
+	// Check for immediate integer
+	if IsIntegerImmediate(value) {
+		intValue := GetIntegerImmediate(value)
+		if intValue != 42 {
+			t.Errorf("Expected 42 on the stack, got %d", intValue)
+		}
+	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
 		t.Errorf("Expected 42 on the stack, got %v", value)
 	}
 }
@@ -219,7 +256,13 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 	}
 
 	value := instance.GetInstanceVarByIndex(0)
-	if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
+	// Check for immediate integer
+	if IsIntegerImmediate(value) {
+		intValue := GetIntegerImmediate(value)
+		if intValue != 42 {
+			t.Errorf("Expected instance variable to be 42, got %d", intValue)
+		}
+	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
 		t.Errorf("Expected instance variable to be 42, got %v", value)
 	}
 
@@ -228,7 +271,13 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 	}
 
 	stackValue := context.Pop()
-	if stackValue.Type != OBJ_INTEGER || stackValue.IntegerValue != 42 {
+	// Check for immediate integer
+	if IsIntegerImmediate(stackValue) {
+		intValue := GetIntegerImmediate(stackValue)
+		if intValue != 42 {
+			t.Errorf("Expected 42 on the stack, got %d", intValue)
+		}
+	} else if stackValue.Type != OBJ_INTEGER || stackValue.IntegerValue != 42 {
 		t.Errorf("Expected 42 on the stack, got %v", stackValue)
 	}
 }
@@ -252,7 +301,13 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 	}
 
 	value := context.GetTempVarByIndex(0)
-	if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
+	// Check for immediate integer
+	if IsIntegerImmediate(value) {
+		intValue := GetIntegerImmediate(value)
+		if intValue != 42 {
+			t.Errorf("Expected temporary variable to be 42, got %d", intValue)
+		}
+	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
 		t.Errorf("Expected temporary variable to be 42, got %v", value)
 	}
 
@@ -261,7 +316,13 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 	}
 
 	stackValue := context.Pop()
-	if stackValue.Type != OBJ_INTEGER || stackValue.IntegerValue != 42 {
+	// Check for immediate integer
+	if IsIntegerImmediate(stackValue) {
+		intValue := GetIntegerImmediate(stackValue)
+		if intValue != 42 {
+			t.Errorf("Expected 42 on the stack, got %d", intValue)
+		}
+	} else if stackValue.Type != OBJ_INTEGER || stackValue.IntegerValue != 42 {
 		t.Errorf("Expected 42 on the stack, got %v", stackValue)
 	}
 }
@@ -280,7 +341,13 @@ func TestExecuteReturnStackTop(t *testing.T) {
 		t.Errorf("ExecuteReturnStackTop returned an error: %v", err)
 	}
 
-	if result.Type != OBJ_INTEGER || result.IntegerValue != 42 {
+	// Check for immediate integer
+	if IsIntegerImmediate(result) {
+		intValue := GetIntegerImmediate(result)
+		if intValue != 42 {
+			t.Errorf("Expected result to be 42, got %d", intValue)
+		}
+	} else if result.Type != OBJ_INTEGER || result.IntegerValue != 42 {
 		t.Errorf("Expected result to be 42, got %v", result)
 	}
 
@@ -490,7 +557,13 @@ func TestComplexJumpScenario(t *testing.T) {
 		t.Errorf("ExecuteContext returned an error: %v", err)
 	}
 
-	if result.Type != OBJ_INTEGER || result.IntegerValue != 1 {
+	// Check for immediate integer
+	if IsIntegerImmediate(result) {
+		intValue := GetIntegerImmediate(result)
+		if intValue != 1 {
+			t.Errorf("Expected result to be 1, got %d", intValue)
+		}
+	} else if result.Type != OBJ_INTEGER || result.IntegerValue != 1 {
 		t.Errorf("Expected result to be 1, got %v", result)
 	}
 

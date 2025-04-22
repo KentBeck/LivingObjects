@@ -21,6 +21,10 @@ func (vm *VM) GetClass(obj *Object) *Object {
 		if IsFalseImmediate(obj) {
 			return vm.FalseClass
 		}
+		// Handle immediate integer
+		if IsIntegerImmediate(obj) {
+			return vm.IntegerClass
+		}
 		// Other immediate types will be added later
 		panic("GetClass: unknown immediate type")
 	}

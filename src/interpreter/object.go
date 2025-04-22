@@ -169,6 +169,10 @@ func (o *Object) IsTrue() bool {
 		if IsFalseImmediate(o) {
 			return false
 		}
+		// Immediate integer is true
+		if IsIntegerImmediate(o) {
+			return true
+		}
 		// Other immediate types will be added later
 		return true
 	}
@@ -195,6 +199,11 @@ func (o *Object) String() string {
 		// Immediate false
 		if IsFalseImmediate(o) {
 			return "false"
+		}
+		// Immediate integer
+		if IsIntegerImmediate(o) {
+			value := GetIntegerImmediate(o)
+			return fmt.Sprintf("%d", value)
 		}
 		// Other immediate types will be added later
 		return "Immediate value"

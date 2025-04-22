@@ -82,3 +82,43 @@ func MakeFalseImmediate() *Object {
 	// Convert the immediate false value to a pointer
 	return (*Object)(unsafe.Pointer(uintptr(SPECIAL_FALSE)))
 }
+
+// IsIntegerImmediate returns true if the value is an immediate integer
+func IsIntegerImmediate(obj *Object) bool {
+	// Convert the pointer to an integer
+	ptr := uintptr(unsafe.Pointer(obj))
+
+	// Check if the tag is TAG_INTEGER
+	return (ptr & TAG_MASK) == TAG_INTEGER
+}
+
+// MakeIntegerImmediate returns an immediate integer value
+func MakeIntegerImmediate(value int64) *Object {
+	// Ensure the value fits in 62 bits (signed)
+	if value > 0x1FFFFFFFFFFFFFFF || value < -0x2000000000000000 {
+		panic("Integer value too large for immediate representation")
+	}
+
+	// Shift the value left by 2 bits and set the tag bits
+	imm := (uintptr(value) << 2) | TAG_INTEGER
+
+	// Convert to a pointer
+	return (*Object)(unsafe.Pointer(imm))
+}
+
+// GetIntegerImmediate extracts the integer value from an immediate integer
+func GetIntegerImmediate(obj *Object) int64 {
+	// Convert the pointer to an integer
+	ptr := uintptr(unsafe.Pointer(obj))
+
+	// Remove the tag bits and shift right
+	unsigned := ptr >> 2
+
+	// Handle sign extension for negative numbers
+	if (unsigned & (1 << 61)) != 0 {
+		// It's a negative number, sign extend
+		unsigned |= 0xC000000000000000
+	}
+
+	return int64(unsigned)
+}
