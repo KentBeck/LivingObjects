@@ -17,6 +17,8 @@ To do:
 * Dispatch table for primitives
 * Method lookup cache
 * Basic hash stored in object header?
+* Object structure into Object, Class, Method, Context, indexable (maybe make this its own kind of subclass)
+* Function for dereferencing an Object pointer with guards against immediates
 
 Done:
 Milestone 1: Implement enough to run 2+3. Everything is externally compiled.
