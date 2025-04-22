@@ -4,3 +4,5 @@ src/interpreter/coverage.html
 src/interpreter/interpreter
 src/interpreter/vm.go
 src/.DS_Store
+src/interpreter/interpreter.test
+src/interpreter/cpu.prof
