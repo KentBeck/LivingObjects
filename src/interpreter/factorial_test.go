@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -15,33 +14,9 @@ func TestFactorial(t *testing.T) {
 	// Create the method dictionary for the Integer class
 	integerMethodDict := integerClass.GetMethodDict()
 
-	// + method
-	plusSelector := NewSymbol("+")
-	plusMethod := NewMethod(plusSelector, integerClass)
-	plusMethod.Method.IsPrimitive = true
-	plusMethod.Method.PrimitiveIndex = 1 // Addition
-	integerMethodDict.Entries[plusSelector.SymbolValue] = plusMethod
-
-	// - method
 	minusSelector := NewSymbol("-")
-	minusMethod := NewMethod(minusSelector, integerClass)
-	minusMethod.Method.IsPrimitive = true
-	minusMethod.Method.PrimitiveIndex = 4 // Subtraction
-	integerMethodDict.Entries[minusSelector.SymbolValue] = minusMethod
-
-	// * method
 	timesSelector := NewSymbol("*")
-	timesMethod := NewMethod(timesSelector, integerClass)
-	timesMethod.Method.IsPrimitive = true
-	timesMethod.Method.PrimitiveIndex = 2 // Multiplication
-	integerMethodDict.Entries[timesSelector.SymbolValue] = timesMethod
-
-	// = method
 	equalsSelector := NewSymbol("=")
-	equalsMethod := NewMethod(equalsSelector, integerClass)
-	equalsMethod.Method.IsPrimitive = true
-	equalsMethod.Method.PrimitiveIndex = 3 // Equality
-	integerMethodDict.Entries[equalsSelector.SymbolValue] = equalsMethod
 
 	// Create a simple factorial method
 	factorialSelector := NewSymbol("factorial")
@@ -59,9 +34,6 @@ func TestFactorial(t *testing.T) {
 	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, equalsSelector)    // Literal 2: =
 	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, minusSelector)     // Literal 3: -
 	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, timesSelector)     // Literal 4: *
-
-	// Add debug output
-	fmt.Printf("Literals: %v\n", factorialMethod.Method.Literals)
 
 	// Create bytecodes for factorial:
 	// ^ self = 1
