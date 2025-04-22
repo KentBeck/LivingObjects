@@ -268,68 +268,57 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 	if selector == nil {
 		panic("executePrimitive: nil selector\n")
 	}
-
-	// First, check if the method is explicitly marked as a primitive
-	if method != nil && method.Type == OBJ_METHOD && method.Method.IsPrimitive {
-		// Execute the primitive based on its index
-		switch method.Method.PrimitiveIndex {
-		case 1: // Addition
-			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				result := receiver.IntegerValue + args[0].IntegerValue
-				return vm.NewInteger(result)
-			}
-		case 2: // Multiplication
-			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				result := receiver.IntegerValue * args[0].IntegerValue
-				return vm.NewInteger(result)
-			}
-		case 3: // Equality
-			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				result := receiver.IntegerValue == args[0].IntegerValue
-				return NewBoolean(result)
-			}
-		case 4: // Subtraction
-			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				result := receiver.IntegerValue - args[0].IntegerValue
-				return vm.NewInteger(result)
-			}
-		case 5: // basicClass - return the class of the receiver
-			if len(args) == 0 {
-				fmt.Printf("executePrimitive: basicClass returning %v\n", receiver.Class)
-				return receiver.Class
-			}
-		case 6: // Less than
-			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				result := receiver.IntegerValue < args[0].IntegerValue
-				return NewBoolean(result)
-			}
-		case 7: // Greater than
-			if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				result := receiver.IntegerValue > args[0].IntegerValue
-				return NewBoolean(result)
-			}
-		default:
-			panic("executePrimitive: unknown primitive index\n")
-		}
+	if method == nil {
+		panic("executePrimitive: nil method\n")
+	}
+	if method.Type != OBJ_METHOD {
+		panic("executePrimitive: method is not a method\n")
+	}
+	if !method.Method.IsPrimitive {
+		return nil
 	}
 
-	// If not a primitive method, handle built-in operations
-	if receiver.Type == OBJ_INTEGER {
-		switch selector.SymbolValue {
-
-		case "<":
-			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return NewBoolean(receiver.IntegerValue < args[0].IntegerValue)
-			}
-		case ">":
-			if len(args) == 1 && args[0].Type == OBJ_INTEGER {
-				return NewBoolean(receiver.IntegerValue > args[0].IntegerValue)
-			}
+	// Execute the primitive based on its index
+	switch method.Method.PrimitiveIndex {
+	case 1: // Addition
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			result := receiver.IntegerValue + args[0].IntegerValue
+			return vm.NewInteger(result)
 		}
+	case 2: // Multiplication
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			result := receiver.IntegerValue * args[0].IntegerValue
+			return vm.NewInteger(result)
+		}
+	case 3: // Equality
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			result := receiver.IntegerValue == args[0].IntegerValue
+			return NewBoolean(result)
+		}
+	case 4: // Subtraction
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			result := receiver.IntegerValue - args[0].IntegerValue
+			return vm.NewInteger(result)
+		}
+	case 5: // basicClass - return the class of the receiver
+		if len(args) == 0 {
+			fmt.Printf("executePrimitive: basicClass returning %v\n", receiver.Class)
+			return receiver.Class
+		}
+	case 6: // Less than
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			result := receiver.IntegerValue < args[0].IntegerValue
+			return NewBoolean(result)
+		}
+	case 7: // Greater than
+		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
+			result := receiver.IntegerValue > args[0].IntegerValue
+			return NewBoolean(result)
+		}
+	default:
+		panic("executePrimitive: unknown primitive index\n")
 	}
-
-	// No primitive method found
-	return nil
+	return nil // Fall through to method
 }
 
 // lookupMethod looks up a method in a class hierarchy

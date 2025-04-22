@@ -8,10 +8,17 @@ Milestone 4: Fully self-hosted server. This requires all the networking stuff be
 To do:
 * Optimize sizeof(Object). Maybe write a test for it.
   * Singleton True & False
-* Class as a primitive instead of a bytecode
-* Invoke primitives after lookup
+* Immediate integer
+* Immediate nil, true, false
+* Immediate float
 * Fallback from primitive to regular method
 * Bytecode assembler
+* Bytecode dispatch with panics for error handling instead of return values
+* Dispatch table for primitives
+* Method lookup cache
+* Basic hash stored in object header?
 
 Done:
 Milestone 1: Implement enough to run 2+3. Everything is externally compiled.
+* Invoke primitives after lookup
+* Class as a primitive instead of a bytecode
