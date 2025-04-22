@@ -30,7 +30,7 @@ func NewVM() *VM {
 
 	// Initialize special objects
 	vm.ObjectClass = vm.NewObjectClass()
-	vm.NilClass = NewClass("UndefinedObject", vm.ObjectClass) // ci
+	vm.NilClass = NewClass("UndefinedObject", vm.ObjectClass)
 	vm.NilObject = NewNil()
 	vm.TrueClass = NewClass("True", vm.ObjectClass)
 	vm.TrueObject = &Object{Type: OBJ_BOOLEAN, BooleanValue: true, Class: vm.TrueClass}
