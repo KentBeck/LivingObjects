@@ -119,19 +119,19 @@ func TestShouldCollect(t *testing.T) {
 
 // TestCollect tests the garbage collection process
 func TestCollect(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	om := NewObjectMemory()
 	vm := NewVM()
 
 	// Create some objects
-	intObj := vm.NewInteger(42)
-	boolObj := NewBoolean(true)
+	// Use a non-immediate object for testing
 	strObj := NewString("hello")
 
-	// Allocate them in the object memory
-	om.Allocate(intObj)
-	om.Allocate(boolObj)
+	// Create immediate values
+	intObj := vm.NewInteger(42) // This is now an immediate value
+	boolObj := NewBoolean(true) // This is now an immediate value
+
+	// Allocate the non-immediate object in the object memory
+	// Note: immediate values don't need to be allocated
 	om.Allocate(strObj)
 
 	// Create a root object that references the other objects
@@ -143,8 +143,8 @@ func TestCollect(t *testing.T) {
 	// Add the root object to the VM's globals
 	vm.Globals["root"] = rootObj
 
-	// Create an unreachable object and keep a reference to verify it's collected
-	unreachableObj := vm.NewInteger(99)
+	// Create an unreachable non-immediate object and keep a reference to verify it's collected
+	unreachableObj := NewString("unreachable")
 	om.Allocate(unreachableObj)
 
 	// Mark the unreachable object so we can identify it later
@@ -152,8 +152,8 @@ func TestCollect(t *testing.T) {
 
 	// Check the allocation pointer before collection
 	beforeAllocPtr := om.AllocPtr
-	if beforeAllocPtr != 4 {
-		t.Errorf("Expected AllocPtr to be 4 before collection, got %d", beforeAllocPtr)
+	if beforeAllocPtr != 2 { // Only 2 non-immediate objects: rootObj and unreachableObj
+		t.Errorf("Expected AllocPtr to be 2 before collection, got %d", beforeAllocPtr)
 	}
 
 	// Save the original from-space to check after collection
@@ -171,20 +171,14 @@ func TestCollect(t *testing.T) {
 	// Verify that the spaces have been swapped
 	// The new from-space should contain only the live objects
 
-	// Check that all reachable objects are in the new from-space
+	// Check that all reachable non-immediate objects are in the new from-space
 	foundRoot := false
-	foundInt := false
-	foundBool := false
 	foundStr := false
 
 	for i := 0; i < om.AllocPtr; i++ {
 		obj := om.FromSpace[i]
 		if obj == rootObj {
 			foundRoot = true
-		} else if obj == intObj {
-			foundInt = true
-		} else if obj == boolObj {
-			foundBool = true
 		} else if obj == strObj {
 			foundStr = true
 		}
@@ -193,14 +187,16 @@ func TestCollect(t *testing.T) {
 	if !foundRoot {
 		t.Errorf("Root object not found in from-space after collection")
 	}
-	if !foundInt {
-		t.Errorf("Integer object not found in from-space after collection")
-	}
-	if !foundBool {
-		t.Errorf("Boolean object not found in from-space after collection")
-	}
 	if !foundStr {
 		t.Errorf("String object not found in from-space after collection")
+	}
+
+	// Verify that immediate values are still accessible and correct
+	if !IsIntegerImmediate(intObj) {
+		t.Errorf("Integer object is not an immediate value")
+	}
+	if !IsTrueImmediate(boolObj) {
+		t.Errorf("Boolean object is not an immediate value")
 	}
 
 	// Verify that the unreachable object is not in the new from-space
@@ -235,12 +231,12 @@ func TestCollect(t *testing.T) {
 	}
 
 	// Verify that the values of the objects are preserved
-	if intObj.IntegerValue != 42 {
-		t.Errorf("Integer value changed after collection, expected 42, got %d", intObj.IntegerValue)
+	if GetIntegerImmediate(intObj) != 42 {
+		t.Errorf("Integer value changed after collection, expected 42, got %d", GetIntegerImmediate(intObj))
 	}
 
-	if !boolObj.BooleanValue {
-		t.Errorf("Boolean value changed after collection, expected true, got false")
+	if !IsTrueImmediate(boolObj) {
+		t.Errorf("Boolean value changed after collection, expected true immediate value")
 	}
 
 	if strObj.StringValue != "hello" {
@@ -250,8 +246,6 @@ func TestCollect(t *testing.T) {
 
 // TestCollectWithContexts tests garbage collection with contexts
 func TestCollectWithContexts(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	om := NewObjectMemory()
 	vm := NewVM()
 
@@ -260,44 +254,43 @@ func TestCollectWithContexts(t *testing.T) {
 	methodObj.Method.TempVarNames = append(methodObj.Method.TempVarNames, "temp")
 
 	// Create some objects for the context
-	receiverObj := NewInstance(vm.ObjectClass)
-	arg1 := vm.NewInteger(1)
-	arg2 := vm.NewInteger(2)
+	receiverObj := NewInstance(vm.ObjectClass) // Non-immediate object
+
+	// Create immediate integer values for arguments
+	arg1 := vm.NewInteger(1) // Immediate value
+	arg2 := vm.NewInteger(2) // Immediate value
 
 	// Create a context
 	context := NewContext(methodObj, receiverObj, []*Object{arg1, arg2}, nil)
 
 	// Push some objects onto the stack
-	stackObj1 := NewBoolean(true)
-	stackObj2 := NewString("stack")
+	stackObj1 := NewBoolean(true)   // Immediate value
+	stackObj2 := NewString("stack") // Non-immediate object
 	context.Push(stackObj1)
 	context.Push(stackObj2)
 
 	// Set a temporary variable
-	tempObj := vm.NewInteger(42)
+	tempObj := vm.NewInteger(42) // Immediate value
 	context.SetTempVarByIndex(0, tempObj)
 
 	// Set the context as the VM's current context
 	vm.CurrentContext = context
 
-	// Allocate all objects in the object memory
+	// Allocate non-immediate objects in the object memory
+	// Note: immediate values don't need to be allocated
 	om.Allocate(methodObj)
 	om.Allocate(receiverObj)
-	om.Allocate(arg1)
-	om.Allocate(arg2)
-	om.Allocate(stackObj1)
-	om.Allocate(stackObj2)
-	om.Allocate(tempObj)
+	om.Allocate(stackObj2) // Only non-immediate objects need to be allocated
 
-	// Create an unreachable object and mark it
-	unreachableObj := vm.NewInteger(99)
+	// Create an unreachable non-immediate object and mark it
+	unreachableObj := NewString("unreachable")
 	om.Allocate(unreachableObj)
 	unreachableObj.Moved = true // This flag should be reset during collection
 
 	// Check the allocation pointer before collection
 	beforeAllocPtr := om.AllocPtr
-	if beforeAllocPtr != 8 {
-		t.Errorf("Expected AllocPtr to be 8 before collection, got %d", beforeAllocPtr)
+	if beforeAllocPtr != 4 { // Only 4 non-immediate objects: methodObj, receiverObj, stackObj2, unreachableObj
+		t.Errorf("Expected AllocPtr to be 4 before collection, got %d", beforeAllocPtr)
 	}
 
 	// Perform garbage collection
@@ -308,14 +301,10 @@ func TestCollectWithContexts(t *testing.T) {
 		t.Errorf("Expected GCCount to be 1 after collection, got %d", om.GCCount)
 	}
 
-	// Verify that all reachable objects are in the new from-space
+	// Verify that all reachable non-immediate objects are in the new from-space
 	foundMethod := false
 	foundReceiver := false
-	foundArg1 := false
-	foundArg2 := false
-	foundStackObj1 := false
 	foundStackObj2 := false
-	foundTempObj := false
 
 	for i := 0; i < om.AllocPtr; i++ {
 		obj := om.FromSpace[i]
@@ -323,16 +312,8 @@ func TestCollectWithContexts(t *testing.T) {
 			foundMethod = true
 		} else if obj == receiverObj {
 			foundReceiver = true
-		} else if obj == arg1 {
-			foundArg1 = true
-		} else if obj == arg2 {
-			foundArg2 = true
-		} else if obj == stackObj1 {
-			foundStackObj1 = true
 		} else if obj == stackObj2 {
 			foundStackObj2 = true
-		} else if obj == tempObj {
-			foundTempObj = true
 		}
 	}
 
@@ -342,20 +323,22 @@ func TestCollectWithContexts(t *testing.T) {
 	if !foundReceiver {
 		t.Errorf("Receiver object not found in from-space after collection")
 	}
-	if !foundArg1 {
-		t.Errorf("Argument 1 not found in from-space after collection")
-	}
-	if !foundArg2 {
-		t.Errorf("Argument 2 not found in from-space after collection")
-	}
-	if !foundStackObj1 {
-		t.Errorf("Stack object 1 not found in from-space after collection")
-	}
 	if !foundStackObj2 {
 		t.Errorf("Stack object 2 not found in from-space after collection")
 	}
-	if !foundTempObj {
-		t.Errorf("Temporary variable object not found in from-space after collection")
+
+	// Verify that immediate values are still accessible and correct
+	if !IsIntegerImmediate(arg1) {
+		t.Errorf("Argument 1 is not an immediate value")
+	}
+	if !IsIntegerImmediate(arg2) {
+		t.Errorf("Argument 2 is not an immediate value")
+	}
+	if !IsTrueImmediate(stackObj1) {
+		t.Errorf("Stack object 1 is not an immediate value")
+	}
+	if !IsIntegerImmediate(tempObj) {
+		t.Errorf("Temporary variable object is not an immediate value")
 	}
 
 	// Verify that the unreachable object is not in the new from-space
@@ -418,31 +401,29 @@ func TestCollectWithContexts(t *testing.T) {
 	}
 
 	// Verify that the values of the objects are preserved
-	if arg1.IntegerValue != 1 {
-		t.Errorf("Argument 1 value changed after collection, expected 1, got %d", arg1.IntegerValue)
+	if GetIntegerImmediate(arg1) != 1 {
+		t.Errorf("Argument 1 value changed after collection, expected 1, got %d", GetIntegerImmediate(arg1))
 	}
 
-	if arg2.IntegerValue != 2 {
-		t.Errorf("Argument 2 value changed after collection, expected 2, got %d", arg2.IntegerValue)
+	if GetIntegerImmediate(arg2) != 2 {
+		t.Errorf("Argument 2 value changed after collection, expected 2, got %d", GetIntegerImmediate(arg2))
 	}
 
-	if !stackObj1.BooleanValue {
-		t.Errorf("Stack object 1 value changed after collection, expected true, got false")
+	if !IsTrueImmediate(stackObj1) {
+		t.Errorf("Stack object 1 value changed after collection, expected true immediate value")
 	}
 
 	if stackObj2.StringValue != "stack" {
 		t.Errorf("Stack object 2 value changed after collection, expected 'stack', got '%s'", stackObj2.StringValue)
 	}
 
-	if tempObj.IntegerValue != 42 {
-		t.Errorf("Temporary variable value changed after collection, expected 42, got %d", tempObj.IntegerValue)
+	if GetIntegerImmediate(tempObj) != 42 {
+		t.Errorf("Temporary variable value changed after collection, expected 42, got %d", GetIntegerImmediate(tempObj))
 	}
 }
 
 // TestCollectWithCycles tests garbage collection with cyclic references
 func TestCollectWithCycles(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	om := NewObjectMemory()
 	vm := NewVM()
 
@@ -550,8 +531,6 @@ func TestCollectWithCycles(t *testing.T) {
 
 // TestGrowSpaces tests the growSpaces method
 func TestGrowSpaces(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	om := NewObjectMemory()
 
 	// Set a small initial space size for testing
@@ -560,12 +539,11 @@ func TestGrowSpaces(t *testing.T) {
 	om.FromSpace = make([]*Object, 10)
 	om.ToSpace = make([]*Object, 10)
 
-	// Create a VM for the integer class
-	vm := NewVM()
+	// No need for a VM when using non-immediate objects
 
-	// Fill the from-space with objects
+	// Fill the from-space with non-immediate objects
 	for i := 0; i < 9; i++ {
-		om.FromSpace[i] = vm.NewInteger(int64(i))
+		om.FromSpace[i] = NewString(string(rune('a' + i)))
 	}
 	om.AllocPtr = 9
 
@@ -594,8 +572,9 @@ func TestGrowSpaces(t *testing.T) {
 
 	// Check that the objects are still in the from-space
 	for i := 0; i < 9; i++ {
-		if om.FromSpace[i] == nil || om.FromSpace[i].Type != OBJ_INTEGER || om.FromSpace[i].IntegerValue != int64(i) {
-			t.Errorf("Expected FromSpace[%d] to be an integer with value %d", i, i)
+		expectedStr := string(rune('a' + i))
+		if om.FromSpace[i] == nil || om.FromSpace[i].Type != OBJ_STRING || om.FromSpace[i].StringValue != expectedStr {
+			t.Errorf("Expected FromSpace[%d] to be a string with value '%s'", i, expectedStr)
 		}
 	}
 
@@ -618,8 +597,8 @@ func TestCollectTriggersGrowSpaces(t *testing.T) {
 
 // TestCollectEdgeCases tests edge cases in the garbage collector
 func TestCollectEdgeCases(t *testing.T) {
-	// Skip this test for now as it's causing issues
-	t.Skip("Skipping test until garbage collector issues are fixed")
+	// Skip this test for now as it's causing issues with immediate values
+	t.Skip("Skipping test until immediate values are fully implemented")
 	// Test with empty object memory
 	{
 		om := NewObjectMemory()
@@ -743,57 +722,91 @@ func TestCollectEdgeCases(t *testing.T) {
 
 // TestCopyObject tests the copyObject method
 func TestCopyObject(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	om := NewObjectMemory()
 
 	// Create a VM for the integer class
 	vm := NewVM()
 
-	// Create an object to copy
-	obj := vm.NewInteger(42)
+	// Test with an immediate value
+	{
+		// Create an immediate value
+		immediateObj := vm.NewInteger(42)
 
-	// Copy the object
-	toPtr := 0
-	copiedObj := om.copyObject(obj, &toPtr)
+		// Verify it's an immediate value
+		if !IsIntegerImmediate(immediateObj) {
+			t.Errorf("Expected immediateObj to be an immediate value")
+		}
 
-	// Check that the copied object is in the to-space
-	if om.ToSpace[0] != obj {
-		t.Errorf("Expected ToSpace[0] to be obj")
+		// Copy the object
+		toPtr := 0
+		copiedObj := om.copyObject(immediateObj, &toPtr)
+
+		// Check that the immediate value is returned as-is
+		if copiedObj != immediateObj {
+			t.Errorf("Expected copiedObj to be the same as immediateObj")
+		}
+
+		// Check that toPtr hasn't changed (immediate values don't get copied)
+		if toPtr != 0 {
+			t.Errorf("Expected toPtr to still be 0, got %d", toPtr)
+		}
 	}
 
-	// Check that the copied object has the forwarding pointer set
-	if !obj.Moved {
-		t.Errorf("Expected obj.Moved to be true")
+	// Test with a non-immediate object
+	{
+		// Create a non-immediate object
+		obj := NewString("test")
+
+		// Copy the object
+		toPtr := 0
+		_ = om.copyObject(obj, &toPtr)
+
+		// Check that the copied object is in the to-space
+		if om.ToSpace[0] != obj {
+			t.Errorf("Expected ToSpace[0] to be obj")
+		}
+
+		// Check that the copied object has the forwarding pointer set
+		if !obj.Moved {
+			t.Errorf("Expected obj.Moved to be true")
+		}
+
+		if obj.ForwardingPtr != obj {
+			t.Errorf("Expected obj.ForwardingPtr to be obj")
+		}
+
+		// Check that the toPtr has been incremented
+		if toPtr != 1 {
+			t.Errorf("Expected toPtr to be 1, got %d", toPtr)
+		}
 	}
 
-	if obj.ForwardingPtr != obj {
-		t.Errorf("Expected obj.ForwardingPtr to be obj")
-	}
+	// Test copying an object that has already been copied
+	{
+		// Create a non-immediate object
+		obj := NewString("test2")
 
-	// Check that the toPtr has been incremented
-	if toPtr != 1 {
-		t.Errorf("Expected toPtr to be 1, got %d", toPtr)
-	}
+		// Copy the object first time
+		toPtr := 0
+		copiedObj := om.copyObject(obj, &toPtr)
 
-	// Copy the object again
-	copiedObj2 := om.copyObject(obj, &toPtr)
+		// Copy the object again
+		copiedObj2 := om.copyObject(obj, &toPtr)
 
-	// Check that we get the same copied object
-	if copiedObj2 != copiedObj {
-		t.Errorf("Expected copiedObj2 to be the same as copiedObj")
-	}
+		// Check that we get the same copied object
+		if copiedObj2 != copiedObj {
+			t.Errorf("Expected copiedObj2 to be the same as copiedObj")
+		}
 
-	// Check that toPtr hasn't changed
-	if toPtr != 1 {
-		t.Errorf("Expected toPtr to still be 1, got %d", toPtr)
+		// Check that toPtr hasn't changed
+		if toPtr != 1 {
+			t.Errorf("Expected toPtr to still be 1, got %d", toPtr)
+		}
 	}
 }
 
 // TestUpdateReferences tests the updateReferences method
 func TestUpdateReferences(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	om := NewObjectMemory()
 
 	// Test with an instance object
@@ -805,20 +818,22 @@ func TestUpdateReferences(t *testing.T) {
 		class := NewClass("TestClass", nil)
 		instance := NewInstance(class)
 		instance.InstanceVars = make([]*Object, 2)
-		instance.InstanceVars[METHOD_DICTIONARY_IV] = vm.NewInteger(1)
-		instance.InstanceVars[1] = vm.NewInteger(2)
+
+		// Use immediate values for instance variables
+		instance.InstanceVars[METHOD_DICTIONARY_IV] = vm.NewInteger(1) // Immediate value
+		instance.InstanceVars[1] = vm.NewInteger(2)                    // Immediate value
 
 		// Update references
 		toPtr := 0
 		om.updateReferences(instance, &toPtr)
 
-		// Check that the instance variables have been copied
-		if !instance.InstanceVars[0].Moved {
-			t.Errorf("Expected instance.InstanceVars[0].Moved to be true")
+		// Check that the instance variables are still immediate values
+		if !IsIntegerImmediate(instance.InstanceVars[0]) {
+			t.Errorf("Expected instance.InstanceVars[0] to be an immediate value")
 		}
 
-		if !instance.InstanceVars[1].Moved {
-			t.Errorf("Expected instance.InstanceVars[1].Moved to be true")
+		if !IsIntegerImmediate(instance.InstanceVars[1]) {
+			t.Errorf("Expected instance.InstanceVars[1] to be an immediate value")
 		}
 
 		// Check that the class has been copied
@@ -826,9 +841,9 @@ func TestUpdateReferences(t *testing.T) {
 			t.Errorf("Expected instance.Class.Moved to be true")
 		}
 
-		// Check that toPtr has been incremented for each copied object
-		if toPtr != 3 {
-			t.Errorf("Expected toPtr to be 3, got %d", toPtr)
+		// Check that toPtr has been incremented only for the class (immediate values don't get copied)
+		if toPtr != 1 {
+			t.Errorf("Expected toPtr to be 1, got %d", toPtr)
 		}
 	}
 
@@ -837,27 +852,27 @@ func TestUpdateReferences(t *testing.T) {
 		// Create a VM for the integer class
 		vm := NewVM()
 
-		// Create an array with elements
+		// Create an array with immediate value elements
 		array := NewArray(2)
-		array.Elements[0] = vm.NewInteger(1)
-		array.Elements[1] = vm.NewInteger(2)
+		array.Elements[0] = vm.NewInteger(1) // Immediate value
+		array.Elements[1] = vm.NewInteger(2) // Immediate value
 
 		// Update references
 		toPtr := 0
 		om.updateReferences(array, &toPtr)
 
-		// Check that the elements have been copied
-		if !array.Elements[0].Moved {
-			t.Errorf("Expected array.Elements[0].Moved to be true")
+		// Check that the elements are still immediate values
+		if !IsIntegerImmediate(array.Elements[0]) {
+			t.Errorf("Expected array.Elements[0] to be an immediate value")
 		}
 
-		if !array.Elements[1].Moved {
-			t.Errorf("Expected array.Elements[1].Moved to be true")
+		if !IsIntegerImmediate(array.Elements[1]) {
+			t.Errorf("Expected array.Elements[1] to be an immediate value")
 		}
 
-		// Check that toPtr has been incremented for each copied object
-		if toPtr != 2 {
-			t.Errorf("Expected toPtr to be 2, got %d", toPtr)
+		// Check that toPtr hasn't been incremented (immediate values don't get copied)
+		if toPtr != 0 {
+			t.Errorf("Expected toPtr to be 0, got %d", toPtr)
 		}
 	}
 
@@ -866,27 +881,27 @@ func TestUpdateReferences(t *testing.T) {
 		// Create a VM for the integer class
 		vm := NewVM()
 
-		// Create a dictionary with entries
+		// Create a dictionary with immediate value entries
 		dict := NewDictionary()
-		dict.Entries["key1"] = vm.NewInteger(1)
-		dict.Entries["key2"] = vm.NewInteger(2)
+		dict.Entries["key1"] = vm.NewInteger(1) // Immediate value
+		dict.Entries["key2"] = vm.NewInteger(2) // Immediate value
 
 		// Update references
 		toPtr := 0
 		om.updateReferences(dict, &toPtr)
 
-		// Check that the entries have been copied
-		if !dict.Entries["key1"].Moved {
-			t.Errorf("Expected dict.Entries[\"key1\"].Moved to be true")
+		// Check that the entries are still immediate values
+		if !IsIntegerImmediate(dict.Entries["key1"]) {
+			t.Errorf("Expected dict.Entries[\"key1\"] to be an immediate value")
 		}
 
-		if !dict.Entries["key2"].Moved {
-			t.Errorf("Expected dict.Entries[\"key2\"].Moved to be true")
+		if !IsIntegerImmediate(dict.Entries["key2"]) {
+			t.Errorf("Expected dict.Entries[\"key2\"] to be an immediate value")
 		}
 
-		// Check that toPtr has been incremented for each copied object
-		if toPtr != 2 {
-			t.Errorf("Expected toPtr to be 2, got %d", toPtr)
+		// Check that toPtr hasn't been incremented (immediate values don't get copied)
+		if toPtr != 0 {
+			t.Errorf("Expected toPtr to be 0, got %d", toPtr)
 		}
 	}
 
@@ -895,22 +910,22 @@ func TestUpdateReferences(t *testing.T) {
 		// Create a VM for the integer class
 		vm := NewVM()
 
-		// Create a method with literals and selector
+		// Create a method with immediate value literals and selector
 		method := NewMethod(NewSymbol("test"), NewClass("TestClass", nil))
-		method.Method.Literals = append(method.Method.Literals, vm.NewInteger(1))
-		method.Method.Literals = append(method.Method.Literals, vm.NewInteger(2))
+		method.Method.Literals = append(method.Method.Literals, vm.NewInteger(1)) // Immediate value
+		method.Method.Literals = append(method.Method.Literals, vm.NewInteger(2)) // Immediate value
 
 		// Update references
 		toPtr := 0
 		om.updateReferences(method, &toPtr)
 
-		// Check that the literals have been copied
-		if !method.Method.Literals[0].Moved {
-			t.Errorf("Expected method.Method.Literals[0].Moved to be true")
+		// Check that the literals are still immediate values
+		if !IsIntegerImmediate(method.Method.Literals[0]) {
+			t.Errorf("Expected method.Method.Literals[0] to be an immediate value")
 		}
 
-		if !method.Method.Literals[1].Moved {
-			t.Errorf("Expected method.Method.Literals[1].Moved to be true")
+		if !IsIntegerImmediate(method.Method.Literals[1]) {
+			t.Errorf("Expected method.Method.Literals[1] to be an immediate value")
 		}
 
 		// Check that the selector has been copied
@@ -923,9 +938,9 @@ func TestUpdateReferences(t *testing.T) {
 			t.Errorf("Expected method.Method.Class.Moved to be true")
 		}
 
-		// Check that toPtr has been incremented for each copied object
-		if toPtr != 4 {
-			t.Errorf("Expected toPtr to be 4, got %d", toPtr)
+		// Check that toPtr has been incremented only for the selector and class (immediate values don't get copied)
+		if toPtr != 2 {
+			t.Errorf("Expected toPtr to be 2, got %d", toPtr)
 		}
 	}
 }

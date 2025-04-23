@@ -32,7 +32,7 @@ func TestAllocateWithGCNeeded(t *testing.T) {
 
 // TestCollectWithSpecialObjects tests the Collect method with special VM objects
 func TestCollectWithSpecialObjects(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
+	// Skip this test for now as it's causing issues with immediate values
 	t.Skip("Skipping test until immediate values are fully implemented")
 	om := NewObjectMemory()
 	vm := NewVM()
@@ -251,13 +251,11 @@ func TestCollectWithNilInRootSet(t *testing.T) {
 
 // TestCollectWithNilInToSpace tests the Collect method with nil objects in the to-space
 func TestCollectWithNilInToSpace(t *testing.T) {
-	// Skip this test for now as we're transitioning to immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	om := NewObjectMemory()
 	vm := NewVM()
 
-	// Create and allocate an object
-	obj := vm.NewInteger(42)
+	// Create and allocate a non-immediate object
+	obj := NewString("test")
 	om.Allocate(obj)
 
 	// Add the object to globals to make it reachable
