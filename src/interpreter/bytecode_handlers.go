@@ -117,13 +117,8 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 	}
 
 	// Special handling for immediate values
-	if IsImmediate(receiver) {
-		// For immediate nil, use the NilObject for method lookup
-		if IsNilImmediate(receiver) {
-			receiver = vm.NilObject
-		}
-		// For other immediate values, we'll handle them in the lookupMethod function
-	}
+	// We don't modify the receiver here, as we need to preserve the immediate value
+	// The lookupMethod function will handle getting the appropriate class for immediate values
 
 	method := vm.lookupMethod(receiver, selector)
 	if method == nil {
