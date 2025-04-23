@@ -59,8 +59,9 @@ type Method struct {
 func NewBoolean(value bool) *Object {
 	if value {
 		return MakeTrueImmediate()
+	} else {
+		return MakeFalseImmediate()
 	}
-	return MakeFalseImmediate()
 }
 
 // NewNil creates a new nil object
@@ -180,11 +181,8 @@ func (o *Object) IsTrue() bool {
 		return true
 	}
 
-	// Regular objects
-	if o.Type == OBJ_BOOLEAN {
-		return o.BooleanValue
-	}
-	return o.Type != OBJ_NIL
+	// Not thrilled about this. We don't want truthiness in the image, probably not here either
+	return false
 }
 
 // String returns a string representation of the object

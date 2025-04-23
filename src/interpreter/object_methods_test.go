@@ -31,12 +31,12 @@ func TestObjectIsTrue(t *testing.T) {
 		{
 			name:     "Integer",
 			obj:      vm.NewInteger(42),
-			expected: true,
+			expected: true, // This is wrong
 		},
 		{
 			name:     "String",
 			obj:      NewString("hello"),
-			expected: true,
+			expected: false,
 		},
 	}
 
@@ -44,7 +44,7 @@ func TestObjectIsTrue(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			result := test.obj.IsTrue()
 			if result != test.expected {
-				t.Errorf("Expected %v, got %v", test.expected, result)
+				t.Errorf("Expected %v, got %v for %s", test.expected, result, test.name)
 			}
 		})
 	}
