@@ -25,8 +25,8 @@ const (
 type Object struct {
 	Type             ObjectType
 	Class            *Object
-	StringValue      string
-	SymbolValue      string
+	Moved            bool      // Used for garbage collection
+	ForwardingPtr    *Object   // Used for garbage collection
 	InstanceVars     []*Object // Instance variables stored by index
 	Elements         []*Object
 	Entries          map[string]*Object
@@ -36,8 +36,8 @@ type Object struct {
 	Selector         *Object
 	SuperClass       *Object
 	InstanceVarNames []string
-	Moved            bool    // Used for garbage collection
-	ForwardingPtr    *Object // Used for garbage collection
+	StringValue      string
+	SymbolValue      string
 }
 
 const METHOD_DICTIONARY_IV = 0
