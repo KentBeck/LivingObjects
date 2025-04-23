@@ -38,10 +38,8 @@ func testSubtractionPrimitive(t *testing.T) {
 		if intValue != 3 {
 			t.Errorf("Expected result to be 3, got %d", intValue)
 		}
-	} else if result.Type != OBJ_INTEGER {
-		t.Errorf("Expected result to be an integer, got %v", result.Type)
-	} else if result.IntegerValue != 3 {
-		t.Errorf("Expected result to be 3, got %d", result.IntegerValue)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", result)
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
@@ -76,10 +74,8 @@ func testMultiplicationPrimitive(t *testing.T) {
 		if intValue != 10 {
 			t.Errorf("Expected result to be 10, got %d", intValue)
 		}
-	} else if result.Type != OBJ_INTEGER {
-		t.Errorf("Expected result to be an integer, got %v", result.Type)
-	} else if result.IntegerValue != 10 {
-		t.Errorf("Expected result to be 10, got %d", result.IntegerValue)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", result)
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
@@ -114,10 +110,8 @@ func testAdditionPrimitive(t *testing.T) {
 		if intValue != 7 {
 			t.Errorf("Expected result to be 7, got %d", intValue)
 		}
-	} else if result.Type != OBJ_INTEGER {
-		t.Errorf("Expected result to be an integer, got %v", result.Type)
-	} else if result.IntegerValue != 7 {
-		t.Errorf("Expected result to be 7, got %d", result.IntegerValue)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", result)
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits

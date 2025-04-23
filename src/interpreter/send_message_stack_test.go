@@ -92,10 +92,8 @@ func TestSendMessageStackManagement(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected result to be 42, got %d", intValue)
 		}
-	} else if result.Type != OBJ_INTEGER {
-		t.Errorf("Expected result to be an integer, got %v", result.Type)
-	} else if result.IntegerValue != 42 {
-		t.Errorf("Expected result to be 42, got %d", result.IntegerValue)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", result)
 	}
 
 }
@@ -192,9 +190,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 		if intValue != 210 {
 			t.Errorf("Expected result to be 210 (5 * 42), got %d", intValue)
 		}
-	} else if multiplyResult.Type != OBJ_INTEGER {
-		t.Errorf("Expected result to be an integer, got %v", multiplyResult.Type)
-	} else if multiplyResult.IntegerValue != 210 {
-		t.Errorf("Expected result to be 210 (5 * 42), got %d", multiplyResult.IntegerValue)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", multiplyResult)
 	}
 }

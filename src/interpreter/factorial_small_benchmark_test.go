@@ -131,8 +131,8 @@ func BenchmarkFactorial1(b *testing.B) {
 			if intValue != 1 {
 				b.Fatalf("Expected factorial of 1 to be 1, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 1 {
-			b.Fatalf("Expected factorial of 1 to be 1, got %v", result)
+		} else {
+			b.Fatalf("Expected an immediate integer, got %v", result)
 		}
 	}
 }
@@ -264,8 +264,8 @@ func BenchmarkFactorial2(b *testing.B) {
 			if intValue != 2 {
 				b.Fatalf("Expected factorial of 2 to be 2, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 2 {
-			b.Fatalf("Expected factorial of 2 to be 2, got %v", result)
+		} else {
+			b.Fatalf("Expected an immediate integer, got %v", result)
 		}
 	}
 }
@@ -397,8 +397,8 @@ func BenchmarkFactorial4(b *testing.B) {
 			if intValue != 24 {
 				b.Fatalf("Expected factorial of 4 to be 24, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 24 {
-			b.Fatalf("Expected factorial of 4 to be 24, got %v", result)
+		} else {
+			b.Fatalf("Expected an immediate integer, got %v", result)
 		}
 	}
 }

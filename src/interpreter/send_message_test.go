@@ -67,8 +67,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 			if intValue != 5 {
 				t.Errorf("Expected 5, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 5 {
-			t.Errorf("Expected 5, got %s", result)
+		} else {
+			t.Errorf("Expected an immediate integer, got %s", result)
 		}
 
 		// Check the stack
@@ -83,8 +83,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 			if intValue != 5 {
 				t.Errorf("Expected stack top to be 5, got %d", intValue)
 			}
-		} else if stackTop.Type != OBJ_INTEGER || stackTop.IntegerValue != 5 {
-			t.Errorf("Expected stack top to be 5, got %s", stackTop)
+		} else {
+			t.Errorf("Expected an immediate integer, got %s", stackTop)
 		}
 	})
 
@@ -164,8 +164,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 			if intValue != 1 {
 				t.Errorf("Expected 1, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 1 {
-			t.Errorf("Expected 1, got %s", result)
+		} else {
+			t.Errorf("Expected an immediate integer, got %s", result)
 		}
 
 		// Check the stack
@@ -180,8 +180,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 			if intValue != 1 {
 				t.Errorf("Expected stack top to be 1, got %d", intValue)
 			}
-		} else if stackTop.Type != OBJ_INTEGER || stackTop.IntegerValue != 1 {
-			t.Errorf("Expected stack top to be 1, got %s", stackTop)
+		} else {
+			t.Errorf("Expected an immediate integer, got %s", stackTop)
 		}
 	})
 
@@ -417,8 +417,8 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 			if intValue != 5 {
 				t.Errorf("Expected 5, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 5 {
-			t.Errorf("Expected 5, got %s", result)
+		} else {
+			t.Errorf("Expected an immediate integer, got %s", result)
 		}
 
 		// Execute the third PUSH_LITERAL bytecode
@@ -439,8 +439,8 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 			if intValue != 9 {
 				t.Errorf("Expected 9, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 9 {
-			t.Errorf("Expected 9, got %s", result)
+		} else {
+			t.Errorf("Expected an immediate integer, got %s", result)
 		}
 
 		// Check the stack
@@ -455,8 +455,8 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 			if intValue != 9 {
 				t.Errorf("Expected stack top to be 9, got %d", intValue)
 			}
-		} else if stackTop.Type != OBJ_INTEGER || stackTop.IntegerValue != 9 {
-			t.Errorf("Expected stack top to be 9, got %s", stackTop)
+		} else {
+			t.Errorf("Expected an immediate integer, got %s", stackTop)
 		}
 	})
 }

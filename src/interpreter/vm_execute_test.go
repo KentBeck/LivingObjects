@@ -53,8 +53,8 @@ func TestExecuteContextWithStackValue(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected 42, got %d", intValue)
 		}
-	} else if result.Type != OBJ_INTEGER || result.IntegerValue != 42 {
-		t.Errorf("Expected 42, got %v", result)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", result)
 	}
 }
 

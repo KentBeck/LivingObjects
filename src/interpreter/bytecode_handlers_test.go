@@ -32,8 +32,8 @@ func TestExecutePushLiteral(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
-	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
-		t.Errorf("Expected 42 on the stack, got %v", value)
+	} else {
+		panic("Expected an immediate integer")
 	}
 }
 
@@ -108,8 +108,8 @@ func TestExecuteDuplicate(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
-	} else if value1.Type != OBJ_INTEGER || value1.IntegerValue != 42 {
-		t.Errorf("Expected 42 on the stack, got %v", value1)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", value1)
 	}
 
 	// Check for immediate integer
@@ -118,8 +118,8 @@ func TestExecuteDuplicate(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
-	} else if value2.Type != OBJ_INTEGER || value2.IntegerValue != 42 {
-		t.Errorf("Expected 42 on the stack, got %v", value2)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", value2)
 	}
 }
 
@@ -155,8 +155,8 @@ func TestExecuteSendMessage(t *testing.T) {
 		if intValue != 5 {
 			t.Errorf("Expected result to be 5, got %d", intValue)
 		}
-	} else if result.Type != OBJ_INTEGER || result.IntegerValue != 5 {
-		t.Errorf("Expected result to be 5, got %v", result)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", result)
 	}
 }
 
@@ -194,8 +194,8 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
-	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
-		t.Errorf("Expected 42 on the stack, got %v", value)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", value)
 	}
 }
 
@@ -228,8 +228,8 @@ func TestExecutePushTemporaryVariable(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
-	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
-		t.Errorf("Expected 42 on the stack, got %v", value)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", value)
 	}
 }
 
@@ -262,8 +262,8 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected instance variable to be 42, got %d", intValue)
 		}
-	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
-		t.Errorf("Expected instance variable to be 42, got %v", value)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", value)
 	}
 
 	if context.StackPointer != 1 {
@@ -277,8 +277,8 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
-	} else if stackValue.Type != OBJ_INTEGER || stackValue.IntegerValue != 42 {
-		t.Errorf("Expected 42 on the stack, got %v", stackValue)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", stackValue)
 	}
 }
 
@@ -307,8 +307,8 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected temporary variable to be 42, got %d", intValue)
 		}
-	} else if value.Type != OBJ_INTEGER || value.IntegerValue != 42 {
-		t.Errorf("Expected temporary variable to be 42, got %v", value)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", value)
 	}
 
 	if context.StackPointer != 1 {
@@ -322,8 +322,8 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
-	} else if stackValue.Type != OBJ_INTEGER || stackValue.IntegerValue != 42 {
-		t.Errorf("Expected 42 on the stack, got %v", stackValue)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", stackValue)
 	}
 }
 
@@ -347,8 +347,8 @@ func TestExecuteReturnStackTop(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected result to be 42, got %d", intValue)
 		}
-	} else if result.Type != OBJ_INTEGER || result.IntegerValue != 42 {
-		t.Errorf("Expected result to be 42, got %v", result)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", result)
 	}
 
 	if context.StackPointer != 0 {
@@ -563,8 +563,8 @@ func TestComplexJumpScenario(t *testing.T) {
 		if intValue != 1 {
 			t.Errorf("Expected result to be 1, got %d", intValue)
 		}
-	} else if result.Type != OBJ_INTEGER || result.IntegerValue != 1 {
-		t.Errorf("Expected result to be 1, got %v", result)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", result)
 	}
 
 	// Let's simplify the test to just test the first condition

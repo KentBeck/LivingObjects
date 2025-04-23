@@ -60,8 +60,8 @@ func BenchmarkSimpleMessageSend(b *testing.B) {
 			if intValue != 42 {
 				b.Fatalf("Expected 42, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 42 {
-			b.Fatalf("Expected 42, got %v", result)
+		} else {
+			b.Fatalf("Expected an immediate integer, got %v", result)
 		}
 	}
 }
@@ -140,8 +140,8 @@ func BenchmarkAddition(b *testing.B) {
 			if intValue != 15 {
 				b.Fatalf("Expected 15, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 15 {
-			b.Fatalf("Expected 15, got %v", result)
+		} else {
+			b.Fatalf("Expected an immediate integer, got %v", result)
 		}
 	}
 }

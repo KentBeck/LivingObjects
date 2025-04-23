@@ -125,10 +125,8 @@ func TestFactorial(t *testing.T) {
 			if intValue != 1 {
 				t.Errorf("Expected result to be 1, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER {
-			t.Errorf("Expected result to be an integer, got %v", result.Type)
-		} else if result.IntegerValue != 1 {
-			t.Errorf("Expected result to be 1, got %d", result.IntegerValue)
+		} else {
+			t.Errorf("Expected an immediate integer, got %v", result)
 		}
 	})
 
@@ -151,10 +149,8 @@ func TestFactorial(t *testing.T) {
 			if intValue != 24 {
 				t.Errorf("Expected result to be 24, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER {
-			t.Errorf("Expected result to be an integer, got %v", result.Type)
-		} else if result.IntegerValue != 24 {
-			t.Errorf("Expected result to be 24, got %d", result.IntegerValue)
+		} else {
+			t.Errorf("Expected an immediate integer, got %v", result)
 		}
 	})
 }

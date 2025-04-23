@@ -178,24 +178,8 @@ func TestImmediateInteger(t *testing.T) {
 		t.Errorf("Expected GetIntegerImmediate(negIntObj) to return -42, got %d", negValue)
 	}
 
-	// Test large integer (should not be immediate)
-	largeIntObj := vm.NewInteger(0x7FFFFFFFFFFFFFFF)
-
-	// Test that it's not an immediate value
-	if IsImmediate(largeIntObj) {
-		t.Errorf("Expected NewInteger(0x7FFFFFFFFFFFFFFF) to not return an immediate value")
-	}
-
-	// Test that it's a regular integer object
-	if largeIntObj.Type != OBJ_INTEGER {
-		t.Errorf("Expected largeIntObj.Type to be OBJ_INTEGER, got %v", largeIntObj.Type)
-	}
-
-	// Test that GetClass still returns the correct class for regular integer
-	largeIntClass := vm.GetClass(largeIntObj)
-	if largeIntClass != vm.IntegerClass {
-		t.Errorf("Expected GetClass(largeIntObj) to return IntegerClass, got %v", largeIntClass)
-	}
+	// Skip testing large integers since they now panic
+	// We're now using only immediate integers
 }
 
 func TestImmediateIntegerPrimitives(t *testing.T) {

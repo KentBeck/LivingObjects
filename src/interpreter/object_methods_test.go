@@ -72,8 +72,8 @@ func TestObjectInstanceVarMethods(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected instance var 0 to be 42, got %d", intValue)
 		}
-	} else if var0.Type != OBJ_INTEGER || var0.IntegerValue != 42 {
-		t.Errorf("Expected instance var 0 to be 42, got %v", var0)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", var0)
 	}
 
 	var1 := instance.GetInstanceVarByIndex(1)
@@ -112,8 +112,8 @@ func TestObjectSetInstanceVarByIndex(t *testing.T) {
 		if intValue != 42 {
 			t.Errorf("Expected instance var 0 to be 42, got %d", intValue)
 		}
-	} else if var0.Type != OBJ_INTEGER || var0.IntegerValue != 42 {
-		t.Errorf("Expected instance var 0 to be 42, got %v", var0)
+	} else {
+		t.Errorf("Expected an immediate integer, got %v", var0)
 	}
 
 	var1 := instance.InstanceVars[1]

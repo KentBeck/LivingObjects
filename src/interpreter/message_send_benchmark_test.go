@@ -78,8 +78,8 @@ func BenchmarkMessageSend(b *testing.B) {
 			if intValue != 3 {
 				b.Fatalf("Expected 3, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 3 {
-			b.Fatalf("Expected 3, got %v", result)
+		} else {
+			b.Fatalf("Returned non-immediate value: %v", result)
 		}
 	}
 }
@@ -191,8 +191,8 @@ func BenchmarkMultipleMessageSends(b *testing.B) {
 			if intValue != 15 {
 				b.Fatalf("Expected 15, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 15 {
-			b.Fatalf("Expected 15, got %v", result)
+		} else {
+			b.Fatalf("Returned non-immediate value: %v", result)
 		}
 	}
 }

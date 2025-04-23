@@ -25,7 +25,6 @@ const (
 type Object struct {
 	Type             ObjectType
 	Class            *Object
-	IntegerValue     int64
 	BooleanValue     bool
 	StringValue      string
 	SymbolValue      string
@@ -221,7 +220,7 @@ func (o *Object) String() string {
 	// Regular objects
 	switch o.Type {
 	case OBJ_INTEGER:
-		return fmt.Sprintf("%d", o.IntegerValue)
+		panic("Non-immediate integer encountered")
 	case OBJ_BOOLEAN:
 		if o.BooleanValue {
 			return "true"

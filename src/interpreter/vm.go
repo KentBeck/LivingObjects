@@ -168,7 +168,7 @@ func (vm *VM) NewFloatClass() *Object {
 }
 
 // NewInteger creates a new integer object
-// This now returns an immediate value for integers that fit in 62 bits
+// This returns an immediate value for integers
 func (vm *VM) NewInteger(value int64) *Object {
 	// Check if the value fits in 62 bits
 	if value <= 0x1FFFFFFFFFFFFFFF && value >= -0x2000000000000000 {
@@ -176,13 +176,8 @@ func (vm *VM) NewInteger(value int64) *Object {
 		return MakeIntegerImmediate(value)
 	}
 
-	// Fall back to heap-allocated integer for large values
-	intClass := vm.IntegerClass
-	return &Object{
-		Type:         OBJ_INTEGER,
-		IntegerValue: value,
-		Class:        intClass,
-	}
+	// Panic for large values that don't fit in 62 bits
+	panic("Integer value too large for immediate representation")
 }
 
 func (vm *VM) NewFloat(value float64) *Object {
@@ -363,23 +358,9 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			result := val1 + val2
 			return vm.NewInteger(result)
 		}
-		// Handle regular integers
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			result := receiver.IntegerValue + args[0].IntegerValue
-			return vm.NewInteger(result)
-		}
-		// Handle mixed case (immediate and regular)
-		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			val1 := GetIntegerImmediate(receiver)
-			val2 := args[0].IntegerValue
-			result := val1 + val2
-			return vm.NewInteger(result)
-		}
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
-			val1 := receiver.IntegerValue
-			val2 := GetIntegerImmediate(args[0])
-			result := val1 + val2
-			return vm.NewInteger(result)
+		// Handle non-immediate integers - should panic
+		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+			panic("Non-immediate integer encountered")
 		}
 		// Handle integer + float
 		if IsIntegerImmediate(receiver) && len(args) == 1 && IsFloatImmediate(args[0]) {
@@ -396,23 +377,9 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			result := val1 * val2
 			return vm.NewInteger(result)
 		}
-		// Handle regular integers
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			result := receiver.IntegerValue * args[0].IntegerValue
-			return vm.NewInteger(result)
-		}
-		// Handle mixed case (immediate and regular)
-		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			val1 := GetIntegerImmediate(receiver)
-			val2 := args[0].IntegerValue
-			result := val1 * val2
-			return vm.NewInteger(result)
-		}
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
-			val1 := receiver.IntegerValue
-			val2 := GetIntegerImmediate(args[0])
-			result := val1 * val2
-			return vm.NewInteger(result)
+		// Handle non-immediate integers - should panic
+		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+			panic("Non-immediate integer encountered")
 		}
 	case 3: // Equality
 		// Handle immediate integers
@@ -422,23 +389,9 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			result := val1 == val2
 			return NewBoolean(result)
 		}
-		// Handle regular integers
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			result := receiver.IntegerValue == args[0].IntegerValue
-			return NewBoolean(result)
-		}
-		// Handle mixed case (immediate and regular)
-		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			val1 := GetIntegerImmediate(receiver)
-			val2 := args[0].IntegerValue
-			result := val1 == val2
-			return NewBoolean(result)
-		}
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
-			val1 := receiver.IntegerValue
-			val2 := GetIntegerImmediate(args[0])
-			result := val1 == val2
-			return NewBoolean(result)
+		// Handle non-immediate integers - should panic
+		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+			panic("Non-immediate integer encountered")
 		}
 	case 4: // Subtraction
 		// Handle immediate integers
@@ -448,23 +401,9 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			result := val1 - val2
 			return vm.NewInteger(result)
 		}
-		// Handle regular integers
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			result := receiver.IntegerValue - args[0].IntegerValue
-			return vm.NewInteger(result)
-		}
-		// Handle mixed case (immediate and regular)
-		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			val1 := GetIntegerImmediate(receiver)
-			val2 := args[0].IntegerValue
-			result := val1 - val2
-			return vm.NewInteger(result)
-		}
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
-			val1 := receiver.IntegerValue
-			val2 := GetIntegerImmediate(args[0])
-			result := val1 - val2
-			return vm.NewInteger(result)
+		// Handle non-immediate integers - should panic
+		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+			panic("Non-immediate integer encountered")
 		}
 	case 5: // basicClass - return the class of the receiver
 		if len(args) == 0 {
@@ -479,23 +418,9 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			result := val1 < val2
 			return NewBoolean(result)
 		}
-		// Handle regular integers
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			result := receiver.IntegerValue < args[0].IntegerValue
-			return NewBoolean(result)
-		}
-		// Handle mixed case (immediate and regular)
-		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			val1 := GetIntegerImmediate(receiver)
-			val2 := args[0].IntegerValue
-			result := val1 < val2
-			return NewBoolean(result)
-		}
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
-			val1 := receiver.IntegerValue
-			val2 := GetIntegerImmediate(args[0])
-			result := val1 < val2
-			return NewBoolean(result)
+		// Handle non-immediate integers - should panic
+		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+			panic("Non-immediate integer encountered")
 		}
 	case 7: // Greater than
 		// Handle immediate integers
@@ -505,23 +430,9 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			result := val1 > val2
 			return NewBoolean(result)
 		}
-		// Handle regular integers
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			result := receiver.IntegerValue > args[0].IntegerValue
-			return NewBoolean(result)
-		}
-		// Handle mixed case (immediate and regular)
-		if IsIntegerImmediate(receiver) && len(args) == 1 && args[0].Type == OBJ_INTEGER {
-			val1 := GetIntegerImmediate(receiver)
-			val2 := args[0].IntegerValue
-			result := val1 > val2
-			return NewBoolean(result)
-		}
-		if receiver.Type == OBJ_INTEGER && len(args) == 1 && IsIntegerImmediate(args[0]) {
-			val1 := receiver.IntegerValue
-			val2 := GetIntegerImmediate(args[0])
-			result := val1 > val2
-			return NewBoolean(result)
+		// Handle non-immediate integers - should panic
+		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+			panic("Non-immediate integer encountered")
 		}
 	case 10: // Float addition
 		// Handle float + float

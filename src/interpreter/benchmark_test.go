@@ -133,8 +133,8 @@ func BenchmarkFactorial10(b *testing.B) {
 			if intValue != 3628800 {
 				b.Fatalf("Expected factorial of 10 to be 3628800, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 3628800 {
-			b.Fatalf("Expected factorial of 10 to be 3628800, got %v", result)
+		} else {
+			b.Fatalf("Expected an immediate integer, got %v", result)
 		}
 	}
 }
@@ -273,8 +273,8 @@ func BenchmarkFactorial19(b *testing.B) {
 			if intValue != 121645100408832000 {
 				b.Fatalf("Expected factorial of 19 to be 121645100408832000, got %d", intValue)
 			}
-		} else if result.Type != OBJ_INTEGER || result.IntegerValue != 121645100408832000 {
-			b.Fatalf("Expected factorial of 19 to be 121645100408832000, got %v", result)
+		} else {
+			b.Fatalf("Expected an immediate integer, got %v", result)
 		}
 
 		// Count the number of message sends
