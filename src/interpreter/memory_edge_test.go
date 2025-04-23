@@ -168,7 +168,7 @@ func TestUpdateReferencesEdgeCases(t *testing.T) {
 
 		// Set nil selector and class
 		method.Method.Selector = nil
-		method.Method.Class = nil
+		method.Method.MethodClass = nil
 
 		// Update references
 		toPtr := 0

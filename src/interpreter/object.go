@@ -55,10 +55,11 @@ const METHOD_DICTIONARY_IV = 0
 
 // Method represents a Smalltalk method
 type Method struct {
+	Object
 	Bytecodes      []byte
 	Literals       []*Object
 	Selector       *Object
-	Class          *Object
+	MethodClass    *Object
 	TempVarNames   []string
 	IsPrimitive    bool
 	PrimitiveIndex int
@@ -160,7 +161,7 @@ func NewMethod(selector *Object, class *Object) *Object {
 		Bytecodes:    make([]byte, 0),
 		Literals:     make([]*Object, 0),
 		Selector:     selector,
-		Class:        class,
+		MethodClass:  class,
 		TempVarNames: make([]string, 0),
 	}
 

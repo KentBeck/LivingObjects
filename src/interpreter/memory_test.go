@@ -1004,7 +1004,7 @@ func TestUpdateReferences(t *testing.T) {
 		}
 
 		// Check that the class has been copied
-		if !method.Method.Class.Moved {
+		if !method.Method.MethodClass.Moved {
 			t.Errorf("Expected method.Method.Class.Moved to be true")
 		}
 

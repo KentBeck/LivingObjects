@@ -229,8 +229,8 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 		}
 
 		// Update method class
-		if obj.Method.Class != nil {
-			obj.Method.Class = om.copyObject(obj.Method.Class, toPtr)
+		if obj.Method.MethodClass != nil {
+			obj.Method.MethodClass = om.copyObject(obj.Method.MethodClass, toPtr)
 		}
 	}
 }
