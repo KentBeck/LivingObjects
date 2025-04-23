@@ -45,11 +45,12 @@ func TestAllocate(t *testing.T) {
 	obj1 := vm.NewInteger(42)
 	obj2 := NewBoolean(true)
 	obj3 := NewString("hello")
+	obj3Obj := StringToObject(obj3) // Convert to Object for allocation
 
 	// Allocate them in the object memory
 	allocatedObj1 := om.Allocate(obj1)
 	allocatedObj2 := om.Allocate(obj2)
-	allocatedObj3 := om.Allocate(obj3)
+	allocatedObj3 := om.Allocate(obj3Obj)
 
 	// Check that the allocated objects are the same as the original objects
 	if allocatedObj1 != obj1 {
@@ -60,8 +61,8 @@ func TestAllocate(t *testing.T) {
 		t.Errorf("Expected allocatedObj2 to be the same as obj2")
 	}
 
-	if allocatedObj3 != obj3 {
-		t.Errorf("Expected allocatedObj3 to be the same as obj3")
+	if allocatedObj3 != obj3Obj {
+		t.Errorf("Expected allocatedObj3 to be the same as obj3Obj")
 	}
 
 	// Check that the objects are in the from-space
@@ -73,8 +74,8 @@ func TestAllocate(t *testing.T) {
 		t.Errorf("Expected FromSpace[1] to be obj2")
 	}
 
-	if om.FromSpace[2] != obj3 {
-		t.Errorf("Expected FromSpace[2] to be obj3")
+	if om.FromSpace[2] != obj3Obj {
+		t.Errorf("Expected FromSpace[2] to be obj3Obj")
 	}
 
 	// Check that the allocation pointer has been updated
@@ -125,6 +126,7 @@ func TestCollect(t *testing.T) {
 	// Create some objects
 	// Use a non-immediate object for testing
 	strObj := NewString("hello")
+	strObjAsObj := StringToObject(strObj) // Convert to Object for allocation
 
 	// Create immediate values
 	intObj := vm.NewInteger(42) // This is now an immediate value
@@ -132,23 +134,24 @@ func TestCollect(t *testing.T) {
 
 	// Allocate the non-immediate object in the object memory
 	// Note: immediate values don't need to be allocated
-	om.Allocate(strObj)
+	om.Allocate(strObjAsObj)
 
 	// Create a root object that references the other objects
 	rootObj := NewArray(3)
 	rootObj.Elements[0] = intObj
 	rootObj.Elements[1] = boolObj
-	rootObj.Elements[2] = strObj
+	rootObj.Elements[2] = strObjAsObj
 
 	// Add the root object to the VM's globals
 	vm.Globals["root"] = rootObj
 
 	// Create an unreachable non-immediate object and keep a reference to verify it's collected
 	unreachableObj := NewString("unreachable")
-	om.Allocate(unreachableObj)
+	unreachableObjAsObj := StringToObject(unreachableObj) // Convert to Object for allocation
+	om.Allocate(unreachableObjAsObj)
 
 	// Mark the unreachable object so we can identify it later
-	unreachableObj.Moved = true // This flag should be reset during collection
+	unreachableObjAsObj.Moved = true // This flag should be reset during collection
 
 	// Check the allocation pointer before collection
 	beforeAllocPtr := om.AllocPtr
@@ -179,7 +182,7 @@ func TestCollect(t *testing.T) {
 		obj := om.FromSpace[i]
 		if obj == rootObj {
 			foundRoot = true
-		} else if obj == strObj {
+		} else if obj == strObjAsObj {
 			foundStr = true
 		}
 	}
@@ -202,7 +205,7 @@ func TestCollect(t *testing.T) {
 	// Verify that the unreachable object is not in the new from-space
 	foundUnreachable := false
 	for i := 0; i < om.AllocPtr; i++ {
-		if om.FromSpace[i] == unreachableObj {
+		if om.FromSpace[i] == unreachableObjAsObj {
 			foundUnreachable = true
 			break
 		}
@@ -226,7 +229,7 @@ func TestCollect(t *testing.T) {
 		t.Errorf("Expected rootObj.Elements[1] to still be boolObj")
 	}
 
-	if rootObj.Elements[2] != strObj {
+	if rootObj.Elements[2] != strObjAsObj {
 		t.Errorf("Expected rootObj.Elements[2] to still be strObj")
 	}
 
@@ -239,8 +242,9 @@ func TestCollect(t *testing.T) {
 		t.Errorf("Boolean value changed after collection, expected true immediate value")
 	}
 
-	if strObj.StringValue != "hello" {
-		t.Errorf("String value changed after collection, expected 'hello', got '%s'", strObj.StringValue)
+	strValue := ObjectToString(strObjAsObj)
+	if strValue.Value != "hello" {
+		t.Errorf("String value changed after collection, expected 'hello', got '%s'", strValue.Value)
 	}
 }
 
@@ -264,10 +268,11 @@ func TestCollectWithContexts(t *testing.T) {
 	context := NewContext(methodObj, receiverObj, []*Object{arg1, arg2}, nil)
 
 	// Push some objects onto the stack
-	stackObj1 := NewBoolean(true)   // Immediate value
-	stackObj2 := NewString("stack") // Non-immediate object
+	stackObj1 := NewBoolean(true)               // Immediate value
+	stackObj2 := NewString("stack")             // Non-immediate object
+	stackObj2AsObj := StringToObject(stackObj2) // Convert to Object for stack
 	context.Push(stackObj1)
-	context.Push(stackObj2)
+	context.Push(stackObj2AsObj)
 
 	// Set a temporary variable
 	tempObj := vm.NewInteger(42) // Immediate value
@@ -280,12 +285,13 @@ func TestCollectWithContexts(t *testing.T) {
 	// Note: immediate values don't need to be allocated
 	om.Allocate(methodObj)
 	om.Allocate(receiverObj)
-	om.Allocate(stackObj2) // Only non-immediate objects need to be allocated
+	om.Allocate(stackObj2AsObj) // Only non-immediate objects need to be allocated
 
 	// Create an unreachable non-immediate object and mark it
 	unreachableObj := NewString("unreachable")
-	om.Allocate(unreachableObj)
-	unreachableObj.Moved = true // This flag should be reset during collection
+	unreachableObjAsObj := StringToObject(unreachableObj) // Convert to Object for allocation
+	om.Allocate(unreachableObjAsObj)
+	unreachableObjAsObj.Moved = true // This flag should be reset during collection
 
 	// Check the allocation pointer before collection
 	beforeAllocPtr := om.AllocPtr
@@ -312,7 +318,7 @@ func TestCollectWithContexts(t *testing.T) {
 			foundMethod = true
 		} else if obj == receiverObj {
 			foundReceiver = true
-		} else if obj == stackObj2 {
+		} else if obj == stackObj2AsObj {
 			foundStackObj2 = true
 		}
 	}
@@ -344,7 +350,7 @@ func TestCollectWithContexts(t *testing.T) {
 	// Verify that the unreachable object is not in the new from-space
 	foundUnreachable := false
 	for i := 0; i < om.AllocPtr; i++ {
-		if om.FromSpace[i] == unreachableObj {
+		if om.FromSpace[i] == unreachableObjAsObj {
 			foundUnreachable = true
 			break
 		}
@@ -391,7 +397,7 @@ func TestCollectWithContexts(t *testing.T) {
 		t.Errorf("Expected context.Stack[0] to still be stackObj1")
 	}
 
-	if context.Stack[1] != stackObj2 {
+	if context.Stack[1] != stackObj2AsObj {
 		t.Errorf("Expected context.Stack[1] to still be stackObj2")
 	}
 
@@ -413,8 +419,9 @@ func TestCollectWithContexts(t *testing.T) {
 		t.Errorf("Stack object 1 value changed after collection, expected true immediate value")
 	}
 
-	if stackObj2.StringValue != "stack" {
-		t.Errorf("Stack object 2 value changed after collection, expected 'stack', got '%s'", stackObj2.StringValue)
+	stackObj2Value := ObjectToString(stackObj2AsObj)
+	if stackObj2Value.Value != "stack" {
+		t.Errorf("Stack object 2 value changed after collection, expected 'stack', got '%s'", stackObj2Value.Value)
 	}
 
 	if GetIntegerImmediate(tempObj) != 42 {
@@ -543,7 +550,8 @@ func TestGrowSpaces(t *testing.T) {
 
 	// Fill the from-space with non-immediate objects
 	for i := 0; i < 9; i++ {
-		om.FromSpace[i] = NewString(string(rune('a' + i)))
+		strObj := NewString(string(rune('a' + i)))
+		om.FromSpace[i] = StringToObject(strObj)
 	}
 	om.AllocPtr = 9
 
@@ -573,7 +581,7 @@ func TestGrowSpaces(t *testing.T) {
 	// Check that the objects are still in the from-space
 	for i := 0; i < 9; i++ {
 		expectedStr := string(rune('a' + i))
-		if om.FromSpace[i] == nil || om.FromSpace[i].Type != OBJ_STRING || om.FromSpace[i].StringValue != expectedStr {
+		if om.FromSpace[i] == nil || om.FromSpace[i].Type != OBJ_STRING || ObjectToString(om.FromSpace[i]).Value != expectedStr {
 			t.Errorf("Expected FromSpace[%d] to be a string with value '%s'", i, expectedStr)
 		}
 	}
@@ -601,10 +609,11 @@ func TestCollectTriggersGrowSpaces(t *testing.T) {
 	// Create a bunch of non-immediate objects that will survive collection
 	for i := 0; i < 15; i++ {
 		obj := NewString(string(rune('a' + i)))
-		om.Allocate(obj)
+		objAsObj := StringToObject(obj) // Convert to Object for allocation
+		om.Allocate(objAsObj)
 
 		// Add to globals to make them reachable
-		vm.Globals[string(rune('a'+i))] = obj
+		vm.Globals[string(rune('a'+i))] = objAsObj
 	}
 
 	// Record the initial space size
@@ -683,15 +692,17 @@ func TestCollectEdgeCases(t *testing.T) {
 		// Create some non-immediate objects with nil slots in between
 		obj1 := NewString("one")
 		obj2 := NewString("two")
+		obj1AsObj := StringToObject(obj1) // Convert to Object for allocation
+		obj2AsObj := StringToObject(obj2) // Convert to Object for allocation
 
-		om.Allocate(obj1)
+		om.Allocate(obj1AsObj)
 		om.FromSpace[1] = nil // Create a nil slot
 		om.AllocPtr = 2       // Skip the nil slot
-		om.Allocate(obj2)
+		om.Allocate(obj2AsObj)
 
 		// Add objects to globals to make them reachable
-		vm.Globals["obj1"] = obj1
-		vm.Globals["obj2"] = obj2
+		vm.Globals["obj1"] = obj1AsObj
+		vm.Globals["obj2"] = obj2AsObj
 
 		// Perform garbage collection
 		om.Collect(vm)
@@ -702,9 +713,9 @@ func TestCollectEdgeCases(t *testing.T) {
 
 		for i := 0; i < om.AllocPtr; i++ {
 			obj := om.FromSpace[i]
-			if obj == obj1 {
+			if obj == obj1AsObj {
 				foundObj1 = true
-			} else if obj == obj2 {
+			} else if obj == obj2AsObj {
 				foundObj2 = true
 			}
 		}
@@ -748,8 +759,9 @@ func TestCollectEdgeCases(t *testing.T) {
 		// Allocate many non-immediate objects
 		for i := 0; i < 15; i++ {
 			obj := NewString(string(rune('a' + i)))
-			om.Allocate(obj)
-			vm.Globals[string(rune('a'+i))] = obj // Add to globals to make them reachable
+			objAsObj := StringToObject(obj) // Convert to Object for allocation
+			om.Allocate(objAsObj)
+			vm.Globals[string(rune('a'+i))] = objAsObj // Add to globals to make them reachable
 		}
 
 		// Perform garbage collection
@@ -812,22 +824,23 @@ func TestCopyObject(t *testing.T) {
 	{
 		// Create a non-immediate object
 		obj := NewString("test")
+		objAsObj := StringToObject(obj) // Convert to Object for copying
 
 		// Copy the object
 		toPtr := 0
-		_ = om.copyObject(obj, &toPtr)
+		_ = om.copyObject(objAsObj, &toPtr)
 
 		// Check that the copied object is in the to-space
-		if om.ToSpace[0] != obj {
+		if om.ToSpace[0] != objAsObj {
 			t.Errorf("Expected ToSpace[0] to be obj")
 		}
 
 		// Check that the copied object has the forwarding pointer set
-		if !obj.Moved {
+		if !objAsObj.Moved {
 			t.Errorf("Expected obj.Moved to be true")
 		}
 
-		if obj.ForwardingPtr != obj {
+		if objAsObj.ForwardingPtr != objAsObj {
 			t.Errorf("Expected obj.ForwardingPtr to be obj")
 		}
 
@@ -841,13 +854,14 @@ func TestCopyObject(t *testing.T) {
 	{
 		// Create a non-immediate object
 		obj := NewString("test2")
+		objAsObj := StringToObject(obj) // Convert to Object for copying
 
 		// Copy the object first time
 		toPtr := 0
-		copiedObj := om.copyObject(obj, &toPtr)
+		copiedObj := om.copyObject(objAsObj, &toPtr)
 
 		// Copy the object again
-		copiedObj2 := om.copyObject(obj, &toPtr)
+		copiedObj2 := om.copyObject(objAsObj, &toPtr)
 
 		// Check that we get the same copied object
 		if copiedObj2 != copiedObj {

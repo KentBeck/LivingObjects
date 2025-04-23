@@ -243,10 +243,11 @@ func TestCollectWithNilInToSpace(t *testing.T) {
 
 	// Create and allocate a non-immediate object
 	obj := NewString("test")
-	om.Allocate(obj)
+	objAsObj := StringToObject(obj) // Convert to Object for allocation
+	om.Allocate(objAsObj)
 
 	// Add the object to globals to make it reachable
-	vm.Globals["obj"] = obj
+	vm.Globals["obj"] = objAsObj
 
 	// Create a nil slot in the to-space
 	om.ToSpace[0] = nil
@@ -260,7 +261,7 @@ func TestCollectWithNilInToSpace(t *testing.T) {
 	}
 
 	// Check that the object is still in the VM's globals
-	if vm.Globals["obj"] != obj {
+	if vm.Globals["obj"] != objAsObj {
 		t.Errorf("Expected vm.Globals[\"obj\"] to still be obj")
 	}
 }

@@ -35,7 +35,7 @@ func TestObjectIsTrue(t *testing.T) {
 		},
 		{
 			name:     "String",
-			obj:      NewString("hello"),
+			obj:      StringToObject(NewString("hello")),
 			expected: false,
 		},
 	}
@@ -63,7 +63,7 @@ func TestObjectInstanceVarMethods(t *testing.T) {
 
 	// Test GetInstanceVarByIndex
 	instance.InstanceVars[0] = vm.NewInteger(42)
-	instance.InstanceVars[1] = NewString("hello")
+	instance.InstanceVars[1] = StringToObject(NewString("hello"))
 
 	// Get the instance variable and check its value
 	var0 := instance.GetInstanceVarByIndex(0)
@@ -77,7 +77,8 @@ func TestObjectInstanceVarMethods(t *testing.T) {
 	}
 
 	var1 := instance.GetInstanceVarByIndex(1)
-	if var1.Type != OBJ_STRING || var1.StringValue != "hello" {
+	var1Str := ObjectToString(var1)
+	if var1.Type != OBJ_STRING || var1Str.Value != "hello" {
 		t.Errorf("Expected instance var 1 to be 'hello', got %v", var1)
 	}
 
@@ -103,7 +104,7 @@ func TestObjectSetInstanceVarByIndex(t *testing.T) {
 
 	// Test SetInstanceVarByIndex
 	instance.SetInstanceVarByIndex(0, vm.NewInteger(42))
-	instance.SetInstanceVarByIndex(1, NewString("hello"))
+	instance.SetInstanceVarByIndex(1, StringToObject(NewString("hello")))
 
 	// Check the instance variables
 	var0 := instance.InstanceVars[0]
@@ -117,7 +118,8 @@ func TestObjectSetInstanceVarByIndex(t *testing.T) {
 	}
 
 	var1 := instance.InstanceVars[1]
-	if var1.Type != OBJ_STRING || var1.StringValue != "hello" {
+	var1Str := ObjectToString(var1)
+	if var1.Type != OBJ_STRING || var1Str.Value != "hello" {
 		t.Errorf("Expected instance var 1 to be 'hello', got %v", var1)
 	}
 

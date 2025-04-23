@@ -35,7 +35,7 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name:     "String",
-			obj:      NewString("hello"),
+			obj:      StringToObject(NewString("hello")),
 			expected: "'hello'",
 		},
 		{

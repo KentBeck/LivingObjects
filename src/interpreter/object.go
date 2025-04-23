@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"unsafe"
 )
 
 // ObjectType represents the type of a Smalltalk object
@@ -36,8 +37,19 @@ type Object struct {
 	Selector         *Object
 	SuperClass       *Object
 	InstanceVarNames []string
-	StringValue      string
 	SymbolValue      string
+}
+
+// String represents a Smalltalk string object
+type String struct {
+	Object
+	Value string
+}
+
+// Symbol represents a memoized, immutable Smalltalk string object
+type Symbol struct {
+	Object
+	Value string
 }
 
 const METHOD_DICTIONARY_IV = 0
@@ -70,11 +82,12 @@ func NewNil() *Object {
 }
 
 // NewString creates a new string object
-func NewString(value string) *Object {
-	return &Object{
-		Type:        OBJ_STRING,
-		StringValue: value,
+func NewString(value string) *String {
+	str := &String{
+		Value: value,
 	}
+	str.Type = OBJ_STRING
+	return str
 }
 
 // NewSymbol creates a new symbol object
@@ -223,7 +236,9 @@ func (o *Object) String() string {
 	case OBJ_NIL:
 		return "nil"
 	case OBJ_STRING:
-		return fmt.Sprintf("'%s'", o.StringValue)
+		// Convert to String type to access the Value field
+		str := ObjectToString(o)
+		return fmt.Sprintf("'%s'", str.Value)
 	case OBJ_SYMBOL:
 		return fmt.Sprintf("#%s", o.SymbolValue)
 	case OBJ_ARRAY:
@@ -273,4 +288,14 @@ func (o *Object) GetMethodDict() *Object {
 
 	// Method dictionary is stored at index 0 for classes
 	return o.InstanceVars[METHOD_DICTIONARY_IV]
+}
+
+// StringToObject converts a String to an Object
+func StringToObject(s *String) *Object {
+	return (*Object)(unsafe.Pointer(s))
+}
+
+// ObjectToString converts an Object to a String
+func ObjectToString(o *Object) *String {
+	return (*String)(unsafe.Pointer(o))
 }
