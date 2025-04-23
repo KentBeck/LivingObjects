@@ -37,7 +37,6 @@ type Object struct {
 	Selector         *Object
 	SuperClass       *Object
 	InstanceVarNames []string
-	SymbolValue      string
 }
 
 // String represents a Smalltalk string object
@@ -46,7 +45,7 @@ type String struct {
 	Value string
 }
 
-// Symbol represents a memoized, immutable Smalltalk string object
+// Symbol represents a Smalltalk symbol object
 type Symbol struct {
 	Object
 	Value string
@@ -92,10 +91,11 @@ func NewString(value string) *String {
 
 // NewSymbol creates a new symbol object
 func NewSymbol(value string) *Object {
-	return &Object{
-		Type:        OBJ_SYMBOL,
-		SymbolValue: value,
+	sym := &Symbol{
+		Value: value,
 	}
+	sym.Type = OBJ_SYMBOL
+	return SymbolToObject(sym)
 }
 
 // NewArray creates a new array object
@@ -140,13 +140,18 @@ func NewClass(name string, superClass *Object) *Object {
 	instVars := make([]*Object, 1)
 	instVars[0] = NewDictionary() // methodDict at index 0
 
-	return &Object{
-		Type:             OBJ_CLASS,
-		SymbolValue:      name,
-		SuperClass:       superClass,
-		InstanceVarNames: make([]string, 0),
-		InstanceVars:     instVars,
+	// Create a Symbol for the class name
+	sym := &Symbol{
+		Value: name,
 	}
+
+	// Set up the Symbol as a class
+	sym.Type = OBJ_CLASS
+	sym.SuperClass = superClass
+	sym.InstanceVarNames = make([]string, 0)
+	sym.InstanceVars = instVars
+
+	return SymbolToObject(sym)
 }
 
 // NewMethod creates a new method object
@@ -240,21 +245,35 @@ func (o *Object) String() string {
 		str := ObjectToString(o)
 		return fmt.Sprintf("'%s'", str.Value)
 	case OBJ_SYMBOL:
-		return fmt.Sprintf("#%s", o.SymbolValue)
+		// Convert to Symbol type to access the Value field
+		sym := ObjectToSymbol(o)
+		return fmt.Sprintf("#%s", sym.Value)
 	case OBJ_ARRAY:
 		return fmt.Sprintf("Array(%d)", len(o.Elements))
 	case OBJ_DICTIONARY:
 		return fmt.Sprintf("Dictionary(%d)", len(o.Entries))
 	case OBJ_INSTANCE:
 		if o.Class != nil {
-			return fmt.Sprintf("a %s", o.Class.SymbolValue)
+			// For classes, the name is stored in the class itself
+			// The class is a Symbol object
+			if o.Class.Type == OBJ_CLASS {
+				// Get the class name from the class object
+				classSymbol := ObjectToSymbol(o.Class)
+				return fmt.Sprintf("a %s", classSymbol.Value)
+			} else {
+				// If the class is not a class object, just use its string representation
+				return fmt.Sprintf("an instance of %s", o.Class.String())
+			}
 		}
 		return "an Object"
 	case OBJ_CLASS:
-		return fmt.Sprintf("Class %s", o.SymbolValue)
+		// For classes, the name is stored in a Symbol object
+		classSymbol := ObjectToSymbol(o)
+		return fmt.Sprintf("Class %s", classSymbol.Value)
 	case OBJ_METHOD:
 		if o.Method.Selector != nil {
-			return fmt.Sprintf("Method %s", o.Method.Selector.SymbolValue)
+			selectorSymbol := ObjectToSymbol(o.Method.Selector)
+			return fmt.Sprintf("Method %s", selectorSymbol.Value)
 		}
 		return "a Method"
 	default:
@@ -298,4 +317,22 @@ func StringToObject(s *String) *Object {
 // ObjectToString converts an Object to a String
 func ObjectToString(o *Object) *String {
 	return (*String)(unsafe.Pointer(o))
+}
+
+// SymbolToObject converts a Symbol to an Object
+func SymbolToObject(s *Symbol) *Object {
+	return (*Object)(unsafe.Pointer(s))
+}
+
+// ObjectToSymbol converts an Object to a Symbol
+func ObjectToSymbol(o *Object) *Symbol {
+	return (*Symbol)(unsafe.Pointer(o))
+}
+
+// GetSymbolValue gets the value from a Symbol object
+func GetSymbolValue(o *Object) string {
+	if o.Type == OBJ_SYMBOL {
+		return ObjectToSymbol(o).Value
+	}
+	panic("GetSymbolValue: not a symbol")
 }

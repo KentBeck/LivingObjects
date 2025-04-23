@@ -27,11 +27,11 @@ func TestLookupMethod(t *testing.T) {
 
 	// Add methods to classes
 	objectMethodDict := objectClass.GetMethodDict()
-	objectMethodDict.Entries[sizeSelector.SymbolValue] = sizeMethod
+	objectMethodDict.Entries[GetSymbolValue(sizeSelector)] = sizeMethod
 
 	seqCollMethodDict := sequenceableCollectionClass.GetMethodDict()
-	seqCollMethodDict.Entries[atSelector.SymbolValue] = atMethod
-	seqCollMethodDict.Entries[atPutSelector.SymbolValue] = atPutMethod
+	seqCollMethodDict.Entries[GetSymbolValue(atSelector)] = atMethod
+	seqCollMethodDict.Entries[GetSymbolValue(atPutSelector)] = atPutMethod
 
 	// Create an instance of Array
 	arrayInstance := NewInstance(arrayClass)
@@ -124,16 +124,16 @@ func TestLookupMethodWithInheritance(t *testing.T) {
 
 	// Add methods to classes
 	objectMethodDict := objectClass.GetMethodDict()
-	objectMethodDict.Entries[sizeSelector.SymbolValue] = objectSizeMethod
+	objectMethodDict.Entries[GetSymbolValue(sizeSelector)] = objectSizeMethod
 
 	collectionMethodDict := collectionClass.GetMethodDict()
-	collectionMethodDict.Entries[sizeSelector.SymbolValue] = collectionSizeMethod
+	collectionMethodDict.Entries[GetSymbolValue(sizeSelector)] = collectionSizeMethod
 
 	seqCollMethodDict := sequenceableCollectionClass.GetMethodDict()
-	seqCollMethodDict.Entries[atSelector.SymbolValue] = seqCollAtMethod
+	seqCollMethodDict.Entries[GetSymbolValue(atSelector)] = seqCollAtMethod
 
 	arrayMethodDict := arrayClass.GetMethodDict()
-	arrayMethodDict.Entries[atPutSelector.SymbolValue] = arrayAtPutMethod
+	arrayMethodDict.Entries[GetSymbolValue(atPutSelector)] = arrayAtPutMethod
 
 	// Create an instance of Array
 	arrayInstance := NewInstance(arrayClass)
@@ -186,7 +186,7 @@ func TestGetMethodDict(t *testing.T) {
 	// Add a method to the dictionary
 	selector := NewSymbol("test")
 	method := NewMethod(selector, class)
-	methodDict.Entries[selector.SymbolValue] = method
+	methodDict.Entries[GetSymbolValue(selector)] = method
 
 	// Get the method dictionary again
 	methodDict2 := class.GetMethodDict()
@@ -197,7 +197,7 @@ func TestGetMethodDict(t *testing.T) {
 	}
 
 	// Check that the method is in the dictionary
-	if methodDict2.Entries[selector.SymbolValue] != method {
+	if methodDict2.Entries[GetSymbolValue(selector)] != method {
 		t.Errorf("Expected to find method in dictionary")
 	}
 

@@ -21,7 +21,7 @@ func BenchmarkSimpleMessageSend(b *testing.B) {
 	returnValueMethod := NewMethod(returnValueSelector, integerClass)
 
 	// Add the method to the Integer class
-	integerMethodDict.Entries[returnValueSelector.SymbolValue] = returnValueMethod
+	integerMethodDict.Entries[GetSymbolValue(returnValueSelector)] = returnValueMethod
 
 	// Create a literal for the method
 	valueObj := vm.NewInteger(42)
@@ -85,7 +85,7 @@ func BenchmarkAddition(b *testing.B) {
 	plusMethod.Method.PrimitiveIndex = 1 // Addition
 
 	// Add the method to the Integer class
-	integerMethodDict.Entries[plusSelector.SymbolValue] = plusMethod
+	integerMethodDict.Entries[GetSymbolValue(plusSelector)] = plusMethod
 
 	// Create a method that calls the addition method
 	testSelector := NewSymbol("test")

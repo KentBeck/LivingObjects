@@ -31,7 +31,8 @@ func TestExecuteContextWithStackValue(t *testing.T) {
 	vm := NewVM()
 
 	// Create a method that pushes a value onto the stack
-	methodObj := NewMethod(NewSymbol("pushMethod"), vm.ObjectClass)
+	methodSelector := NewSymbol("pushMethod")
+	methodObj := NewMethod(methodSelector, vm.ObjectClass)
 	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, PUSH_LITERAL)
 	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, 0, 0, 0, 0) // Index 0
 
@@ -63,7 +64,8 @@ func TestExecuteContextWithError(t *testing.T) {
 	vm := NewVM()
 
 	// Create a method with an invalid bytecode
-	methodObj := NewMethod(NewSymbol("errorMethod"), vm.ObjectClass)
+	methodSelector := NewSymbol("errorMethod")
+	methodObj := NewMethod(methodSelector, vm.ObjectClass)
 
 	// Add an invalid bytecode
 	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, 255) // Invalid bytecode

@@ -99,7 +99,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 		// Add the method to the Integer class
 		methodDict := integerClass.GetMethodDict()
-		methodDict.Entries[factorialSelector.SymbolValue] = factorialMethod
+		methodDict.Entries[GetSymbolValue(factorialSelector)] = factorialMethod
 
 		// Create literals for the factorial method
 		oneObj := vm.NewInteger(1)

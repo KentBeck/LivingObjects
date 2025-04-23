@@ -55,7 +55,7 @@ func (vm *VM) NewObjectClass() *Object {
 	basicClassMethod := NewMethod(basicClassSelector, result)
 	basicClassMethod.Method.IsPrimitive = true
 	basicClassMethod.Method.PrimitiveIndex = 5 // basicClass primitive
-	objectMethodDict.Entries[basicClassSelector.SymbolValue] = basicClassMethod
+	objectMethodDict.Entries[GetSymbolValue(basicClassSelector)] = basicClassMethod
 
 	return result
 }
@@ -69,42 +69,42 @@ func (vm *VM) NewIntegerClass() *Object {
 	plusMethod.Method.IsPrimitive = true
 	plusMethod.Method.PrimitiveIndex = 1 // Addition
 	integerMethodDict := result.GetMethodDict()
-	integerMethodDict.Entries[plusSelector.SymbolValue] = plusMethod
+	integerMethodDict.Entries[GetSymbolValue(plusSelector)] = plusMethod
 
 	// - method (subtraction)
 	minusSelector := NewSymbol("-")
 	minusMethod := NewMethod(minusSelector, result)
 	minusMethod.Method.IsPrimitive = true
 	minusMethod.Method.PrimitiveIndex = 4 // Subtraction (new primitive)
-	integerMethodDict.Entries[minusSelector.SymbolValue] = minusMethod
+	integerMethodDict.Entries[GetSymbolValue(minusSelector)] = minusMethod
 
 	// * method
 	timesSelector := NewSymbol("*")
 	timesMethod := NewMethod(timesSelector, result)
 	timesMethod.Method.IsPrimitive = true
 	timesMethod.Method.PrimitiveIndex = 2 // Multiplication
-	integerMethodDict.Entries[timesSelector.SymbolValue] = timesMethod
+	integerMethodDict.Entries[GetSymbolValue(timesSelector)] = timesMethod
 
 	// = method
 	equalsSelector := NewSymbol("=")
 	equalsMethod := NewMethod(equalsSelector, result)
 	equalsMethod.Method.IsPrimitive = true
 	equalsMethod.Method.PrimitiveIndex = 3 // Equality
-	integerMethodDict.Entries[equalsSelector.SymbolValue] = equalsMethod
+	integerMethodDict.Entries[GetSymbolValue(equalsSelector)] = equalsMethod
 
 	// < method
 	lessSelector := NewSymbol("<")
 	lessMethod := NewMethod(lessSelector, result)
 	lessMethod.Method.IsPrimitive = true
 	lessMethod.Method.PrimitiveIndex = 6 // Less than
-	integerMethodDict.Entries[lessSelector.SymbolValue] = lessMethod
+	integerMethodDict.Entries[GetSymbolValue(lessSelector)] = lessMethod
 
 	// > method
 	greaterSelector := NewSymbol(">")
 	greaterMethod := NewMethod(greaterSelector, result)
 	greaterMethod.Method.IsPrimitive = true
 	greaterMethod.Method.PrimitiveIndex = 7 // Greater than
-	integerMethodDict.Entries[greaterSelector.SymbolValue] = greaterMethod
+	integerMethodDict.Entries[GetSymbolValue(greaterSelector)] = greaterMethod
 
 	return result
 }
@@ -120,49 +120,49 @@ func (vm *VM) NewFloatClass() *Object {
 	plusMethod := NewMethod(plusSelector, result)
 	plusMethod.Method.IsPrimitive = true
 	plusMethod.Method.PrimitiveIndex = 10 // Float addition
-	floatMethodDict.Entries[plusSelector.SymbolValue] = plusMethod
+	floatMethodDict.Entries[GetSymbolValue(plusSelector)] = plusMethod
 
 	// - method (subtraction)
 	minusSelector := NewSymbol("-")
 	minusMethod := NewMethod(minusSelector, result)
 	minusMethod.Method.IsPrimitive = true
 	minusMethod.Method.PrimitiveIndex = 11 // Float subtraction
-	floatMethodDict.Entries[minusSelector.SymbolValue] = minusMethod
+	floatMethodDict.Entries[GetSymbolValue(minusSelector)] = minusMethod
 
 	// * method (multiplication)
 	timesSelector := NewSymbol("*")
 	timesMethod := NewMethod(timesSelector, result)
 	timesMethod.Method.IsPrimitive = true
 	timesMethod.Method.PrimitiveIndex = 12 // Float multiplication
-	floatMethodDict.Entries[timesSelector.SymbolValue] = timesMethod
+	floatMethodDict.Entries[GetSymbolValue(timesSelector)] = timesMethod
 
 	// / method (division)
 	divideSelector := NewSymbol("/")
 	divideMethod := NewMethod(divideSelector, result)
 	divideMethod.Method.IsPrimitive = true
 	divideMethod.Method.PrimitiveIndex = 13 // Float division
-	floatMethodDict.Entries[divideSelector.SymbolValue] = divideMethod
+	floatMethodDict.Entries[GetSymbolValue(divideSelector)] = divideMethod
 
 	// = method (equality)
 	equalsSelector := NewSymbol("=")
 	equalsMethod := NewMethod(equalsSelector, result)
 	equalsMethod.Method.IsPrimitive = true
 	equalsMethod.Method.PrimitiveIndex = 14 // Float equality
-	floatMethodDict.Entries[equalsSelector.SymbolValue] = equalsMethod
+	floatMethodDict.Entries[GetSymbolValue(equalsSelector)] = equalsMethod
 
 	// < method (less than)
 	lessSelector := NewSymbol("<")
 	lessMethod := NewMethod(lessSelector, result)
 	lessMethod.Method.IsPrimitive = true
 	lessMethod.Method.PrimitiveIndex = 15 // Float less than
-	floatMethodDict.Entries[lessSelector.SymbolValue] = lessMethod
+	floatMethodDict.Entries[GetSymbolValue(lessSelector)] = lessMethod
 
 	// > method (greater than)
 	greaterSelector := NewSymbol(">")
 	greaterMethod := NewMethod(greaterSelector, result)
 	greaterMethod.Method.IsPrimitive = true
 	greaterMethod.Method.PrimitiveIndex = 16 // Float greater than
-	floatMethodDict.Entries[greaterSelector.SymbolValue] = greaterMethod
+	floatMethodDict.Entries[GetSymbolValue(greaterSelector)] = greaterMethod
 
 	return result
 }
@@ -589,7 +589,7 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 		methodDict := class.GetMethodDict()
 		if methodDict != nil && methodDict.Type == OBJ_DICTIONARY && methodDict.Entries != nil {
 			// Check if the method dictionary has the selector
-			if method, ok := methodDict.Entries[selector.SymbolValue]; ok {
+			if method, ok := methodDict.Entries[GetSymbolValue(selector)]; ok {
 				return method
 			}
 		} else {

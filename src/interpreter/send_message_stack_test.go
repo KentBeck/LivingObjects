@@ -19,7 +19,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	returnValueMethod := NewMethod(returnValueSelector, integerClass)
 
 	// Add the method to the Integer class
-	integerMethodDict.Entries[returnValueSelector.SymbolValue] = returnValueMethod
+	integerMethodDict.Entries[GetSymbolValue(returnValueSelector)] = returnValueMethod
 
 	// Create a literal for the method
 	valueObj := vm.NewInteger(42)
@@ -40,7 +40,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	callerMethod := NewMethod(callerSelector, integerClass)
 
 	// Add the caller method to the Integer class
-	integerMethodDict.Entries[callerSelector.SymbolValue] = callerMethod
+	integerMethodDict.Entries[GetSymbolValue(callerSelector)] = callerMethod
 
 	// Create literals for the caller method
 	receiverObj := vm.NewInteger(10)
@@ -113,7 +113,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	returnValueMethod := NewMethod(returnValueSelector, integerClass)
 
 	// Add the method to the Integer class
-	integerMethodDict.Entries[returnValueSelector.SymbolValue] = returnValueMethod
+	integerMethodDict.Entries[GetSymbolValue(returnValueSelector)] = returnValueMethod
 
 	// Create a literal for the method
 	valueObj := vm.NewInteger(42)
@@ -134,14 +134,14 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	multiplyMethod := NewMethod(multiplySelector, integerClass)
 
 	// Add the multiply method to the Integer class
-	integerMethodDict.Entries[multiplySelector.SymbolValue] = multiplyMethod
+	integerMethodDict.Entries[GetSymbolValue(multiplySelector)] = multiplyMethod
 
 	// Create the multiplication selector
 	timesSelector := NewSymbol("*")
 	timesMethod := NewMethod(timesSelector, integerClass)
 	timesMethod.Method.IsPrimitive = true
 	timesMethod.Method.PrimitiveIndex = 2 // Multiplication
-	integerMethodDict.Entries[timesSelector.SymbolValue] = timesMethod
+	integerMethodDict.Entries[GetSymbolValue(timesSelector)] = timesMethod
 
 	// Add literals to the multiply method
 	multiplyMethod.Method.Literals = append(multiplyMethod.Method.Literals, returnValueSelector) // Literal 0: returnValue

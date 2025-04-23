@@ -27,7 +27,7 @@ func BenchmarkFactorial10(b *testing.B) {
 	factorialMethod := NewMethod(factorialSelector, integerClass)
 
 	// Add the factorial method to the Integer class
-	integerMethodDict.Entries[factorialSelector.SymbolValue] = factorialMethod
+	integerMethodDict.Entries[GetSymbolValue(factorialSelector)] = factorialMethod
 
 	// Create literals for the factorial method
 	oneObj := vm.NewInteger(1)
@@ -161,7 +161,7 @@ func BenchmarkFactorial19(b *testing.B) {
 	factorialMethod := NewMethod(factorialSelector, integerClass)
 
 	// Add the factorial method to the Integer class
-	integerMethodDict.Entries[factorialSelector.SymbolValue] = factorialMethod
+	integerMethodDict.Entries[GetSymbolValue(factorialSelector)] = factorialMethod
 
 	// Create literals for the factorial method
 	oneObj := vm.NewInteger(1)

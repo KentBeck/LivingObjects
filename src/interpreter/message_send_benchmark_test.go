@@ -23,7 +23,7 @@ func BenchmarkMessageSend(b *testing.B) {
 	addMethod.Method.PrimitiveIndex = 1 // Addition
 
 	// Add the method to the Integer class
-	integerMethodDict.Entries[addSelector.SymbolValue] = addMethod
+	integerMethodDict.Entries[GetSymbolValue(addSelector)] = addMethod
 
 	// Create a simple method that adds two numbers
 	testSelector := NewSymbol("test")
@@ -103,7 +103,7 @@ func BenchmarkMultipleMessageSends(b *testing.B) {
 	addMethod.Method.PrimitiveIndex = 1 // Addition
 
 	// Add the method to the Integer class
-	integerMethodDict.Entries[addSelector.SymbolValue] = addMethod
+	integerMethodDict.Entries[GetSymbolValue(addSelector)] = addMethod
 
 	// Create a simple method that adds multiple numbers
 	testSelector := NewSymbol("test")

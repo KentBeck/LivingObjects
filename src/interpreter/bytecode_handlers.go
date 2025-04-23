@@ -113,7 +113,7 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 	// Check for nil receiver
 	if receiver == nil {
-		return nil, fmt.Errorf("nil receiver for message: %s", selector.SymbolValue)
+		return nil, fmt.Errorf("nil receiver for message: %s", GetSymbolValue(selector))
 	}
 
 	// Special handling for immediate values
@@ -122,7 +122,7 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 	method := vm.lookupMethod(receiver, selector)
 	if method == nil {
-		return nil, fmt.Errorf("method not found: %s", selector.SymbolValue)
+		return nil, fmt.Errorf("method not found: %s", GetSymbolValue(selector))
 	}
 
 	// Handle primitive methods
@@ -146,7 +146,7 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 	// Check for nil result
 	if result == nil {
-		return nil, fmt.Errorf("method not found: %s", selector.SymbolValue)
+		return nil, fmt.Errorf("method not found: %s", GetSymbolValue(selector))
 	}
 
 	// Move back to the sender context

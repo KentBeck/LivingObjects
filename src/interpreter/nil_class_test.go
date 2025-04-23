@@ -20,7 +20,7 @@ func TestNilClassPanic(t *testing.T) {
 	if objectMethodDict.Entries == nil {
 		objectMethodDict.Entries = make(map[string]*Object)
 	}
-	objectMethodDict.Entries[basicClassSelector.SymbolValue] = basicClassMethod
+	objectMethodDict.Entries[GetSymbolValue(basicClassSelector)] = basicClassMethod
 
 	// Create an object with a nil class
 	objWithNilClass := &Object{
