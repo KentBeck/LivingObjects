@@ -25,7 +25,6 @@ const (
 type Object struct {
 	Type             ObjectType
 	Class            *Object
-	BooleanValue     bool
 	StringValue      string
 	SymbolValue      string
 	InstanceVars     []*Object // Instance variables stored by index
@@ -220,10 +219,7 @@ func (o *Object) String() string {
 	case OBJ_INTEGER:
 		panic("Non-immediate integer encountered")
 	case OBJ_BOOLEAN:
-		if o.BooleanValue {
-			return "true"
-		}
-		return "false"
+		panic("Non-immediate boolean encountered")
 	case OBJ_NIL:
 		return "nil"
 	case OBJ_STRING:
