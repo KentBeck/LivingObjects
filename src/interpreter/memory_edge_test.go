@@ -32,77 +32,64 @@ func TestAllocateWithGCNeeded(t *testing.T) {
 
 // TestCollectWithSpecialObjects tests the Collect method with special VM objects
 func TestCollectWithSpecialObjects(t *testing.T) {
-	// Skip this test for now as it's causing issues with immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	om := NewObjectMemory()
 	vm := NewVM()
 
-	// Create special objects
-	nilObj := NewNil()
-	trueObj := NewBoolean(true)
-	falseObj := NewBoolean(false)
+	// Store the immediate values for nil, true, and false
+	nilImmediate := vm.NilObject
+	trueImmediate := vm.TrueObject
+	falseImmediate := vm.FalseObject
+
+	// Create a non-immediate object
 	objectClass := NewClass("Object", nil)
 
-	// Set the VM's special objects
-	vm.NilObject = nilObj
-	vm.TrueObject = trueObj
-	vm.FalseObject = falseObj
+	// Set the VM's object class
 	vm.ObjectClass = objectClass
 
-	// Allocate the objects
-	om.Allocate(nilObj)
-	om.Allocate(trueObj)
-	om.Allocate(falseObj)
+	// Allocate the object class
 	om.Allocate(objectClass)
 
 	// Perform garbage collection
 	om.Collect(vm)
 
-	// Check that the special objects are still in the VM
-	if vm.NilObject != nilObj {
-		t.Errorf("Expected vm.NilObject to still be nilObj")
+	// Check that the special immediate objects are still the same
+	if vm.NilObject != nilImmediate {
+		t.Errorf("Expected vm.NilObject to still be nilImmediate")
 	}
 
-	if vm.TrueObject != trueObj {
-		t.Errorf("Expected vm.TrueObject to still be trueObj")
+	if vm.TrueObject != trueImmediate {
+		t.Errorf("Expected vm.TrueObject to still be trueImmediate")
 	}
 
-	if vm.FalseObject != falseObj {
-		t.Errorf("Expected vm.FalseObject to still be falseObj")
+	if vm.FalseObject != falseImmediate {
+		t.Errorf("Expected vm.FalseObject to still be falseImmediate")
 	}
 
 	if vm.ObjectClass != objectClass {
 		t.Errorf("Expected vm.ObjectClass to still be objectClass")
 	}
 
-	// Verify that special objects are in the new from-space
-	// Note: NilObject is now an immediate value, so it won't be in the from-space
-	foundTrue := false
-	foundFalse := false
+	// Verify that the object class is in the new from-space
 	foundObjectClass := false
 
 	for i := 0; i < om.AllocPtr; i++ {
 		obj := om.FromSpace[i]
-		if obj == trueObj {
-			foundTrue = true
-		} else if obj == falseObj {
-			foundFalse = true
-		} else if obj == objectClass {
+		if obj == objectClass {
 			foundObjectClass = true
 		}
 	}
 
-	// Check that NilObject is an immediate value
-	if !IsImmediate(vm.NilObject) {
+	// Check that special objects are immediate values
+	if !IsNilImmediate(vm.NilObject) {
 		t.Errorf("Expected NilObject to be an immediate value")
 	}
 
-	if !foundTrue {
-		t.Errorf("TrueObject not found in from-space after collection")
+	if !IsTrueImmediate(vm.TrueObject) {
+		t.Errorf("Expected TrueObject to be an immediate value")
 	}
 
-	if !foundFalse {
-		t.Errorf("FalseObject not found in from-space after collection")
+	if !IsFalseImmediate(vm.FalseObject) {
+		t.Errorf("Expected FalseObject to be an immediate value")
 	}
 
 	if !foundObjectClass {

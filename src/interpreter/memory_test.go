@@ -586,19 +586,74 @@ func TestGrowSpaces(t *testing.T) {
 
 // TestCollectTriggersGrowSpaces tests that collection triggers growSpaces when needed
 func TestCollectTriggersGrowSpaces(t *testing.T) {
-	// Skip this test for now as it requires more complex setup
-	t.Skip("Skipping test that requires more complex setup")
+	// Create a small object memory
+	om := NewObjectMemory()
 
-	// This test would need to create a situation where after collection,
-	// more than 70% of the space is still in use, which would trigger growSpaces.
-	// However, this is difficult to set up reliably without knowing exactly
-	// how many objects will be created internally during collection.
+	// Set a small space size for testing
+	om.SpaceSize = 20
+	om.GCThreshold = 16 // 80% threshold
+	om.FromSpace = make([]*Object, 20)
+	om.ToSpace = make([]*Object, 20)
+
+	// Create a VM
+	vm := NewVM()
+
+	// Create a bunch of non-immediate objects that will survive collection
+	for i := 0; i < 15; i++ {
+		obj := NewString(string(rune('a' + i)))
+		om.Allocate(obj)
+
+		// Add to globals to make them reachable
+		vm.Globals[string(rune('a'+i))] = obj
+	}
+
+	// Record the initial space size
+	initialSpaceSize := om.SpaceSize
+
+	// Perform garbage collection
+	om.Collect(vm)
+
+	// Check that the space size has doubled
+	if om.SpaceSize != initialSpaceSize*2 {
+		t.Errorf("Expected SpaceSize to be %d after collection, got %d", initialSpaceSize*2, om.SpaceSize)
+	}
+
+	// Check that the from-space and to-space have been resized
+	if len(om.FromSpace) != initialSpaceSize*2 {
+		t.Errorf("Expected FromSpace length to be %d after collection, got %d", initialSpaceSize*2, len(om.FromSpace))
+	}
+
+	if len(om.ToSpace) != initialSpaceSize*2 {
+		t.Errorf("Expected ToSpace length to be %d after collection, got %d", initialSpaceSize*2, len(om.ToSpace))
+	}
+
+	// Check that the GC threshold has been updated
+	if om.GCThreshold != initialSpaceSize*2*80/100 {
+		t.Errorf("Expected GCThreshold to be %d after collection, got %d", initialSpaceSize*2*80/100, om.GCThreshold)
+	}
+
+	// Check that all objects are still in the from-space
+	for i := 0; i < 8; i++ {
+		key := string(rune('a' + i))
+		obj := vm.Globals[key]
+
+		// Find the object in the from-space
+		found := false
+		for j := 0; j < om.AllocPtr; j++ {
+			if om.FromSpace[j] == obj {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			t.Errorf("Object %s not found in from-space after collection", key)
+		}
+	}
 }
 
 // TestCollectEdgeCases tests edge cases in the garbage collector
 func TestCollectEdgeCases(t *testing.T) {
-	// Skip this test for now as it's causing issues with immediate values
-	t.Skip("Skipping test until immediate values are fully implemented")
 	// Test with empty object memory
 	{
 		om := NewObjectMemory()
@@ -625,9 +680,9 @@ func TestCollectEdgeCases(t *testing.T) {
 		om := NewObjectMemory()
 		vm := NewVM()
 
-		// Allocate some objects with nil slots in between
-		obj1 := vm.NewInteger(1)
-		obj2 := vm.NewInteger(2)
+		// Create some non-immediate objects with nil slots in between
+		obj1 := NewString("one")
+		obj2 := NewString("two")
 
 		om.Allocate(obj1)
 		om.FromSpace[1] = nil // Create a nil slot
@@ -690,9 +745,9 @@ func TestCollectEdgeCases(t *testing.T) {
 		om.FromSpace = make([]*Object, 20)
 		om.ToSpace = make([]*Object, 20)
 
-		// Allocate many objects
+		// Allocate many non-immediate objects
 		for i := 0; i < 15; i++ {
-			obj := vm.NewInteger(int64(i))
+			obj := NewString(string(rune('a' + i)))
 			om.Allocate(obj)
 			vm.Globals[string(rune('a'+i))] = obj // Add to globals to make them reachable
 		}
@@ -702,19 +757,20 @@ func TestCollectEdgeCases(t *testing.T) {
 
 		// Check that all objects are still in the from-space
 		for i := 0; i < 15; i++ {
-			found := false
-			expectedValue := int64(i)
+			key := string(rune('a' + i))
+			obj := vm.Globals[key]
 
+			// Find the object in the from-space
+			found := false
 			for j := 0; j < om.AllocPtr; j++ {
-				obj := om.FromSpace[j]
-				if obj != nil && obj.Type == OBJ_INTEGER && obj.IntegerValue == expectedValue {
+				if om.FromSpace[j] == obj {
 					found = true
 					break
 				}
 			}
 
 			if !found {
-				t.Errorf("Object with value %d not found in from-space after collection", expectedValue)
+				t.Errorf("Object %s not found in from-space after collection", key)
 			}
 		}
 	}
