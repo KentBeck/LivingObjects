@@ -82,7 +82,7 @@ func BenchmarkAddition(b *testing.B) {
 	plusSelector := NewSymbol("+")
 	plusMethod := NewMethod(plusSelector, integerClass)
 	plusMethod.Method.IsPrimitive = true
-	plusMethod.Method.PrimitiveIndex = 0 // Addition
+	plusMethod.Method.PrimitiveIndex = 1 // Addition
 
 	// Add the method to the Integer class
 	integerMethodDict.Entries[plusSelector.SymbolValue] = plusMethod

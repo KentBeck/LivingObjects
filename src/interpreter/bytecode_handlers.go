@@ -116,6 +116,15 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 		return nil, fmt.Errorf("nil receiver for message: %s", selector.SymbolValue)
 	}
 
+	// Special handling for immediate values
+	if IsImmediate(receiver) {
+		// For immediate nil, use the NilObject for method lookup
+		if IsNilImmediate(receiver) {
+			receiver = vm.NilObject
+		}
+		// For other immediate values, we'll handle them in the lookupMethod function
+	}
+
 	method := vm.lookupMethod(receiver, selector)
 	if method == nil {
 		return nil, fmt.Errorf("method not found: %s", selector.SymbolValue)
