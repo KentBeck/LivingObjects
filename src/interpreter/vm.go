@@ -22,12 +22,6 @@ type VM struct {
 	FloatClass   *Object
 }
 
-func (vm *VM) NewFloatClass() *Object {
-	result := NewClass("Float", vm.ObjectClass) // patch this up later. then even later when we have real images all this initialization can go away
-
-	return result
-}
-
 // NewVM creates a new virtual machine
 func NewVM() *VM {
 	vm := &VM{
@@ -111,6 +105,64 @@ func (vm *VM) NewIntegerClass() *Object {
 	greaterMethod.Method.IsPrimitive = true
 	greaterMethod.Method.PrimitiveIndex = 7 // Greater than
 	integerMethodDict.Entries[greaterSelector.SymbolValue] = greaterMethod
+
+	return result
+}
+
+func (vm *VM) NewFloatClass() *Object {
+	result := NewClass("Float", vm.ObjectClass) // patch this up later. then even later when we have real images all this initialization can go away
+
+	// Get the method dictionary for the Float class
+	floatMethodDict := result.GetMethodDict()
+
+	// + method (addition)
+	plusSelector := NewSymbol("+")
+	plusMethod := NewMethod(plusSelector, result)
+	plusMethod.Method.IsPrimitive = true
+	plusMethod.Method.PrimitiveIndex = 10 // Float addition
+	floatMethodDict.Entries[plusSelector.SymbolValue] = plusMethod
+
+	// - method (subtraction)
+	minusSelector := NewSymbol("-")
+	minusMethod := NewMethod(minusSelector, result)
+	minusMethod.Method.IsPrimitive = true
+	minusMethod.Method.PrimitiveIndex = 11 // Float subtraction
+	floatMethodDict.Entries[minusSelector.SymbolValue] = minusMethod
+
+	// * method (multiplication)
+	timesSelector := NewSymbol("*")
+	timesMethod := NewMethod(timesSelector, result)
+	timesMethod.Method.IsPrimitive = true
+	timesMethod.Method.PrimitiveIndex = 12 // Float multiplication
+	floatMethodDict.Entries[timesSelector.SymbolValue] = timesMethod
+
+	// / method (division)
+	divideSelector := NewSymbol("/")
+	divideMethod := NewMethod(divideSelector, result)
+	divideMethod.Method.IsPrimitive = true
+	divideMethod.Method.PrimitiveIndex = 13 // Float division
+	floatMethodDict.Entries[divideSelector.SymbolValue] = divideMethod
+
+	// = method (equality)
+	equalsSelector := NewSymbol("=")
+	equalsMethod := NewMethod(equalsSelector, result)
+	equalsMethod.Method.IsPrimitive = true
+	equalsMethod.Method.PrimitiveIndex = 14 // Float equality
+	floatMethodDict.Entries[equalsSelector.SymbolValue] = equalsMethod
+
+	// < method (less than)
+	lessSelector := NewSymbol("<")
+	lessMethod := NewMethod(lessSelector, result)
+	lessMethod.Method.IsPrimitive = true
+	lessMethod.Method.PrimitiveIndex = 15 // Float less than
+	floatMethodDict.Entries[lessSelector.SymbolValue] = lessMethod
+
+	// > method (greater than)
+	greaterSelector := NewSymbol(">")
+	greaterMethod := NewMethod(greaterSelector, result)
+	greaterMethod.Method.IsPrimitive = true
+	greaterMethod.Method.PrimitiveIndex = 16 // Float greater than
+	floatMethodDict.Entries[greaterSelector.SymbolValue] = greaterMethod
 
 	return result
 }
@@ -329,6 +381,13 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			result := val1 + val2
 			return vm.NewInteger(result)
 		}
+		// Handle integer + float
+		if IsIntegerImmediate(receiver) && len(args) == 1 && IsFloatImmediate(args[0]) {
+			val1 := float64(GetIntegerImmediate(receiver))
+			val2 := GetFloatImmediate(args[0])
+			result := val1 + val2
+			return vm.NewFloat(result)
+		}
 	case 2: // Multiplication
 		// Handle immediate integers
 		if IsIntegerImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
@@ -464,6 +523,111 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			result := val1 > val2
 			return NewBoolean(result)
 		}
+	case 10: // Float addition
+		// Handle float + float
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsFloatImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := GetFloatImmediate(args[0])
+			result := val1 + val2
+			return vm.NewFloat(result)
+		}
+		// Handle float + integer
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := float64(GetIntegerImmediate(args[0]))
+			result := val1 + val2
+			return vm.NewFloat(result)
+		}
+	case 11: // Float subtraction
+		// Handle float - float
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsFloatImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := GetFloatImmediate(args[0])
+			result := val1 - val2
+			return vm.NewFloat(result)
+		}
+		// Handle float - integer
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := float64(GetIntegerImmediate(args[0]))
+			result := val1 - val2
+			return vm.NewFloat(result)
+		}
+	case 12: // Float multiplication
+		// Handle float * float
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsFloatImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := GetFloatImmediate(args[0])
+			result := val1 * val2
+			return vm.NewFloat(result)
+		}
+		// Handle float * integer
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := float64(GetIntegerImmediate(args[0]))
+			result := val1 * val2
+			return vm.NewFloat(result)
+		}
+	case 13: // Float division
+		// Handle float / float
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsFloatImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := GetFloatImmediate(args[0])
+			result := val1 / val2
+			return vm.NewFloat(result)
+		}
+		// Handle float / integer
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := float64(GetIntegerImmediate(args[0]))
+			result := val1 / val2
+			return vm.NewFloat(result)
+		}
+	case 14: // Float equality
+		// Handle float = float
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsFloatImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := GetFloatImmediate(args[0])
+			result := val1 == val2
+			return NewBoolean(result)
+		}
+		// Handle float = integer
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := float64(GetIntegerImmediate(args[0]))
+			result := val1 == val2
+			return NewBoolean(result)
+		}
+	case 15: // Float less than
+		// Handle float < float
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsFloatImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := GetFloatImmediate(args[0])
+			result := val1 < val2
+			return NewBoolean(result)
+		}
+		// Handle float < integer
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := float64(GetIntegerImmediate(args[0]))
+			result := val1 < val2
+			return NewBoolean(result)
+		}
+	case 16: // Float greater than
+		// Handle float > float
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsFloatImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := GetFloatImmediate(args[0])
+			result := val1 > val2
+			return NewBoolean(result)
+		}
+		// Handle float > integer
+		if IsFloatImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
+			val1 := GetFloatImmediate(receiver)
+			val2 := float64(GetIntegerImmediate(args[0]))
+			result := val1 > val2
+			return NewBoolean(result)
+		}
 	default:
 		panic("executePrimitive: unknown primitive index\n")
 	}
@@ -493,6 +657,8 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 			class = vm.FalseClass
 		} else if IsIntegerImmediate(receiver) {
 			class = vm.IntegerClass
+		} else if IsFloatImmediate(receiver) {
+			class = vm.FloatClass
 		} else {
 			panic("lookupMethod: unknown immediate type")
 		}

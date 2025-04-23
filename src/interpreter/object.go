@@ -173,6 +173,10 @@ func (o *Object) IsTrue() bool {
 		if IsIntegerImmediate(o) {
 			return true
 		}
+		// Immediate float is true
+		if IsFloatImmediate(o) {
+			return true
+		}
 		// Other immediate types will be added later
 		return true
 	}
@@ -204,6 +208,11 @@ func (o *Object) String() string {
 		if IsIntegerImmediate(o) {
 			value := GetIntegerImmediate(o)
 			return fmt.Sprintf("%d", value)
+		}
+		// Immediate float
+		if IsFloatImmediate(o) {
+			value := GetFloatImmediate(o)
+			return fmt.Sprintf("%g", value)
 		}
 		// Other immediate types will be added later
 		return "Immediate value"
