@@ -19,6 +19,13 @@ type VM struct {
 	FalseClass   *Object
 	ObjectClass  *Object
 	IntegerClass *Object
+	FloatClass   *Object
+}
+
+func (vm *VM) NewFloatClass() *Object {
+	result := NewClass("Float", vm.ObjectClass) // patch this up later. then even later when we have real images all this initialization can go away
+
+	return result
 }
 
 // NewVM creates a new virtual machine
@@ -40,6 +47,7 @@ func NewVM() *VM {
 	// Use immediate false value
 	vm.FalseObject = MakeFalseImmediate()
 	vm.IntegerClass = vm.NewIntegerClass()
+	vm.FloatClass = vm.NewFloatClass()
 
 	return vm
 }
@@ -123,6 +131,10 @@ func (vm *VM) NewInteger(value int64) *Object {
 		IntegerValue: value,
 		Class:        intClass,
 	}
+}
+
+func (vm *VM) NewFloat(value float64) *Object {
+	return MakeFloatImmediate(value)
 }
 
 // LoadImage loads a Smalltalk image from a file
