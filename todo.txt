@@ -16,10 +16,11 @@ To do:
 * Object structure into Object, Class, Method, Context, indexable (maybe make this its own kind of subclass)
 * Function for dereferencing an Object pointer with guards against immediates
 * Block closures
-* Float prims
 * Rip out dumb integer overflow stuff
+* Rip out mixed float/integer support in prims
 
 Done:
+* Float prims
 * Immediate integer
 * Immediate nil, true, false
 * Immediate float
