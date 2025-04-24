@@ -21,6 +21,7 @@ To do:
 * Convert all internal objects to Smalltalk objects
 * Message not understood
 * Intern symbols
+* Review tests, particularly one level up tests that seem redundant
 
 Done:
 * Float prims
