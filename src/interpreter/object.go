@@ -52,6 +52,12 @@ type Symbol struct {
 }
 
 // Class represents a Smalltalk class object
+type Class struct {
+	Object
+	Name             string
+	SuperClass       *Object
+	InstanceVarNames []string
+}
 
 const METHOD_DICTIONARY_IV = 0
 
