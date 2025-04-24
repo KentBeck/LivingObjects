@@ -19,6 +19,7 @@ To do:
 * Rip out dumb integer overflow stuff
 * Rip out mixed float/integer support in prims
 * Convert all internal objects to Smalltalk objects
+* Message not understood
 
 Done:
 * Float prims
