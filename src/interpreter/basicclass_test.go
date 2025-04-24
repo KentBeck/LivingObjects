@@ -16,7 +16,7 @@ func TestBasicClassPrimitive(t *testing.T) {
 	EnsureObjectIsClass(t, vm, vm.NewFloat(3.14), vm.FloatClass)
 }
 
-func EnsureObjectIsClass(t *testing.T, vm *VM, intObj *Object, intObjClass *Object) {
+func EnsureObjectIsClass(t *testing.T, vm *VM, object *Object, class *Object) {
 	testMethod := NewMethod(NewSymbol("test"), vm.ObjectClass)
 
 	// Add the basicClass selector to the literals
@@ -36,7 +36,7 @@ func EnsureObjectIsClass(t *testing.T, vm *VM, intObj *Object, intObjClass *Obje
 	testMethod.Method.Bytecodes = append(testMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
 	// Create a context for the test method
-	context := NewContext(testMethod, intObj, []*Object{}, nil)
+	context := NewContext(testMethod, object, []*Object{}, nil)
 
 	// Execute the test method
 	result, err := vm.ExecuteContext(context)
@@ -46,8 +46,8 @@ func EnsureObjectIsClass(t *testing.T, vm *VM, intObj *Object, intObjClass *Obje
 		t.Errorf("Error executing test method: %v", err)
 	}
 
-	// Check that the result is the Integer class
-	if result != intObjClass {
+	// Check that the result is the expected class
+	if result != class {
 		t.Errorf("Expected result to be Integer class, got %v", result)
 	}
 }
