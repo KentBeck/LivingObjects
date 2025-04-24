@@ -116,10 +116,6 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 		return nil, fmt.Errorf("nil receiver for message: %s", GetSymbolValue(selector))
 	}
 
-	// Special handling for immediate values
-	// We don't modify the receiver here, as we need to preserve the immediate value
-	// The lookupMethod function will handle getting the appropriate class for immediate values
-
 	method := vm.lookupMethod(receiver, selector)
 	if method == nil {
 		return nil, fmt.Errorf("method not found: %s", GetSymbolValue(selector))
