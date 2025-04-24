@@ -18,6 +18,7 @@ To do:
 * Block closures
 * Rip out dumb integer overflow stuff
 * Rip out mixed float/integer support in prims
+* Convert all internal objects to Smalltalk objects
 
 Done:
 * Float prims

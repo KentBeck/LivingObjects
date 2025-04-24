@@ -138,6 +138,11 @@ func (rmm *RawMemoryManager) Collect(vm *VM) {
 	// Initialize the to-space pointer
 	rmm.RawMem.ToSpacePtr = uintptr(unsafe.Pointer(&rmm.RawMem.ToSpace[0]))
 
+	// If VM is nil, we can't collect garbage
+	if vm == nil {
+		return
+	}
+
 	// Add globals to the root set
 	for _, obj := range vm.Globals {
 		if obj != nil {
