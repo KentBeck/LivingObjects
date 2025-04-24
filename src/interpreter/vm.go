@@ -556,7 +556,8 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 		panic("lookupMethod: nil  selector\n")
 	}
 
-	class := vm.GetClass(receiver)
+	// Not sure why := doesn't work the same
+	var class *Object = vm.GetClass(receiver)
 
 	// Check for nil class
 	if class == nil {
