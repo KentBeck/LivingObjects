@@ -196,10 +196,12 @@ func (o *Object) IsTrue() bool {
 			return false
 		}
 		// Immediate integer is true
+		// Sus
 		if IsIntegerImmediate(o) {
 			return true
 		}
 		// Immediate float is true
+		// Sus
 		if IsFloatImmediate(o) {
 			return true
 		}
