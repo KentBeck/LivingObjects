@@ -556,27 +556,7 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 		panic("lookupMethod: nil  selector\n")
 	}
 
-	// Special handling for immediate values
-	var class *Object
-	if IsImmediate(receiver) {
-		// For immediate nil, use the NilClass
-		if IsNilImmediate(receiver) {
-			class = vm.NilClass
-		} else if IsTrueImmediate(receiver) {
-			class = vm.TrueClass
-		} else if IsFalseImmediate(receiver) {
-			class = vm.FalseClass
-		} else if IsIntegerImmediate(receiver) {
-			class = vm.IntegerClass
-		} else if IsFloatImmediate(receiver) {
-			class = vm.FloatClass
-		} else {
-			panic("lookupMethod: unknown immediate type")
-		}
-	} else {
-		// Get the class of the receiver using the central GetClass function
-		class = vm.GetClass(receiver)
-	}
+	class := vm.GetClass(receiver)
 
 	// Check for nil class
 	if class == nil {
