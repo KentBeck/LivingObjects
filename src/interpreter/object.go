@@ -51,6 +51,8 @@ type Symbol struct {
 	Value string
 }
 
+// Class represents a Smalltalk class object
+
 const METHOD_DICTIONARY_IV = 0
 
 // Method represents a Smalltalk method
