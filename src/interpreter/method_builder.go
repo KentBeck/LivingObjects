@@ -1,6 +1,11 @@
 package main
 
+// MethodBuilder provides a fluent interface for creating methods
 type MethodBuilder struct {
+	class          *Object
+	methodDict     *Object
+	selectorName   string
+	selectorObj    *Object
 	bytecodes      []byte
 	literals       []*Object
 	tempVarNames   []string
@@ -8,8 +13,12 @@ type MethodBuilder struct {
 	primitiveIndex int
 }
 
-func NewMethodBuilder() *MethodBuilder {
+// NewMethodBuilder creates a new MethodBuilder for the given class
+func NewMethodBuilder(class *Object) *MethodBuilder {
+	methodDict := class.GetMethodDict()
 	return &MethodBuilder{
+		class:          class,
+		methodDict:     methodDict,
 		bytecodes:      make([]byte, 0),
 		literals:       make([]*Object, 0),
 		tempVarNames:   make([]string, 0),
@@ -18,24 +27,71 @@ func NewMethodBuilder() *MethodBuilder {
 	}
 }
 
-func (mb *MethodBuilder) AddPrimitive(primitive int) {
-	mb.primitiveIndex = primitive
+// Selector sets the selector for the method
+func (mb *MethodBuilder) Selector(name string) *MethodBuilder {
+	mb.selectorName = name
+	mb.selectorObj = NewSymbol(name)
+	return mb
+}
+
+// Primitive marks the method as a primitive with the given index
+func (mb *MethodBuilder) Primitive(index int) *MethodBuilder {
+	mb.primitiveIndex = index
 	mb.isPrimitive = true
+	return mb
 }
 
-func (mb *MethodBuilder) Install(class *Object, selector *Symbol) {
-	methodDict := class.GetMethodDict()
-	method := mb.method(class, selector)
-	methodDict.Entries[GetSymbolValue(SymbolToObject(selector))] = method
+// Bytecodes adds bytecodes to the method
+func (mb *MethodBuilder) Bytecodes(bytecodes []byte) *MethodBuilder {
+	mb.bytecodes = append(mb.bytecodes, bytecodes...)
+	return mb
 }
 
-func (mb *MethodBuilder) method(class *Object, selector *Symbol) *Object {
+// Literals adds literals to the method
+func (mb *MethodBuilder) Literals(literals []*Object) *MethodBuilder {
+	mb.literals = append(mb.literals, literals...)
+	return mb
+}
+
+// TempVars adds temporary variable names to the method
+func (mb *MethodBuilder) TempVars(names []string) *MethodBuilder {
+	mb.tempVarNames = append(mb.tempVarNames, names...)
+	return mb
+}
+
+// Go finalizes the method creation and adds it to the class's method dictionary
+func (mb *MethodBuilder) Go() *Object {
+	if mb.selectorObj == nil {
+		panic("Selector not set. Call Selector() first.")
+	}
+
 	// Create the method object
-	method := NewMethod(SymbolToObject(selector), class)
+	method := NewMethod(mb.selectorObj, mb.class)
+
+	// Set the method properties
 	method.Method.Bytecodes = mb.bytecodes
 	method.Method.Literals = mb.literals
 	method.Method.TempVarNames = mb.tempVarNames
 	method.Method.IsPrimitive = mb.isPrimitive
 	method.Method.PrimitiveIndex = mb.primitiveIndex
+
+	// Add the method to the method dictionary
+	symbolValue := GetSymbolValue(mb.selectorObj)
+	mb.methodDict.Entries[symbolValue] = method
+
 	return method
+}
+
+// For backward compatibility
+func (mb *MethodBuilder) AddPrimitive(primitive int) *MethodBuilder {
+	return mb.Primitive(primitive)
+}
+
+// For backward compatibility
+func (mb *MethodBuilder) Install(class *Object, selector *Symbol) *Object {
+	mb.class = class
+	mb.methodDict = class.GetMethodDict()
+	mb.selectorObj = SymbolToObject(selector)
+	mb.selectorName = GetSymbolValue(mb.selectorObj)
+	return mb.Go()
 }

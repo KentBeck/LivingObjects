@@ -45,57 +45,39 @@ func NewVM() *VM {
 
 func (vm *VM) NewObjectClass() *Object {
 	result := NewClass("Object", nil) // patch this up later. then even later when we have real images all this initialization can go away
-	builder := NewMethodBuilder()
-	builder.AddPrimitive(5)
-	builder.Install(result, ObjectToSymbol(NewSymbol("basicClass")))
+
+	// Add basicClass method to Object class
+	NewMethodBuilder(result).
+		Selector("basicClass").
+		Primitive(5). // basicClass primitive
+		Go()
+
 	return result
 }
 
 func (vm *VM) NewIntegerClass() *Object {
 	result := NewClass("Integer", vm.ObjectClass)
+
 	// Add primitive methods to the Integer class
-	// + method
-	plusSelector := NewSymbol("+")
-	plusMethod := NewMethod(plusSelector, result)
-	plusMethod.Method.IsPrimitive = true
-	plusMethod.Method.PrimitiveIndex = 1 // Addition
-	integerMethodDict := result.GetMethodDict()
-	integerMethodDict.Entries[GetSymbolValue(plusSelector)] = plusMethod
+	builder := NewMethodBuilder(result)
+
+	// + method (addition)
+	builder.Selector("+").Primitive(1).Go()
 
 	// - method (subtraction)
-	minusSelector := NewSymbol("-")
-	minusMethod := NewMethod(minusSelector, result)
-	minusMethod.Method.IsPrimitive = true
-	minusMethod.Method.PrimitiveIndex = 4 // Subtraction (new primitive)
-	integerMethodDict.Entries[GetSymbolValue(minusSelector)] = minusMethod
+	builder.Selector("-").Primitive(4).Go()
 
-	// * method
-	timesSelector := NewSymbol("*")
-	timesMethod := NewMethod(timesSelector, result)
-	timesMethod.Method.IsPrimitive = true
-	timesMethod.Method.PrimitiveIndex = 2 // Multiplication
-	integerMethodDict.Entries[GetSymbolValue(timesSelector)] = timesMethod
+	// * method (multiplication)
+	builder.Selector("*").Primitive(2).Go()
 
-	// = method
-	equalsSelector := NewSymbol("=")
-	equalsMethod := NewMethod(equalsSelector, result)
-	equalsMethod.Method.IsPrimitive = true
-	equalsMethod.Method.PrimitiveIndex = 3 // Equality
-	integerMethodDict.Entries[GetSymbolValue(equalsSelector)] = equalsMethod
+	// = method (equality)
+	builder.Selector("=").Primitive(3).Go()
 
-	// < method
-	lessSelector := NewSymbol("<")
-	lessMethod := NewMethod(lessSelector, result)
-	lessMethod.Method.IsPrimitive = true
-	lessMethod.Method.PrimitiveIndex = 6 // Less than
-	integerMethodDict.Entries[GetSymbolValue(lessSelector)] = lessMethod
+	// < method (less than)
+	builder.Selector("<").Primitive(6).Go()
 
-	// > method
-	greaterSelector := NewSymbol(">")
-	greaterMethod := NewMethod(greaterSelector, result)
-	greaterMethod.Method.IsPrimitive = true
-	greaterMethod.Method.PrimitiveIndex = 7 // Greater than
-	integerMethodDict.Entries[GetSymbolValue(greaterSelector)] = greaterMethod
+	// > method (greater than)
+	builder.Selector(">").Primitive(7).Go()
 
 	return result
 }
@@ -103,57 +85,29 @@ func (vm *VM) NewIntegerClass() *Object {
 func (vm *VM) NewFloatClass() *Object {
 	result := NewClass("Float", vm.ObjectClass) // patch this up later. then even later when we have real images all this initialization can go away
 
-	// Get the method dictionary for the Float class
-	floatMethodDict := result.GetMethodDict()
+	// Add primitive methods to the Float class
+	builder := NewMethodBuilder(result)
 
 	// + method (addition)
-	plusSelector := NewSymbol("+")
-	plusMethod := NewMethod(plusSelector, result)
-	plusMethod.Method.IsPrimitive = true
-	plusMethod.Method.PrimitiveIndex = 10 // Float addition
-	floatMethodDict.Entries[GetSymbolValue(plusSelector)] = plusMethod
+	builder.Selector("+").Primitive(10).Go()
 
 	// - method (subtraction)
-	minusSelector := NewSymbol("-")
-	minusMethod := NewMethod(minusSelector, result)
-	minusMethod.Method.IsPrimitive = true
-	minusMethod.Method.PrimitiveIndex = 11 // Float subtraction
-	floatMethodDict.Entries[GetSymbolValue(minusSelector)] = minusMethod
+	builder.Selector("-").Primitive(11).Go()
 
 	// * method (multiplication)
-	timesSelector := NewSymbol("*")
-	timesMethod := NewMethod(timesSelector, result)
-	timesMethod.Method.IsPrimitive = true
-	timesMethod.Method.PrimitiveIndex = 12 // Float multiplication
-	floatMethodDict.Entries[GetSymbolValue(timesSelector)] = timesMethod
+	builder.Selector("*").Primitive(12).Go()
 
 	// / method (division)
-	divideSelector := NewSymbol("/")
-	divideMethod := NewMethod(divideSelector, result)
-	divideMethod.Method.IsPrimitive = true
-	divideMethod.Method.PrimitiveIndex = 13 // Float division
-	floatMethodDict.Entries[GetSymbolValue(divideSelector)] = divideMethod
+	builder.Selector("/").Primitive(13).Go()
 
 	// = method (equality)
-	equalsSelector := NewSymbol("=")
-	equalsMethod := NewMethod(equalsSelector, result)
-	equalsMethod.Method.IsPrimitive = true
-	equalsMethod.Method.PrimitiveIndex = 14 // Float equality
-	floatMethodDict.Entries[GetSymbolValue(equalsSelector)] = equalsMethod
+	builder.Selector("=").Primitive(14).Go()
 
 	// < method (less than)
-	lessSelector := NewSymbol("<")
-	lessMethod := NewMethod(lessSelector, result)
-	lessMethod.Method.IsPrimitive = true
-	lessMethod.Method.PrimitiveIndex = 15 // Float less than
-	floatMethodDict.Entries[GetSymbolValue(lessSelector)] = lessMethod
+	builder.Selector("<").Primitive(15).Go()
 
 	// > method (greater than)
-	greaterSelector := NewSymbol(">")
-	greaterMethod := NewMethod(greaterSelector, result)
-	greaterMethod.Method.IsPrimitive = true
-	greaterMethod.Method.PrimitiveIndex = 16 // Float greater than
-	floatMethodDict.Entries[GetSymbolValue(greaterSelector)] = greaterMethod
+	builder.Selector(">").Primitive(16).Go()
 
 	return result
 }
