@@ -32,13 +32,10 @@ func NewVM() *VM {
 	// Initialize special objects
 	vm.ObjectClass = vm.NewObjectClass()
 	vm.NilClass = NewClass("UndefinedObject", vm.ObjectClass)
-	// Use immediate nil value
 	vm.NilObject = MakeNilImmediate()
 	vm.TrueClass = NewClass("True", vm.ObjectClass)
-	// Use immediate true value
 	vm.TrueObject = MakeTrueImmediate()
 	vm.FalseClass = NewClass("False", vm.ObjectClass)
-	// Use immediate false value
 	vm.FalseObject = MakeFalseImmediate()
 	vm.IntegerClass = vm.NewIntegerClass()
 	vm.FloatClass = vm.NewFloatClass()
