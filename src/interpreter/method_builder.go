@@ -3,7 +3,6 @@ package main
 // MethodBuilder provides a fluent interface for creating methods
 type MethodBuilder struct {
 	class          *Object
-	methodDict     *Object
 	selectorName   string
 	selectorObj    *Object
 	bytecodes      []byte
@@ -15,10 +14,8 @@ type MethodBuilder struct {
 
 // NewMethodBuilder creates a new MethodBuilder for the given class
 func NewMethodBuilder(class *Object) *MethodBuilder {
-	methodDict := class.GetMethodDict()
 	return &MethodBuilder{
 		class:          class,
-		methodDict:     methodDict,
 		bytecodes:      make([]byte, 0),
 		literals:       make([]*Object, 0),
 		tempVarNames:   make([]string, 0),
@@ -77,21 +74,8 @@ func (mb *MethodBuilder) Go() *Object {
 
 	// Add the method to the method dictionary
 	symbolValue := GetSymbolValue(mb.selectorObj)
-	mb.methodDict.Entries[symbolValue] = method
+	methodDict := mb.class.GetMethodDict()
+	methodDict.Entries[symbolValue] = method
 
 	return method
-}
-
-// For backward compatibility
-func (mb *MethodBuilder) AddPrimitive(primitive int) *MethodBuilder {
-	return mb.Primitive(primitive)
-}
-
-// For backward compatibility
-func (mb *MethodBuilder) Install(class *Object, selector *Symbol) *Object {
-	mb.class = class
-	mb.methodDict = class.GetMethodDict()
-	mb.selectorObj = SymbolToObject(selector)
-	mb.selectorName = GetSymbolValue(mb.selectorObj)
-	return mb.Go()
 }
