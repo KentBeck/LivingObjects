@@ -196,11 +196,6 @@ func (vm *VM) Execute() (*Object, error) {
 	var finalResult *Object
 
 	for vm.CurrentContext != nil {
-		// Check if we need to collect garbage
-		if vm.ObjectMemory.ShouldCollect() {
-			vm.ObjectMemory.Collect(vm)
-		}
-
 		// Execute the current context
 		result, err := vm.ExecuteContext(vm.CurrentContext)
 		if err != nil {
