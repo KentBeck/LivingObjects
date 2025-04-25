@@ -45,15 +45,9 @@ func NewVM() *VM {
 
 func (vm *VM) NewObjectClass() *Object {
 	result := NewClass("Object", nil) // patch this up later. then even later when we have real images all this initialization can go away
-
-	// Add basicClass method to Object class
-	objectMethodDict := result.GetMethodDict()
-	basicClassSelector := NewSymbol("basicClass")
-	basicClassMethod := NewMethod(basicClassSelector, result)
-	basicClassMethod.Method.IsPrimitive = true
-	basicClassMethod.Method.PrimitiveIndex = 5 // basicClass primitive
-	objectMethodDict.Entries[GetSymbolValue(basicClassSelector)] = basicClassMethod
-
+	builder := NewMethodBuilder()
+	builder.AddPrimitive(5)
+	builder.Install(result, ObjectToSymbol(NewSymbol("basicClass")))
 	return result
 }
 
