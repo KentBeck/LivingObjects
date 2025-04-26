@@ -13,6 +13,7 @@ To do:
 * Method lookup cache
 * Basic hash stored in object header?
 * Object structure into Object, Class, Method, Context, indexable (maybe make this its own kind of subclass)
+* Context is not currently an Object
 * Function for dereferencing an Object pointer with guards against immediates
 * Block closures
 * Convert all internal objects to Smalltalk objects
