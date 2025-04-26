@@ -21,6 +21,7 @@ To do:
 * Intern symbols
 * Review tests, particularly one level up tests that seem redundant
 * Allocate in raw memory
+* Fix MethodBuilder to have a call per bytecode
 
 Done:
 * Bytecode assembler
