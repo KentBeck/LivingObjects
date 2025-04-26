@@ -177,7 +177,6 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 		PushInstanceVariable(0).
 		Go()
 
-	// Create a context
 	context := NewContext(methodObj, instance, []*Object{}, nil)
 
 	err := vm.ExecutePushInstanceVariable(context)

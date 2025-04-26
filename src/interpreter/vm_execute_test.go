@@ -13,10 +13,8 @@ func TestExecuteContextEmptyMethod(t *testing.T) {
 		Selector("emptyMethod").
 		Go()
 
-	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
-	// Execute the context
 	result, err := vm.ExecuteContext(context)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
@@ -37,10 +35,8 @@ func TestExecuteContextWithStackValue(t *testing.T) {
 	literalIndex, builder := builder.AddLiteral(vm.NewInteger(42))
 	methodObj := builder.PushLiteral(literalIndex).Go()
 
-	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
-	// Execute the context
 	result, err := vm.ExecuteContext(context)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
@@ -71,10 +67,8 @@ func TestExecuteContextWithError(t *testing.T) {
 	// Set invalid bytecode manually
 	methodObj.Method.Bytecodes = []byte{255} // Invalid bytecode
 
-	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
-	// Execute the context
 	_, err := vm.ExecuteContext(context)
 	if err == nil {
 		t.Errorf("Expected an error, got nil")

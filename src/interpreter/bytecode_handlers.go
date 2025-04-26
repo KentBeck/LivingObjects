@@ -45,7 +45,6 @@ func (vm *VM) ExecutePushTemporaryVariable(context *Context) error {
 
 // ExecutePushSelf executes the PUSH_SELF bytecode
 func (vm *VM) ExecutePushSelf(context *Context) error {
-	// Push the receiver onto the stack
 	context.Push(context.Receiver)
 	return nil
 }
@@ -157,10 +156,7 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 // ExecuteReturnStackTop executes the RETURN_STACK_TOP bytecode
 func (vm *VM) ExecuteReturnStackTop(context *Context) (*Object, error) {
-	// Pop the return value from the stack
 	returnValue := context.Pop()
-
-	// Return the value
 	return returnValue, nil
 }
 
@@ -250,16 +246,13 @@ func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
 
 // ExecutePop executes the POP bytecode
 func (vm *VM) ExecutePop(context *Context) error {
-	// Pop the top value from the stack
 	context.Pop()
 	return nil
 }
 
 // ExecuteDuplicate executes the DUPLICATE bytecode
 func (vm *VM) ExecuteDuplicate(context *Context) error {
-	// Duplicate the top value on the stack
 	value := context.Top()
-
 	context.Push(value)
 	return nil
 }

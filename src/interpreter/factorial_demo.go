@@ -87,10 +87,8 @@ func DemoFactorial() {
 		fmt.Printf("%3d ", factorialMethod.Method.Bytecodes[i])
 	}
 
-	// Create a context for the main method
 	vm.CurrentContext = NewContext(mainMethod, fourObj, []*Object{}, nil)
 
-	// Execute the VM
 	result, err := vm.Execute()
 	if err != nil {
 		fmt.Printf("Error executing: %s\n", err)
