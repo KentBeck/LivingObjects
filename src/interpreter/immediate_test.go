@@ -5,7 +5,6 @@ import (
 )
 
 func TestImmediateNil(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Test that NilObject is an immediate value
@@ -45,7 +44,6 @@ func TestImmediateNil(t *testing.T) {
 }
 
 func TestImmediateBoolean(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Test true immediate
@@ -121,7 +119,6 @@ func TestImmediateBoolean(t *testing.T) {
 }
 
 func TestImmediateInteger(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Test small integer
@@ -183,7 +180,6 @@ func TestImmediateInteger(t *testing.T) {
 }
 
 func TestImmediateIntegerPrimitives(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create immediate integers

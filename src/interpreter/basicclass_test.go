@@ -6,7 +6,6 @@ import (
 )
 
 func TestBasicClassPrimitive(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	EnsureObjectIsClass(t, vm, vm.NewInteger(42), vm.IntegerClass)

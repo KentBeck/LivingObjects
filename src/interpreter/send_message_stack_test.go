@@ -5,7 +5,6 @@ import (
 )
 
 func TestSendMessageStackManagement(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// We'll use the VM's Object and Integer classes
@@ -96,7 +95,6 @@ func TestSendMessageStackManagement(t *testing.T) {
 }
 
 func TestSendMessageWithMultiplication(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// We'll use the VM's Object and Integer classes

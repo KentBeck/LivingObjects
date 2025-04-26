@@ -6,7 +6,6 @@ import (
 
 // TestExecuteSendMessageExtended tests the ExecuteSendMessage function with more complex scenarios
 func TestExecuteSendMessageExtended(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Test cases
@@ -371,7 +370,6 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 // TestExecuteSendMessageWithMultipleArguments tests the ExecuteSendMessage function with multiple arguments
 func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Test case for a method with multiple arguments

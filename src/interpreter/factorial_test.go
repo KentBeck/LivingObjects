@@ -5,7 +5,6 @@ import (
 )
 
 func TestFactorial(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// We'll use the VM's Integer class

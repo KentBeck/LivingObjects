@@ -6,7 +6,6 @@ import (
 )
 
 func TestNilClassPanic(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Create a method with the basicClass primitive using MethodBuilder

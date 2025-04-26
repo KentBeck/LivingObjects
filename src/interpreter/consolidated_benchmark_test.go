@@ -130,7 +130,6 @@ func BenchmarkFactorial(b *testing.B) {
 	for _, tc := range factorialTestCases {
 		b.Run(tc.name, func(b *testing.B) {
 			b.ReportAllocs()
-			// Create a VM
 			vm := NewVM()
 
 			// Setup the factorial method
@@ -376,7 +375,6 @@ func BenchmarkMessageSend(b *testing.B) {
 	for _, tc := range messageSendTestCases {
 		b.Run(tc.name, func(b *testing.B) {
 			b.ReportAllocs()
-			// Create a VM
 			vm := NewVM()
 
 			// Setup the test method and receiver

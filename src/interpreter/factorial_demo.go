@@ -7,7 +7,6 @@ import (
 func DemoFactorial() {
 	fmt.Println("SmalltalkLSP Bytecode Interpreter Demo")
 
-	// Create a VM
 	vm := NewVM()
 
 	integerClass := vm.IntegerClass

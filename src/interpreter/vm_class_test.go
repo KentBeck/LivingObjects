@@ -5,7 +5,6 @@ import (
 )
 
 func TestGetClass(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Test cases
@@ -52,7 +51,6 @@ func TestGetClass(t *testing.T) {
 }
 
 func TestGetClassPanics(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	// Test with nil object

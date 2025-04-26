@@ -605,7 +605,6 @@ func TestCollectTriggersGrowSpaces(t *testing.T) {
 	om.FromSpace = make([]*Object, 20)
 	om.ToSpace = make([]*Object, 20)
 
-	// Create a VM
 	vm := NewVM()
 
 	// Create a bunch of non-immediate objects that will survive collection

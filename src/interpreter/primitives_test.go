@@ -13,7 +13,6 @@ func TestIntegerPrimitives(t *testing.T) {
 }
 
 func testSubtractionPrimitive(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	minusSelector := NewSymbol("-")
@@ -49,7 +48,6 @@ func testSubtractionPrimitive(t *testing.T) {
 }
 
 func testMultiplicationPrimitive(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	timesSelector := NewSymbol("*")
@@ -85,7 +83,6 @@ func testMultiplicationPrimitive(t *testing.T) {
 }
 
 func testAdditionPrimitive(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	plusSelector := NewSymbol("+")
@@ -121,7 +118,6 @@ func testAdditionPrimitive(t *testing.T) {
 }
 
 func testLessThanPrimitive(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	lessSelector := NewSymbol("<")
@@ -171,7 +167,6 @@ func testLessThanPrimitive(t *testing.T) {
 }
 
 func testGreaterThanPrimitive(t *testing.T) {
-	// Create a VM
 	vm := NewVM()
 
 	greaterSelector := NewSymbol(">")
