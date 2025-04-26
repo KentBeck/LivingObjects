@@ -43,12 +43,10 @@ func TestNilClassPanic(t *testing.T) {
 
 	bytecodes = append(bytecodes, RETURN_STACK_TOP)
 
-	// Create a test method that will send the basicClass message using MethodBuilder
-	testMethod := NewMethodBuilder(vm.ObjectClass).
-		Selector("test").
-		AddLiterals([]*Object{basicClassSelector}).
-		Bytecodes(bytecodes).
-		Go()
+	// Create a test method that will send the basicClass message
+	builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+	_, builder = builder.AddLiteral(basicClassSelector)
+	testMethod := builder.Bytecodes(bytecodes).Go()
 
 	// Create a context for the test method
 	context := NewContext(testMethod, objWithNilClass, []*Object{}, nil)
