@@ -84,14 +84,11 @@ func (vm *VMWithRawMemory) NewObjectClass() *Object {
 	class.InstanceVars = make([]*Object, 1)
 	class.InstanceVars[METHOD_DICTIONARY_IV] = methodDict
 
-	// Add basicClass method to Object class
-	objectMethodDict := ClassToObject(class).GetMethodDict()
-	basicClassSelector := vm.NewSymbol("basicClass")
-	basicClassMethod := vm.NewMethod(basicClassSelector, ClassToObject(class))
-	method := ObjectToMethod(basicClassMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 5 // basicClass primitive
-	objectMethodDict.Entries[GetSymbolValue(basicClassSelector)] = basicClassMethod
+	// Add basicClass method to Object class using MethodBuilder
+	NewMethodBuilder(ClassToObject(class)).
+		Selector("basicClass").
+		Primitive(5). // basicClass primitive
+		Go()
 
 	return ClassToObject(class)
 }
@@ -127,55 +124,26 @@ func (vm *VMWithRawMemory) NewClass(name string, superClass *Object) *Object {
 func (vm *VMWithRawMemory) NewIntegerClass() *Object {
 	result := vm.NewClass("Integer", vm.ObjectClass)
 
-	// Add primitive methods to the Integer class
-	// + method
-	plusSelector := vm.NewSymbol("+")
-	plusMethod := vm.NewMethod(plusSelector, result)
-	method := ObjectToMethod(plusMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 1 // Addition
-	integerMethodDict := result.GetMethodDict()
-	integerMethodDict.Entries[GetSymbolValue(plusSelector)] = plusMethod
+	// Add primitive methods to the Integer class using MethodBuilder
+	builder := NewMethodBuilder(result)
+
+	// + method (addition)
+	builder.Selector("+").Primitive(1).Go()
 
 	// - method (subtraction)
-	minusSelector := vm.NewSymbol("-")
-	minusMethod := vm.NewMethod(minusSelector, result)
-	method = ObjectToMethod(minusMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 4 // Subtraction
-	integerMethodDict.Entries[GetSymbolValue(minusSelector)] = minusMethod
+	builder.Selector("-").Primitive(4).Go()
 
-	// * method
-	timesSelector := vm.NewSymbol("*")
-	timesMethod := vm.NewMethod(timesSelector, result)
-	method = ObjectToMethod(timesMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 2 // Multiplication
-	integerMethodDict.Entries[GetSymbolValue(timesSelector)] = timesMethod
+	// * method (multiplication)
+	builder.Selector("*").Primitive(2).Go()
 
-	// = method
-	equalsSelector := vm.NewSymbol("=")
-	equalsMethod := vm.NewMethod(equalsSelector, result)
-	method = ObjectToMethod(equalsMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 3 // Equality
-	integerMethodDict.Entries[GetSymbolValue(equalsSelector)] = equalsMethod
+	// = method (equality)
+	builder.Selector("=").Primitive(3).Go()
 
-	// < method
-	lessSelector := vm.NewSymbol("<")
-	lessMethod := vm.NewMethod(lessSelector, result)
-	method = ObjectToMethod(lessMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 6 // Less than
-	integerMethodDict.Entries[GetSymbolValue(lessSelector)] = lessMethod
+	// < method (less than)
+	builder.Selector("<").Primitive(6).Go()
 
-	// > method
-	greaterSelector := vm.NewSymbol(">")
-	greaterMethod := vm.NewMethod(greaterSelector, result)
-	method = ObjectToMethod(greaterMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 7 // Greater than
-	integerMethodDict.Entries[GetSymbolValue(greaterSelector)] = greaterMethod
+	// > method (greater than)
+	builder.Selector(">").Primitive(7).Go()
 
 	return result
 }
@@ -184,64 +152,29 @@ func (vm *VMWithRawMemory) NewIntegerClass() *Object {
 func (vm *VMWithRawMemory) NewFloatClass() *Object {
 	result := vm.NewClass("Float", vm.ObjectClass)
 
-	// Get the method dictionary for the Float class
-	floatMethodDict := result.GetMethodDict()
+	// Add primitive methods to the Float class using MethodBuilder
+	builder := NewMethodBuilder(result)
 
 	// + method (addition)
-	plusSelector := vm.NewSymbol("+")
-	plusMethod := vm.NewMethod(plusSelector, result)
-	method := ObjectToMethod(plusMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 10 // Float addition
-	floatMethodDict.Entries[GetSymbolValue(plusSelector)] = plusMethod
+	builder.Selector("+").Primitive(10).Go()
 
 	// - method (subtraction)
-	minusSelector := vm.NewSymbol("-")
-	minusMethod := vm.NewMethod(minusSelector, result)
-	method = ObjectToMethod(minusMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 11 // Float subtraction
-	floatMethodDict.Entries[GetSymbolValue(minusSelector)] = minusMethod
+	builder.Selector("-").Primitive(11).Go()
 
 	// * method (multiplication)
-	timesSelector := vm.NewSymbol("*")
-	timesMethod := vm.NewMethod(timesSelector, result)
-	method = ObjectToMethod(timesMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 12 // Float multiplication
-	floatMethodDict.Entries[GetSymbolValue(timesSelector)] = timesMethod
+	builder.Selector("*").Primitive(12).Go()
 
 	// / method (division)
-	divideSelector := vm.NewSymbol("/")
-	divideMethod := vm.NewMethod(divideSelector, result)
-	method = ObjectToMethod(divideMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 13 // Float division
-	floatMethodDict.Entries[GetSymbolValue(divideSelector)] = divideMethod
+	builder.Selector("/").Primitive(13).Go()
 
 	// = method (equality)
-	equalsSelector := vm.NewSymbol("=")
-	equalsMethod := vm.NewMethod(equalsSelector, result)
-	method = ObjectToMethod(equalsMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 14 // Float equality
-	floatMethodDict.Entries[GetSymbolValue(equalsSelector)] = equalsMethod
+	builder.Selector("=").Primitive(14).Go()
 
 	// < method (less than)
-	lessSelector := vm.NewSymbol("<")
-	lessMethod := vm.NewMethod(lessSelector, result)
-	method = ObjectToMethod(lessMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 15 // Float less than
-	floatMethodDict.Entries[GetSymbolValue(lessSelector)] = lessMethod
+	builder.Selector("<").Primitive(15).Go()
 
 	// > method (greater than)
-	greaterSelector := vm.NewSymbol(">")
-	greaterMethod := vm.NewMethod(greaterSelector, result)
-	method = ObjectToMethod(greaterMethod)
-	method.IsPrimitive = true
-	method.PrimitiveIndex = 16 // Float greater than
-	floatMethodDict.Entries[GetSymbolValue(greaterSelector)] = greaterMethod
+	builder.Selector(">").Primitive(16).Go()
 
 	return result
 }
