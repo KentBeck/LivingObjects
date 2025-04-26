@@ -33,14 +33,9 @@ func TestExecuteContextWithStackValue(t *testing.T) {
 	vm := NewVM()
 
 	// Create a method that pushes a value onto the stack using MethodBuilder
-	bytecodes := []byte{PUSH_LITERAL, 0, 0, 0, 0} // PUSH_LITERAL with index 0
-	literals := []*Object{vm.NewInteger(42)}
-
-	methodObj := NewMethodBuilder(vm.ObjectClass).
-		Selector("pushMethod").
-		Bytecodes(bytecodes).
-		AddLiterals(literals).
-		Go()
+	builder := NewMethodBuilder(vm.ObjectClass).Selector("pushMethod")
+	literalIndex, builder := builder.AddLiteral(vm.NewInteger(42))
+	methodObj := builder.PushLiteral(literalIndex).Go()
 
 	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
@@ -66,13 +61,15 @@ func TestExecuteContextWithError(t *testing.T) {
 	// Create a VM for testing
 	vm := NewVM()
 
-	// Create a method with an invalid bytecode using MethodBuilder
-	bytecodes := []byte{255} // Invalid bytecode
-
+	// Create a method with an invalid bytecode
+	// Since we can't use the fluent API for invalid bytecodes, we'll create the method
+	// and then manually set the bytecodes
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("errorMethod").
-		Bytecodes(bytecodes).
 		Go()
+
+	// Set invalid bytecode manually
+	methodObj.Method.Bytecodes = []byte{255} // Invalid bytecode
 
 	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)

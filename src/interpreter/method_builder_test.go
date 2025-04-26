@@ -40,10 +40,10 @@ func TestMethodBuilder(t *testing.T) {
 
 	t.Run("MethodWithBytecodes", func(t *testing.T) {
 		// Create a method with bytecodes using MethodBuilder
-		bytecodes := []byte{PUSH_SELF, RETURN_STACK_TOP}
 		method := NewMethodBuilder(testClass).
 			Selector("testMethod").
-			Bytecodes(bytecodes).
+			PushSelf().
+			ReturnStackTop().
 			Go()
 
 		// Verify the method was created correctly
@@ -61,11 +61,12 @@ func TestMethodBuilder(t *testing.T) {
 		}
 
 		// Check the method properties
-		if len(methodInDict.Method.Bytecodes) != len(bytecodes) {
-			t.Errorf("Expected %d bytecodes, got %d", len(bytecodes), len(methodInDict.Method.Bytecodes))
+		expectedBytecodes := []byte{PUSH_SELF, RETURN_STACK_TOP}
+		if len(methodInDict.Method.Bytecodes) != len(expectedBytecodes) {
+			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodInDict.Method.Bytecodes))
 		}
 
-		for i, b := range bytecodes {
+		for i, b := range expectedBytecodes {
 			if methodInDict.Method.Bytecodes[i] != b {
 				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, methodInDict.Method.Bytecodes[i])
 			}
@@ -102,16 +103,19 @@ func TestMethodBuilder(t *testing.T) {
 
 	t.Run("CompleteMethod", func(t *testing.T) {
 		// Create a complete method using MethodBuilder
-		bytecodes := []byte{PUSH_SELF, RETURN_STACK_TOP}
 		literals := []*Object{MakeIntegerImmediate(123), NewSymbol("test")}
 		tempVars := []string{"temp1", "temp2"}
 
-		method := NewMethodBuilder(testClass).
+		builder := NewMethodBuilder(testClass).
 			Selector("completeMethod").
 			Primitive(42).
-			Bytecodes(bytecodes).
 			AddLiterals(literals).
-			TempVars(tempVars).
+			TempVars(tempVars)
+
+		// Add bytecodes using the fluent API
+		method := builder.
+			PushSelf().
+			ReturnStackTop().
 			Go()
 
 		// Verify the method was created correctly
@@ -137,8 +141,9 @@ func TestMethodBuilder(t *testing.T) {
 			t.Errorf("Expected primitive index 42, got %d", methodInDict.Method.PrimitiveIndex)
 		}
 
-		if len(methodInDict.Method.Bytecodes) != len(bytecodes) {
-			t.Errorf("Expected %d bytecodes, got %d", len(bytecodes), len(methodInDict.Method.Bytecodes))
+		expectedBytecodes := []byte{PUSH_SELF, RETURN_STACK_TOP}
+		if len(methodInDict.Method.Bytecodes) != len(expectedBytecodes) {
+			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodInDict.Method.Bytecodes))
 		}
 
 		if len(methodInDict.Method.Literals) != len(literals) {
