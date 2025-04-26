@@ -42,12 +42,6 @@ func (mb *MethodBuilder) Primitive(index int) *MethodBuilder {
 	return mb
 }
 
-// Bytecodes adds bytecodes to the method
-func (mb *MethodBuilder) Bytecodes(bytecodes []byte) *MethodBuilder {
-	mb.bytecodes = append(mb.bytecodes, bytecodes...)
-	return mb
-}
-
 // AddLiterals adds multiple literals to the method
 func (mb *MethodBuilder) AddLiterals(literals []*Object) *MethodBuilder {
 	mb.literals = append(mb.literals, literals...)

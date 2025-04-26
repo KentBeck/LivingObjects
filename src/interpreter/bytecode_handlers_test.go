@@ -511,55 +511,51 @@ func TestComplexJumpScenario(t *testing.T) {
 	// }
 	// return result
 
-	// Create literals
-	literals := []*Object{
-		NewBoolean(true),  // Literal 0 - condition1
-		NewBoolean(false), // Literal 1 - condition2
-		vm.NewInteger(1),  // Literal 2 - result 1
-		vm.NewInteger(2),  // Literal 3 - result 2
-		vm.NewInteger(3),  // Literal 4 - result 3
-	}
+	// Create a builder
+	builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
 
-	// Bytecode implementation
-	bytecodes := []byte{
-		// Push condition1 (true in this case)
-		PUSH_LITERAL, 0, 0, 0, 0, // Push true (PC 0-4)
+	// Add literals
+	condition1Index, builder := builder.AddLiteral(NewBoolean(true))  // condition1
+	condition2Index, builder := builder.AddLiteral(NewBoolean(false)) // condition2
+	result1Index, builder := builder.AddLiteral(vm.NewInteger(1))     // result 1
+	result2Index, builder := builder.AddLiteral(vm.NewInteger(2))     // result 2
+	result3Index, builder := builder.AddLiteral(vm.NewInteger(3))     // result 3
 
-		// if (!condition1) goto else_if
-		JUMP_IF_FALSE, 0, 0, 0, 15, // Jump to else_if if false (PC 5-9)
+	// Bytecode implementation for a simple if-else-if structure
+	// Push condition1 (true in this case)
+	builder.PushLiteral(condition1Index)
 
-		// result = 1
-		PUSH_LITERAL, 0, 0, 0, 2, // Push 1 (PC 10-14)
+	// if (!condition1) goto else_if
+	builder.JumpIfFalse(15) // Jump to else_if if false
 
-		// goto end
-		JUMP, 0, 0, 0, 25, // Jump to end (PC 15-19)
+	// result = 1
+	builder.PushLiteral(result1Index)
 
-		// else_if: (PC 20)
-		// Push condition2 (false in this case)
-		PUSH_LITERAL, 0, 0, 0, 1, // Push false (PC 20-24)
+	// goto end
+	builder.Jump(25) // Jump to end
 
-		// if (!condition2) goto else
-		JUMP_IF_FALSE, 0, 0, 0, 15, // Jump to else if false (PC 25-29)
+	// else_if:
+	// Push condition2 (false in this case)
+	builder.PushLiteral(condition2Index)
 
-		// result = 2
-		PUSH_LITERAL, 0, 0, 0, 3, // Push 2 (PC 30-34)
+	// if (!condition2) goto else
+	builder.JumpIfFalse(15) // Jump to else if false
 
-		// goto end
-		JUMP, 0, 0, 0, 10, // Jump to end (PC 35-39)
+	// result = 2
+	builder.PushLiteral(result2Index)
 
-		// else: (PC 40)
-		// result = 3
-		PUSH_LITERAL, 0, 0, 0, 4, // Push 3 (PC 40-44)
+	// goto end
+	builder.Jump(10) // Jump to end
 
-		// end: (PC 45)
-		RETURN_STACK_TOP, // Return the result (PC 45)
-	}
+	// else:
+	// result = 3
+	builder.PushLiteral(result3Index)
 
-	methodObj := NewMethodBuilder(vm.ObjectClass).
-		Selector("test").
-		AddLiterals(literals).
-		Bytecodes(bytecodes).
-		Go()
+	// end:
+	builder.ReturnStackTop()
+
+	// Create the method
+	methodObj := builder.Go()
 
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
