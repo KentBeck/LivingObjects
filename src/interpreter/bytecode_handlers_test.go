@@ -7,7 +7,6 @@ import (
 func TestExecutePushLiteral(t *testing.T) {
 	vm := NewVM()
 
-	// Create a method using MethodBuilder
 	bytecodes := []byte{
 		PUSH_LITERAL,
 		0, 0, 0, 0, // Index 0
@@ -46,7 +45,6 @@ func TestExecutePushLiteral(t *testing.T) {
 func TestExecutePushSelf(t *testing.T) {
 	vm := NewVM()
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		Go()
@@ -152,7 +150,6 @@ func TestExecuteSendMessage(t *testing.T) {
 		SEND_MESSAGE, 0, 0, 0, 2, 0, 0, 0, 1, // Send + with 1 arg
 	}
 
-	// Create method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		AddLiterals(literals).
@@ -197,7 +194,6 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 		PUSH_INSTANCE_VARIABLE, 0, 0, 0, 0, // Push instance variable at index 0
 	}
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(class).
 		Selector("test").
 		Bytecodes(bytecodes).
@@ -235,7 +231,6 @@ func TestExecutePushTemporaryVariable(t *testing.T) {
 		PUSH_TEMPORARY_VARIABLE, 0, 0, 0, 0, // Push temporary variable at index 0
 	}
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		TempVars([]string{"temp"}).
@@ -280,7 +275,6 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 		STORE_INSTANCE_VARIABLE, 0, 0, 0, 0, // Store into instance variable at index 0
 	}
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(class).
 		Selector("test").
 		Bytecodes(bytecodes).
@@ -330,7 +324,6 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 		STORE_TEMPORARY_VARIABLE, 0, 0, 0, 0, // Store into temporary variable at index 0
 	}
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		TempVars([]string{"temp"}).
@@ -416,7 +409,6 @@ func TestExecuteJump(t *testing.T) {
 		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
 	}
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		Bytecodes(bytecodes).
@@ -451,7 +443,6 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
 	}
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		Bytecodes(bytecodes).
@@ -511,7 +502,6 @@ func TestExecuteJumpIfFalse(t *testing.T) {
 		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
 	}
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		Bytecodes(bytecodes).
@@ -617,7 +607,6 @@ func TestComplexJumpScenario(t *testing.T) {
 		RETURN_STACK_TOP, // Return the result (PC 45)
 	}
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		AddLiterals(literals).

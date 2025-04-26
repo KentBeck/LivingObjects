@@ -8,7 +8,6 @@ func TestContextPush(t *testing.T) {
 	// Create a VM for testing
 	vm := NewVM()
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		Go()
@@ -59,7 +58,6 @@ func TestContextPop(t *testing.T) {
 	// Create a VM for testing
 	vm := NewVM()
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		Go()
@@ -95,7 +93,6 @@ func TestContextTop(t *testing.T) {
 	// Create a VM for testing
 	vm := NewVM()
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		Go()
@@ -134,7 +131,6 @@ func TestContextTempVars(t *testing.T) {
 	// Create a VM for testing
 	vm := NewVM()
 
-	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		Go()

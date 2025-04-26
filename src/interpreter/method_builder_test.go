@@ -9,7 +9,6 @@ func TestMethodBuilder(t *testing.T) {
 	testClass := NewClass("TestClass", nil)
 
 	t.Run("PrimitiveMethod", func(t *testing.T) {
-		// Create a primitive method using MethodBuilder
 		method := NewMethodBuilder(testClass).
 			Selector("testPrimitive").
 			Primitive(42).

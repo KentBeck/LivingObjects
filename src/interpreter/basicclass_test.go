@@ -17,7 +17,7 @@ func TestBasicClassPrimitive(t *testing.T) {
 }
 
 func EnsureObjectIsClass(t *testing.T, vm *VM, object *Object, class *Object) {
-	// Create a method using MethodBuilder
+
 	basicClassSelector := NewSymbol("basicClass")
 
 	// Create bytecodes for pushing self, sending basicClass message, and returning

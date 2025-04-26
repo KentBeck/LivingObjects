@@ -13,8 +13,6 @@ func DemoFactorial() {
 	integerClass := vm.IntegerClass
 	objectClass := vm.ObjectClass
 
-	// No need to get the method dictionary explicitly when using MethodBuilder
-
 	// Create a simple factorial method that returns a hardcoded value
 	factorialSelector := NewSymbol("factorial")
 

@@ -11,8 +11,6 @@ func TestSendMessageStackManagement(t *testing.T) {
 	// We'll use the VM's Object and Integer classes
 	integerClass := vm.IntegerClass
 
-	// No need to get the method dictionary explicitly when using MethodBuilder
-
 	// Create literals
 	returnValueSelector := NewSymbol("returnValue")
 	valueObj := vm.NewInteger(42)
@@ -103,8 +101,6 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 
 	// We'll use the VM's Object and Integer classes
 	integerClass := vm.IntegerClass
-
-	// No need to get the method dictionary explicitly when using MethodBuilder
 
 	// Create literals
 	returnValueSelector := NewSymbol("returnValue")
