@@ -36,91 +36,67 @@ func setupFactorialMethod(vm *VM) *Object {
 	builder := NewMethodBuilder(integerClass).Selector("factorial")
 
 	// Add literals to the method builder
-	oneIndex, _ := builder.AddLiteral(oneObj)                  // Literal 0: 1
-	factorialIndex, _ := builder.AddLiteral(factorialSelector) // Literal 1: factorial
-	equalsIndex, _ := builder.AddLiteral(equalsSelector)       // Literal 2: =
-	minusIndex, _ := builder.AddLiteral(minusSelector)         // Literal 3: -
-	timesIndex, _ := builder.AddLiteral(timesSelector)         // Literal 4: *
-
-	// Finalize the method
-	factorialMethod := builder.Go()
+	oneIndex, builder := builder.AddLiteral(oneObj)                  // Literal 0: 1
+	factorialIndex, builder := builder.AddLiteral(factorialSelector) // Literal 1: factorial
+	equalsIndex, builder := builder.AddLiteral(equalsSelector)       // Literal 2: =
+	minusIndex, builder := builder.AddLiteral(minusSelector)         // Literal 3: -
+	timesIndex, builder := builder.AddLiteral(timesSelector)         // Literal 4: *
 
 	// Create bytecodes for factorial:
 	// ^ self = 1
 	//   ifTrue: [1]
 	//   ifFalse: [self * (self - 1) factorial]
 
-	// Create bytecodes array
-	bytecodes := make([]byte, 0, 100) // Pre-allocate space for efficiency
-
 	// First, compute self = 1
-	// PUSH_SELF
-	bytecodes = append(bytecodes, PUSH_SELF)
-
-	// PUSH_LITERAL oneIndex (1)
-	bytecodes = append(bytecodes, PUSH_LITERAL)
-	bytecodes = append(bytecodes, 0, 0, 0, byte(oneIndex)) // Use the index from AddLiteral
-
-	// SEND_MESSAGE = with 1 argument
-	bytecodes = append(bytecodes, SEND_MESSAGE)
-	bytecodes = append(bytecodes, 0, 0, 0, byte(equalsIndex)) // Use the index from AddLiteral
-	bytecodes = append(bytecodes, 0, 0, 0, 1)                 // 1 argument
+	builder.PushSelf()
+	builder.PushLiteral(oneIndex)
+	builder.SendMessage(equalsIndex, 1)
 
 	// Now we have a boolean on the stack
 	// We need to duplicate it for the two branches
-	bytecodes = append(bytecodes, DUPLICATE)
+	builder.Duplicate()
 
 	// JUMP_IF_FALSE to the false branch
-	bytecodes = append(bytecodes, JUMP_IF_FALSE)
-	bytecodes = append(bytecodes, 0, 0, 0, 12) // Jump past the true branch
+	builder.JumpIfFalse(12) // Jump past the true branch
 
 	// True branch: [1]
 	// POP the boolean (we don't need it anymore)
-	bytecodes = append(bytecodes, POP)
+	builder.Pop()
 
 	// PUSH_LITERAL oneIndex (1)
-	bytecodes = append(bytecodes, PUSH_LITERAL)
-	bytecodes = append(bytecodes, 0, 0, 0, byte(oneIndex)) // Use the index from AddLiteral
+	builder.PushLiteral(oneIndex)
 
 	// JUMP past the false branch to the return
-	bytecodes = append(bytecodes, JUMP)
-	bytecodes = append(bytecodes, 0, 0, 0, 35) // Jump to the return
+	builder.Jump(35) // Jump to the return
 
 	// False branch: [self * (self - 1) factorial]
 	// POP the boolean (we don't need it anymore)
-	bytecodes = append(bytecodes, POP)
+	builder.Pop()
 
 	// PUSH_SELF (for later use in multiplication)
-	bytecodes = append(bytecodes, PUSH_SELF)
+	builder.PushSelf()
 
 	// Compute (self - 1) factorial
 	// PUSH_SELF (for subtraction)
-	bytecodes = append(bytecodes, PUSH_SELF)
+	builder.PushSelf()
 
 	// PUSH_LITERAL oneIndex (1)
-	bytecodes = append(bytecodes, PUSH_LITERAL)
-	bytecodes = append(bytecodes, 0, 0, 0, byte(oneIndex)) // Use the index from AddLiteral
+	builder.PushLiteral(oneIndex)
 
 	// SEND_MESSAGE - with 1 argument
-	bytecodes = append(bytecodes, SEND_MESSAGE)
-	bytecodes = append(bytecodes, 0, 0, 0, byte(minusIndex)) // Use the index from AddLiteral
-	bytecodes = append(bytecodes, 0, 0, 0, 1)                // 1 argument
+	builder.SendMessage(minusIndex, 1)
 
 	// SEND_MESSAGE factorial with 0 arguments
-	bytecodes = append(bytecodes, SEND_MESSAGE)
-	bytecodes = append(bytecodes, 0, 0, 0, byte(factorialIndex)) // Use the index from AddLiteral
-	bytecodes = append(bytecodes, 0, 0, 0, 0)                    // 0 arguments
+	builder.SendMessage(factorialIndex, 0)
 
 	// SEND_MESSAGE * with 1 argument (the factorial result is already on the stack)
-	bytecodes = append(bytecodes, SEND_MESSAGE)
-	bytecodes = append(bytecodes, 0, 0, 0, byte(timesIndex)) // Use the index from AddLiteral
-	bytecodes = append(bytecodes, 0, 0, 0, 1)                // 1 argument
+	builder.SendMessage(timesIndex, 1)
 
 	// Return the result
-	bytecodes = append(bytecodes, RETURN_STACK_TOP)
+	builder.ReturnStackTop()
 
-	// Add the bytecodes to the method
-	factorialMethod.Method.Bytecodes = bytecodes
+	// Finalize the method
+	factorialMethod := builder.Go()
 
 	return factorialMethod
 }
@@ -205,20 +181,14 @@ var messageSendTestCases = []struct {
 
 			// Create a simple method that returns a value using AddLiteral
 			builder := NewMethodBuilder(integerClass).Selector("returnValue")
-			valueIndex, _ := builder.AddLiteral(valueObj) // Literal 0: 42
+			valueIndex, builder := builder.AddLiteral(valueObj) // Literal 0: 42
 
 			// Create bytecodes for the method: just return 42
-			bytecodes := make([]byte, 0, 10)
-
-			// PUSH_LITERAL valueIndex (42)
-			bytecodes = append(bytecodes, PUSH_LITERAL)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(valueIndex))
-
-			// RETURN_STACK_TOP
-			bytecodes = append(bytecodes, RETURN_STACK_TOP)
+			builder.PushLiteral(valueIndex)
+			builder.ReturnStackTop()
 
 			// Finalize the method
-			returnValueMethod := builder.Bytecodes(bytecodes).Go()
+			returnValueMethod := builder.Go()
 
 			// Create a receiver for the method
 			receiver := vm.NewInteger(5)
@@ -248,31 +218,18 @@ var messageSendTestCases = []struct {
 			builder := NewMethodBuilder(integerClass).Selector("test")
 
 			// Add literals to the method builder
-			fiveIndex, _ := builder.AddLiteral(fiveObj)    // Literal 0: 5
-			tenIndex, _ := builder.AddLiteral(tenObj)      // Literal 1: 10
-			plusIndex, _ := builder.AddLiteral(plusSymbol) // Literal 2: +
+			fiveIndex, builder := builder.AddLiteral(fiveObj)    // Literal 0: 5
+			tenIndex, builder := builder.AddLiteral(tenObj)      // Literal 1: 10
+			plusIndex, builder := builder.AddLiteral(plusSymbol) // Literal 2: +
 
 			// Create bytecodes for the test method: 5 + 10
-			bytecodes := make([]byte, 0, 20)
-
-			// PUSH_LITERAL fiveIndex (5)
-			bytecodes = append(bytecodes, PUSH_LITERAL)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(fiveIndex))
-
-			// PUSH_LITERAL tenIndex (10)
-			bytecodes = append(bytecodes, PUSH_LITERAL)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(tenIndex))
-
-			// SEND_MESSAGE plusIndex ("+") with 1 argument
-			bytecodes = append(bytecodes, SEND_MESSAGE)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(plusIndex))
-			bytecodes = append(bytecodes, 0, 0, 0, 1) // 1 argument
-
-			// RETURN_STACK_TOP
-			bytecodes = append(bytecodes, RETURN_STACK_TOP)
+			builder.PushLiteral(fiveIndex)
+			builder.PushLiteral(tenIndex)
+			builder.SendMessage(plusIndex, 1)
+			builder.ReturnStackTop()
 
 			// Finalize the method
-			testMethod := builder.Bytecodes(bytecodes).Go()
+			testMethod := builder.Go()
 
 			// Create a receiver for the test method
 			receiver := vm.NewInteger(0)
@@ -305,61 +262,31 @@ var messageSendTestCases = []struct {
 			builder := NewMethodBuilder(integerClass).Selector("test")
 
 			// Add literals to the method builder
-			oneIndex, _ := builder.AddLiteral(oneObj)      // Literal 0: 1
-			twoIndex, _ := builder.AddLiteral(twoObj)      // Literal 1: 2
-			threeIndex, _ := builder.AddLiteral(threeObj)  // Literal 2: 3
-			fourIndex, _ := builder.AddLiteral(fourObj)    // Literal 3: 4
-			fiveIndex, _ := builder.AddLiteral(fiveObj)    // Literal 4: 5
-			plusIndex, _ := builder.AddLiteral(plusSymbol) // Literal 5: +
+			oneIndex, builder := builder.AddLiteral(oneObj)      // Literal 0: 1
+			twoIndex, builder := builder.AddLiteral(twoObj)      // Literal 1: 2
+			threeIndex, builder := builder.AddLiteral(threeObj)  // Literal 2: 3
+			fourIndex, builder := builder.AddLiteral(fourObj)    // Literal 3: 4
+			fiveIndex, builder := builder.AddLiteral(fiveObj)    // Literal 4: 5
+			plusIndex, builder := builder.AddLiteral(plusSymbol) // Literal 5: +
 
 			// Create bytecodes for the test method: 1 + 2 + 3 + 4 + 5
-			bytecodes := make([]byte, 0, 50)
+			builder.PushLiteral(oneIndex)
+			builder.PushLiteral(twoIndex)
+			builder.SendMessage(plusIndex, 1)
 
-			// PUSH_LITERAL oneIndex (1)
-			bytecodes = append(bytecodes, PUSH_LITERAL)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(oneIndex))
+			builder.PushLiteral(threeIndex)
+			builder.SendMessage(plusIndex, 1)
 
-			// PUSH_LITERAL twoIndex (2)
-			bytecodes = append(bytecodes, PUSH_LITERAL)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(twoIndex))
+			builder.PushLiteral(fourIndex)
+			builder.SendMessage(plusIndex, 1)
 
-			// SEND_MESSAGE + with 1 argument
-			bytecodes = append(bytecodes, SEND_MESSAGE)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(plusIndex))
-			bytecodes = append(bytecodes, 0, 0, 0, 1) // 1 argument
+			builder.PushLiteral(fiveIndex)
+			builder.SendMessage(plusIndex, 1)
 
-			// PUSH_LITERAL threeIndex (3)
-			bytecodes = append(bytecodes, PUSH_LITERAL)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(threeIndex))
-
-			// SEND_MESSAGE + with 1 argument
-			bytecodes = append(bytecodes, SEND_MESSAGE)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(plusIndex))
-			bytecodes = append(bytecodes, 0, 0, 0, 1) // 1 argument
-
-			// PUSH_LITERAL fourIndex (4)
-			bytecodes = append(bytecodes, PUSH_LITERAL)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(fourIndex))
-
-			// SEND_MESSAGE + with 1 argument
-			bytecodes = append(bytecodes, SEND_MESSAGE)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(plusIndex))
-			bytecodes = append(bytecodes, 0, 0, 0, 1) // 1 argument
-
-			// PUSH_LITERAL fiveIndex (5)
-			bytecodes = append(bytecodes, PUSH_LITERAL)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(fiveIndex))
-
-			// SEND_MESSAGE + with 1 argument
-			bytecodes = append(bytecodes, SEND_MESSAGE)
-			bytecodes = append(bytecodes, 0, 0, 0, byte(plusIndex))
-			bytecodes = append(bytecodes, 0, 0, 0, 1) // 1 argument
-
-			// RETURN_STACK_TOP
-			bytecodes = append(bytecodes, RETURN_STACK_TOP)
+			builder.ReturnStackTop()
 
 			// Finalize the method
-			testMethod := builder.Bytecodes(bytecodes).Go()
+			testMethod := builder.Go()
 
 			// Create a receiver for the test method
 			receiver := vm.NewInteger(0)

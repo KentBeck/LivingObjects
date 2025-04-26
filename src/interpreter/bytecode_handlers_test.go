@@ -7,17 +7,9 @@ import (
 func TestExecutePushLiteral(t *testing.T) {
 	vm := NewVM()
 
-	bytecodes := []byte{
-		PUSH_LITERAL,
-		0, 0, 0, 0, // Index 0
-	}
-	literals := []*Object{vm.NewInteger(42)}
-
-	methodObj := NewMethodBuilder(vm.ObjectClass).
-		Selector("test").
-		Bytecodes(bytecodes).
-		AddLiterals(literals).
-		Go()
+	builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+	literalIndex, builder := builder.AddLiteral(vm.NewInteger(42))
+	methodObj := builder.PushLiteral(literalIndex).Go()
 
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
@@ -136,24 +128,15 @@ func TestExecuteDuplicate(t *testing.T) {
 func TestExecuteSendMessage(t *testing.T) {
 	vm := NewVM()
 
-	// Create literals
-	literals := []*Object{
-		vm.NewInteger(2), // Literal 0
-		vm.NewInteger(3), // Literal 1
-		NewSymbol("+"),   // Literal 2
-	}
+	builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+	twoIndex, builder := builder.AddLiteral(vm.NewInteger(2))
+	threeIndex, builder := builder.AddLiteral(vm.NewInteger(3))
+	plusIndex, builder := builder.AddLiteral(NewSymbol("+"))
 
-	// Create bytecodes
-	bytecodes := []byte{
-		PUSH_LITERAL, 0, 0, 0, 0, // Push 2
-		PUSH_LITERAL, 0, 0, 0, 1, // Push 3
-		SEND_MESSAGE, 0, 0, 0, 2, 0, 0, 0, 1, // Send + with 1 arg
-	}
-
-	methodObj := NewMethodBuilder(vm.ObjectClass).
-		Selector("test").
-		AddLiterals(literals).
-		Bytecodes(bytecodes).
+	methodObj := builder.
+		PushLiteral(twoIndex).
+		PushLiteral(threeIndex).
+		SendMessage(plusIndex, 1).
 		Go()
 
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
@@ -189,14 +172,9 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 	instance := NewInstance(class)
 	instance.SetInstanceVarByIndex(0, vm.NewInteger(42))
 
-	// Create bytecodes
-	bytecodes := []byte{
-		PUSH_INSTANCE_VARIABLE, 0, 0, 0, 0, // Push instance variable at index 0
-	}
-
 	methodObj := NewMethodBuilder(class).
 		Selector("test").
-		Bytecodes(bytecodes).
+		PushInstanceVariable(0).
 		Go()
 
 	// Create a context
@@ -226,15 +204,10 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 func TestExecutePushTemporaryVariable(t *testing.T) {
 	vm := NewVM()
 
-	// Create bytecodes
-	bytecodes := []byte{
-		PUSH_TEMPORARY_VARIABLE, 0, 0, 0, 0, // Push temporary variable at index 0
-	}
-
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		TempVars([]string{"temp"}).
-		Bytecodes(bytecodes).
+		PushTemporaryVariable(0).
 		Go()
 
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
@@ -270,14 +243,9 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 
 	instance := NewInstance(class)
 
-	// Create bytecodes
-	bytecodes := []byte{
-		STORE_INSTANCE_VARIABLE, 0, 0, 0, 0, // Store into instance variable at index 0
-	}
-
 	methodObj := NewMethodBuilder(class).
 		Selector("test").
-		Bytecodes(bytecodes).
+		StoreInstanceVariable(0).
 		Go()
 
 	context := NewContext(methodObj, instance, []*Object{}, nil)
@@ -319,15 +287,10 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 func TestExecuteStoreTemporaryVariable(t *testing.T) {
 	vm := NewVM()
 
-	// Create bytecodes
-	bytecodes := []byte{
-		STORE_TEMPORARY_VARIABLE, 0, 0, 0, 0, // Store into temporary variable at index 0
-	}
-
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		TempVars([]string{"temp"}).
-		Bytecodes(bytecodes).
+		StoreTemporaryVariable(0).
 		Go()
 
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
@@ -400,18 +363,13 @@ func TestExecuteReturnStackTop(t *testing.T) {
 func TestExecuteJump(t *testing.T) {
 	vm := NewVM()
 
-	// Create bytecodes
-	bytecodes := []byte{
-		JUMP, 0, 0, 0, 10, // Jump to offset 10
-		// Add some dummy bytecodes to make the jump valid
-		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
-		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
-		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
-	}
-
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
-		Bytecodes(bytecodes).
+		Jump(10).
+		// Add some dummy bytecodes to make the jump valid
+		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
+		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
+		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
 		Go()
 
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
@@ -434,18 +392,13 @@ func TestExecuteJump(t *testing.T) {
 func TestExecuteJumpIfTrue(t *testing.T) {
 	vm := NewVM()
 
-	// Create bytecodes
-	bytecodes := []byte{
-		JUMP_IF_TRUE, 0, 0, 0, 10, // Jump to offset 10 if true
-		// Add some dummy bytecodes to make the jump valid
-		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
-		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
-		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
-	}
-
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
-		Bytecodes(bytecodes).
+		JumpIfTrue(10).
+		// Add some dummy bytecodes to make the jump valid
+		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
+		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
+		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
 		Go()
 
 	// Test with true condition
@@ -493,18 +446,13 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 func TestExecuteJumpIfFalse(t *testing.T) {
 	vm := NewVM()
 
-	// Create bytecodes
-	bytecodes := []byte{
-		JUMP_IF_FALSE, 0, 0, 0, 10, // Jump to offset 10 if false
-		// Add some dummy bytecodes to make the jump valid
-		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
-		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
-		PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF, PUSH_SELF,
-	}
-
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
-		Bytecodes(bytecodes).
+		JumpIfFalse(10).
+		// Add some dummy bytecodes to make the jump valid
+		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
+		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
+		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
 		Go()
 
 	// Test with false condition
