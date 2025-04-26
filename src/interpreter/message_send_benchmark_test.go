@@ -13,30 +13,27 @@ func BenchmarkMessageSend(b *testing.B) {
 	// We'll use the VM's Integer class
 	integerClass := vm.IntegerClass
 
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
+	// No need to get the method dictionary explicitly when using MethodBuilder
 
 	// Create a simple addition method
-	addSelector := NewSymbol("+")
-	addMethod := NewMethod(addSelector, integerClass)
-	addMethod.Method.IsPrimitive = true
-	addMethod.Method.PrimitiveIndex = 1 // Addition
-
-	// Add the method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(addSelector)] = addMethod
+	NewMethodBuilder(integerClass).
+		Selector("+").
+		Primitive(1). // Addition
+		Go()
 
 	// Create a simple method that adds two numbers
-	testSelector := NewSymbol("test")
-	testMethod := NewMethod(testSelector, integerClass)
+	testMethod := NewMethodBuilder(integerClass).
+		Selector("test").
+		Go()
 
 	// Create literals for the test method
 	oneObj := vm.NewInteger(1)
 	twoObj := vm.NewInteger(2)
 
 	// Add literals to the test method
-	testMethod.Method.Literals = append(testMethod.Method.Literals, oneObj)      // Literal 0: 1
-	testMethod.Method.Literals = append(testMethod.Method.Literals, twoObj)      // Literal 1: 2
-	testMethod.Method.Literals = append(testMethod.Method.Literals, addSelector) // Literal 2: +
+	testMethod.Method.Literals = append(testMethod.Method.Literals, oneObj)         // Literal 0: 1
+	testMethod.Method.Literals = append(testMethod.Method.Literals, twoObj)         // Literal 1: 2
+	testMethod.Method.Literals = append(testMethod.Method.Literals, NewSymbol("+")) // Literal 2: +
 
 	// Create bytecodes for the test method: 1 + 2
 	// PUSH_LITERAL 0 (1)
@@ -93,21 +90,18 @@ func BenchmarkMultipleMessageSends(b *testing.B) {
 	// We'll use the VM's Integer class
 	integerClass := vm.IntegerClass
 
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
+	// No need to get the method dictionary explicitly when using MethodBuilder
 
 	// Create a simple addition method
-	addSelector := NewSymbol("+")
-	addMethod := NewMethod(addSelector, integerClass)
-	addMethod.Method.IsPrimitive = true
-	addMethod.Method.PrimitiveIndex = 1 // Addition
-
-	// Add the method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(addSelector)] = addMethod
+	NewMethodBuilder(integerClass).
+		Selector("+").
+		Primitive(1). // Addition
+		Go()
 
 	// Create a simple method that adds multiple numbers
-	testSelector := NewSymbol("test")
-	testMethod := NewMethod(testSelector, integerClass)
+	testMethod := NewMethodBuilder(integerClass).
+		Selector("test").
+		Go()
 
 	// Create literals for the test method
 	oneObj := vm.NewInteger(1)
@@ -117,12 +111,12 @@ func BenchmarkMultipleMessageSends(b *testing.B) {
 	fiveObj := vm.NewInteger(5)
 
 	// Add literals to the test method
-	testMethod.Method.Literals = append(testMethod.Method.Literals, oneObj)      // Literal 0: 1
-	testMethod.Method.Literals = append(testMethod.Method.Literals, twoObj)      // Literal 1: 2
-	testMethod.Method.Literals = append(testMethod.Method.Literals, threeObj)    // Literal 2: 3
-	testMethod.Method.Literals = append(testMethod.Method.Literals, fourObj)     // Literal 3: 4
-	testMethod.Method.Literals = append(testMethod.Method.Literals, fiveObj)     // Literal 4: 5
-	testMethod.Method.Literals = append(testMethod.Method.Literals, addSelector) // Literal 5: +
+	testMethod.Method.Literals = append(testMethod.Method.Literals, oneObj)         // Literal 0: 1
+	testMethod.Method.Literals = append(testMethod.Method.Literals, twoObj)         // Literal 1: 2
+	testMethod.Method.Literals = append(testMethod.Method.Literals, threeObj)       // Literal 2: 3
+	testMethod.Method.Literals = append(testMethod.Method.Literals, fourObj)        // Literal 3: 4
+	testMethod.Method.Literals = append(testMethod.Method.Literals, fiveObj)        // Literal 4: 5
+	testMethod.Method.Literals = append(testMethod.Method.Literals, NewSymbol("+")) // Literal 5: +
 
 	// Create bytecodes for the test method: 1 + 2 + 3 + 4 + 5
 	// PUSH_LITERAL 0 (1)

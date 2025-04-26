@@ -15,8 +15,7 @@ func BenchmarkFactorial10(b *testing.B) {
 	// We'll use the VM's Integer class
 	integerClass := vm.IntegerClass
 
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
+	// No need to get the method dictionary explicitly when using MethodBuilder
 
 	minusSelector := NewSymbol("-")
 	timesSelector := NewSymbol("*")
@@ -24,10 +23,9 @@ func BenchmarkFactorial10(b *testing.B) {
 
 	// Create a simple factorial method
 	factorialSelector := NewSymbol("factorial")
-	factorialMethod := NewMethod(factorialSelector, integerClass)
-
-	// Add the factorial method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(factorialSelector)] = factorialMethod
+	factorialMethod := NewMethodBuilder(integerClass).
+		Selector("factorial").
+		Go()
 
 	// Create literals for the factorial method
 	oneObj := vm.NewInteger(1)
@@ -149,8 +147,7 @@ func BenchmarkFactorial19(b *testing.B) {
 	// We'll use the VM's Integer class
 	integerClass := vm.IntegerClass
 
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
+	// No need to get the method dictionary explicitly when using MethodBuilder
 
 	minusSelector := NewSymbol("-")
 	timesSelector := NewSymbol("*")
@@ -158,10 +155,9 @@ func BenchmarkFactorial19(b *testing.B) {
 
 	// Create a simple factorial method
 	factorialSelector := NewSymbol("factorial")
-	factorialMethod := NewMethod(factorialSelector, integerClass)
-
-	// Add the factorial method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(factorialSelector)] = factorialMethod
+	factorialMethod := NewMethodBuilder(integerClass).
+		Selector("factorial").
+		Go()
 
 	// Create literals for the factorial method
 	oneObj := vm.NewInteger(1)

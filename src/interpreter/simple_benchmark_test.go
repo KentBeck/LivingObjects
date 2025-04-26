@@ -13,15 +13,10 @@ func BenchmarkSimpleMessageSend(b *testing.B) {
 	// We'll use the VM's Integer class
 	integerClass := vm.IntegerClass
 
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
-
 	// Create a simple method that returns a value
-	returnValueSelector := NewSymbol("returnValue")
-	returnValueMethod := NewMethod(returnValueSelector, integerClass)
-
-	// Add the method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(returnValueSelector)] = returnValueMethod
+	returnValueMethod := NewMethodBuilder(integerClass).
+		Selector("returnValue").
+		Go()
 
 	// Create a literal for the method
 	valueObj := vm.NewInteger(42)
@@ -75,30 +70,25 @@ func BenchmarkAddition(b *testing.B) {
 	// We'll use the VM's Integer class
 	integerClass := vm.IntegerClass
 
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
-
 	// Create a simple method that adds two numbers
-	plusSelector := NewSymbol("+")
-	plusMethod := NewMethod(plusSelector, integerClass)
-	plusMethod.Method.IsPrimitive = true
-	plusMethod.Method.PrimitiveIndex = 1 // Addition
-
-	// Add the method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(plusSelector)] = plusMethod
+	NewMethodBuilder(integerClass).
+		Selector("+").
+		Primitive(1). // Addition
+		Go()
 
 	// Create a method that calls the addition method
-	testSelector := NewSymbol("test")
-	testMethod := NewMethod(testSelector, integerClass)
+	testMethod := NewMethodBuilder(integerClass).
+		Selector("test").
+		Go()
 
 	// Create literals for the test method
 	fiveObj := vm.NewInteger(5)
 	tenObj := vm.NewInteger(10)
 
 	// Add literals to the test method
-	testMethod.Method.Literals = append(testMethod.Method.Literals, fiveObj)      // Literal 0: 5
-	testMethod.Method.Literals = append(testMethod.Method.Literals, tenObj)       // Literal 1: 10
-	testMethod.Method.Literals = append(testMethod.Method.Literals, plusSelector) // Literal 2: +
+	testMethod.Method.Literals = append(testMethod.Method.Literals, fiveObj)        // Literal 0: 5
+	testMethod.Method.Literals = append(testMethod.Method.Literals, tenObj)         // Literal 1: 10
+	testMethod.Method.Literals = append(testMethod.Method.Literals, NewSymbol("+")) // Literal 2: +
 
 	// Create bytecodes for the test method: 5 + 10
 	// PUSH_LITERAL 0 (5)

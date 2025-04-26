@@ -983,7 +983,9 @@ func TestUpdateReferences(t *testing.T) {
 		vm := NewVM()
 
 		// Create a method with immediate value literals and selector
-		method := NewMethod(NewSymbol("test"), NewClass("TestClass", nil))
+		method := NewMethodBuilder(NewClass("TestClass", nil)).
+			Selector("test").
+			Go()
 		method.Method.Literals = append(method.Method.Literals, vm.NewInteger(1)) // Immediate value
 		method.Method.Literals = append(method.Method.Literals, vm.NewInteger(2)) // Immediate value
 
