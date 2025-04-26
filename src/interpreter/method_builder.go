@@ -44,10 +44,17 @@ func (mb *MethodBuilder) Bytecodes(bytecodes []byte) *MethodBuilder {
 	return mb
 }
 
-// Literals adds literals to the method
+// Literals adds multiple literals to the method
 func (mb *MethodBuilder) Literals(literals []*Object) *MethodBuilder {
 	mb.literals = append(mb.literals, literals...)
 	return mb
+}
+
+// AddLiteral adds a single literal to the method and returns its index
+func (mb *MethodBuilder) AddLiteral(literal *Object) (int, *MethodBuilder) {
+	index := len(mb.literals)
+	mb.literals = append(mb.literals, literal)
+	return index, mb
 }
 
 // TempVars adds temporary variable names to the method
@@ -76,6 +83,14 @@ func (mb *MethodBuilder) Go() *Object {
 	symbolValue := GetSymbolValue(mb.selectorObj)
 	methodDict := mb.class.GetMethodDict()
 	methodDict.Entries[symbolValue] = method
+
+	// Reset the builder state for reuse
+	mb.bytecodes = make([]byte, 0)
+	mb.literals = make([]*Object, 0)
+	mb.tempVarNames = make([]string, 0)
+	mb.isPrimitive = false
+	mb.primitiveIndex = 0
+	// Note: We don't reset the class or selector as they might be reused
 
 	return method
 }
