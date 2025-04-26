@@ -11,19 +11,16 @@ func TestFactorial(t *testing.T) {
 	// We'll use the VM's Integer class
 	integerClass := vm.IntegerClass
 
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
-
+	// Create selectors for use in literals
 	minusSelector := NewSymbol("-")
 	timesSelector := NewSymbol("*")
 	equalsSelector := NewSymbol("=")
-
-	// Create a simple factorial method
 	factorialSelector := NewSymbol("factorial")
-	factorialMethod := NewMethod(factorialSelector, integerClass)
 
-	// Add the factorial method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(factorialSelector)] = factorialMethod
+	// Create a simple factorial method using MethodBuilder
+	factorialMethod := NewMethodBuilder(integerClass).
+		Selector("factorial").
+		Go()
 
 	// Create literals for the factorial method
 	oneObj := vm.NewInteger(1)

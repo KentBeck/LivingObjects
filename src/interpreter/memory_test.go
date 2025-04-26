@@ -254,8 +254,10 @@ func TestCollectWithContexts(t *testing.T) {
 	vm := NewVM()
 
 	// Create a method with a temporary variable
-	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
-	methodObj.Method.TempVarNames = append(methodObj.Method.TempVarNames, "temp")
+	methodObj := NewMethodBuilder(vm.ObjectClass).
+		Selector("test").
+		TempVars([]string{"temp"}).
+		Go()
 
 	// Create some objects for the context
 	receiverObj := NewInstance(vm.ObjectClass) // Non-immediate object

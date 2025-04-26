@@ -12,7 +12,9 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 	// Test cases
 	t.Run("primitive method", func(t *testing.T) {
 		// Create a method with a SEND_MESSAGE bytecode for addition
-		method := NewMethod(NewSymbol("test"), vm.ObjectClass)
+		method := NewMethodBuilder(vm.ObjectClass).
+			Selector("test").
+			Go()
 
 		// Create literals
 		twoObj := vm.NewInteger(2)
@@ -95,11 +97,9 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 		// Create a factorial method for Integer
 		factorialSelector := NewSymbol("factorial")
-		factorialMethod := NewMethod(factorialSelector, integerClass)
-
-		// Add the method to the Integer class
-		methodDict := integerClass.GetMethodDict()
-		methodDict.Entries[GetSymbolValue(factorialSelector)] = factorialMethod
+		factorialMethod := NewMethodBuilder(integerClass).
+			Selector("factorial").
+			Go()
 
 		// Create literals for the factorial method
 		oneObj := vm.NewInteger(1)
@@ -117,7 +117,9 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
 		// Create a method that calls factorial
-		testMethod := NewMethod(NewSymbol("test"), objectClass)
+		testMethod := NewMethodBuilder(objectClass).
+			Selector("test").
+			Go()
 
 		// Create literals for the test method
 		fiveObj := vm.NewInteger(5)
@@ -189,7 +191,9 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		t.Skip("Implement message not understood later")
 
 		// Create a method with a SEND_MESSAGE bytecode for an unknown method
-		method := NewMethod(NewSymbol("test"), vm.ObjectClass)
+		method := NewMethodBuilder(vm.ObjectClass).
+			Selector("test").
+			Go()
 
 		// Create literals
 		receiver := vm.NewInteger(2)
@@ -233,7 +237,9 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		t.Skip("Implement test for panic later")
 
 		// Create a method with a SEND_MESSAGE bytecode for a nil receiver
-		method := NewMethod(NewSymbol("test"), vm.ObjectClass)
+		method := NewMethodBuilder(vm.ObjectClass).
+			Selector("test").
+			Go()
 
 		// Create literals
 		nilObj := NewNil()
@@ -275,7 +281,9 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 	t.Run("invalid selector index", func(t *testing.T) {
 		// Create a method with a SEND_MESSAGE bytecode with an invalid selector index
-		method := NewMethod(NewSymbol("test"), vm.ObjectClass)
+		method := NewMethodBuilder(vm.ObjectClass).
+			Selector("test").
+			Go()
 
 		// Create bytecodes for an invalid selector index
 		// SEND_MESSAGE 999 with 0 arguments
@@ -302,7 +310,9 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 	t.Run("non-symbol selector", func(t *testing.T) {
 		t.Skip("Skipping test until immediate values are fully implemented")
 		// Create a method with a SEND_MESSAGE bytecode with a non-symbol selector
-		method := NewMethod(NewSymbol("test"), vm.ObjectClass)
+		method := NewMethodBuilder(vm.ObjectClass).
+			Selector("test").
+			Go()
 
 		// Create literals
 		receiver := vm.NewInteger(2)
@@ -351,7 +361,9 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 	// Test case for a method with multiple arguments
 	t.Run("direct primitive call with multiple arguments", func(t *testing.T) {
 		// Create a method with a SEND_MESSAGE bytecode for addition
-		method := NewMethod(NewSymbol("test"), vm.ObjectClass)
+		method := NewMethodBuilder(vm.ObjectClass).
+			Selector("test").
+			Go()
 
 		// Create literals
 		twoObj := vm.NewInteger(2)

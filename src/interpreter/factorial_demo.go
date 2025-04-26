@@ -13,15 +13,15 @@ func DemoFactorial() {
 	integerClass := vm.IntegerClass
 	objectClass := vm.ObjectClass
 
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
+	// No need to get the method dictionary explicitly when using MethodBuilder
 
 	// Create a simple factorial method that returns a hardcoded value
 	factorialSelector := NewSymbol("factorial")
-	factorialMethod := NewMethod(factorialSelector, integerClass)
 
-	// Add the factorial method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(factorialSelector)] = factorialMethod
+	// Create the method using MethodBuilder
+	factorialMethod := NewMethodBuilder(integerClass).
+		Selector("factorial").
+		Go()
 
 	// Create literals for the factorial method
 	oneObj := vm.NewInteger(1)
@@ -96,13 +96,15 @@ func DemoFactorial() {
 	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
 	// Create a method to compute factorial of 4
-	mainSelector := NewSymbol("main")
-	mainMethod := NewMethod(mainSelector, objectClass)
+	mainMethod := NewMethodBuilder(objectClass).
+		Selector("main").
+		Go()
 
 	// Add literals to the main method
 	fourObj := vm.NewInteger(4)
-	mainMethod.Method.Literals = append(mainMethod.Method.Literals, fourObj)           // Literal 0: 4
-	mainMethod.Method.Literals = append(mainMethod.Method.Literals, factorialSelector) // Literal 1: factorial
+	factorialSelectorObj := NewSymbol("factorial")                                        // Create the selector for use in literals
+	mainMethod.Method.Literals = append(mainMethod.Method.Literals, fourObj)              // Literal 0: 4
+	mainMethod.Method.Literals = append(mainMethod.Method.Literals, factorialSelectorObj) // Literal 1: factorial
 
 	// Create bytecodes for main: 4 factorial
 	// PUSH_LITERAL 0 (4)

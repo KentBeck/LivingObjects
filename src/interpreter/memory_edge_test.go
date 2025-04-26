@@ -161,7 +161,10 @@ func TestUpdateReferencesEdgeCases(t *testing.T) {
 	// Test with nil method literals, selector, and class
 	{
 		// Create a method with nil literals
-		method := NewMethod(nil, nil)
+		method := &Object{
+			Type:   OBJ_METHOD,
+			Method: &Method{},
+		}
 		method.Method.Literals = make([]*Object, 2)
 		method.Method.Literals[0] = nil
 		method.Method.Literals[1] = nil
@@ -211,7 +214,9 @@ func TestCollectWithNilInRootSet(t *testing.T) {
 	vm.Globals["nil2"] = nil
 
 	// Create a context with nil references
-	methodObj := NewMethod(NewSymbol("test"), vm.ObjectClass)
+	methodObj := NewMethodBuilder(vm.ObjectClass).
+		Selector("test").
+		Go()
 	context := NewContext(methodObj, nil, nil, nil)
 
 	// Set nil stack elements

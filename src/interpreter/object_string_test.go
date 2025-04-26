@@ -72,7 +72,7 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name:     "Method with selector",
-			obj:      NewMethod(NewSymbol("test"), vm.ObjectClass),
+			obj:      NewMethodBuilder(vm.ObjectClass).Selector("test").Go(),
 			expected: "Method test",
 		},
 		{

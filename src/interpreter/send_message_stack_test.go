@@ -11,15 +11,13 @@ func TestSendMessageStackManagement(t *testing.T) {
 	// We'll use the VM's Object and Integer classes
 	integerClass := vm.IntegerClass
 
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
+	// No need to get the method dictionary explicitly when using MethodBuilder
 
 	// Create a simple method that returns a value
 	returnValueSelector := NewSymbol("returnValue")
-	returnValueMethod := NewMethod(returnValueSelector, integerClass)
-
-	// Add the method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(returnValueSelector)] = returnValueMethod
+	returnValueMethod := NewMethodBuilder(integerClass).
+		Selector("returnValue").
+		Go()
 
 	// Create a literal for the method
 	valueObj := vm.NewInteger(42)
@@ -36,11 +34,9 @@ func TestSendMessageStackManagement(t *testing.T) {
 	returnValueMethod.Method.Bytecodes = append(returnValueMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
 	// Create a caller method that will call returnValue and then use the result
-	callerSelector := NewSymbol("caller")
-	callerMethod := NewMethod(callerSelector, integerClass)
-
-	// Add the caller method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(callerSelector)] = callerMethod
+	callerMethod := NewMethodBuilder(integerClass).
+		Selector("caller").
+		Go()
 
 	// Create literals for the caller method
 	receiverObj := vm.NewInteger(10)
@@ -105,15 +101,13 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	// We'll use the VM's Object and Integer classes
 	integerClass := vm.IntegerClass
 
-	// Create the method dictionary for the Integer class
-	integerMethodDict := integerClass.GetMethodDict()
+	// No need to get the method dictionary explicitly when using MethodBuilder
 
 	// Create a simple method that returns a value
 	returnValueSelector := NewSymbol("returnValue")
-	returnValueMethod := NewMethod(returnValueSelector, integerClass)
-
-	// Add the method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(returnValueSelector)] = returnValueMethod
+	returnValueMethod := NewMethodBuilder(integerClass).
+		Selector("returnValue").
+		Go()
 
 	// Create a literal for the method
 	valueObj := vm.NewInteger(42)
@@ -130,18 +124,17 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	returnValueMethod.Method.Bytecodes = append(returnValueMethod.Method.Bytecodes, RETURN_STACK_TOP)
 
 	// Create a method that will call returnValue and then use the result for multiplication
-	multiplySelector := NewSymbol("multiply")
-	multiplyMethod := NewMethod(multiplySelector, integerClass)
-
-	// Add the multiply method to the Integer class
-	integerMethodDict.Entries[GetSymbolValue(multiplySelector)] = multiplyMethod
+	multiplyMethod := NewMethodBuilder(integerClass).
+		Selector("multiply").
+		Go()
 
 	// Create the multiplication selector
 	timesSelector := NewSymbol("*")
-	timesMethod := NewMethod(timesSelector, integerClass)
-	timesMethod.Method.IsPrimitive = true
-	timesMethod.Method.PrimitiveIndex = 2 // Multiplication
-	integerMethodDict.Entries[GetSymbolValue(timesSelector)] = timesMethod
+	// Create the multiplication method
+	NewMethodBuilder(integerClass).
+		Selector("*").
+		Primitive(2). // Multiplication
+		Go()
 
 	// Add literals to the multiply method
 	multiplyMethod.Method.Literals = append(multiplyMethod.Method.Literals, returnValueSelector) // Literal 0: returnValue
