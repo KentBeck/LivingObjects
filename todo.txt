@@ -19,11 +19,11 @@ To do:
 * Convert all internal objects to Smalltalk objects
 * Message not understood
 * Intern symbols
-* Review tests, particularly one level up tests that seem redundant
 * Allocate in raw memory
-* Fix MethodBuilder to have a call per bytecode
 
 Done:
+* Review tests, particularly one level up tests that seem redundant
+* Fix MethodBuilder to have a call per bytecode
 * Bytecode assembler
 * Rip out dumb integer overflow stuff
 * Rip out mixed float/integer support in prims* Float prims
