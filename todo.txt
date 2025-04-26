@@ -8,7 +8,6 @@ Milestone 4: Fully self-hosted server. This requires all the networking stuff be
 To do:
 * Optimize sizeof(Object). 
 * Fallback from primitive to regular method
-* Bytecode assembler
 * Bytecode dispatch with panics for error handling instead of return values
 * Dispatch table for primitives
 * Method lookup cache
@@ -16,15 +15,16 @@ To do:
 * Object structure into Object, Class, Method, Context, indexable (maybe make this its own kind of subclass)
 * Function for dereferencing an Object pointer with guards against immediates
 * Block closures
-* Rip out dumb integer overflow stuff
-* Rip out mixed float/integer support in prims
 * Convert all internal objects to Smalltalk objects
 * Message not understood
 * Intern symbols
 * Review tests, particularly one level up tests that seem redundant
+* Allocate in raw memory
 
 Done:
-* Float prims
+* Bytecode assembler
+* Rip out dumb integer overflow stuff
+* Rip out mixed float/integer support in prims* Float prims
 * Immediate integer
 * Immediate nil, true, false
 * Immediate float
