@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"testing"
 )
 
@@ -19,23 +18,15 @@ func EnsureObjectIsClass(t *testing.T, vm *VM, object *Object, class *Object) {
 
 	basicClassSelector := NewSymbol("basicClass")
 
-	// Create bytecodes for pushing self, sending basicClass message, and returning
-	bytecodes := []byte{PUSH_SELF, SEND_MESSAGE}
-
-	// Selector index is 0, arg count is 0 (each 4 bytes)
-	selectorIndexBytes := make([]byte, 4)
-	binary.BigEndian.PutUint32(selectorIndexBytes, 0)
-	bytecodes = append(bytecodes, selectorIndexBytes...)
-
-	argCountBytes := make([]byte, 4)
-	binary.BigEndian.PutUint32(argCountBytes, 0)
-	bytecodes = append(bytecodes, argCountBytes...)
-
-	bytecodes = append(bytecodes, RETURN_STACK_TOP)
-
 	builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
-	_, builder = builder.AddLiteral(basicClassSelector)
-	testMethod := builder.Bytecodes(bytecodes).Go()
+	selectorIndex, builder := builder.AddLiteral(basicClassSelector)
+
+	// Create bytecodes for pushing self, sending basicClass message, and returning
+	builder.PushSelf()
+	builder.SendMessage(selectorIndex, 0)
+	builder.ReturnStackTop()
+
+	testMethod := builder.Go()
 
 	// Create a context for the test method
 	context := NewContext(testMethod, object, []*Object{}, nil)
