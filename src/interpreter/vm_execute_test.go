@@ -8,8 +8,10 @@ func TestExecuteContextEmptyMethod(t *testing.T) {
 	// Create a VM for testing
 	vm := NewVM()
 
-	// Create a method with no bytecodes
-	methodObj := NewMethod(NewSymbol("emptyMethod"), vm.ObjectClass)
+	// Create a method with no bytecodes using MethodBuilder
+	methodObj := NewMethodBuilder(vm.ObjectClass).
+		Selector("emptyMethod").
+		Go()
 
 	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
@@ -30,14 +32,15 @@ func TestExecuteContextWithStackValue(t *testing.T) {
 	// Create a VM for testing
 	vm := NewVM()
 
-	// Create a method that pushes a value onto the stack
-	methodSelector := NewSymbol("pushMethod")
-	methodObj := NewMethod(methodSelector, vm.ObjectClass)
-	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, PUSH_LITERAL)
-	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+	// Create a method that pushes a value onto the stack using MethodBuilder
+	bytecodes := []byte{PUSH_LITERAL, 0, 0, 0, 0} // PUSH_LITERAL with index 0
+	literals := []*Object{vm.NewInteger(42)}
 
-	// Add a literal
-	methodObj.Method.Literals = append(methodObj.Method.Literals, vm.NewInteger(42))
+	methodObj := NewMethodBuilder(vm.ObjectClass).
+		Selector("pushMethod").
+		Bytecodes(bytecodes).
+		Literals(literals).
+		Go()
 
 	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
@@ -63,12 +66,13 @@ func TestExecuteContextWithError(t *testing.T) {
 	// Create a VM for testing
 	vm := NewVM()
 
-	// Create a method with an invalid bytecode
-	methodSelector := NewSymbol("errorMethod")
-	methodObj := NewMethod(methodSelector, vm.ObjectClass)
+	// Create a method with an invalid bytecode using MethodBuilder
+	bytecodes := []byte{255} // Invalid bytecode
 
-	// Add an invalid bytecode
-	methodObj.Method.Bytecodes = append(methodObj.Method.Bytecodes, 255) // Invalid bytecode
+	methodObj := NewMethodBuilder(vm.ObjectClass).
+		Selector("errorMethod").
+		Bytecodes(bytecodes).
+		Go()
 
 	// Create a context
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)

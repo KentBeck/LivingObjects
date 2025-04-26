@@ -17,23 +17,29 @@ func TestBasicClassPrimitive(t *testing.T) {
 }
 
 func EnsureObjectIsClass(t *testing.T, vm *VM, object *Object, class *Object) {
-	testMethod := NewMethod(NewSymbol("test"), vm.ObjectClass)
-
-	// Add the basicClass selector to the literals
+	// Create a method using MethodBuilder
 	basicClassSelector := NewSymbol("basicClass")
-	testMethod.Method.Literals = append(testMethod.Method.Literals, basicClassSelector)
 
-	// Add bytecodes to push self and send the basicClass message
-	testMethod.Method.Bytecodes = append(testMethod.Method.Bytecodes, PUSH_SELF)
-	testMethod.Method.Bytecodes = append(testMethod.Method.Bytecodes, SEND_MESSAGE)
+	// Create bytecodes for pushing self, sending basicClass message, and returning
+	bytecodes := []byte{PUSH_SELF, SEND_MESSAGE}
+
 	// Selector index is 0, arg count is 0 (each 4 bytes)
 	selectorIndexBytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(selectorIndexBytes, 0)
-	testMethod.Method.Bytecodes = append(testMethod.Method.Bytecodes, selectorIndexBytes...)
+	bytecodes = append(bytecodes, selectorIndexBytes...)
+
 	argCountBytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(argCountBytes, 0)
-	testMethod.Method.Bytecodes = append(testMethod.Method.Bytecodes, argCountBytes...)
-	testMethod.Method.Bytecodes = append(testMethod.Method.Bytecodes, RETURN_STACK_TOP)
+	bytecodes = append(bytecodes, argCountBytes...)
+
+	bytecodes = append(bytecodes, RETURN_STACK_TOP)
+
+	// Create the method using MethodBuilder
+	testMethod := NewMethodBuilder(vm.ObjectClass).
+		Selector("test").
+		Literals([]*Object{basicClassSelector}).
+		Bytecodes(bytecodes).
+		Go()
 
 	// Create a context for the test method
 	context := NewContext(testMethod, object, []*Object{}, nil)

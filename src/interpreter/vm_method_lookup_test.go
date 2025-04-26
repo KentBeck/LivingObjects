@@ -20,18 +20,18 @@ func TestLookupMethod(t *testing.T) {
 	atSelector := NewSymbol("at:")
 	atPutSelector := NewSymbol("at:put:")
 
-	// Create methods
-	sizeMethod := NewMethod(sizeSelector, objectClass)
-	atMethod := NewMethod(atSelector, sequenceableCollectionClass)
-	atPutMethod := NewMethod(atPutSelector, sequenceableCollectionClass)
+	// Create methods using MethodBuilder
+	sizeMethod := NewMethodBuilder(objectClass).
+		Selector("size").
+		Go()
 
-	// Add methods to classes
-	objectMethodDict := objectClass.GetMethodDict()
-	objectMethodDict.Entries[GetSymbolValue(sizeSelector)] = sizeMethod
+	atMethod := NewMethodBuilder(sequenceableCollectionClass).
+		Selector("at:").
+		Go()
 
-	seqCollMethodDict := sequenceableCollectionClass.GetMethodDict()
-	seqCollMethodDict.Entries[GetSymbolValue(atSelector)] = atMethod
-	seqCollMethodDict.Entries[GetSymbolValue(atPutSelector)] = atPutMethod
+	atPutMethod := NewMethodBuilder(sequenceableCollectionClass).
+		Selector("at:put:").
+		Go()
 
 	// Create an instance of Array
 	arrayInstance := NewInstance(arrayClass)
@@ -116,24 +116,23 @@ func TestLookupMethodWithInheritance(t *testing.T) {
 	atSelector := NewSymbol("at:")
 	atPutSelector := NewSymbol("at:put:")
 
-	// Create methods for each class
-	objectSizeMethod := NewMethod(sizeSelector, objectClass)
-	collectionSizeMethod := NewMethod(sizeSelector, collectionClass)
-	seqCollAtMethod := NewMethod(atSelector, sequenceableCollectionClass)
-	arrayAtPutMethod := NewMethod(atPutSelector, arrayClass)
+	// Create methods for each class using MethodBuilder
+	// We don't need to store the method objects since they're already in the method dictionaries
+	NewMethodBuilder(objectClass).
+		Selector("size").
+		Go()
 
-	// Add methods to classes
-	objectMethodDict := objectClass.GetMethodDict()
-	objectMethodDict.Entries[GetSymbolValue(sizeSelector)] = objectSizeMethod
+	collectionSizeMethod := NewMethodBuilder(collectionClass).
+		Selector("size").
+		Go()
 
-	collectionMethodDict := collectionClass.GetMethodDict()
-	collectionMethodDict.Entries[GetSymbolValue(sizeSelector)] = collectionSizeMethod
+	seqCollAtMethod := NewMethodBuilder(sequenceableCollectionClass).
+		Selector("at:").
+		Go()
 
-	seqCollMethodDict := sequenceableCollectionClass.GetMethodDict()
-	seqCollMethodDict.Entries[GetSymbolValue(atSelector)] = seqCollAtMethod
-
-	arrayMethodDict := arrayClass.GetMethodDict()
-	arrayMethodDict.Entries[GetSymbolValue(atPutSelector)] = arrayAtPutMethod
+	arrayAtPutMethod := NewMethodBuilder(arrayClass).
+		Selector("at:put:").
+		Go()
 
 	// Create an instance of Array
 	arrayInstance := NewInstance(arrayClass)
@@ -183,10 +182,11 @@ func TestGetMethodDict(t *testing.T) {
 		t.Errorf("Expected method dictionary to be empty, got %d entries", len(methodDict.Entries))
 	}
 
-	// Add a method to the dictionary
-	selector := NewSymbol("test")
-	method := NewMethod(selector, class)
-	methodDict.Entries[GetSymbolValue(selector)] = method
+	// Add a method to the dictionary using MethodBuilder
+	selectorName := "test"
+	method := NewMethodBuilder(class).
+		Selector(selectorName).
+		Go()
 
 	// Get the method dictionary again
 	methodDict2 := class.GetMethodDict()
@@ -197,7 +197,7 @@ func TestGetMethodDict(t *testing.T) {
 	}
 
 	// Check that the method is in the dictionary
-	if methodDict2.Entries[GetSymbolValue(selector)] != method {
+	if methodDict2.Entries[selectorName] != method {
 		t.Errorf("Expected to find method in dictionary")
 	}
 
