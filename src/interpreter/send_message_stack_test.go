@@ -13,61 +13,64 @@ func TestSendMessageStackManagement(t *testing.T) {
 
 	// No need to get the method dictionary explicitly when using MethodBuilder
 
-	// Create a simple method that returns a value
+	// Create literals
 	returnValueSelector := NewSymbol("returnValue")
-	returnValueMethod := NewMethodBuilder(integerClass).
-		Selector("returnValue").
-		Go()
-
-	// Create a literal for the method
 	valueObj := vm.NewInteger(42)
-
-	// Add the literal to the method
-	returnValueMethod.Method.Literals = append(returnValueMethod.Method.Literals, valueObj) // Literal 0: 42
-
-	// Create bytecodes for the method: just return 42
-	// PUSH_LITERAL 0 (42)
-	returnValueMethod.Method.Bytecodes = append(returnValueMethod.Method.Bytecodes, PUSH_LITERAL)
-	returnValueMethod.Method.Bytecodes = append(returnValueMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
-
-	// RETURN_STACK_TOP
-	returnValueMethod.Method.Bytecodes = append(returnValueMethod.Method.Bytecodes, RETURN_STACK_TOP)
-
-	// Create a caller method that will call returnValue and then use the result
-	callerMethod := NewMethodBuilder(integerClass).
-		Selector("caller").
-		Go()
-
-	// Create literals for the caller method
 	receiverObj := vm.NewInteger(10)
 
-	// Add literals to the caller method
-	callerMethod.Method.Literals = append(callerMethod.Method.Literals, receiverObj)         // Literal 0: 10
-	callerMethod.Method.Literals = append(callerMethod.Method.Literals, returnValueSelector) // Literal 1: returnValue
+	// Create a simple method that returns a value using AddLiteral
+	returnValueBuilder := NewMethodBuilder(integerClass).Selector("returnValue")
+
+	// Add literals to the method builder
+	valueIndex, _ := returnValueBuilder.AddLiteral(valueObj) // Literal 0: 42
+
+	// Create bytecodes for the method: just return 42
+	returnValueBytecodes := make([]byte, 0, 10)
+
+	// PUSH_LITERAL valueIndex (42)
+	returnValueBytecodes = append(returnValueBytecodes, PUSH_LITERAL)
+	returnValueBytecodes = append(returnValueBytecodes, 0, 0, 0, byte(valueIndex))
+
+	// RETURN_STACK_TOP
+	returnValueBytecodes = append(returnValueBytecodes, RETURN_STACK_TOP)
+
+	// Finalize the method
+	returnValueBuilder.Bytecodes(returnValueBytecodes).Go()
+
+	// Create a caller method that will call returnValue and then use the result using AddLiteral
+	callerBuilder := NewMethodBuilder(integerClass).Selector("caller")
+
+	// Add literals to the caller method builder
+	receiverIndex, _ := callerBuilder.AddLiteral(receiverObj)                    // Literal 0: 10
+	returnValueSelectorIndex, _ := callerBuilder.AddLiteral(returnValueSelector) // Literal 1: returnValue
 
 	// Create bytecodes for the caller method:
 	// 1. Push a value onto the stack that should be preserved
 	// 2. Send returnValue message to receiver
 	// 3. Check that both the original value and the result are on the stack
+	callerBytecodes := make([]byte, 0, 20)
 
-	// PUSH_LITERAL 0 (10) - this is a value we want to preserve across the method call
-	callerMethod.Method.Bytecodes = append(callerMethod.Method.Bytecodes, PUSH_LITERAL)
-	callerMethod.Method.Bytecodes = append(callerMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+	// PUSH_LITERAL receiverIndex (10) - this is a value we want to preserve across the method call
+	callerBytecodes = append(callerBytecodes, PUSH_LITERAL)
+	callerBytecodes = append(callerBytecodes, 0, 0, 0, byte(receiverIndex))
 
 	// PUSH_SELF - this will be the receiver of the returnValue message
-	callerMethod.Method.Bytecodes = append(callerMethod.Method.Bytecodes, PUSH_SELF)
+	callerBytecodes = append(callerBytecodes, PUSH_SELF)
 
 	// SEND_MESSAGE returnValue with 0 arguments
-	callerMethod.Method.Bytecodes = append(callerMethod.Method.Bytecodes, SEND_MESSAGE)
-	callerMethod.Method.Bytecodes = append(callerMethod.Method.Bytecodes, 0, 0, 0, 1) // Selector index 1 (returnValue)
-	callerMethod.Method.Bytecodes = append(callerMethod.Method.Bytecodes, 0, 0, 0, 0) // 0 arguments
+	callerBytecodes = append(callerBytecodes, SEND_MESSAGE)
+	callerBytecodes = append(callerBytecodes, 0, 0, 0, byte(returnValueSelectorIndex))
+	callerBytecodes = append(callerBytecodes, 0, 0, 0, 0) // 0 arguments
 
 	// At this point, the stack should have two values:
 	// 1. The original value (10)
 	// 2. The result of the returnValue method (42)
 
 	// RETURN_STACK_TOP - just return the top of the stack (which should be 42)
-	callerMethod.Method.Bytecodes = append(callerMethod.Method.Bytecodes, RETURN_STACK_TOP)
+	callerBytecodes = append(callerBytecodes, RETURN_STACK_TOP)
+
+	// Finalize the method
+	callerMethod := callerBuilder.Bytecodes(callerBytecodes).Go()
 
 	// Create a receiver for the caller method
 	receiver := vm.NewInteger(5)
@@ -103,66 +106,70 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 
 	// No need to get the method dictionary explicitly when using MethodBuilder
 
-	// Create a simple method that returns a value
+	// Create literals
 	returnValueSelector := NewSymbol("returnValue")
-	returnValueMethod := NewMethodBuilder(integerClass).
-		Selector("returnValue").
-		Go()
-
-	// Create a literal for the method
 	valueObj := vm.NewInteger(42)
+	timesSelector := NewSymbol("*")
 
-	// Add the literal to the method
-	returnValueMethod.Method.Literals = append(returnValueMethod.Method.Literals, valueObj) // Literal 0: 42
+	// Create a simple method that returns a value using AddLiteral
+	returnValueBuilder := NewMethodBuilder(integerClass).Selector("returnValue")
+
+	// Add literals to the method builder
+	valueIndex, _ := returnValueBuilder.AddLiteral(valueObj) // Literal 0: 42
 
 	// Create bytecodes for the method: just return 42
-	// PUSH_LITERAL 0 (42)
-	returnValueMethod.Method.Bytecodes = append(returnValueMethod.Method.Bytecodes, PUSH_LITERAL)
-	returnValueMethod.Method.Bytecodes = append(returnValueMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+	returnValueBytecodes := make([]byte, 0, 10)
+
+	// PUSH_LITERAL valueIndex (42)
+	returnValueBytecodes = append(returnValueBytecodes, PUSH_LITERAL)
+	returnValueBytecodes = append(returnValueBytecodes, 0, 0, 0, byte(valueIndex))
 
 	// RETURN_STACK_TOP
-	returnValueMethod.Method.Bytecodes = append(returnValueMethod.Method.Bytecodes, RETURN_STACK_TOP)
+	returnValueBytecodes = append(returnValueBytecodes, RETURN_STACK_TOP)
 
-	// Create a method that will call returnValue and then use the result for multiplication
-	multiplyMethod := NewMethodBuilder(integerClass).
-		Selector("multiply").
-		Go()
+	// Finalize the method
+	returnValueBuilder.Bytecodes(returnValueBytecodes).Go()
 
-	// Create the multiplication selector
-	timesSelector := NewSymbol("*")
 	// Create the multiplication method
 	NewMethodBuilder(integerClass).
 		Selector("*").
 		Primitive(2). // Multiplication
 		Go()
 
-	// Add literals to the multiply method
-	multiplyMethod.Method.Literals = append(multiplyMethod.Method.Literals, returnValueSelector) // Literal 0: returnValue
-	multiplyMethod.Method.Literals = append(multiplyMethod.Method.Literals, timesSelector)       // Literal 1: *
+	// Create a method that will call returnValue and then use the result for multiplication using AddLiteral
+	multiplyBuilder := NewMethodBuilder(integerClass).Selector("multiply")
+
+	// Add literals to the multiply method builder
+	returnValueSelectorIndex, _ := multiplyBuilder.AddLiteral(returnValueSelector) // Literal 0: returnValue
+	timesSelectorIndex, _ := multiplyBuilder.AddLiteral(timesSelector)             // Literal 1: *
 
 	// Create bytecodes for the multiply method:
 	// 1. Push self (for later use in multiplication)
 	// 2. Send returnValue message to self
 	// 3. Multiply self by the result
+	multiplyBytecodes := make([]byte, 0, 20)
 
 	// PUSH_SELF (for later use in multiplication)
-	multiplyMethod.Method.Bytecodes = append(multiplyMethod.Method.Bytecodes, PUSH_SELF)
+	multiplyBytecodes = append(multiplyBytecodes, PUSH_SELF)
 
 	// DUPLICATE (to save a copy for later multiplication)
-	multiplyMethod.Method.Bytecodes = append(multiplyMethod.Method.Bytecodes, PUSH_SELF)
+	multiplyBytecodes = append(multiplyBytecodes, PUSH_SELF)
 
 	// SEND_MESSAGE returnValue with 0 arguments
-	multiplyMethod.Method.Bytecodes = append(multiplyMethod.Method.Bytecodes, SEND_MESSAGE)
-	multiplyMethod.Method.Bytecodes = append(multiplyMethod.Method.Bytecodes, 0, 0, 0, 0) // Selector index 0 (returnValue)
-	multiplyMethod.Method.Bytecodes = append(multiplyMethod.Method.Bytecodes, 0, 0, 0, 0) // 0 arguments
+	multiplyBytecodes = append(multiplyBytecodes, SEND_MESSAGE)
+	multiplyBytecodes = append(multiplyBytecodes, 0, 0, 0, byte(returnValueSelectorIndex))
+	multiplyBytecodes = append(multiplyBytecodes, 0, 0, 0, 0) // 0 arguments
 
 	// SEND_MESSAGE * with 1 argument
-	multiplyMethod.Method.Bytecodes = append(multiplyMethod.Method.Bytecodes, SEND_MESSAGE)
-	multiplyMethod.Method.Bytecodes = append(multiplyMethod.Method.Bytecodes, 0, 0, 0, 1) // Selector index 1 (*)
-	multiplyMethod.Method.Bytecodes = append(multiplyMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
+	multiplyBytecodes = append(multiplyBytecodes, SEND_MESSAGE)
+	multiplyBytecodes = append(multiplyBytecodes, 0, 0, 0, byte(timesSelectorIndex))
+	multiplyBytecodes = append(multiplyBytecodes, 0, 0, 0, 1) // 1 argument
 
 	// RETURN_STACK_TOP
-	multiplyMethod.Method.Bytecodes = append(multiplyMethod.Method.Bytecodes, RETURN_STACK_TOP)
+	multiplyBytecodes = append(multiplyBytecodes, RETURN_STACK_TOP)
+
+	// Finalize the method
+	multiplyMethod := multiplyBuilder.Bytecodes(multiplyBytecodes).Go()
 
 	// Create a receiver for the multiply method
 	multiplyReceiver := vm.NewInteger(5)

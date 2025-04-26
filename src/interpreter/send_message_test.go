@@ -11,34 +11,37 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 	// Test cases
 	t.Run("primitive method", func(t *testing.T) {
-		// Create a method with a SEND_MESSAGE bytecode for addition
-		method := NewMethodBuilder(vm.ObjectClass).
-			Selector("test").
-			Go()
-
 		// Create literals
 		twoObj := vm.NewInteger(2)
 		threeObj := vm.NewInteger(3)
 		plusSymbol := NewSymbol("+")
 
-		// Add literals to the method
-		method.Method.Literals = append(method.Method.Literals, twoObj)     // Index 0
-		method.Method.Literals = append(method.Method.Literals, threeObj)   // Index 1
-		method.Method.Literals = append(method.Method.Literals, plusSymbol) // Index 2
+		// Create a method with a SEND_MESSAGE bytecode for addition using AddLiteral
+		builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+
+		// Add literals to the method builder
+		twoIndex, _ := builder.AddLiteral(twoObj)      // Index 0
+		threeIndex, _ := builder.AddLiteral(threeObj)  // Index 1
+		plusIndex, _ := builder.AddLiteral(plusSymbol) // Index 2
 
 		// Create bytecodes for: 2 + 3
-		// PUSH_LITERAL 0 (2)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, PUSH_LITERAL)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+		bytecodes := make([]byte, 0, 20)
 
-		// PUSH_LITERAL 1 (3)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, PUSH_LITERAL)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 1) // Index 1
+		// PUSH_LITERAL twoIndex (2)
+		bytecodes = append(bytecodes, PUSH_LITERAL)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(twoIndex))
 
-		// SEND_MESSAGE 2 ("+") with 1 argument
-		method.Method.Bytecodes = append(method.Method.Bytecodes, SEND_MESSAGE)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 2) // Selector index 2
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
+		// PUSH_LITERAL threeIndex (3)
+		bytecodes = append(bytecodes, PUSH_LITERAL)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(threeIndex))
+
+		// SEND_MESSAGE plusIndex ("+") with 1 argument
+		bytecodes = append(bytecodes, SEND_MESSAGE)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(plusIndex))
+		bytecodes = append(bytecodes, 0, 0, 0, 1) // 1 argument
+
+		// Finalize the method
+		method := builder.Bytecodes(bytecodes).Go()
 
 		// Create a context
 		context := NewContext(method, vm.ObjectClass, []*Object{}, nil)
@@ -95,48 +98,52 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		objectClass := vm.ObjectClass
 		integerClass := vm.IntegerClass
 
-		// Create a factorial method for Integer
+		// Create literals
 		factorialSelector := NewSymbol("factorial")
-		factorialMethod := NewMethodBuilder(integerClass).
-			Selector("factorial").
-			Go()
-
-		// Create literals for the factorial method
 		oneObj := vm.NewInteger(1)
+		fiveObj := vm.NewInteger(5)
 
-		// Add literals to the factorial method
-		factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, oneObj) // Index 0
+		// Create a factorial method for Integer using AddLiteral
+		factorialBuilder := NewMethodBuilder(integerClass).Selector("factorial")
+
+		// Add literals to the factorial method builder
+		oneIndex, _ := factorialBuilder.AddLiteral(oneObj) // Index 0
 
 		// Create bytecodes for factorial: if self = 1 { return 1 } else { ... }
 		// For simplicity, we'll just return 1 for any input
-		// PUSH_LITERAL 0 (1)
-		factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_LITERAL)
-		factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+		factorialBytecodes := make([]byte, 0, 10)
+
+		// PUSH_LITERAL oneIndex (1)
+		factorialBytecodes = append(factorialBytecodes, PUSH_LITERAL)
+		factorialBytecodes = append(factorialBytecodes, 0, 0, 0, byte(oneIndex))
 
 		// RETURN_STACK_TOP
-		factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
+		factorialBytecodes = append(factorialBytecodes, RETURN_STACK_TOP)
 
-		// Create a method that calls factorial
-		testMethod := NewMethodBuilder(objectClass).
-			Selector("test").
-			Go()
+		// Finalize the factorial method
+		factorialBuilder.Bytecodes(factorialBytecodes).Go()
 
-		// Create literals for the test method
-		fiveObj := vm.NewInteger(5)
+		// Create a method that calls factorial using AddLiteral
+		testBuilder := NewMethodBuilder(objectClass).Selector("test")
 
-		// Add literals to the test method
-		testMethod.Method.Literals = append(testMethod.Method.Literals, fiveObj)           // Index 0
-		testMethod.Method.Literals = append(testMethod.Method.Literals, factorialSelector) // Index 1
+		// Add literals to the test method builder
+		fiveIndex, _ := testBuilder.AddLiteral(fiveObj)                        // Index 0
+		factorialSelectorIndex, _ := testBuilder.AddLiteral(factorialSelector) // Index 1
 
 		// Create bytecodes for: 5 factorial
-		// PUSH_LITERAL 0 (5)
-		testMethod.Method.Bytecodes = append(testMethod.Method.Bytecodes, PUSH_LITERAL)
-		testMethod.Method.Bytecodes = append(testMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+		testBytecodes := make([]byte, 0, 15)
 
-		// SEND_MESSAGE 1 ("factorial") with 0 arguments
-		testMethod.Method.Bytecodes = append(testMethod.Method.Bytecodes, SEND_MESSAGE)
-		testMethod.Method.Bytecodes = append(testMethod.Method.Bytecodes, 0, 0, 0, 1) // Selector index 1
-		testMethod.Method.Bytecodes = append(testMethod.Method.Bytecodes, 0, 0, 0, 0) // 0 arguments
+		// PUSH_LITERAL fiveIndex (5)
+		testBytecodes = append(testBytecodes, PUSH_LITERAL)
+		testBytecodes = append(testBytecodes, 0, 0, 0, byte(fiveIndex))
+
+		// SEND_MESSAGE factorialSelectorIndex ("factorial") with 0 arguments
+		testBytecodes = append(testBytecodes, SEND_MESSAGE)
+		testBytecodes = append(testBytecodes, 0, 0, 0, byte(factorialSelectorIndex))
+		testBytecodes = append(testBytecodes, 0, 0, 0, 0) // 0 arguments
+
+		// Finalize the test method
+		testMethod := testBuilder.Bytecodes(testBytecodes).Go()
 
 		// Create a context
 		context := NewContext(testMethod, objectClass, []*Object{}, nil)
@@ -190,28 +197,31 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 	t.Run("method not found", func(t *testing.T) {
 		t.Skip("Implement message not understood later")
 
-		// Create a method with a SEND_MESSAGE bytecode for an unknown method
-		method := NewMethodBuilder(vm.ObjectClass).
-			Selector("test").
-			Go()
-
 		// Create literals
 		receiver := vm.NewInteger(2)
 		unknownSelector := NewSymbol("unknown")
 
-		// Add literals to the method
-		method.Method.Literals = append(method.Method.Literals, receiver)        // Index 0
-		method.Method.Literals = append(method.Method.Literals, unknownSelector) // Index 1
+		// Create a method with a SEND_MESSAGE bytecode for an unknown method using AddLiteral
+		builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+
+		// Add literals to the method builder
+		receiverIndex, _ := builder.AddLiteral(receiver)               // Index 0
+		unknownSelectorIndex, _ := builder.AddLiteral(unknownSelector) // Index 1
 
 		// Create bytecodes for: 2 unknown
-		// PUSH_LITERAL 0 (2)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, PUSH_LITERAL)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+		bytecodes := make([]byte, 0, 15)
 
-		// SEND_MESSAGE 1 ("unknown") with 0 arguments
-		method.Method.Bytecodes = append(method.Method.Bytecodes, SEND_MESSAGE)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 1) // Selector index 1
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 0) // 0 arguments
+		// PUSH_LITERAL receiverIndex (2)
+		bytecodes = append(bytecodes, PUSH_LITERAL)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(receiverIndex))
+
+		// SEND_MESSAGE unknownSelectorIndex ("unknown") with 0 arguments
+		bytecodes = append(bytecodes, SEND_MESSAGE)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(unknownSelectorIndex))
+		bytecodes = append(bytecodes, 0, 0, 0, 0) // 0 arguments
+
+		// Finalize the method
+		method := builder.Bytecodes(bytecodes).Go()
 
 		// Create a context
 		context := NewContext(method, vm.ObjectClass, []*Object{}, nil)
@@ -236,28 +246,31 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 	t.Run("nil receiver", func(t *testing.T) {
 		t.Skip("Implement test for panic later")
 
-		// Create a method with a SEND_MESSAGE bytecode for a nil receiver
-		method := NewMethodBuilder(vm.ObjectClass).
-			Selector("test").
-			Go()
-
 		// Create literals
 		nilObj := NewNil()
 		selector := NewSymbol("test")
 
-		// Add literals to the method
-		method.Method.Literals = append(method.Method.Literals, nilObj)   // Index 0
-		method.Method.Literals = append(method.Method.Literals, selector) // Index 1
+		// Create a method with a SEND_MESSAGE bytecode for a nil receiver using AddLiteral
+		builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+
+		// Add literals to the method builder
+		nilIndex, _ := builder.AddLiteral(nilObj)        // Index 0
+		selectorIndex, _ := builder.AddLiteral(selector) // Index 1
 
 		// Create bytecodes for: nil test
-		// PUSH_LITERAL 0 (nil)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, PUSH_LITERAL)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+		bytecodes := make([]byte, 0, 15)
 
-		// SEND_MESSAGE 1 ("test") with 0 arguments
-		method.Method.Bytecodes = append(method.Method.Bytecodes, SEND_MESSAGE)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 1) // Selector index 1
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 0) // 0 arguments
+		// PUSH_LITERAL nilIndex (nil)
+		bytecodes = append(bytecodes, PUSH_LITERAL)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(nilIndex))
+
+		// SEND_MESSAGE selectorIndex ("test") with 0 arguments
+		bytecodes = append(bytecodes, SEND_MESSAGE)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(selectorIndex))
+		bytecodes = append(bytecodes, 0, 0, 0, 0) // 0 arguments
+
+		// Finalize the method
+		method := builder.Bytecodes(bytecodes).Go()
 
 		// Create a context
 		context := NewContext(method, vm.ObjectClass, []*Object{}, nil)
@@ -309,28 +322,31 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 	t.Run("non-symbol selector", func(t *testing.T) {
 		t.Skip("Skipping test until immediate values are fully implemented")
-		// Create a method with a SEND_MESSAGE bytecode with a non-symbol selector
-		method := NewMethodBuilder(vm.ObjectClass).
-			Selector("test").
-			Go()
-
 		// Create literals
 		receiver := vm.NewInteger(2)
 		nonSymbolSelector := vm.NewInteger(42)
 
-		// Add literals to the method
-		method.Method.Literals = append(method.Method.Literals, receiver)          // Index 0
-		method.Method.Literals = append(method.Method.Literals, nonSymbolSelector) // Index 1
+		// Create a method with a SEND_MESSAGE bytecode with a non-symbol selector using AddLiteral
+		builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+
+		// Add literals to the method builder
+		receiverIndex, _ := builder.AddLiteral(receiver)                   // Index 0
+		nonSymbolSelectorIndex, _ := builder.AddLiteral(nonSymbolSelector) // Index 1
 
 		// Create bytecodes for: 2 42 (where 42 is not a symbol)
-		// PUSH_LITERAL 0 (2)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, PUSH_LITERAL)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+		bytecodes := make([]byte, 0, 15)
 
-		// SEND_MESSAGE 1 (42) with 0 arguments
-		method.Method.Bytecodes = append(method.Method.Bytecodes, SEND_MESSAGE)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 1) // Selector index 1
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 0) // 0 arguments
+		// PUSH_LITERAL receiverIndex (2)
+		bytecodes = append(bytecodes, PUSH_LITERAL)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(receiverIndex))
+
+		// SEND_MESSAGE nonSymbolSelectorIndex (42) with 0 arguments
+		bytecodes = append(bytecodes, SEND_MESSAGE)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(nonSymbolSelectorIndex))
+		bytecodes = append(bytecodes, 0, 0, 0, 0) // 0 arguments
+
+		// Finalize the method
+		method := builder.Bytecodes(bytecodes).Go()
 
 		// Create a context
 		context := NewContext(method, vm.ObjectClass, []*Object{}, nil)
@@ -360,45 +376,48 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 
 	// Test case for a method with multiple arguments
 	t.Run("direct primitive call with multiple arguments", func(t *testing.T) {
-		// Create a method with a SEND_MESSAGE bytecode for addition
-		method := NewMethodBuilder(vm.ObjectClass).
-			Selector("test").
-			Go()
-
 		// Create literals
 		twoObj := vm.NewInteger(2)
 		threeObj := vm.NewInteger(3)
 		fourObj := vm.NewInteger(4)
 		plusSymbol := NewSymbol("+")
 
-		// Add literals to the method
-		method.Method.Literals = append(method.Method.Literals, twoObj)     // Index 0
-		method.Method.Literals = append(method.Method.Literals, threeObj)   // Index 1
-		method.Method.Literals = append(method.Method.Literals, fourObj)    // Index 2
-		method.Method.Literals = append(method.Method.Literals, plusSymbol) // Index 3
+		// Create a method with a SEND_MESSAGE bytecode for addition using AddLiteral
+		builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+
+		// Add literals to the method builder
+		twoIndex, _ := builder.AddLiteral(twoObj)      // Index 0
+		threeIndex, _ := builder.AddLiteral(threeObj)  // Index 1
+		fourIndex, _ := builder.AddLiteral(fourObj)    // Index 2
+		plusIndex, _ := builder.AddLiteral(plusSymbol) // Index 3
 
 		// Create bytecodes for: 2 + 3 + 4
-		// PUSH_LITERAL 0 (2)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, PUSH_LITERAL)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+		bytecodes := make([]byte, 0, 30)
 
-		// PUSH_LITERAL 1 (3)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, PUSH_LITERAL)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 1) // Index 1
+		// PUSH_LITERAL twoIndex (2)
+		bytecodes = append(bytecodes, PUSH_LITERAL)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(twoIndex))
 
-		// SEND_MESSAGE 3 ("+") with 1 argument
-		method.Method.Bytecodes = append(method.Method.Bytecodes, SEND_MESSAGE)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 3) // Selector index 3
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
+		// PUSH_LITERAL threeIndex (3)
+		bytecodes = append(bytecodes, PUSH_LITERAL)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(threeIndex))
 
-		// PUSH_LITERAL 2 (4)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, PUSH_LITERAL)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 2) // Index 2
+		// SEND_MESSAGE plusIndex ("+") with 1 argument
+		bytecodes = append(bytecodes, SEND_MESSAGE)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(plusIndex))
+		bytecodes = append(bytecodes, 0, 0, 0, 1) // 1 argument
 
-		// SEND_MESSAGE 3 ("+") with 1 argument
-		method.Method.Bytecodes = append(method.Method.Bytecodes, SEND_MESSAGE)
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 3) // Selector index 3
-		method.Method.Bytecodes = append(method.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
+		// PUSH_LITERAL fourIndex (4)
+		bytecodes = append(bytecodes, PUSH_LITERAL)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(fourIndex))
+
+		// SEND_MESSAGE plusIndex ("+") with 1 argument
+		bytecodes = append(bytecodes, SEND_MESSAGE)
+		bytecodes = append(bytecodes, 0, 0, 0, byte(plusIndex))
+		bytecodes = append(bytecodes, 0, 0, 0, 1) // 1 argument
+
+		// Finalize the method
+		method := builder.Bytecodes(bytecodes).Go()
 
 		// Create a context
 		context := NewContext(method, vm.ObjectClass, []*Object{}, nil)

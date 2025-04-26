@@ -982,12 +982,15 @@ func TestUpdateReferences(t *testing.T) {
 		// Create a VM for the integer class
 		vm := NewVM()
 
-		// Create a method with immediate value literals and selector
-		method := NewMethodBuilder(NewClass("TestClass", nil)).
-			Selector("test").
-			Go()
-		method.Method.Literals = append(method.Method.Literals, vm.NewInteger(1)) // Immediate value
-		method.Method.Literals = append(method.Method.Literals, vm.NewInteger(2)) // Immediate value
+		// Create a method with immediate value literals and selector using AddLiteral
+		builder := NewMethodBuilder(NewClass("TestClass", nil)).Selector("test")
+
+		// Add literals to the method builder
+		builder.AddLiteral(vm.NewInteger(1)) // Immediate value
+		builder.AddLiteral(vm.NewInteger(2)) // Immediate value
+
+		// Finalize the method
+		method := builder.Go()
 
 		// Update references
 		toPtr := 0

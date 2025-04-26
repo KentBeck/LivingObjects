@@ -17,91 +17,98 @@ func TestFactorial(t *testing.T) {
 	equalsSelector := NewSymbol("=")
 	factorialSelector := NewSymbol("factorial")
 
-	// Create a simple factorial method using MethodBuilder
-	factorialMethod := NewMethodBuilder(integerClass).
-		Selector("factorial").
-		Go()
-
 	// Create literals for the factorial method
 	oneObj := vm.NewInteger(1)
 
-	// Add literals to the factorial method
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, oneObj)            // Literal 0: 1
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, factorialSelector) // Literal 1: factorial
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, equalsSelector)    // Literal 2: =
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, minusSelector)     // Literal 3: -
-	factorialMethod.Method.Literals = append(factorialMethod.Method.Literals, timesSelector)     // Literal 4: *
+	// Create a simple factorial method using MethodBuilder with AddLiteral
+	builder := NewMethodBuilder(integerClass).Selector("factorial")
+
+	// Add literals to the method builder
+	oneIndex, _ := builder.AddLiteral(oneObj)                  // Literal 0: 1
+	factorialIndex, _ := builder.AddLiteral(factorialSelector) // Literal 1: factorial
+	equalsIndex, _ := builder.AddLiteral(equalsSelector)       // Literal 2: =
+	minusIndex, _ := builder.AddLiteral(minusSelector)         // Literal 3: -
+	timesIndex, _ := builder.AddLiteral(timesSelector)         // Literal 4: *
+
+	// Finalize the method
+	factorialMethod := builder.Go()
 
 	// Create bytecodes for factorial:
 	// ^ self = 1
 	//   ifTrue: [1]
 	//   ifFalse: [self * (self - 1) factorial]
 
+	// Create bytecodes array
+	bytecodes := make([]byte, 0, 100) // Pre-allocate space for efficiency
+
 	// First, compute self = 1
 	// PUSH_SELF
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
+	bytecodes = append(bytecodes, PUSH_SELF)
 
-	// PUSH_LITERAL 0 (1)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_LITERAL)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+	// PUSH_LITERAL oneIndex (1)
+	bytecodes = append(bytecodes, PUSH_LITERAL)
+	bytecodes = append(bytecodes, 0, 0, 0, byte(oneIndex)) // Use the index from AddLiteral
 
 	// SEND_MESSAGE = with 1 argument
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, SEND_MESSAGE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 2) // Selector index 2 (=)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
+	bytecodes = append(bytecodes, SEND_MESSAGE)
+	bytecodes = append(bytecodes, 0, 0, 0, byte(equalsIndex)) // Use the index from AddLiteral
+	bytecodes = append(bytecodes, 0, 0, 0, 1)                 // 1 argument
 
 	// Now we have a boolean on the stack
 	// We need to duplicate it for the two branches
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, DUPLICATE)
+	bytecodes = append(bytecodes, DUPLICATE)
 
 	// JUMP_IF_FALSE to the false branch
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, JUMP_IF_FALSE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 12) // Jump past the true branch
+	bytecodes = append(bytecodes, JUMP_IF_FALSE)
+	bytecodes = append(bytecodes, 0, 0, 0, 12) // Jump past the true branch
 
 	// True branch: [1]
 	// POP the boolean (we don't need it anymore)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, POP)
+	bytecodes = append(bytecodes, POP)
 
-	// PUSH_LITERAL 0 (1)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_LITERAL)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+	// PUSH_LITERAL oneIndex (1)
+	bytecodes = append(bytecodes, PUSH_LITERAL)
+	bytecodes = append(bytecodes, 0, 0, 0, byte(oneIndex)) // Use the index from AddLiteral
 
 	// JUMP past the false branch to the return
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, JUMP)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 35) // Jump to the return
+	bytecodes = append(bytecodes, JUMP)
+	bytecodes = append(bytecodes, 0, 0, 0, 35) // Jump to the return
 
 	// False branch: [self * (self - 1) factorial]
 	// POP the boolean (we don't need it anymore)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, POP)
+	bytecodes = append(bytecodes, POP)
 
 	// PUSH_SELF (for later use in multiplication)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
+	bytecodes = append(bytecodes, PUSH_SELF)
 
 	// Compute (self - 1) factorial
 	// PUSH_SELF (for subtraction)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_SELF)
+	bytecodes = append(bytecodes, PUSH_SELF)
 
-	// PUSH_LITERAL 0 (1)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, PUSH_LITERAL)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // Index 0
+	// PUSH_LITERAL oneIndex (1)
+	bytecodes = append(bytecodes, PUSH_LITERAL)
+	bytecodes = append(bytecodes, 0, 0, 0, byte(oneIndex)) // Use the index from AddLiteral
 
 	// SEND_MESSAGE - with 1 argument
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, SEND_MESSAGE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 3) // Selector index 3 (-)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
+	bytecodes = append(bytecodes, SEND_MESSAGE)
+	bytecodes = append(bytecodes, 0, 0, 0, byte(minusIndex)) // Use the index from AddLiteral
+	bytecodes = append(bytecodes, 0, 0, 0, 1)                // 1 argument
 
 	// SEND_MESSAGE factorial with 0 arguments
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, SEND_MESSAGE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // Selector index 1 (factorial)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 0) // 0 arguments
+	bytecodes = append(bytecodes, SEND_MESSAGE)
+	bytecodes = append(bytecodes, 0, 0, 0, byte(factorialIndex)) // Use the index from AddLiteral
+	bytecodes = append(bytecodes, 0, 0, 0, 0)                    // 0 arguments
 
 	// SEND_MESSAGE * with 1 argument (the factorial result is already on the stack)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, SEND_MESSAGE)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 4) // Selector index 4 (*)
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, 0, 0, 0, 1) // 1 argument
+	bytecodes = append(bytecodes, SEND_MESSAGE)
+	bytecodes = append(bytecodes, 0, 0, 0, byte(timesIndex)) // Use the index from AddLiteral
+	bytecodes = append(bytecodes, 0, 0, 0, 1)                // 1 argument
 
 	// Return the result
-	factorialMethod.Method.Bytecodes = append(factorialMethod.Method.Bytecodes, RETURN_STACK_TOP)
+	bytecodes = append(bytecodes, RETURN_STACK_TOP)
+
+	// Add the bytecodes to the method
+	factorialMethod.Method.Bytecodes = bytecodes
 
 	// Test factorial of 1
 	t.Run("Factorial of 1", func(t *testing.T) {
