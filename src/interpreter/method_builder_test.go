@@ -24,7 +24,7 @@ func TestMethodBuilder(t *testing.T) {
 		methodDict := testClass.GetMethodDict()
 		selectorValue := "testPrimitive"
 		methodInDict := methodDict.Entries[selectorValue]
-		
+
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
 		}
@@ -56,7 +56,7 @@ func TestMethodBuilder(t *testing.T) {
 		methodDict := testClass.GetMethodDict()
 		selectorValue := "testMethod"
 		methodInDict := methodDict.Entries[selectorValue]
-		
+
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
 		}
@@ -78,7 +78,7 @@ func TestMethodBuilder(t *testing.T) {
 		literals := []*Object{MakeIntegerImmediate(123), NewSymbol("test")}
 		method := NewMethodBuilder(testClass).
 			Selector("testLiterals").
-			Literals(literals).
+			AddLiterals(literals).
 			Go()
 
 		// Verify the method was created correctly
@@ -90,7 +90,7 @@ func TestMethodBuilder(t *testing.T) {
 		methodDict := testClass.GetMethodDict()
 		selectorValue := "testLiterals"
 		methodInDict := methodDict.Entries[selectorValue]
-		
+
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
 		}
@@ -106,12 +106,12 @@ func TestMethodBuilder(t *testing.T) {
 		bytecodes := []byte{PUSH_SELF, RETURN_STACK_TOP}
 		literals := []*Object{MakeIntegerImmediate(123), NewSymbol("test")}
 		tempVars := []string{"temp1", "temp2"}
-		
+
 		method := NewMethodBuilder(testClass).
 			Selector("completeMethod").
 			Primitive(42).
 			Bytecodes(bytecodes).
-			Literals(literals).
+			AddLiterals(literals).
 			TempVars(tempVars).
 			Go()
 
@@ -124,7 +124,7 @@ func TestMethodBuilder(t *testing.T) {
 		methodDict := testClass.GetMethodDict()
 		selectorValue := "completeMethod"
 		methodInDict := methodDict.Entries[selectorValue]
-		
+
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
 		}

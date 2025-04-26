@@ -37,7 +37,7 @@ func EnsureObjectIsClass(t *testing.T, vm *VM, object *Object, class *Object) {
 	// Create the method using MethodBuilder
 	testMethod := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
-		Literals([]*Object{basicClassSelector}).
+		AddLiterals([]*Object{basicClassSelector}).
 		Bytecodes(bytecodes).
 		Go()
 

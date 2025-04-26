@@ -47,7 +47,7 @@ func TestNilClassPanic(t *testing.T) {
 	// Create a test method that will send the basicClass message using MethodBuilder
 	testMethod := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
-		Literals([]*Object{basicClassSelector}).
+		AddLiterals([]*Object{basicClassSelector}).
 		Bytecodes(bytecodes).
 		Go()
 

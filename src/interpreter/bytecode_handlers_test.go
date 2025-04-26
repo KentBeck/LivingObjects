@@ -17,7 +17,7 @@ func TestExecutePushLiteral(t *testing.T) {
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
 		Bytecodes(bytecodes).
-		Literals(literals).
+		AddLiterals(literals).
 		Go()
 
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
@@ -155,7 +155,7 @@ func TestExecuteSendMessage(t *testing.T) {
 	// Create method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
-		Literals(literals).
+		AddLiterals(literals).
 		Bytecodes(bytecodes).
 		Go()
 
@@ -620,7 +620,7 @@ func TestComplexJumpScenario(t *testing.T) {
 	// Create a method using MethodBuilder
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("test").
-		Literals(literals).
+		AddLiterals(literals).
 		Bytecodes(bytecodes).
 		Go()
 

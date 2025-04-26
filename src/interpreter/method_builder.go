@@ -44,8 +44,8 @@ func (mb *MethodBuilder) Bytecodes(bytecodes []byte) *MethodBuilder {
 	return mb
 }
 
-// Literals adds multiple literals to the method
-func (mb *MethodBuilder) Literals(literals []*Object) *MethodBuilder {
+// AddLiterals adds multiple literals to the method
+func (mb *MethodBuilder) AddLiterals(literals []*Object) *MethodBuilder {
 	mb.literals = append(mb.literals, literals...)
 	return mb
 }

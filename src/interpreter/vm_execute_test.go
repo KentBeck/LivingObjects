@@ -39,7 +39,7 @@ func TestExecuteContextWithStackValue(t *testing.T) {
 	methodObj := NewMethodBuilder(vm.ObjectClass).
 		Selector("pushMethod").
 		Bytecodes(bytecodes).
-		Literals(literals).
+		AddLiterals(literals).
 		Go()
 
 	// Create a context
