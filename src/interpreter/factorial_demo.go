@@ -12,7 +12,6 @@ func DemoFactorial() {
 	integerClass := vm.IntegerClass
 	objectClass := vm.ObjectClass
 
-	// Create a simple factorial method that returns a hardcoded value
 	factorialSelector := NewSymbol("factorial")
 
 	// Create literals for the factorial method
