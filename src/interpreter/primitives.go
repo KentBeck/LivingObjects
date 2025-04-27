@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // primitives.go contains the implementation of primitive methods for the Smalltalk interpreter
 
 // executePrimitive executes a primitive method
@@ -210,6 +212,55 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			val2 := float64(GetIntegerImmediate(args[0]))
 			result := val1 > val2
 			return NewBoolean(result)
+		}
+	case 20: // Block new - create a new block instance
+		if receiver.Type == OBJ_CLASS && receiver == vm.BlockClass {
+			// Create a new block instance
+			blockInstance := NewBlock(vm.CurrentContext)
+			blockInstance.Class = vm.BlockClass
+			return blockInstance
+		}
+	case 21: // Block value - execute a block with no arguments
+		if receiver.Type == OBJ_BLOCK {
+			// Create a method object for the block's bytecodes
+			methodObj := &Object{
+				Type: OBJ_METHOD,
+				Method: &Method{
+					Bytecodes: receiver.Block.Bytecodes,
+					Literals:  receiver.Block.Literals,
+				},
+			}
+
+			// Create a new context for the block execution
+			blockContext := NewContext(methodObj, receiver, []*Object{}, receiver.Block.OuterContext)
+
+			// Execute the block's bytecodes
+			result, err := vm.ExecuteContext(blockContext)
+			if err != nil {
+				panic(fmt.Sprintf("Error executing block: %v", err))
+			}
+			return result
+		}
+	case 22: // Block value: - execute a block with one argument
+		if receiver.Type == OBJ_BLOCK && len(args) == 1 {
+			// Create a method object for the block's bytecodes
+			methodObj := &Object{
+				Type: OBJ_METHOD,
+				Method: &Method{
+					Bytecodes: receiver.Block.Bytecodes,
+					Literals:  receiver.Block.Literals,
+				},
+			}
+
+			// Create a new context for the block execution
+			blockContext := NewContext(methodObj, receiver, args, receiver.Block.OuterContext)
+
+			// Execute the block's bytecodes
+			result, err := vm.ExecuteContext(blockContext)
+			if err != nil {
+				panic(fmt.Sprintf("Error executing block: %v", err))
+			}
+			return result
 		}
 	default:
 		panic("executePrimitive: unknown primitive index\n")

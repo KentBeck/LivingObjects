@@ -20,6 +20,7 @@ type VM struct {
 	ObjectClass  *Object
 	IntegerClass *Object
 	FloatClass   *Object
+	BlockClass   *Object
 }
 
 // NewVM creates a new virtual machine
@@ -39,6 +40,7 @@ func NewVM() *VM {
 	vm.FalseObject = MakeFalseImmediate()
 	vm.IntegerClass = vm.NewIntegerClass()
 	vm.FloatClass = vm.NewFloatClass()
+	vm.BlockClass = vm.NewBlockClass()
 
 	return vm
 }
@@ -127,6 +129,24 @@ func (vm *VM) NewInteger(value int64) *Object {
 
 func (vm *VM) NewFloat(value float64) *Object {
 	return MakeFloatImmediate(value)
+}
+
+func (vm *VM) NewBlockClass() *Object {
+	result := NewClass("Block", vm.ObjectClass)
+
+	// Add primitive methods to the Block class
+	builder := NewMethodBuilder(result)
+
+	// new method (creates a new block instance)
+	builder.Selector("new").Primitive(20).Go()
+
+	// value method (executes the block with no arguments)
+	builder.Selector("value").Primitive(21).Go()
+
+	// value: method (executes the block with one argument)
+	builder.Selector("value:").Primitive(22).Go()
+
+	return result
 }
 
 // LoadImage loads a Smalltalk image from a file

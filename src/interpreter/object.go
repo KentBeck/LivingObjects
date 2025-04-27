@@ -32,6 +32,7 @@ type Object struct {
 	Elements         []*Object
 	Entries          map[string]*Object
 	Method           *Method
+	Block            *Block
 	Bytecodes        []byte
 	Literals         []*Object
 	Selector         *Object
@@ -71,6 +72,15 @@ type Method struct {
 	TempVarNames   []string
 	IsPrimitive    bool
 	PrimitiveIndex int
+}
+
+// Block represents a Smalltalk block
+type Block struct {
+	Object
+	Bytecodes    []byte
+	Literals     []*Object
+	TempVarNames []string
+	OuterContext *Context
 }
 
 // NewBoolean creates a new boolean object
@@ -176,6 +186,21 @@ func NewMethod(selector *Object, class *Object) *Object {
 	return &Object{
 		Type:   OBJ_METHOD,
 		Method: method,
+	}
+}
+
+// NewBlock creates a new block object
+func NewBlock(outerContext *Context) *Object {
+	block := &Block{
+		Bytecodes:    make([]byte, 0),
+		Literals:     make([]*Object, 0),
+		TempVarNames: make([]string, 0),
+		OuterContext: outerContext,
+	}
+
+	return &Object{
+		Type:  OBJ_BLOCK,
+		Block: block,
 	}
 }
 
