@@ -44,18 +44,11 @@ func TestSimpleBlockValue(t *testing.T) {
 	// Add the 'value' selector as a literal
 	valueSelector, builder := builder.AddLiteral(NewSymbol("value"))
 
-	// Create bytecodes for the method:
-	// 1. Push the block
-	builder.PushLiteral(blockIndex)
-
-	// 2. Send 'value' message to the block
-	builder.SendMessage(valueSelector, 0)
-
-	// 3. Return the result
-	builder.ReturnStackTop()
-
-	// Finalize the method
-	method := builder.Go()
+	method := builder.
+		PushLiteral(blockIndex).
+		SendMessage(valueSelector, 0).
+		ReturnStackTop().
+		Go()
 
 	// Create a context for the method
 	context := NewContext(method, vm.ObjectClass, []*Object{}, nil)
