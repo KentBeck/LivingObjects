@@ -1,0 +1,22 @@
+{
+  "name": "smalltalk-js-interpreter",
+  "version": "1.0.0",
+  "description": "AST-based Smalltalk interpreter in JavaScript",
+  "main": "src/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "smalltalk",
+    "interpreter",
+    "ast"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
