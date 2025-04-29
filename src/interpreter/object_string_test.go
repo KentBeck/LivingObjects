@@ -61,7 +61,7 @@ func TestObjectString(t *testing.T) {
 		{
 			name: "Instance without class",
 			obj: &Object{
-				Type: OBJ_INSTANCE,
+				type1: OBJ_INSTANCE,
 			},
 			expected: "an Object",
 		},
@@ -78,7 +78,7 @@ func TestObjectString(t *testing.T) {
 		{
 			name: "Method without selector",
 			obj: &Object{
-				Type:   OBJ_METHOD,
+				type1:  OBJ_METHOD,
 				Method: &Method{},
 			},
 			expected: "a Method",
@@ -86,7 +86,7 @@ func TestObjectString(t *testing.T) {
 		{
 			name: "Unknown object type",
 			obj: &Object{
-				Type: 255, // Invalid type
+				type1: 255, // Invalid type
 			},
 			expected: "Unknown object",
 		},

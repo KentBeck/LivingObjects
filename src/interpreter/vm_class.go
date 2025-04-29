@@ -36,13 +36,13 @@ func (vm *VM) GetClass(obj *Object) *Object {
 	// If it's a regular object, proceed as before
 
 	// If the object is a class, return itself
-	if obj.Type == OBJ_CLASS {
+	if obj.Type() == OBJ_CLASS {
 		return obj
 	}
 
 	// Special case for nil object (legacy non-immediate nil)
-	if obj.Type == OBJ_NIL {
-		return vm.NilClass
+	if obj.Type() == OBJ_NIL {
+		return nil
 	}
 
 	// Otherwise, return the class field

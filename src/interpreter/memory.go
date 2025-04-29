@@ -180,8 +180,33 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 		// Immediate values don't have references
 		return
 	}
-	switch obj.Type {
-	case OBJ_INSTANCE, OBJ_CLASS:
+
+	switch obj.Type() {
+	case OBJ_STRING:
+		// String objects don't have references to update
+		return
+
+	case OBJ_SYMBOL:
+		// Symbol objects don't have references to update
+		return
+
+	case OBJ_ARRAY:
+		// Update array elements
+		for i, elem := range obj.Elements {
+			if elem != nil {
+				obj.Elements[i] = om.copyObject(elem, toPtr)
+			}
+		}
+
+	case OBJ_DICTIONARY:
+		// Update dictionary entries
+		for key, value := range obj.Entries {
+			if value != nil {
+				obj.Entries[key] = om.copyObject(value, toPtr)
+			}
+		}
+
+	case OBJ_INSTANCE:
 		// Update instance variables
 		for i, value := range obj.InstanceVars {
 			if value != nil {
@@ -199,20 +224,17 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 			obj.Class = om.copyObject(obj.Class, toPtr)
 		}
 
-	case OBJ_ARRAY:
-		// Update array elements
-		for i, elem := range obj.Elements {
-			if elem != nil {
-				obj.Elements[i] = om.copyObject(elem, toPtr)
+	case OBJ_CLASS:
+		// Update instance variables (which includes the method dictionary)
+		for i, value := range obj.InstanceVars {
+			if value != nil {
+				obj.InstanceVars[i] = om.copyObject(value, toPtr)
 			}
 		}
 
-	case OBJ_DICTIONARY:
-		// Update dictionary entries
-		for key, value := range obj.Entries {
-			if value != nil {
-				obj.Entries[key] = om.copyObject(value, toPtr)
-			}
+		// Update superclass reference
+		if obj.SuperClass != nil {
+			obj.SuperClass = om.copyObject(obj.SuperClass, toPtr)
 		}
 
 	case OBJ_METHOD:
@@ -231,6 +253,14 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 		// Update method class
 		if obj.Method.MethodClass != nil {
 			obj.Method.MethodClass = om.copyObject(obj.Method.MethodClass, toPtr)
+		}
+
+	case OBJ_BLOCK:
+		// Update block literals
+		for i, lit := range obj.Literals {
+			if lit != nil {
+				obj.Literals[i] = om.copyObject(lit, toPtr)
+			}
 		}
 	}
 }

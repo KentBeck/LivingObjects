@@ -173,8 +173,8 @@ func TestGetMethodDict(t *testing.T) {
 	methodDict := class.GetMethodDict()
 
 	// Check that it's a dictionary
-	if methodDict.Type != OBJ_DICTIONARY {
-		t.Errorf("Expected method dictionary to be a dictionary, got %v", methodDict.Type)
+	if methodDict.Type() != OBJ_DICTIONARY {
+		t.Errorf("Expected method dictionary to be a dictionary, got %v", methodDict.Type())
 	}
 
 	// Check that it's empty

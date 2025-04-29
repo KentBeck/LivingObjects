@@ -74,7 +74,7 @@ func (vm *VMWithRawMemory) NewObjectClass() *Object {
 	}
 
 	// Initialize the class
-	class.Type = OBJ_CLASS
+	class.SetType(OBJ_CLASS)
 	class.Name = "Object"
 	class.SuperClass = nil
 	class.InstanceVarNames = make([]string, 0)
@@ -107,7 +107,7 @@ func (vm *VMWithRawMemory) NewClass(name string, superClass *Object) *Object {
 	}
 
 	// Initialize the class
-	class.Type = OBJ_CLASS
+	class.SetType(OBJ_CLASS)
 	class.Name = name
 	class.SuperClass = superClass
 	class.InstanceVarNames = make([]string, 0)
@@ -210,7 +210,7 @@ func (vm *VMWithRawMemory) NewString(value string) *Object {
 	}
 
 	// Initialize the string
-	str.Type = OBJ_STRING
+	str.SetType(OBJ_STRING)
 	str.Value = value
 
 	return StringToObject(str)
@@ -230,7 +230,7 @@ func (vm *VMWithRawMemory) NewSymbol(value string) *Object {
 	}
 
 	// Initialize the symbol
-	sym.Type = OBJ_SYMBOL
+	sym.SetType(OBJ_SYMBOL)
 	sym.Value = value
 
 	return SymbolToObject(sym)
@@ -261,7 +261,7 @@ func (vm *VMWithRawMemory) NewArray(size int) *Object {
 	}
 
 	// Initialize the array
-	obj.Type = OBJ_ARRAY
+	obj.SetType(OBJ_ARRAY)
 	obj.Elements = elements
 
 	return obj
@@ -292,7 +292,7 @@ func (vm *VMWithRawMemory) NewDictionary() *Object {
 	}
 
 	// Initialize the dictionary
-	obj.Type = OBJ_DICTIONARY
+	obj.SetType(OBJ_DICTIONARY)
 	obj.Entries = entries
 
 	return obj
@@ -334,7 +334,7 @@ func (vm *VMWithRawMemory) NewInstance(class *Object) *Object {
 	}
 
 	// Initialize the instance
-	obj.Type = OBJ_INSTANCE
+	obj.SetType(OBJ_INSTANCE)
 	obj.Class = class
 	obj.InstanceVars = instVars
 
@@ -355,12 +355,14 @@ func (vm *VMWithRawMemory) NewMethod(selector *Object, class *Object) *Object {
 	}
 
 	// Initialize the method
-	method.Type = OBJ_METHOD
-	method.Bytecodes = make([]byte, 0)
-	method.Literals = make([]*Object, 0)
-	method.Selector = selector
-	method.MethodClass = class
-	method.TempVarNames = make([]string, 0)
+	method.SetType(OBJ_METHOD)
+	method.Method = &Method{
+		Bytecodes:    make([]byte, 0),
+		Literals:     make([]*Object, 0),
+		Selector:     selector,
+		MethodClass:  class,
+		TempVarNames: make([]string, 0),
+	}
 
 	return MethodToObject(method)
 }

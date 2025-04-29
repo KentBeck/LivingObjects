@@ -365,7 +365,7 @@ func (rm *RawMemory) CopyObject(obj *Object) *Object {
 
 	// Determine the size of the object based on its type
 	var size int
-	switch obj.Type {
+	switch obj.Type() {
 	case OBJ_STRING:
 		size = int(unsafe.Sizeof(String{}))
 	case OBJ_SYMBOL:

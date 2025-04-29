@@ -15,8 +15,8 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 	if method == nil {
 		panic("executePrimitive: nil method\n")
 	}
-	if method.Type != OBJ_METHOD {
-		panic("executePrimitive: method is not a method\n")
+	if method.Type() != OBJ_METHOD {
+		return nil
 	}
 	if !method.Method.IsPrimitive {
 		return nil
@@ -33,7 +33,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			return vm.NewInteger(result)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+		if receiver.Type() == OBJ_INTEGER || (len(args) > 0 && args[0].Type() == OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 		// Handle integer + float
@@ -52,7 +52,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			return vm.NewInteger(result)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+		if receiver.Type() == OBJ_INTEGER || (len(args) > 0 && args[0].Type() == OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 	case 3: // Equality
@@ -64,7 +64,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			return NewBoolean(result)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+		if receiver.Type() == OBJ_INTEGER || (len(args) > 0 && args[0].Type() == OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 	case 4: // Subtraction
@@ -76,7 +76,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			return vm.NewInteger(result)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+		if receiver.Type() == OBJ_INTEGER || (len(args) > 0 && args[0].Type() == OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 	case 5: // basicClass - return the class of the receiver
@@ -93,7 +93,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			return NewBoolean(result)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+		if receiver.Type() == OBJ_INTEGER || (len(args) > 0 && args[0].Type() == OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 	case 7: // Greater than
@@ -105,7 +105,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			return NewBoolean(result)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type == OBJ_INTEGER || (len(args) > 0 && args[0].Type == OBJ_INTEGER) {
+		if receiver.Type() == OBJ_INTEGER || (len(args) > 0 && args[0].Type() == OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 	case 10: // Float addition
@@ -214,17 +214,17 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			return NewBoolean(result)
 		}
 	case 20: // Block new - create a new block instance
-		if receiver.Type == OBJ_CLASS && receiver == vm.BlockClass {
+		if receiver.Type() == OBJ_CLASS && receiver == vm.BlockClass {
 			// Create a new block instance
 			blockInstance := NewBlock(vm.CurrentContext)
 			blockInstance.Class = vm.BlockClass
 			return blockInstance
 		}
 	case 21: // Block value - execute a block with no arguments
-		if receiver.Type == OBJ_BLOCK {
+		if receiver.Type() == OBJ_BLOCK {
 			// Create a method object for the block's bytecodes
 			methodObj := &Object{
-				Type: OBJ_METHOD,
+				type1: OBJ_METHOD,
 				Method: &Method{
 					Bytecodes: receiver.Block.Bytecodes,
 					Literals:  receiver.Block.Literals,
@@ -242,10 +242,10 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			return result
 		}
 	case 22: // Block value: - execute a block with one argument
-		if receiver.Type == OBJ_BLOCK && len(args) == 1 {
+		if receiver.Type() == OBJ_BLOCK && len(args) == 1 {
 			// Create a method object for the block's bytecodes
 			methodObj := &Object{
-				Type: OBJ_METHOD,
+				type1: OBJ_METHOD,
 				Method: &Method{
 					Bytecodes: receiver.Block.Bytecodes,
 					Literals:  receiver.Block.Literals,

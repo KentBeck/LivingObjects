@@ -97,7 +97,7 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
 
 	// Get the selector
 	selector := context.Method.Method.Literals[selectorIndex]
-	if selector.Type != OBJ_SYMBOL {
+	if selector.Type() != OBJ_SYMBOL {
 		return nil, fmt.Errorf("selector is not a symbol: %s", selector)
 	}
 

@@ -239,8 +239,32 @@ func (rmm *RawMemoryManager) updateReferences(obj *Object) {
 		return
 	}
 
-	switch obj.Type {
-	case OBJ_INSTANCE, OBJ_CLASS:
+	switch obj.Type() {
+	case OBJ_STRING:
+		// String objects don't have references to update
+		return
+
+	case OBJ_SYMBOL:
+		// Symbol objects don't have references to update
+		return
+
+	case OBJ_ARRAY:
+		// Update array elements
+		for i, elem := range obj.Elements {
+			if elem != nil {
+				obj.Elements[i] = rmm.copyObject(elem)
+			}
+		}
+
+	case OBJ_DICTIONARY:
+		// Update dictionary entries
+		for key, value := range obj.Entries {
+			if value != nil {
+				obj.Entries[key] = rmm.copyObject(value)
+			}
+		}
+
+	case OBJ_INSTANCE:
 		// Update instance variables
 		for i, value := range obj.InstanceVars {
 			if value != nil {
@@ -258,20 +282,17 @@ func (rmm *RawMemoryManager) updateReferences(obj *Object) {
 			obj.Class = rmm.copyObject(obj.Class)
 		}
 
-	case OBJ_ARRAY:
-		// Update array elements
-		for i, elem := range obj.Elements {
-			if elem != nil {
-				obj.Elements[i] = rmm.copyObject(elem)
+	case OBJ_CLASS:
+		// Update instance variables (which includes the method dictionary)
+		for i, value := range obj.InstanceVars {
+			if value != nil {
+				obj.InstanceVars[i] = rmm.copyObject(value)
 			}
 		}
 
-	case OBJ_DICTIONARY:
-		// Update dictionary entries
-		for key, value := range obj.Entries {
-			if value != nil {
-				obj.Entries[key] = rmm.copyObject(value)
-			}
+		// Update superclass reference
+		if obj.SuperClass != nil {
+			obj.SuperClass = rmm.copyObject(obj.SuperClass)
 		}
 
 	case OBJ_METHOD:
@@ -290,6 +311,14 @@ func (rmm *RawMemoryManager) updateReferences(obj *Object) {
 		// Update method class
 		if obj.Method.MethodClass != nil {
 			obj.Method.MethodClass = rmm.copyObject(obj.Method.MethodClass)
+		}
+
+	case OBJ_BLOCK:
+		// Update block literals
+		for i, lit := range obj.Literals {
+			if lit != nil {
+				obj.Literals[i] = rmm.copyObject(lit)
+			}
 		}
 	}
 }

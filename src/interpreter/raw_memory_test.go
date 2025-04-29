@@ -80,8 +80,8 @@ func TestRawMemoryObjectAllocation(t *testing.T) {
 	}
 
 	// Check that the object is properly initialized
-	if obj.Type != 0 {
-		t.Errorf("Expected object type to be 0, got %d", obj.Type)
+	if obj.Type() != 0 {
+		t.Errorf("Expected object type to be 0, got %d", obj.Type())
 	}
 	if obj.Class != nil {
 		t.Errorf("Expected object class to be nil, got %v", obj.Class)
@@ -115,8 +115,8 @@ func TestRawMemoryStringAllocation(t *testing.T) {
 	}
 
 	// Check that the string is properly initialized
-	if str.Type != 0 {
-		t.Errorf("Expected string type to be 0, got %d", str.Type)
+	if str.Type() != 0 {
+		t.Errorf("Expected string type to be 0, got %d", str.Type())
 	}
 	if str.Value != "" {
 		t.Errorf("Expected string value to be empty, got %s", str.Value)
@@ -144,8 +144,8 @@ func TestRawMemorySymbolAllocation(t *testing.T) {
 	}
 
 	// Check that the symbol is properly initialized
-	if sym.Type != 0 {
-		t.Errorf("Expected symbol type to be 0, got %d", sym.Type)
+	if sym.Type() != 0 {
+		t.Errorf("Expected symbol type to be 0, got %d", sym.Type())
 	}
 	if sym.Value != "" {
 		t.Errorf("Expected symbol value to be empty, got %s", sym.Value)
@@ -196,8 +196,8 @@ func TestRawMemoryManagerAllocation(t *testing.T) {
 	}
 
 	// Check that the object is properly initialized
-	if obj.Type != 0 {
-		t.Errorf("Expected object type to be 0, got %d", obj.Type)
+	if obj.Type() != 0 {
+		t.Errorf("Expected object type to be 0, got %d", obj.Type())
 	}
 	if obj.Class != nil {
 		t.Errorf("Expected object class to be nil, got %v", obj.Class)

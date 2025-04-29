@@ -26,16 +26,16 @@ func ObjectToClass(o *Object) *Class {
 
 // GetStringValue gets the string value of a string
 func GetStringValue(obj *Object) string {
-	if obj.Type != OBJ_STRING {
-		panic("GetStringValue: not a string")
+	if obj.Type() != OBJ_STRING {
+		return ""
 	}
 	return ObjectToString(obj).Value
 }
 
 // GetClassName gets the name of a class
 func GetClassName(obj *Object) string {
-	if obj.Type != OBJ_CLASS {
-		panic("GetClassName: not a class")
+	if obj.Type() != OBJ_CLASS {
+		return ""
 	}
 	return ObjectToClass(obj).Name
 }

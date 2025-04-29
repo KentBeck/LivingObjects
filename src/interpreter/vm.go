@@ -310,7 +310,7 @@ func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
 	for class != nil {
 		// Check if the class has a method dictionary
 		methodDict := class.GetMethodDict()
-		if methodDict != nil && methodDict.Type == OBJ_DICTIONARY && methodDict.Entries != nil {
+		if methodDict != nil && methodDict.Type() == OBJ_DICTIONARY && methodDict.Entries != nil {
 			// Check if the method dictionary has the selector
 			if method, ok := methodDict.Entries[GetSymbolValue(selector)]; ok {
 				return method

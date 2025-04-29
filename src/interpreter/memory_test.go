@@ -583,7 +583,7 @@ func TestGrowSpaces(t *testing.T) {
 	// Check that the objects are still in the from-space
 	for i := 0; i < 9; i++ {
 		expectedStr := string(rune('a' + i))
-		if om.FromSpace[i] == nil || om.FromSpace[i].Type != OBJ_STRING || ObjectToString(om.FromSpace[i]).Value != expectedStr {
+		if om.FromSpace[i] == nil || om.FromSpace[i].Type() != OBJ_STRING || ObjectToString(om.FromSpace[i]).Value != expectedStr {
 			t.Errorf("Expected FromSpace[%d] to be a string with value '%s'", i, expectedStr)
 		}
 	}

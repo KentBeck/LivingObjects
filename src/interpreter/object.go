@@ -24,7 +24,7 @@ const (
 
 // Object represents a Smalltalk object
 type Object struct {
-	Type             ObjectType
+	type1            ObjectType
 	Class            *Object
 	Moved            bool      // Used for garbage collection
 	ForwardingPtr    *Object   // Used for garbage collection
@@ -38,6 +38,18 @@ type Object struct {
 	Selector         *Object
 	SuperClass       *Object
 	InstanceVarNames []string
+}
+
+type ObjectInterface interface {
+	Type() ObjectType
+}
+
+func (o *Object) Type() ObjectType {
+	return o.type1
+}
+
+func (o *Object) SetType(t ObjectType) {
+	o.type1 = t
 }
 
 // String represents a Smalltalk string object
@@ -104,7 +116,7 @@ func NewString(value string) *String {
 	str := &String{
 		Value: value,
 	}
-	str.Type = OBJ_STRING
+	str.type1 = OBJ_STRING
 	return str
 }
 
@@ -113,24 +125,26 @@ func NewSymbol(value string) *Object {
 	sym := &Symbol{
 		Value: value,
 	}
-	sym.Type = OBJ_SYMBOL
+	sym.type1 = OBJ_SYMBOL
 	return SymbolToObject(sym)
 }
 
 // NewArray creates a new array object
 func NewArray(size int) *Object {
-	return &Object{
-		Type:     OBJ_ARRAY,
+	obj := &Object{
+		type1:    OBJ_ARRAY,
 		Elements: make([]*Object, size),
 	}
+	return obj
 }
 
 // NewDictionary creates a new dictionary object
 func NewDictionary() *Object {
-	return &Object{
-		Type:    OBJ_DICTIONARY,
+	obj := &Object{
+		type1:   OBJ_DICTIONARY,
 		Entries: make(map[string]*Object),
 	}
+	return obj
 }
 
 // NewInstance creates a new instance of a class
@@ -145,11 +159,12 @@ func NewInstance(class *Object) *Object {
 		instVars[i] = NewNil()
 	}
 
-	return &Object{
-		Type:         OBJ_INSTANCE,
+	obj := &Object{
+		type1:        OBJ_INSTANCE,
 		Class:        class,
 		InstanceVars: instVars,
 	}
+	return obj
 }
 
 // NewClass creates a new class object
@@ -165,7 +180,7 @@ func NewClass(name string, superClass *Object) *Object {
 	}
 
 	// Set up the Symbol as a class
-	sym.Type = OBJ_CLASS
+	sym.type1 = OBJ_CLASS
 	sym.SuperClass = superClass
 	sym.InstanceVarNames = make([]string, 0)
 	sym.InstanceVars = instVars
@@ -183,10 +198,11 @@ func NewMethod(selector *Object, class *Object) *Object {
 		TempVarNames: make([]string, 0),
 	}
 
-	return &Object{
-		Type:   OBJ_METHOD,
+	obj := &Object{
+		type1:  OBJ_METHOD,
 		Method: method,
 	}
+	return obj
 }
 
 // NewBlock creates a new block object
@@ -198,10 +214,11 @@ func NewBlock(outerContext *Context) *Object {
 		OuterContext: outerContext,
 	}
 
-	return &Object{
-		Type:  OBJ_BLOCK,
+	obj := &Object{
+		type1: OBJ_BLOCK,
 		Block: block,
 	}
+	return obj
 }
 
 // IsTrue returns true if the object is considered true in Smalltalk
@@ -240,76 +257,70 @@ func (o *Object) IsTrue() bool {
 
 // String returns a string representation of the object
 func (o *Object) String() string {
-	// Check if it's an immediate value
+	// Check if it's an immediate value first
 	if IsImmediate(o) {
-		// Immediate nil
 		if IsNilImmediate(o) {
 			return "nil"
 		}
-		// Immediate true
 		if IsTrueImmediate(o) {
 			return "true"
 		}
-		// Immediate false
 		if IsFalseImmediate(o) {
 			return "false"
 		}
-		// Immediate integer
 		if IsIntegerImmediate(o) {
-			value := GetIntegerImmediate(o)
-			return fmt.Sprintf("%d", value)
+			return fmt.Sprintf("%d", GetIntegerImmediate(o))
 		}
-		// Immediate float
 		if IsFloatImmediate(o) {
-			value := GetFloatImmediate(o)
-			return fmt.Sprintf("%g", value)
+			return fmt.Sprintf("%g", GetFloatImmediate(o))
 		}
-		// Other immediate types will be added later
 		return "Immediate value"
 	}
 
-	// Regular objects
-	switch o.Type {
+	// Handle regular objects
+	switch o.Type() {
 	case OBJ_INTEGER:
-		panic("Non-immediate integer encountered")
+		return "Integer"
 	case OBJ_BOOLEAN:
-		panic("Non-immediate boolean encountered")
+		if o.IsTrue() {
+			return "true"
+		}
+		return "false"
 	case OBJ_NIL:
 		return "nil"
 	case OBJ_STRING:
-		// Convert to String type to access the Value field
 		str := ObjectToString(o)
 		return fmt.Sprintf("'%s'", str.Value)
 	case OBJ_SYMBOL:
-		// Convert to Symbol type to access the Value field
 		sym := ObjectToSymbol(o)
 		return fmt.Sprintf("#%s", sym.Value)
+	case OBJ_CLASS:
+		if o.Class != nil && o.Class.Type() == OBJ_CLASS {
+			class := ObjectToClass(o)
+			if class.Name != "" {
+				return fmt.Sprintf("Class %s", class.Name)
+			}
+		}
+		return "Class Object"
+	case OBJ_INSTANCE:
+		if o.Class == nil {
+			return "an Object"
+		}
+		if o.Type() != OBJ_CLASS || len(o.InstanceVars) == 0 {
+			class := ObjectToClass(o.Class)
+			return fmt.Sprintf("a %s", class.Name)
+		}
+		class := ObjectToClass(o)
+		return fmt.Sprintf("Class %s", class.Name)
 	case OBJ_ARRAY:
 		return fmt.Sprintf("Array(%d)", len(o.Elements))
 	case OBJ_DICTIONARY:
 		return fmt.Sprintf("Dictionary(%d)", len(o.Entries))
-	case OBJ_INSTANCE:
-		if o.Class != nil {
-			// For classes, the name is stored in the class itself
-			// The class is a Symbol object
-			if o.Class.Type == OBJ_CLASS {
-				// Get the class name from the class object
-				classSymbol := ObjectToSymbol(o.Class)
-				return fmt.Sprintf("a %s", classSymbol.Value)
-			} else {
-				// If the class is not a class object, just use its string representation
-				return fmt.Sprintf("an instance of %s", o.Class.String())
-			}
-		}
-		return "an Object"
-	case OBJ_CLASS:
-		// For classes, the name is stored in a Symbol object
-		classSymbol := ObjectToSymbol(o)
-		return fmt.Sprintf("Class %s", classSymbol.Value)
+	case OBJ_BLOCK:
+		return "Block"
 	case OBJ_METHOD:
-		if o.Method.Selector != nil {
-			selectorSymbol := ObjectToSymbol(o.Method.Selector)
-			return fmt.Sprintf("Method %s", selectorSymbol.Value)
+		if o.Method != nil && o.Method.Selector != nil {
+			return fmt.Sprintf("Method %s", GetSymbolValue(o.Method.Selector))
 		}
 		return "a Method"
 	default:
@@ -337,7 +348,7 @@ func (o *Object) SetInstanceVarByIndex(index int, value *Object) {
 
 // GetMethodDict gets the method dictionary for a class
 func (o *Object) GetMethodDict() *Object {
-	if o.Type != OBJ_CLASS || len(o.InstanceVars) == 0 {
+	if o.Type() != OBJ_CLASS || len(o.InstanceVars) == 0 {
 		panic("object is not a class or has no instance variables")
 	}
 
@@ -367,7 +378,7 @@ func ObjectToSymbol(o *Object) *Symbol {
 
 // GetSymbolValue gets the value from a Symbol object
 func GetSymbolValue(o *Object) string {
-	if o.Type == OBJ_SYMBOL {
+	if o.Type() == OBJ_SYMBOL {
 		return ObjectToSymbol(o).Value
 	}
 	panic("GetSymbolValue: not a symbol")

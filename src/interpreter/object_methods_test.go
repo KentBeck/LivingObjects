@@ -78,8 +78,8 @@ func TestObjectInstanceVarMethods(t *testing.T) {
 
 	var1 := instance.GetInstanceVarByIndex(1)
 	var1Str := ObjectToString(var1)
-	if var1.Type != OBJ_STRING || var1Str.Value != "hello" {
-		t.Errorf("Expected instance var 1 to be 'hello', got %v", var1)
+	if var1.Type() != OBJ_STRING || var1Str.Value != "hello" {
+		t.Errorf("Expected instance variable 1 to be a string with value 'hello', got %v", var1)
 	}
 
 	// Test GetInstanceVarByIndex with out of bounds index
@@ -119,8 +119,8 @@ func TestObjectSetInstanceVarByIndex(t *testing.T) {
 
 	var1 := instance.InstanceVars[1]
 	var1Str := ObjectToString(var1)
-	if var1.Type != OBJ_STRING || var1Str.Value != "hello" {
-		t.Errorf("Expected instance var 1 to be 'hello', got %v", var1)
+	if var1.Type() != OBJ_STRING || var1Str.Value != "hello" {
+		t.Errorf("Expected instance variable 1 to be a string with value 'hello', got %v", var1)
 	}
 
 	// Test SetInstanceVarByIndex with out of bounds index
@@ -139,8 +139,8 @@ func TestObjectGetMethodDict(t *testing.T) {
 	// Test with a class
 	class := NewClass("TestClass", nil)
 	methodDict := class.GetMethodDict()
-	if methodDict.Type != OBJ_DICTIONARY {
-		t.Errorf("Expected method dictionary to be a dictionary, got %v", methodDict.Type)
+	if methodDict.Type() != OBJ_DICTIONARY {
+		t.Errorf("Expected method dictionary to be a dictionary, got %v", methodDict.Type())
 	}
 
 	// Test with a non-class object

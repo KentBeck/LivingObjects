@@ -162,7 +162,7 @@ func TestUpdateReferencesEdgeCases(t *testing.T) {
 	{
 		// Create a method with nil literals
 		method := &Object{
-			Type:   OBJ_METHOD,
+			type1:  OBJ_METHOD,
 			Method: &Method{},
 		}
 		method.Method.Literals = make([]*Object, 2)

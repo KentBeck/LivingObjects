@@ -21,7 +21,7 @@ func TestRawMemorySimpleObjectUsage(t *testing.T) {
 	}
 
 	// 2. Initialize the object with some values
-	obj.Type = OBJ_INSTANCE
+	obj.SetType(OBJ_INSTANCE)
 
 	// 3. Allocate instance variables array
 	instanceVars := rawMem.AllocateObjectArray(3)
@@ -40,7 +40,7 @@ func TestRawMemorySimpleObjectUsage(t *testing.T) {
 	if strObj == nil {
 		t.Fatalf("Failed to allocate string")
 	}
-	strObj.Type = OBJ_STRING
+	strObj.SetType(OBJ_STRING)
 	strObj.Value = "Hello, Raw Memory!"
 	stringValue := StringToObject(strObj)
 
@@ -67,8 +67,8 @@ func TestRawMemorySimpleObjectUsage(t *testing.T) {
 		t.Errorf("Expected instance variable 1 to be true immediate")
 	}
 
-	if obj.InstanceVars[2].Type != OBJ_STRING {
-		t.Errorf("Expected instance variable 2 to be a string, got %d", obj.InstanceVars[2].Type)
+	if obj.InstanceVars[2].Type() != OBJ_STRING {
+		t.Errorf("Expected instance variable 2 to be a string, got %d", obj.InstanceVars[2].Type())
 	}
 	strVal := GetStringValue(obj.InstanceVars[2])
 	if strVal != "Hello, Raw Memory!" {
@@ -102,8 +102,8 @@ func TestRawMemorySimpleObjectUsage(t *testing.T) {
 	}
 
 	// Verify the copied object has the same values
-	if copiedObj.Type != OBJ_INSTANCE {
-		t.Errorf("Expected copied object type to be OBJ_INSTANCE, got %d", copiedObj.Type)
+	if copiedObj.Type() != OBJ_INSTANCE {
+		t.Errorf("Expected copied object type to be OBJ_INSTANCE, got %d", copiedObj.Type())
 	}
 	if len(copiedObj.InstanceVars) != 3 {
 		t.Errorf("Expected copied object to have 3 instance variables, got %d", len(copiedObj.InstanceVars))
@@ -145,7 +145,7 @@ func TestRawMemoryManagerObjectUsage(t *testing.T) {
 	}
 
 	// 2. Initialize the object with some values
-	obj.Type = OBJ_INSTANCE
+	obj.SetType(OBJ_INSTANCE)
 
 	// 3. Allocate instance variables array
 	instanceVars := memoryManager.AllocateObjectArray(3)
@@ -164,7 +164,7 @@ func TestRawMemoryManagerObjectUsage(t *testing.T) {
 	if strObj == nil {
 		t.Fatalf("Failed to allocate string")
 	}
-	strObj.Type = OBJ_STRING
+	strObj.SetType(OBJ_STRING)
 	strObj.Value = "Hello, Memory Manager!"
 	stringValue := StringToObject(strObj)
 
@@ -186,8 +186,8 @@ func TestRawMemoryManagerObjectUsage(t *testing.T) {
 		t.Errorf("Expected instance variable 1 to be true immediate")
 	}
 
-	if obj.InstanceVars[2].Type != OBJ_STRING {
-		t.Errorf("Expected instance variable 2 to be a string, got %d", obj.InstanceVars[2].Type)
+	if obj.InstanceVars[2].Type() != OBJ_STRING {
+		t.Errorf("Expected instance variable 2 to be a string, got %d", obj.InstanceVars[2].Type())
 	}
 	strVal := GetStringValue(obj.InstanceVars[2])
 	if strVal != "Hello, Memory Manager!" {
