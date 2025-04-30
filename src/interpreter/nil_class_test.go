@@ -24,8 +24,8 @@ func TestNilClassPanic(t *testing.T) {
 
 	// Create an object with a nil class
 	objWithNilClass := &Object{
-		type1:  OBJ_INSTANCE,
-		class1: nil, // Explicitly set class to nil
+		type1: OBJ_INSTANCE,
+		class: nil, // Explicitly set class to nil
 	}
 
 	// Create a test method that will send the basicClass message

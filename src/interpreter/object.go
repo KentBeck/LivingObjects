@@ -25,7 +25,7 @@ const (
 // Object represents a Smalltalk object
 type Object struct {
 	type1            ObjectType
-	class1           *Object   // Renamed from Class to class1 for encapsulation
+	class            *Object   // Renamed from Class to class1 for encapsulation
 	Moved            bool      // Used for garbage collection
 	ForwardingPtr    *Object   // Used for garbage collection
 	InstanceVars     []*Object // Instance variables stored by index
@@ -54,12 +54,12 @@ func (o *Object) SetType(t ObjectType) {
 
 // Class returns the class of the object
 func (o *Object) Class() *Object {
-	return o.class1
+	return o.class
 }
 
 // SetClass sets the class of the object
 func (o *Object) SetClass(class *Object) {
-	o.class1 = class
+	o.class = class
 }
 
 // String represents a Smalltalk string object
@@ -171,7 +171,7 @@ func NewInstance(class *Object) *Object {
 
 	obj := &Object{
 		type1:        OBJ_INSTANCE,
-		class1:       class,
+		class:        class,
 		InstanceVars: instVars,
 	}
 	return obj
