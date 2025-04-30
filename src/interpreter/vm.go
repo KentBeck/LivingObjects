@@ -181,7 +181,7 @@ func (vm *VM) Execute() (ObjectInterface, error) {
 		}
 	}
 
-	return finalResult.(*Object), nil
+	return finalResult, nil
 }
 
 // ExecuteContext executes a single context until it returns
