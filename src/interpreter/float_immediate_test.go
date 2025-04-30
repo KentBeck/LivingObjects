@@ -54,12 +54,6 @@ func TestFloatPrimitives(t *testing.T) {
 		t.Fatalf("FloatClass method dictionary entries is nil")
 	}
 
-	// Print the available methods
-	t.Logf("Available methods in FloatClass:")
-	for key, method := range floatMethodDict.Entries {
-		t.Logf("- %s (primitive: %t, index: %d)", key, method.Method.IsPrimitive, method.Method.PrimitiveIndex)
-	}
-
 	// Test addition
 	{
 		// Create a simple test for float addition
