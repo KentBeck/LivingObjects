@@ -157,8 +157,8 @@ func (vm *VM) LoadImage(path string) error {
 }
 
 // Execute executes the current context
-func (vm *VM) Execute() (*Object, error) {
-	var finalResult *Object
+func (vm *VM) Execute() (ObjectInterface, error) {
+	var finalResult ObjectInterface
 
 	for vm.CurrentContext != nil {
 		// Execute the current context
@@ -181,7 +181,7 @@ func (vm *VM) Execute() (*Object, error) {
 		}
 	}
 
-	return finalResult, nil
+	return finalResult.(*Object), nil
 }
 
 // ExecuteContext executes a single context until it returns
