@@ -22,11 +22,9 @@ const (
 )
 
 // IsImmediate returns true if the value is an immediate value
-func IsImmediate(obj *Object) bool {
-	// Convert the pointer to an integer
-	ptr := uintptr(unsafe.Pointer(obj))
-
-	// Check if the bottom two bits are not 00
+func IsImmediate(obj ObjectInterface) bool {
+	converted := obj.(*Object)
+	ptr := uintptr(unsafe.Pointer(converted))
 	return (ptr & TAG_MASK) != TAG_POINTER
 }
 
@@ -85,11 +83,9 @@ func MakeFalseImmediate() *Object {
 }
 
 // IsIntegerImmediate returns true if the value is an immediate integer
-func IsIntegerImmediate(obj *Object) bool {
-	// Convert the pointer to an integer
-	ptr := uintptr(unsafe.Pointer(obj))
-
-	// Check if the tag is TAG_INTEGER
+func IsIntegerImmediate(obj ObjectInterface) bool {
+	converted := obj.(*Object)
+	ptr := uintptr(unsafe.Pointer(converted))
 	return (ptr & TAG_MASK) == TAG_INTEGER
 }
 
@@ -108,11 +104,9 @@ func MakeIntegerImmediate(value int64) *Object {
 }
 
 // GetIntegerImmediate extracts the integer value from an immediate integer
-func GetIntegerImmediate(obj *Object) int64 {
-	// Convert the pointer to an integer
-	ptr := uintptr(unsafe.Pointer(obj))
-
-	// Remove the tag bits and shift right
+func GetIntegerImmediate(obj ObjectInterface) int64 {
+	converted := obj.(*Object)
+	ptr := uintptr(unsafe.Pointer(converted))
 	unsigned := ptr >> 2
 
 	// Handle sign extension for negative numbers

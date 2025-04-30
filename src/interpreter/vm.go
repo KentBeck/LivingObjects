@@ -211,7 +211,6 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 		// Execute the bytecode
 		var err error
 		var skipIncrement bool
-		var returnValue *Object
 
 		switch bytecode {
 		case PUSH_LITERAL:
@@ -233,7 +232,7 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 			err = vm.ExecuteStoreTemporaryVariable(context)
 
 		case SEND_MESSAGE:
-			returnValue, err = vm.ExecuteSendMessage(context)
+			returnValue, err := vm.ExecuteSendMessage(context)
 			if err == nil {
 				if returnValue != nil {
 					// We got a result from a primitive method
@@ -247,7 +246,7 @@ func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
 			}
 
 		case RETURN_STACK_TOP:
-			returnValue, err = vm.ExecuteReturnStackTop(context)
+			returnValue, err := vm.ExecuteReturnStackTop(context)
 			if err == nil {
 				return returnValue, nil
 			}

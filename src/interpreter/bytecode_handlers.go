@@ -85,7 +85,7 @@ func (vm *VM) ExecuteStoreTemporaryVariable(context *Context) error {
 }
 
 // ExecuteSendMessage executes the SEND_MESSAGE bytecode
-func (vm *VM) ExecuteSendMessage(context *Context) (*Object, error) {
+func (vm *VM) ExecuteSendMessage(context *Context) (ObjectInterface, error) {
 	// Get the selector index (4 bytes)
 	selectorIndex := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
 	if selectorIndex < 0 || selectorIndex >= len(context.Method.Method.Literals) {
