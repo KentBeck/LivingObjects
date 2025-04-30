@@ -14,9 +14,13 @@ type Context struct {
 
 // NewContext creates a new method activation context
 func NewContext(method *Object, receiver ObjectInterface, arguments []*Object, sender *Context) *Context {
+	if method == nil {
+		panic("NewContext: nil method")
+	}
+
 	// Initialize temporary variables array with nil values
 	tempVarsSize := 0
-	if method != nil && method.Method != nil {
+	if method.Method != nil {
 		tempVarsSize = len(method.Method.TempVarNames)
 	}
 	tempVars := make([]*Object, tempVarsSize)
