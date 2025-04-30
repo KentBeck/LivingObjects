@@ -42,6 +42,15 @@ type Object struct {
 
 type ObjectInterface interface {
 	Type() ObjectType
+	SetType(t ObjectType)
+	Class() *Object
+	SetClass(class *Object)
+	Moved() bool
+	SetMoved(moved bool)
+	ForwardingPtr() *Object
+	SetForwardingPtr(ptr *Object)
+	InstanceVars() []*Object
+	SetInstanceVars(vars []*Object)
 }
 
 func (o *Object) Type() ObjectType {
