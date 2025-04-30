@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 // Context represents a method activation context
 type Context struct {
 	Method       *Object
@@ -25,7 +23,6 @@ func NewContext(method *Object, receiver ObjectInterface, arguments []*Object, s
 	for i := range tempVars {
 		tempVars[i] = NewNil()
 	}
-	fmt.Printf("receiver: %v, converted: %v\n", receiver, receiver.(*Object))
 
 	return &Context{
 		Method:       method,
