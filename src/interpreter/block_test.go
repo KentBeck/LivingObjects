@@ -9,7 +9,7 @@ func TestSimpleBlockValue(t *testing.T) {
 
 	// Create a block that computes 2 + 3
 	block := NewBlock(nil)
-	block.Class = vm.BlockClass
+	block.SetClass(vm.BlockClass)
 
 	// Add literals for the block
 	twoObj := vm.NewInteger(2)

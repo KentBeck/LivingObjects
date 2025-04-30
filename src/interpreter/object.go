@@ -25,7 +25,7 @@ const (
 // Object represents a Smalltalk object
 type Object struct {
 	type1            ObjectType
-	Class            *Object
+	class1           *Object   // Renamed from Class to class1 for encapsulation
 	Moved            bool      // Used for garbage collection
 	ForwardingPtr    *Object   // Used for garbage collection
 	InstanceVars     []*Object // Instance variables stored by index
@@ -50,6 +50,16 @@ func (o *Object) Type() ObjectType {
 
 func (o *Object) SetType(t ObjectType) {
 	o.type1 = t
+}
+
+// Class returns the class of the object
+func (o *Object) Class() *Object {
+	return o.class1
+}
+
+// SetClass sets the class of the object
+func (o *Object) SetClass(class *Object) {
+	o.class1 = class
 }
 
 // String represents a Smalltalk string object
@@ -161,7 +171,7 @@ func NewInstance(class *Object) *Object {
 
 	obj := &Object{
 		type1:        OBJ_INSTANCE,
-		Class:        class,
+		class1:       class,
 		InstanceVars: instVars,
 	}
 	return obj
@@ -295,7 +305,7 @@ func (o *Object) String() string {
 		sym := ObjectToSymbol(o)
 		return fmt.Sprintf("#%s", sym.Value)
 	case OBJ_CLASS:
-		if o.Class != nil && o.Class.Type() == OBJ_CLASS {
+		if o.Class() != nil && o.Class().Type() == OBJ_CLASS {
 			class := ObjectToClass(o)
 			if class.Name != "" {
 				return fmt.Sprintf("Class %s", class.Name)
@@ -303,11 +313,11 @@ func (o *Object) String() string {
 		}
 		return "Class Object"
 	case OBJ_INSTANCE:
-		if o.Class == nil {
+		if o.Class() == nil {
 			return "an Object"
 		}
 		if o.Type() != OBJ_CLASS || len(o.InstanceVars) == 0 {
-			class := ObjectToClass(o.Class)
+			class := ObjectToClass(o.Class())
 			return fmt.Sprintf("a %s", class.Name)
 		}
 		class := ObjectToClass(o)

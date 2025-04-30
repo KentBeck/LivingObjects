@@ -71,8 +71,8 @@ func TestGetClassPanics(t *testing.T) {
 			}
 		}()
 		objWithNilClass := &Object{
-			type1: OBJ_METHOD,
-			Class: nil, // Explicitly set class to nil
+			type1:  OBJ_METHOD,
+			class1: nil, // Explicitly set class to nil
 		}
 		vm.GetClass(objWithNilClass)
 	})

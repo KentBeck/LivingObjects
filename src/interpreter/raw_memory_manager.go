@@ -278,8 +278,8 @@ func (rmm *RawMemoryManager) updateReferences(obj *Object) {
 		}
 
 		// Update class reference
-		if obj.Class != nil {
-			obj.Class = rmm.copyObject(obj.Class)
+		if obj.Class() != nil {
+			obj.SetClass(rmm.copyObject(obj.Class()))
 		}
 
 	case OBJ_CLASS:

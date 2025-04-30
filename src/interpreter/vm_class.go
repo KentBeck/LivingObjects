@@ -46,9 +46,9 @@ func (vm *VM) GetClass(obj *Object) *Object {
 	}
 
 	// Otherwise, return the class field
-	if obj.Class == nil {
+	if obj.Class() == nil {
 		panic("GetClass: object has nil class")
 	}
 
-	return obj.Class
+	return obj.Class()
 }

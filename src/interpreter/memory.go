@@ -220,8 +220,8 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 		}
 
 		// Update class reference
-		if obj.Class != nil {
-			obj.Class = om.copyObject(obj.Class, toPtr)
+		if obj.Class() != nil {
+			obj.SetClass(om.copyObject(obj.Class(), toPtr))
 		}
 
 	case OBJ_CLASS:

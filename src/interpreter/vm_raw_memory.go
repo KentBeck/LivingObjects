@@ -335,7 +335,7 @@ func (vm *VMWithRawMemory) NewInstance(class *Object) *Object {
 
 	// Initialize the instance
 	obj.SetType(OBJ_INSTANCE)
-	obj.Class = class
+	obj.SetClass(class)
 	obj.InstanceVars = instVars
 
 	return obj
@@ -393,10 +393,10 @@ func (vm *VMWithRawMemory) GetClass(obj *Object) *Object {
 	}
 
 	// Non-immediate object
-	if obj.Class == nil {
+	if obj.Class() == nil {
 		panic("Object has no class")
 	}
-	return obj.Class
+	return obj.Class()
 }
 
 // LoadImage loads a Smalltalk image from a file

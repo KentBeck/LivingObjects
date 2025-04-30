@@ -83,8 +83,8 @@ func TestRawMemoryObjectAllocation(t *testing.T) {
 	if obj.Type() != 0 {
 		t.Errorf("Expected object type to be 0, got %d", obj.Type())
 	}
-	if obj.Class != nil {
-		t.Errorf("Expected object class to be nil, got %v", obj.Class)
+	if obj.Class() != nil {
+		t.Errorf("Expected object class to be nil, got %v", obj.Class())
 	}
 	if obj.Moved != false {
 		t.Errorf("Expected object moved to be false, got %v", obj.Moved)
@@ -199,8 +199,8 @@ func TestRawMemoryManagerAllocation(t *testing.T) {
 	if obj.Type() != 0 {
 		t.Errorf("Expected object type to be 0, got %d", obj.Type())
 	}
-	if obj.Class != nil {
-		t.Errorf("Expected object class to be nil, got %v", obj.Class)
+	if obj.Class() != nil {
+		t.Errorf("Expected object class to be nil, got %v", obj.Class())
 	}
 	if obj.Moved != false {
 		t.Errorf("Expected object moved to be false, got %v", obj.Moved)

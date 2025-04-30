@@ -112,7 +112,7 @@ func TestUpdateReferencesEdgeCases(t *testing.T) {
 
 		// Set nil superclass and class
 		instance.SuperClass = nil
-		instance.Class = nil
+		instance.SetClass(nil)
 
 		// Update references
 		toPtr := 0

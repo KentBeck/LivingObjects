@@ -908,8 +908,8 @@ func TestUpdateReferences(t *testing.T) {
 		}
 
 		// Check that the class has been copied
-		if !instance.Class.Moved {
-			t.Errorf("Expected instance.Class.Moved to be true")
+		if !instance.Class().Moved {
+			t.Errorf("Expected instance.Class().Moved to be true")
 		}
 
 		// Check that toPtr has been incremented only for the class (immediate values don't get copied)

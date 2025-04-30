@@ -217,7 +217,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		if receiver.Type() == OBJ_CLASS && receiver == vm.BlockClass {
 			// Create a new block instance
 			blockInstance := NewBlock(vm.CurrentContext)
-			blockInstance.Class = vm.BlockClass
+			blockInstance.SetClass(vm.BlockClass)
 			return blockInstance
 		}
 	case 21: // Block value - execute a block with no arguments

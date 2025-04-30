@@ -42,8 +42,8 @@ func testSubtractionPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !IsIntegerImmediate(result) && result.Class != vm.IntegerClass {
-		t.Errorf("Expected result class to be Integer, got %v", result.Class)
+	if !IsIntegerImmediate(result) && result.Class() != vm.IntegerClass {
+		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
 
@@ -77,8 +77,8 @@ func testMultiplicationPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !IsIntegerImmediate(result) && result.Class != vm.IntegerClass {
-		t.Errorf("Expected result class to be Integer, got %v", result.Class)
+	if !IsIntegerImmediate(result) && result.Class() != vm.IntegerClass {
+		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
 
@@ -112,8 +112,8 @@ func testAdditionPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !IsIntegerImmediate(result) && result.Class != vm.IntegerClass {
-		t.Errorf("Expected result class to be Integer, got %v", result.Class)
+	if !IsIntegerImmediate(result) && result.Class() != vm.IntegerClass {
+		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
 
