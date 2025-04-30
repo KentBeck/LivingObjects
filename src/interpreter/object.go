@@ -25,10 +25,10 @@ const (
 // Object represents a Smalltalk object
 type Object struct {
 	type1            ObjectType
-	class            *Object   // Renamed from Class to class for encapsulation
-	moved            bool      // Used for garbage collection (renamed from Moved)
-	forwardingPtr    *Object   // Used for garbage collection (renamed from ForwardingPtr)
-	instanceVars     []*Object // Instance variables stored by index (renamed from InstanceVars)
+	class            *Object
+	moved            bool      // Used for garbage collection
+	forwardingPtr    *Object   // Used for garbage collection
+	instanceVars     []*Object // Instance variables stored by index
 	Elements         []*Object
 	Entries          map[string]*Object
 	Method           *Method
