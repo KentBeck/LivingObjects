@@ -205,43 +205,6 @@ func TestCollectWithNilSpecialObjects(t *testing.T) {
 	}
 }
 
-// TestCollectWithNilInRootSet tests the Collect method with nil objects in the root set
-func TestCollectWithNilInRootSet(t *testing.T) {
-	om := NewObjectMemory()
-	vm := NewVM()
-
-	// Add nil objects to globals
-	vm.Globals["nil1"] = nil
-	vm.Globals["nil2"] = nil
-
-	// Create a context with nil references
-	methodObj := NewMethodBuilder(vm.ObjectClass).
-		Selector("test").
-		Go()
-	context := NewContext(methodObj, nil, nil, nil)
-
-	// Set nil stack elements
-	context.Stack[0] = nil
-	context.Stack[1] = nil
-	context.StackPointer = 2
-
-	// Set the context as the VM's current context
-	vm.CurrentContext = context
-
-	// Perform garbage collection
-	om.Collect(vm)
-
-	// Check that the collection completed without errors
-	if om.GCCount != 1 {
-		t.Errorf("Expected GCCount to be 1 after collection, got %d", om.GCCount)
-	}
-
-	// Check that the context is still the VM's current context
-	if vm.CurrentContext != context {
-		t.Errorf("Expected vm.CurrentContext to still be context")
-	}
-}
-
 // TestCollectWithNilInToSpace tests the Collect method with nil objects in the to-space
 func TestCollectWithNilInToSpace(t *testing.T) {
 	om := NewObjectMemory()

@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // Context represents a method activation context
 type Context struct {
 	Method       *Object
@@ -13,7 +15,7 @@ type Context struct {
 }
 
 // NewContext creates a new method activation context
-func NewContext(method *Object, receiver *Object, arguments []*Object, sender *Context) *Context {
+func NewContext(method *Object, receiver ObjectInterface, arguments []*Object, sender *Context) *Context {
 	// Initialize temporary variables array with nil values
 	tempVarsSize := 0
 	if method != nil && method.Method != nil {
@@ -23,10 +25,11 @@ func NewContext(method *Object, receiver *Object, arguments []*Object, sender *C
 	for i := range tempVars {
 		tempVars[i] = NewNil()
 	}
+	fmt.Printf("receiver: %v, converted: %v\n", receiver, receiver.(*Object))
 
 	return &Context{
 		Method:       method,
-		Receiver:     receiver,
+		Receiver:     receiver.(*Object),
 		Arguments:    arguments,
 		TempVars:     tempVars,
 		Sender:       sender,
