@@ -14,7 +14,7 @@ func TestBasicClassPrimitive(t *testing.T) {
 	EnsureObjectIsClass(t, vm, vm.NewFloat(3.14), vm.FloatClass)
 }
 
-func EnsureObjectIsClass(t *testing.T, vm *VM, object *Object, class *Object) {
+func EnsureObjectIsClass(t *testing.T, vm *VM, object ObjectInterface, class ObjectInterface) {
 
 	basicClassSelector := NewSymbol("basicClass")
 
@@ -29,7 +29,8 @@ func EnsureObjectIsClass(t *testing.T, vm *VM, object *Object, class *Object) {
 	testMethod := builder.Go()
 
 	// Create a context for the test method
-	context := NewContext(testMethod, object, []*Object{}, nil)
+	converted := object.(*Object)
+	context := NewContext(testMethod, converted, []*Object{}, nil)
 
 	// Execute the test method
 	result, err := vm.ExecuteContext(context)
