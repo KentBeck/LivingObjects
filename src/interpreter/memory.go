@@ -55,8 +55,8 @@ func (om *ObjectMemory) Collect(vm *VM) {
 	// Reset forwarding pointers
 	for i := 0; i < om.AllocPtr; i++ {
 		if om.FromSpace[i] != nil {
-			om.FromSpace[i].Moved = false
-			om.FromSpace[i].ForwardingPtr = nil
+			om.FromSpace[i].SetMoved(false)
+			om.FromSpace[i].SetForwardingPtr(nil)
 		}
 	}
 
@@ -160,17 +160,17 @@ func (om *ObjectMemory) copyObject(obj *Object, toPtr *int) *Object {
 	}
 
 	// Check if the object has already been moved
-	if obj.Moved {
-		return obj.ForwardingPtr
+	if obj.Moved() {
+		return obj.ForwardingPtr()
 	}
 
 	// Copy the object to the to-space
 	om.ToSpace[*toPtr] = obj
-	obj.Moved = true
-	obj.ForwardingPtr = om.ToSpace[*toPtr]
+	obj.SetMoved(true)
+	obj.SetForwardingPtr(om.ToSpace[*toPtr])
 	*toPtr++
 
-	return obj.ForwardingPtr
+	return obj.ForwardingPtr()
 }
 
 // updateReferences updates references in an object
@@ -208,9 +208,10 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 
 	case OBJ_INSTANCE:
 		// Update instance variables
-		for i, value := range obj.InstanceVars {
+		instanceVars := obj.InstanceVars()
+		for i, value := range instanceVars {
 			if value != nil {
-				obj.InstanceVars[i] = om.copyObject(value, toPtr)
+				instanceVars[i] = om.copyObject(value, toPtr)
 			}
 		}
 
@@ -226,9 +227,10 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 
 	case OBJ_CLASS:
 		// Update instance variables (which includes the method dictionary)
-		for i, value := range obj.InstanceVars {
+		instanceVars := obj.InstanceVars()
+		for i, value := range instanceVars {
 			if value != nil {
-				obj.InstanceVars[i] = om.copyObject(value, toPtr)
+				instanceVars[i] = om.copyObject(value, toPtr)
 			}
 		}
 

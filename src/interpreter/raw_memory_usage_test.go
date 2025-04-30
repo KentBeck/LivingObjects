@@ -28,7 +28,7 @@ func TestRawMemorySimpleObjectUsage(t *testing.T) {
 	if instanceVars == nil {
 		t.Fatalf("Failed to allocate instance variables array")
 	}
-	obj.InstanceVars = instanceVars
+	obj.SetInstanceVars(instanceVars)
 
 	// 4. Create some values to store in the instance variables
 	// For immediate values, we don't need to allocate memory
@@ -45,9 +45,9 @@ func TestRawMemorySimpleObjectUsage(t *testing.T) {
 	stringValue := StringToObject(strObj)
 
 	// 5. Store values in instance variables
-	obj.InstanceVars[0] = intValue
-	obj.InstanceVars[1] = boolValue
-	obj.InstanceVars[2] = stringValue
+	instanceVars[0] = intValue
+	instanceVars[1] = boolValue
+	instanceVars[2] = stringValue
 
 	// 6. Verify the object is in from-space
 	if !rawMem.IsPointerInFromSpace(unsafe.Pointer(obj)) {
@@ -55,32 +55,33 @@ func TestRawMemorySimpleObjectUsage(t *testing.T) {
 	}
 
 	// 7. Verify instance variables
-	if !IsIntegerImmediate(obj.InstanceVars[0]) {
+	objVars := obj.InstanceVars()
+	if !IsIntegerImmediate(objVars[0]) {
 		t.Errorf("Expected instance variable 0 to be an integer immediate")
 	}
-	intVal := GetIntegerImmediate(obj.InstanceVars[0])
+	intVal := GetIntegerImmediate(objVars[0])
 	if intVal != 42 {
 		t.Errorf("Expected instance variable 0 to be 42, got %d", intVal)
 	}
 
-	if !IsTrueImmediate(obj.InstanceVars[1]) {
+	if !IsTrueImmediate(objVars[1]) {
 		t.Errorf("Expected instance variable 1 to be true immediate")
 	}
 
-	if obj.InstanceVars[2].Type() != OBJ_STRING {
-		t.Errorf("Expected instance variable 2 to be a string, got %d", obj.InstanceVars[2].Type())
+	if objVars[2].Type() != OBJ_STRING {
+		t.Errorf("Expected instance variable 2 to be a string, got %d", objVars[2].Type())
 	}
-	strVal := GetStringValue(obj.InstanceVars[2])
+	strVal := GetStringValue(objVars[2])
 	if strVal != "Hello, Raw Memory!" {
 		t.Errorf("Expected instance variable 2 to be 'Hello, Raw Memory!', got '%s'", strVal)
 	}
 
 	// 8. Test garbage collection
 	// First, set up forwarding pointers to nil
-	obj.Moved = false
-	obj.ForwardingPtr = nil
-	strObj.Moved = false
-	strObj.ForwardingPtr = nil
+	obj.SetMoved(false)
+	obj.SetForwardingPtr(nil)
+	strObj.SetMoved(false)
+	strObj.SetForwardingPtr(nil)
 
 	// Copy the object to to-space
 	copiedObj := rawMem.CopyObject(obj)
@@ -94,10 +95,10 @@ func TestRawMemorySimpleObjectUsage(t *testing.T) {
 	}
 
 	// Verify the original object has a forwarding pointer
-	if !obj.Moved {
+	if !obj.Moved() {
 		t.Errorf("Expected original object to be marked as moved")
 	}
-	if obj.ForwardingPtr != copiedObj {
+	if obj.ForwardingPtr() != copiedObj {
 		t.Errorf("Expected original object's forwarding pointer to point to copied object")
 	}
 
@@ -105,25 +106,27 @@ func TestRawMemorySimpleObjectUsage(t *testing.T) {
 	if copiedObj.Type() != OBJ_INSTANCE {
 		t.Errorf("Expected copied object type to be OBJ_INSTANCE, got %d", copiedObj.Type())
 	}
-	if len(copiedObj.InstanceVars) != 3 {
-		t.Errorf("Expected copied object to have 3 instance variables, got %d", len(copiedObj.InstanceVars))
+
+	copiedVars := copiedObj.InstanceVars()
+	if len(copiedVars) != 3 {
+		t.Errorf("Expected copied object to have 3 instance variables, got %d", len(copiedVars))
 	}
 
 	// Verify instance variables in copied object
-	if !IsIntegerImmediate(copiedObj.InstanceVars[0]) {
+	if !IsIntegerImmediate(copiedVars[0]) {
 		t.Errorf("Expected copied instance variable 0 to be an integer immediate")
 	}
-	copiedIntVal := GetIntegerImmediate(copiedObj.InstanceVars[0])
+	copiedIntVal := GetIntegerImmediate(copiedVars[0])
 	if copiedIntVal != 42 {
 		t.Errorf("Expected copied instance variable 0 to be 42, got %d", copiedIntVal)
 	}
 
-	if !IsTrueImmediate(copiedObj.InstanceVars[1]) {
+	if !IsTrueImmediate(copiedVars[1]) {
 		t.Errorf("Expected copied instance variable 1 to be true immediate")
 	}
 
 	// The string should also be copied
-	copiedStrObj := ObjectToString(copiedObj.InstanceVars[2])
+	copiedStrObj := ObjectToString(copiedVars[2])
 	if copiedStrObj.Value != "Hello, Raw Memory!" {
 		t.Errorf("Expected copied instance variable 2 to be 'Hello, Raw Memory!', got '%s'", copiedStrObj.Value)
 	}
@@ -152,7 +155,7 @@ func TestRawMemoryManagerObjectUsage(t *testing.T) {
 	if instanceVars == nil {
 		t.Fatalf("Failed to allocate instance variables array")
 	}
-	obj.InstanceVars = instanceVars
+	obj.SetInstanceVars(instanceVars)
 
 	// 4. Create some values to store in the instance variables
 	// For immediate values, we don't need to allocate memory
@@ -169,27 +172,28 @@ func TestRawMemoryManagerObjectUsage(t *testing.T) {
 	stringValue := StringToObject(strObj)
 
 	// 5. Store values in instance variables
-	obj.InstanceVars[0] = intValue
-	obj.InstanceVars[1] = boolValue
-	obj.InstanceVars[2] = stringValue
+	instanceVars[0] = intValue
+	instanceVars[1] = boolValue
+	instanceVars[2] = stringValue
 
 	// 6. Verify instance variables
-	if !IsIntegerImmediate(obj.InstanceVars[0]) {
+	objVars := obj.InstanceVars()
+	if !IsIntegerImmediate(objVars[0]) {
 		t.Errorf("Expected instance variable 0 to be an integer immediate")
 	}
-	intVal := GetIntegerImmediate(obj.InstanceVars[0])
+	intVal := GetIntegerImmediate(objVars[0])
 	if intVal != 42 {
 		t.Errorf("Expected instance variable 0 to be 42, got %d", intVal)
 	}
 
-	if !IsTrueImmediate(obj.InstanceVars[1]) {
+	if !IsTrueImmediate(objVars[1]) {
 		t.Errorf("Expected instance variable 1 to be true immediate")
 	}
 
-	if obj.InstanceVars[2].Type() != OBJ_STRING {
-		t.Errorf("Expected instance variable 2 to be a string, got %d", obj.InstanceVars[2].Type())
+	if objVars[2].Type() != OBJ_STRING {
+		t.Errorf("Expected instance variable 2 to be a string, got %d", objVars[2].Type())
 	}
-	strVal := GetStringValue(obj.InstanceVars[2])
+	strVal := GetStringValue(objVars[2])
 	if strVal != "Hello, Memory Manager!" {
 		t.Errorf("Expected instance variable 2 to be 'Hello, Memory Manager!', got '%s'", strVal)
 	}

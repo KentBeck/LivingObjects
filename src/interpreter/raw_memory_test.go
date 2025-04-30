@@ -86,11 +86,11 @@ func TestRawMemoryObjectAllocation(t *testing.T) {
 	if obj.Class() != nil {
 		t.Errorf("Expected object class to be nil, got %v", obj.Class())
 	}
-	if obj.Moved != false {
-		t.Errorf("Expected object moved to be false, got %v", obj.Moved)
+	if obj.Moved() != false {
+		t.Errorf("Expected object moved to be false, got %v", obj.Moved())
 	}
-	if obj.ForwardingPtr != nil {
-		t.Errorf("Expected object forwarding pointer to be nil, got %v", obj.ForwardingPtr)
+	if obj.ForwardingPtr() != nil {
+		t.Errorf("Expected object forwarding pointer to be nil, got %v", obj.ForwardingPtr())
 	}
 }
 
@@ -202,11 +202,11 @@ func TestRawMemoryManagerAllocation(t *testing.T) {
 	if obj.Class() != nil {
 		t.Errorf("Expected object class to be nil, got %v", obj.Class())
 	}
-	if obj.Moved != false {
-		t.Errorf("Expected object moved to be false, got %v", obj.Moved)
+	if obj.Moved() != false {
+		t.Errorf("Expected object moved to be false, got %v", obj.Moved())
 	}
-	if obj.ForwardingPtr != nil {
-		t.Errorf("Expected object forwarding pointer to be nil, got %v", obj.ForwardingPtr)
+	if obj.ForwardingPtr() != nil {
+		t.Errorf("Expected object forwarding pointer to be nil, got %v", obj.ForwardingPtr())
 	}
 }
 

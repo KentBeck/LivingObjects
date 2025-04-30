@@ -151,7 +151,7 @@ func TestCollect(t *testing.T) {
 	om.Allocate(unreachableObjAsObj)
 
 	// Mark the unreachable object so we can identify it later
-	unreachableObjAsObj.Moved = true // This flag should be reset during collection
+	unreachableObjAsObj.SetMoved(true) // This flag should be reset during collection
 
 	// Check the allocation pointer before collection
 	beforeAllocPtr := om.AllocPtr
@@ -293,7 +293,7 @@ func TestCollectWithContexts(t *testing.T) {
 	unreachableObj := NewString("unreachable")
 	unreachableObjAsObj := StringToObject(unreachableObj) // Convert to Object for allocation
 	om.Allocate(unreachableObjAsObj)
-	unreachableObjAsObj.Moved = true // This flag should be reset during collection
+	unreachableObjAsObj.SetMoved(true) // This flag should be reset during collection
 
 	// Check the allocation pointer before collection
 	beforeAllocPtr := om.AllocPtr
@@ -460,8 +460,8 @@ func TestCollectWithCycles(t *testing.T) {
 	om.Allocate(unreachableObj2)
 
 	// Mark the unreachable objects so we can identify them later
-	unreachableObj1.Moved = true
-	unreachableObj2.Moved = true
+	unreachableObj1.SetMoved(true)
+	unreachableObj2.SetMoved(true)
 
 	// Check the allocation pointer before collection
 	beforeAllocPtr := om.AllocPtr
@@ -837,12 +837,12 @@ func TestCopyObject(t *testing.T) {
 		}
 
 		// Check that the copied object has the forwarding pointer set
-		if !objAsObj.Moved {
-			t.Errorf("Expected obj.Moved to be true")
+		if !objAsObj.Moved() {
+			t.Errorf("Expected obj.Moved() to be true")
 		}
 
-		if objAsObj.ForwardingPtr != objAsObj {
-			t.Errorf("Expected obj.ForwardingPtr to be obj")
+		if objAsObj.ForwardingPtr() != objAsObj {
+			t.Errorf("Expected obj.ForwardingPtr() to be obj")
 		}
 
 		// Check that the toPtr has been incremented
@@ -888,28 +888,30 @@ func TestUpdateReferences(t *testing.T) {
 		// Create an instance with instance variables
 		class := NewClass("TestClass", nil)
 		instance := NewInstance(class)
-		instance.InstanceVars = make([]*Object, 2)
+		instanceVars := make([]*Object, 2)
 
 		// Use immediate values for instance variables
-		instance.InstanceVars[METHOD_DICTIONARY_IV] = vm.NewInteger(1) // Immediate value
-		instance.InstanceVars[1] = vm.NewInteger(2)                    // Immediate value
+		instanceVars[METHOD_DICTIONARY_IV] = vm.NewInteger(1) // Immediate value
+		instanceVars[1] = vm.NewInteger(2)                    // Immediate value
+		instance.SetInstanceVars(instanceVars)
 
 		// Update references
 		toPtr := 0
 		om.updateReferences(instance, &toPtr)
 
 		// Check that the instance variables are still immediate values
-		if !IsIntegerImmediate(instance.InstanceVars[0]) {
-			t.Errorf("Expected instance.InstanceVars[0] to be an immediate value")
+		instanceVars = instance.InstanceVars()
+		if !IsIntegerImmediate(instanceVars[0]) {
+			t.Errorf("Expected instance.InstanceVars()[0] to be an immediate value")
 		}
 
-		if !IsIntegerImmediate(instance.InstanceVars[1]) {
-			t.Errorf("Expected instance.InstanceVars[1] to be an immediate value")
+		if !IsIntegerImmediate(instanceVars[1]) {
+			t.Errorf("Expected instance.InstanceVars()[1] to be an immediate value")
 		}
 
 		// Check that the class has been copied
-		if !instance.Class().Moved {
-			t.Errorf("Expected instance.Class().Moved to be true")
+		if !instance.Class().Moved() {
+			t.Errorf("Expected instance.Class().Moved() to be true")
 		}
 
 		// Check that toPtr has been incremented only for the class (immediate values don't get copied)
@@ -1005,13 +1007,13 @@ func TestUpdateReferences(t *testing.T) {
 		}
 
 		// Check that the selector has been copied
-		if !method.Method.Selector.Moved {
-			t.Errorf("Expected method.Method.Selector.Moved to be true")
+		if !method.Method.Selector.Moved() {
+			t.Errorf("Expected method.Method.Selector.Moved() to be true")
 		}
 
 		// Check that the class has been copied
-		if !method.Method.MethodClass.Moved {
-			t.Errorf("Expected method.Method.Class.Moved to be true")
+		if !method.Method.MethodClass.Moved() {
+			t.Errorf("Expected method.Method.Class.Moved() to be true")
 		}
 
 		// Check that toPtr has been incremented only for the selector and class (immediate values don't get copied)

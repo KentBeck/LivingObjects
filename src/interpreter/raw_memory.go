@@ -359,8 +359,8 @@ func (rm *RawMemory) CopyObject(obj *Object) *Object {
 	}
 
 	// Check if the object has already been moved
-	if obj.Moved && obj.ForwardingPtr != nil {
-		return obj.ForwardingPtr
+	if obj.Moved() && obj.ForwardingPtr() != nil {
+		return obj.ForwardingPtr()
 	}
 
 	// Determine the size of the object based on its type
@@ -394,8 +394,8 @@ func (rm *RawMemory) CopyObject(obj *Object) *Object {
 	rm.ToSpacePtr += uintptr(size)
 
 	// Set the forwarding pointer
-	obj.Moved = true
-	obj.ForwardingPtr = (*Object)(dst)
+	obj.SetMoved(true)
+	obj.SetForwardingPtr((*Object)(dst))
 
 	return (*Object)(dst)
 }

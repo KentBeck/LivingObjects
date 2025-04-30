@@ -62,8 +62,10 @@ func TestObjectInstanceVarMethods(t *testing.T) {
 	instance := NewInstance(class)
 
 	// Test GetInstanceVarByIndex
-	instance.InstanceVars[0] = vm.NewInteger(42)
-	instance.InstanceVars[1] = StringToObject(NewString("hello"))
+	instanceVars := make([]*Object, 2)
+	instanceVars[0] = vm.NewInteger(42)
+	instanceVars[1] = StringToObject(NewString("hello"))
+	instance.SetInstanceVars(instanceVars)
 
 	// Get the instance variable and check its value
 	var0 := instance.GetInstanceVarByIndex(0)
@@ -107,7 +109,8 @@ func TestObjectSetInstanceVarByIndex(t *testing.T) {
 	instance.SetInstanceVarByIndex(1, StringToObject(NewString("hello")))
 
 	// Check the instance variables
-	var0 := instance.InstanceVars[0]
+	var instanceVars2 = instance.InstanceVars()
+	var0 := instanceVars2[0]
 	if IsIntegerImmediate(var0) {
 		intValue := GetIntegerImmediate(var0)
 		if intValue != 42 {
@@ -117,7 +120,7 @@ func TestObjectSetInstanceVarByIndex(t *testing.T) {
 		t.Errorf("Expected an immediate integer, got %v", var0)
 	}
 
-	var1 := instance.InstanceVars[1]
+	var1 := instanceVars2[1]
 	var1Str := ObjectToString(var1)
 	if var1.Type() != OBJ_STRING || var1Str.Value != "hello" {
 		t.Errorf("Expected instance variable 1 to be a string with value 'hello', got %v", var1)

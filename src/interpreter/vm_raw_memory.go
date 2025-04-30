@@ -81,8 +81,9 @@ func (vm *VMWithRawMemory) NewObjectClass() *Object {
 
 	// Create a method dictionary
 	methodDict := vm.NewDictionary()
-	class.InstanceVars = make([]*Object, 1)
-	class.InstanceVars[METHOD_DICTIONARY_IV] = methodDict
+	instanceVars := make([]*Object, 1)
+	instanceVars[METHOD_DICTIONARY_IV] = methodDict
+	class.SetInstanceVars(instanceVars)
 
 	// Add basicClass method to Object class using MethodBuilder
 	NewMethodBuilder(ClassToObject(class)).
@@ -114,8 +115,9 @@ func (vm *VMWithRawMemory) NewClass(name string, superClass *Object) *Object {
 
 	// Create a method dictionary
 	methodDict := vm.NewDictionary()
-	class.InstanceVars = make([]*Object, 1)
-	class.InstanceVars[METHOD_DICTIONARY_IV] = methodDict
+	instanceVars := make([]*Object, 1)
+	instanceVars[METHOD_DICTIONARY_IV] = methodDict
+	class.SetInstanceVars(instanceVars)
 
 	return ClassToObject(class)
 }
@@ -336,7 +338,7 @@ func (vm *VMWithRawMemory) NewInstance(class *Object) *Object {
 	// Initialize the instance
 	obj.SetType(OBJ_INSTANCE)
 	obj.SetClass(class)
-	obj.InstanceVars = instVars
+	obj.SetInstanceVars(instVars)
 
 	return obj
 }

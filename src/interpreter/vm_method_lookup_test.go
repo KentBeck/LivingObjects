@@ -95,7 +95,8 @@ func BadLookupMethodHelper() {
 	vm := NewVM()
 
 	badClass := NewClass("BadClass", nil)
-	badClass.InstanceVars[METHOD_DICTIONARY_IV] = nil // Set method dictionary to nil
+	instanceVars := badClass.InstanceVars()
+	instanceVars[METHOD_DICTIONARY_IV] = nil // Set method dictionary to nil
 	badClassInstance := NewInstance(badClass)
 	sizeSelector := NewSymbol("size")
 	vm.lookupMethod(badClassInstance, sizeSelector) // should panic

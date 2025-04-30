@@ -25,10 +25,10 @@ const (
 // Object represents a Smalltalk object
 type Object struct {
 	type1            ObjectType
-	class            *Object   // Renamed from Class to class1 for encapsulation
-	Moved            bool      // Used for garbage collection
-	ForwardingPtr    *Object   // Used for garbage collection
-	InstanceVars     []*Object // Instance variables stored by index
+	class            *Object   // Renamed from Class to class for encapsulation
+	moved            bool      // Used for garbage collection (renamed from Moved)
+	forwardingPtr    *Object   // Used for garbage collection (renamed from ForwardingPtr)
+	instanceVars     []*Object // Instance variables stored by index (renamed from InstanceVars)
 	Elements         []*Object
 	Entries          map[string]*Object
 	Method           *Method
@@ -60,6 +60,36 @@ func (o *Object) Class() *Object {
 // SetClass sets the class of the object
 func (o *Object) SetClass(class *Object) {
 	o.class = class
+}
+
+// Moved returns whether the object has been moved during garbage collection
+func (o *Object) Moved() bool {
+	return o.moved
+}
+
+// SetMoved sets whether the object has been moved during garbage collection
+func (o *Object) SetMoved(moved bool) {
+	o.moved = moved
+}
+
+// ForwardingPtr returns the forwarding pointer of the object
+func (o *Object) ForwardingPtr() *Object {
+	return o.forwardingPtr
+}
+
+// SetForwardingPtr sets the forwarding pointer of the object
+func (o *Object) SetForwardingPtr(ptr *Object) {
+	o.forwardingPtr = ptr
+}
+
+// InstanceVars returns the instance variables of the object
+func (o *Object) InstanceVars() []*Object {
+	return o.instanceVars
+}
+
+// SetInstanceVars sets the instance variables of the object
+func (o *Object) SetInstanceVars(vars []*Object) {
+	o.instanceVars = vars
 }
 
 // String represents a Smalltalk string object
@@ -172,7 +202,7 @@ func NewInstance(class *Object) *Object {
 	obj := &Object{
 		type1:        OBJ_INSTANCE,
 		class:        class,
-		InstanceVars: instVars,
+		instanceVars: instVars,
 	}
 	return obj
 }
@@ -193,7 +223,7 @@ func NewClass(name string, superClass *Object) *Object {
 	sym.type1 = OBJ_CLASS
 	sym.SuperClass = superClass
 	sym.InstanceVarNames = make([]string, 0)
-	sym.InstanceVars = instVars
+	sym.SetInstanceVars(instVars)
 
 	return SymbolToObject(sym)
 }
@@ -316,7 +346,7 @@ func (o *Object) String() string {
 		if o.Class() == nil {
 			return "an Object"
 		}
-		if o.Type() != OBJ_CLASS || len(o.InstanceVars) == 0 {
+		if o.Type() != OBJ_CLASS || len(o.InstanceVars()) == 0 {
 			class := ObjectToClass(o.Class())
 			return fmt.Sprintf("a %s", class.Name)
 		}
@@ -340,30 +370,31 @@ func (o *Object) String() string {
 
 // GetInstanceVarByIndex gets an instance variable by index
 func (o *Object) GetInstanceVarByIndex(index int) *Object {
-	if index < 0 || index >= len(o.InstanceVars) {
+	if index < 0 || index >= len(o.InstanceVars()) {
 		panic("index out of bounds")
 	}
 
-	return o.InstanceVars[index]
+	return o.InstanceVars()[index]
 }
 
 // SetInstanceVarByIndex sets an instance variable by index
 func (o *Object) SetInstanceVarByIndex(index int, value *Object) {
-	if index < 0 || index >= len(o.InstanceVars) {
+	if index < 0 || index >= len(o.InstanceVars()) {
 		panic("index out of bounds")
 	}
 
-	o.InstanceVars[index] = value
+	vars := o.InstanceVars()
+	vars[index] = value
 }
 
 // GetMethodDict gets the method dictionary for a class
 func (o *Object) GetMethodDict() *Object {
-	if o.Type() != OBJ_CLASS || len(o.InstanceVars) == 0 {
+	if o.Type() != OBJ_CLASS || len(o.InstanceVars()) == 0 {
 		panic("object is not a class or has no instance variables")
 	}
 
 	// Method dictionary is stored at index 0 for classes
-	return o.InstanceVars[METHOD_DICTIONARY_IV]
+	return o.InstanceVars()[METHOD_DICTIONARY_IV]
 }
 
 // StringToObject converts a String to an Object

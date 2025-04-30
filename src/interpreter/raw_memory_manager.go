@@ -266,9 +266,10 @@ func (rmm *RawMemoryManager) updateReferences(obj *Object) {
 
 	case OBJ_INSTANCE:
 		// Update instance variables
-		for i, value := range obj.InstanceVars {
+		instanceVars := obj.InstanceVars()
+		for i, value := range instanceVars {
 			if value != nil {
-				obj.InstanceVars[i] = rmm.copyObject(value)
+				instanceVars[i] = rmm.copyObject(value)
 			}
 		}
 
@@ -284,9 +285,10 @@ func (rmm *RawMemoryManager) updateReferences(obj *Object) {
 
 	case OBJ_CLASS:
 		// Update instance variables (which includes the method dictionary)
-		for i, value := range obj.InstanceVars {
+		instanceVars := obj.InstanceVars()
+		for i, value := range instanceVars {
 			if value != nil {
-				obj.InstanceVars[i] = rmm.copyObject(value)
+				instanceVars[i] = rmm.copyObject(value)
 			}
 		}
 

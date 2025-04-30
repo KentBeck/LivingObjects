@@ -106,9 +106,10 @@ func TestUpdateReferencesEdgeCases(t *testing.T) {
 		// Create an instance with nil instance variables
 		class := NewClass("TestClass", nil)
 		instance := NewInstance(class)
-		instance.InstanceVars = make([]*Object, 2)
-		instance.InstanceVars[METHOD_DICTIONARY_IV] = nil
-		instance.InstanceVars[1] = nil
+		instanceVars := make([]*Object, 2)
+		instanceVars[METHOD_DICTIONARY_IV] = nil
+		instanceVars[1] = nil
+		instance.SetInstanceVars(instanceVars)
 
 		// Set nil superclass and class
 		instance.SuperClass = nil
