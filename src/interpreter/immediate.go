@@ -49,18 +49,20 @@ func IsNilImmediate(obj ObjectInterface) bool {
 }
 
 // IsTrueImmediate returns true if the value is the immediate true value
-func IsTrueImmediate(obj *Object) bool {
+func IsTrueImmediate(obj ObjectInterface) bool {
 	// Convert the pointer to an integer
-	ptr := uintptr(unsafe.Pointer(obj))
+	converted := obj.(*Object)
+	ptr := uintptr(unsafe.Pointer(converted))
 
 	// Check if it's the true immediate value
 	return ptr == SPECIAL_TRUE
 }
 
 // IsFalseImmediate returns true if the value is the immediate false value
-func IsFalseImmediate(obj *Object) bool {
+func IsFalseImmediate(obj ObjectInterface) bool {
 	// Convert the pointer to an integer
-	ptr := uintptr(unsafe.Pointer(obj))
+	converted := obj.(*Object)
+	ptr := uintptr(unsafe.Pointer(converted))
 
 	// Check if it's the false immediate value
 	return ptr == SPECIAL_FALSE
