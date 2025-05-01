@@ -41,7 +41,7 @@ func NewContext(method *Object, receiver ObjectInterface, arguments []*Object, s
 }
 
 // Push pushes an object onto the stack
-func (c *Context) Push(obj *Object) {
+func (c *Context) Push(obj ObjectInterface) {
 	// Grow stack if needed
 	if c.StackPointer >= len(c.Stack) {
 		newStack := make([]*Object, len(c.Stack)*2)
