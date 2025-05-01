@@ -152,11 +152,11 @@ func (om *ObjectMemory) Collect(vm *VM) {
 }
 
 // copyObject copies an object to the to-space
-func (om *ObjectMemory) copyObject(obj *Object, toPtr *int) *Object {
+func (om *ObjectMemory) copyObject(obj ObjectInterface, toPtr *int) *Object {
 	// Check if it's an immediate value
 	if IsImmediate(obj) {
 		// Immediate values don't need to be copied
-		return obj
+		return obj.(*Object)
 	}
 
 	// Check if the object has already been moved
@@ -165,7 +165,7 @@ func (om *ObjectMemory) copyObject(obj *Object, toPtr *int) *Object {
 	}
 
 	// Copy the object to the to-space
-	om.ToSpace[*toPtr] = obj
+	om.ToSpace[*toPtr] = obj.(*Object)
 	obj.SetMoved(true)
 	obj.SetForwardingPtr(om.ToSpace[*toPtr])
 	*toPtr++

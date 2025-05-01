@@ -158,7 +158,7 @@ func NewBoolean(value bool) *Object {
 
 // NewNil creates a new nil object
 // This now returns an immediate nil value
-func NewNil() *Object {
+func NewNil() ObjectInterface {
 	return MakeNilImmediate()
 }
 
@@ -207,7 +207,7 @@ func NewInstance(class *Object) *Object {
 	}
 	instVars := make([]*Object, instVarsSize)
 	for i := range instVars {
-		instVars[i] = NewNil()
+		instVars[i] = NewNil().(*Object)
 	}
 
 	obj := &Object{

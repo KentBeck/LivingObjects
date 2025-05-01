@@ -5,7 +5,7 @@ type Context struct {
 	Method       *Object
 	Receiver     *Object
 	Arguments    []*Object
-	TempVars     []*Object // Temporary variables stored by index
+	TempVars     []ObjectInterface // Temporary variables stored by index
 	Sender       *Context
 	PC           int
 	Stack        []*Object
@@ -23,7 +23,7 @@ func NewContext(method *Object, receiver ObjectInterface, arguments []*Object, s
 
 	// Initialize temporary variables array with nil values
 	tempVarsSize := len(method.Method.TempVarNames)
-	tempVars := make([]*Object, tempVarsSize)
+	tempVars := make([]ObjectInterface, tempVarsSize)
 	for i := range tempVars {
 		tempVars[i] = NewNil()
 	}
@@ -79,7 +79,7 @@ func (c *Context) Top() *Object {
 }
 
 // GetTempVarByIndex gets a temporary variable by index
-func (c *Context) GetTempVarByIndex(index int) *Object {
+func (c *Context) GetTempVarByIndex(index int) ObjectInterface {
 	if index < 0 || index >= len(c.TempVars) {
 		panic("index out of bounds")
 	}

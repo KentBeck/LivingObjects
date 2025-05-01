@@ -139,7 +139,7 @@ func TestContextTempVars(t *testing.T) {
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 
 	// Set up temporary variables
-	context.TempVars = make([]*Object, 2)
+	context.TempVars = make([]ObjectInterface, 2)
 
 	// Test setting and getting temporary variables
 	obj := vm.NewInteger(42)

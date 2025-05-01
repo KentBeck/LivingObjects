@@ -30,7 +30,7 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name:     "Nil",
-			obj:      NewNil(),
+			obj:      NewNil().(*Object),
 			expected: "nil",
 		},
 		{
