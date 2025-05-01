@@ -51,6 +51,8 @@ type ObjectInterface interface {
 	SetForwardingPtr(ptr *Object)
 	InstanceVars() []*Object
 	SetInstanceVars(vars []*Object)
+	IsTrue() bool // for now
+	String() string
 }
 
 func (o *Object) Type() ObjectType {

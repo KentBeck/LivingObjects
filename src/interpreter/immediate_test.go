@@ -18,7 +18,7 @@ func TestImmediateNil(t *testing.T) {
 	}
 
 	// Test that GetClass returns the correct class for immediate nil
-	nilClass := vm.GetClass(vm.NilObject)
+	nilClass := vm.GetClass(vm.NilObject.(*Object))
 	if nilClass != vm.NilClass {
 		t.Errorf("Expected GetClass(NilObject) to return NilClass, got %v", nilClass)
 	}

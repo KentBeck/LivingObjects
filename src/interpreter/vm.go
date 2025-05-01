@@ -11,7 +11,7 @@ type VM struct {
 	ObjectMemory   *ObjectMemory
 
 	// Special objects
-	NilObject    *Object
+	NilObject    ObjectInterface
 	NilClass     *Object
 	TrueObject   *Object
 	TrueClass    *Object

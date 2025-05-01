@@ -10,7 +10,7 @@ func TestGetClass(t *testing.T) {
 	// Test cases
 	tests := []struct {
 		name     string
-		obj      *Object
+		obj      ObjectInterface
 		expected *Object
 	}{
 		{
@@ -42,7 +42,7 @@ func TestGetClass(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			result := vm.GetClass(test.obj)
+			result := vm.GetClass(test.obj.(*Object))
 			if result != test.expected {
 				t.Errorf("Expected %v, got %v", test.expected, result)
 			}
