@@ -123,9 +123,10 @@ func GetIntegerImmediate(obj ObjectInterface) int64 {
 }
 
 // IsFloatImmediate returns true if the value is an immediate float
-func IsFloatImmediate(obj *Object) bool {
+func IsFloatImmediate(obj ObjectInterface) bool {
 	// Convert the pointer to an integer
-	ptr := uintptr(unsafe.Pointer(obj))
+	converted := obj.(*Object)
+	ptr := uintptr(unsafe.Pointer(converted))
 
 	// Check if the tag is TAG_FLOAT
 	return (ptr & TAG_MASK) == TAG_FLOAT
@@ -144,11 +145,12 @@ func MakeFloatImmediate(value float64) *Object {
 }
 
 // GetFloatImmediate extracts the float value from an immediate float
-func GetFloatImmediate(obj *Object) float64 {
+func GetFloatImmediate(obj ObjectInterface) float64 {
 	// Convert the pointer to an integer
-	ptr := uintptr(unsafe.Pointer(obj))
+	converted := obj.(*Object)
+	ptr := uintptr(unsafe.Pointer(converted))
 
-	// Remove the tag bits
+	// Remove the tag bits -- should round instead?
 	bits := ptr & ^uintptr(TAG_MASK)
 
 	// Convert to float64
