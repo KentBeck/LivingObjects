@@ -177,7 +177,7 @@ func NewSymbol(value string) *Object {
 		Value: value,
 	}
 	sym.type1 = OBJ_SYMBOL
-	return SymbolToObject(sym).(*Object)
+	return SymbolToObject(sym)
 }
 
 // NewArray creates a new array object
@@ -236,7 +236,7 @@ func NewClass(name string, superClass *Object) *Object {
 	sym.InstanceVarNames = make([]string, 0)
 	sym.SetInstanceVars(instVars)
 
-	return SymbolToObject(sym).(*Object)
+	return SymbolToObject(sym)
 }
 
 // NewMethod creates a new method object
@@ -366,8 +366,6 @@ func (o *Object) GetMethodDict() *Object {
 	if o.Type() != OBJ_CLASS || len(o.InstanceVars()) == 0 {
 		panic("object is not a class or has no instance variables")
 	}
-
-	// Method dictionary is stored at index 0 for classes
 	return o.InstanceVars()[METHOD_DICTIONARY_IV]
 }
 
@@ -377,12 +375,12 @@ func StringToObject(s *String) *Object {
 }
 
 // ObjectToString converts an Object to a String
-func ObjectToString(o *Object) *String {
-	return (*String)(unsafe.Pointer(o))
+func ObjectToString(o ObjectInterface) *String {
+	return (*String)(unsafe.Pointer(o.(*Object)))
 }
 
 // SymbolToObject converts a Symbol to an Object
-func SymbolToObject(s *Symbol) ObjectInterface {
+func SymbolToObject(s *Symbol) *Object {
 	return (*Object)(unsafe.Pointer(s))
 }
 
