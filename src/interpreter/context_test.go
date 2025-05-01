@@ -28,7 +28,7 @@ func TestContextPush(t *testing.T) {
 	}
 
 	// Test pushing nil
-	context.Push(nil)
+	context.Push(nil) // seems like this should be a panic
 
 	if context.StackPointer != 2 {
 		t.Errorf("Expected stack pointer to be 2, got %d", context.StackPointer)
