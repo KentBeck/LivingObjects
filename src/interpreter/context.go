@@ -49,7 +49,12 @@ func (c *Context) Push(obj ObjectInterface) {
 		c.Stack = newStack
 	}
 
-	c.Stack[c.StackPointer] = obj
+	// Handle nil values
+	if obj == nil {
+		c.Stack[c.StackPointer] = nil
+	} else {
+		c.Stack[c.StackPointer] = obj.(*Object)
+	}
 	c.StackPointer++
 }
 
@@ -83,10 +88,14 @@ func (c *Context) GetTempVarByIndex(index int) *Object {
 }
 
 // SetTempVarByIndex sets a temporary variable by index
-func (c *Context) SetTempVarByIndex(index int, value *Object) {
+func (c *Context) SetTempVarByIndex(index int, value ObjectInterface) {
 	if index < 0 || index >= len(c.TempVars) {
 		return
 	}
 
-	c.TempVars[index] = value
+	if value == nil {
+		c.TempVars[index] = nil
+	} else {
+		c.TempVars[index] = value.(*Object)
+	}
 }
