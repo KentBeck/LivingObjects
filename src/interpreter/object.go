@@ -291,7 +291,7 @@ func (o *Object) IsTrue() bool {
 		// Immediate integer is true
 		// Sus
 		if IsIntegerImmediate(o) {
-			return true
+			return false
 		}
 		// Immediate float is true
 		// Sus

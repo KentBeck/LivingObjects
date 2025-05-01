@@ -31,7 +31,7 @@ func TestObjectIsTrue(t *testing.T) {
 		{
 			name:     "Integer",
 			obj:      vm.NewInteger(42),
-			expected: true, // This is wrong
+			expected: false,
 		},
 		{
 			name:     "String",

@@ -141,7 +141,7 @@ func TestImmediateInteger(t *testing.T) {
 	}
 
 	// Test that IsTrue returns true for immediate integer
-	if !intObj.IsTrue() {
+	if intObj.IsTrue() {
 		t.Errorf("Expected IsTrue(intObj) to return true")
 	}
 
