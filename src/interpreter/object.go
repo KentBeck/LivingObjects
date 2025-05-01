@@ -387,8 +387,8 @@ func SymbolToObject(s *Symbol) *Object {
 }
 
 // ObjectToSymbol converts an Object to a Symbol
-func ObjectToSymbol(o *Object) *Symbol {
-	return (*Symbol)(unsafe.Pointer(o))
+func ObjectToSymbol(o ObjectInterface) *Symbol {
+	return (*Symbol)(unsafe.Pointer(o.(*Object)))
 }
 
 // GetSymbolValue gets the value from a Symbol object
