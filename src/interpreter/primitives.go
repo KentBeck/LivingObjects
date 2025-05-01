@@ -239,7 +239,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			if err != nil {
 				panic(fmt.Sprintf("Error executing block: %v", err))
 			}
-			return result
+			return result.(*Object)
 		}
 	case 22: // Block value: - execute a block with one argument
 		if receiver.Type() == OBJ_BLOCK && len(args) == 1 {
@@ -260,7 +260,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			if err != nil {
 				panic(fmt.Sprintf("Error executing block: %v", err))
 			}
-			return result
+			return result.(*Object)
 		}
 	default:
 		panic("executePrimitive: unknown primitive index\n")

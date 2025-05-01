@@ -185,7 +185,7 @@ func (vm *VM) Execute() (ObjectInterface, error) {
 }
 
 // ExecuteContext executes a single context until it returns
-func (vm *VM) ExecuteContext(context *Context) (*Object, error) {
+func (vm *VM) ExecuteContext(context *Context) (ObjectInterface, error) {
 	// Execute the context
 
 	for {
