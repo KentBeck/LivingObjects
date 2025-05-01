@@ -302,15 +302,6 @@ func (o *Object) String() string {
 
 	// Handle regular objects
 	switch o.Type() {
-	case OBJ_INTEGER:
-		return "Integer"
-	case OBJ_BOOLEAN:
-		if o.IsTrue() {
-			return "true"
-		}
-		return "false"
-	case OBJ_NIL:
-		return "nil"
 	case OBJ_STRING:
 		str := ObjectToString(o)
 		return fmt.Sprintf("'%s'", str.Value)
