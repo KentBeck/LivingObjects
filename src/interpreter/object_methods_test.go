@@ -32,6 +32,10 @@ func TestObjectIsTrue(t *testing.T) {
 			name:     "Integer",
 			obj:      vm.NewInteger(42),
 			expected: false,
+		}, {
+			name:     "Float",
+			obj:      vm.NewFloat(42.0),
+			expected: false,
 		},
 		{
 			name:     "String",

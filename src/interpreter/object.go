@@ -274,36 +274,8 @@ func NewBlock(outerContext *Context) *Object {
 
 // IsTrue returns true if the object is considered true in Smalltalk
 func (o *Object) IsTrue() bool {
-	// Check if it's an immediate value
-	if IsImmediate(o) {
-		// Immediate nil is false
-		if IsNilImmediate(o) {
-			return false
-		}
-		// Immediate true is true
-		if IsTrueImmediate(o) {
-			return true
-		}
-		// Immediate false is false
-		if IsFalseImmediate(o) {
-			return false
-		}
-		// Immediate integer is true
-		// Sus
-		if IsIntegerImmediate(o) {
-			return false
-		}
-		// Immediate float is true
-		// Sus
-		if IsFloatImmediate(o) {
-			return true
-		}
-		// Other immediate types will be added later
-		return true
-	}
-
-	// Not thrilled about this. We don't want truthiness in the image, probably not here either
-	return false
+	// maybe should be an error if it's not a boolean?
+	return IsTrueImmediate(o)
 }
 
 // String returns a string representation of the object
