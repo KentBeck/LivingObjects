@@ -392,9 +392,9 @@ func ObjectToSymbol(o *Object) *Symbol {
 }
 
 // GetSymbolValue gets the value from a Symbol object
-func GetSymbolValue(o *Object) string {
+func GetSymbolValue(o ObjectInterface) string {
 	if o.Type() == OBJ_SYMBOL {
-		return ObjectToSymbol(o).Value
+		return ObjectToSymbol(o.(*Object)).Value
 	}
 	panic("GetSymbolValue: not a symbol")
 }

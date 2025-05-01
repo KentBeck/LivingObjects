@@ -290,7 +290,7 @@ func (vm *VM) ExecuteContext(context *Context) (ObjectInterface, error) {
 }
 
 // lookupMethod looks up a method in a class hierarchy
-func (vm *VM) lookupMethod(receiver *Object, selector *Object) *Object {
+func (vm *VM) lookupMethod(receiver *Object, selector ObjectInterface) *Object {
 	// Check for nil receiver or selector
 	if receiver == nil {
 		panic("lookupMethod: nil receiver\n")
