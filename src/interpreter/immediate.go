@@ -39,9 +39,10 @@ func GetTag(obj ObjectInterface) int {
 }
 
 // IsNilImmediate returns true if the value is the immediate nil value
-func IsNilImmediate(obj *Object) bool {
+func IsNilImmediate(obj ObjectInterface) bool {
 	// Convert the pointer to an integer
-	ptr := uintptr(unsafe.Pointer(obj))
+	converted := obj.(*Object)
+	ptr := uintptr(unsafe.Pointer(converted))
 
 	// Check if it's the nil immediate value
 	return ptr == SPECIAL_NIL
