@@ -58,7 +58,7 @@ func TestImmediateBoolean(t *testing.T) {
 	}
 
 	// Test that GetClass returns the correct class for immediate true
-	trueClass := vm.GetClass(vm.TrueObject)
+	trueClass := vm.GetClass(vm.TrueObject.(*Object))
 	if trueClass != vm.TrueClass {
 		t.Errorf("Expected GetClass(TrueObject) to return TrueClass, got %v", trueClass)
 	}
@@ -85,7 +85,7 @@ func TestImmediateBoolean(t *testing.T) {
 	}
 
 	// Test that GetClass returns the correct class for immediate false
-	falseClass := vm.GetClass(vm.FalseObject)
+	falseClass := vm.GetClass(vm.FalseObject.(*Object))
 	if falseClass != vm.FalseClass {
 		t.Errorf("Expected GetClass(FalseObject) to return FalseClass, got %v", falseClass)
 	}
