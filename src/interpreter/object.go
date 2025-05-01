@@ -177,7 +177,7 @@ func NewSymbol(value string) *Object {
 		Value: value,
 	}
 	sym.type1 = OBJ_SYMBOL
-	return SymbolToObject(sym)
+	return SymbolToObject(sym).(*Object)
 }
 
 // NewArray creates a new array object
@@ -236,7 +236,7 @@ func NewClass(name string, superClass *Object) *Object {
 	sym.InstanceVarNames = make([]string, 0)
 	sym.SetInstanceVars(instVars)
 
-	return SymbolToObject(sym)
+	return SymbolToObject(sym).(*Object)
 }
 
 // NewMethod creates a new method object
@@ -382,7 +382,7 @@ func ObjectToString(o *Object) *String {
 }
 
 // SymbolToObject converts a Symbol to an Object
-func SymbolToObject(s *Symbol) *Object {
+func SymbolToObject(s *Symbol) ObjectInterface {
 	return (*Object)(unsafe.Pointer(s))
 }
 
