@@ -29,9 +29,10 @@ func IsImmediate(obj ObjectInterface) bool {
 }
 
 // GetTag returns the tag bits of a value
-func GetTag(obj *Object) int {
+func GetTag(obj ObjectInterface) int {
 	// Convert the pointer to an integer
-	ptr := uintptr(unsafe.Pointer(obj))
+	converted := obj.(*Object)
+	ptr := uintptr(unsafe.Pointer(converted))
 
 	// Return the bottom two bits
 	return int(ptr & TAG_MASK)
