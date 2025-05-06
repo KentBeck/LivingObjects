@@ -2,7 +2,7 @@ package main
 
 // GetClass returns the class of an object
 // This is the single function that should be used to get the class of an object
-func (vm *VM) GetClass(obj *Object) *Object {
+func (vm *VM) GetClass(obj *Object) *Class {
 	if obj == nil {
 		panic("GetClass: nil object")
 	}
@@ -37,7 +37,7 @@ func (vm *VM) GetClass(obj *Object) *Object {
 
 	// If the object is a class, return itself
 	if obj.Type() == OBJ_CLASS {
-		return obj
+		return ObjectToClass(obj) // Later Metaclass
 	}
 
 	// Special case for nil object (legacy non-immediate nil)
@@ -50,5 +50,5 @@ func (vm *VM) GetClass(obj *Object) *Object {
 		panic("GetClass: object has nil class")
 	}
 
-	return obj.Class()
+	return ObjectToClass(obj.Class())
 }

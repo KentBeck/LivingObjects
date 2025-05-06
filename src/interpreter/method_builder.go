@@ -6,7 +6,7 @@ import (
 
 // MethodBuilder provides a fluent interface for creating methods
 type MethodBuilder struct {
-	class          *Object
+	class          *Class
 	selectorName   string
 	selectorObj    *Object
 	bytecodes      []byte
@@ -17,7 +17,7 @@ type MethodBuilder struct {
 }
 
 // NewMethodBuilder creates a new MethodBuilder for the given class
-func NewMethodBuilder(class *Object) *MethodBuilder {
+func NewMethodBuilder(class *Class) *MethodBuilder {
 	return &MethodBuilder{
 		class:          class,
 		bytecodes:      make([]byte, 0),

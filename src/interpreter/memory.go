@@ -129,7 +129,7 @@ func (om *ObjectMemory) Collect(vm *VM) {
 	// 	vm.FalseObject = om.copyObject(vm.FalseObject, &toPtr)
 	// }
 	if vm.ObjectClass != nil {
-		vm.ObjectClass = om.copyObject(vm.ObjectClass, &toPtr)
+		vm.ObjectClass = ObjectToClass(om.copyObject(ClassToObject(vm.ObjectClass), &toPtr))
 	}
 
 	// Scan the to-space for references
@@ -257,7 +257,7 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 
 		// Update method class
 		if obj.Method.MethodClass != nil {
-			obj.Method.MethodClass = om.copyObject(obj.Method.MethodClass, toPtr)
+			obj.Method.MethodClass = ObjectToClass(om.copyObject(ClassToObject(obj.Method.MethodClass), toPtr))
 		}
 
 	case OBJ_BLOCK:

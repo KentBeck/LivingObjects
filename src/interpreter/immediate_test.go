@@ -188,7 +188,7 @@ func TestImmediateIntegerPrimitives(t *testing.T) {
 
 	// Test addition
 	plusSelector := NewSymbol("+")
-	plusMethod := vm.lookupMethod(vm.IntegerClass, plusSelector)
+	plusMethod := vm.lookupMethod(int1, plusSelector)
 	result := vm.executePrimitive(int1, plusSelector, []*Object{int2}, plusMethod)
 
 	// Check that the result is an immediate integer
@@ -204,7 +204,7 @@ func TestImmediateIntegerPrimitives(t *testing.T) {
 
 	// Test subtraction
 	minusSelector := NewSymbol("-")
-	minusMethod := vm.lookupMethod(vm.IntegerClass, minusSelector)
+	minusMethod := vm.lookupMethod(int1, minusSelector)
 	result = vm.executePrimitive(int1, minusSelector, []*Object{int2}, minusMethod)
 
 	// Check that the result is an immediate integer
@@ -220,7 +220,7 @@ func TestImmediateIntegerPrimitives(t *testing.T) {
 
 	// Test multiplication
 	timesSelector := NewSymbol("*")
-	timesMethod := vm.lookupMethod(vm.IntegerClass, timesSelector)
+	timesMethod := vm.lookupMethod(int1, timesSelector)
 	result = vm.executePrimitive(int1, timesSelector, []*Object{int2}, timesMethod)
 
 	// Check that the result is an immediate integer
@@ -236,7 +236,7 @@ func TestImmediateIntegerPrimitives(t *testing.T) {
 
 	// Test equality
 	equalsSelector := NewSymbol("=")
-	equalsMethod := vm.lookupMethod(vm.IntegerClass, equalsSelector)
+	equalsMethod := vm.lookupMethod(int1, equalsSelector)
 	result = vm.executePrimitive(int1, equalsSelector, []*Object{int1}, equalsMethod)
 
 	// Check that the result is a boolean
@@ -254,7 +254,7 @@ func TestImmediateIntegerPrimitives(t *testing.T) {
 
 	// Test less than
 	lessSelector := NewSymbol("<")
-	lessMethod := vm.lookupMethod(vm.IntegerClass, lessSelector)
+	lessMethod := vm.lookupMethod(int1, lessSelector)
 	result = vm.executePrimitive(int2, lessSelector, []*Object{int1}, lessMethod)
 
 	// Check that the result is a boolean
@@ -264,7 +264,7 @@ func TestImmediateIntegerPrimitives(t *testing.T) {
 
 	// Test greater than
 	greaterSelector := NewSymbol(">")
-	greaterMethod := vm.lookupMethod(vm.IntegerClass, greaterSelector)
+	greaterMethod := vm.lookupMethod(int1, greaterSelector)
 	result = vm.executePrimitive(int1, greaterSelector, []*Object{int2}, greaterMethod)
 
 	// Check that the result is a boolean

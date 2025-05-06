@@ -80,10 +80,8 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			panic("Non-immediate integer encountered")
 		}
 	case 5: // basicClass - return the class of the receiver
-		if len(args) == 0 {
-			class := vm.GetClass(receiver)
-			return class
-		}
+		class := vm.GetClass(receiver)
+		return ClassToObject(class)
 	case 6: // Less than
 		// Handle immediate integers
 		if IsIntegerImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
@@ -214,10 +212,10 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			return NewBoolean(result).(*Object)
 		}
 	case 20: // Block new - create a new block instance
-		if receiver.Type() == OBJ_CLASS && receiver == vm.BlockClass {
+		if receiver.Type() == OBJ_CLASS && receiver == ClassToObject(vm.BlockClass) {
 			// Create a new block instance
 			blockInstance := NewBlock(vm.CurrentContext)
-			blockInstance.SetClass(vm.BlockClass)
+			blockInstance.SetClass(ClassToObject(vm.BlockClass))
 			return blockInstance
 		}
 	case 21: // Block value - execute a block with no arguments

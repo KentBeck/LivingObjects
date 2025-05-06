@@ -15,12 +15,10 @@ func TestIntegerPrimitives(t *testing.T) {
 func testSubtractionPrimitive(t *testing.T) {
 	vm := NewVM()
 
-	minusSelector := NewSymbol("-")
-	method := vm.lookupMethod(vm.IntegerClass, minusSelector)
-
-	// Create two integer objects
 	five := vm.NewInteger(5)
 	two := vm.NewInteger(2)
+	minusSelector := NewSymbol("-")
+	method := vm.lookupMethod(five, minusSelector)
 
 	// Execute the primitive
 	result := vm.executePrimitive(five, minusSelector, []*Object{two}, method)
@@ -42,7 +40,7 @@ func testSubtractionPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !IsIntegerImmediate(result) && result.Class() != vm.IntegerClass {
+	if !IsIntegerImmediate(result) && result.Class() != ClassToObject(vm.IntegerClass) {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
@@ -50,12 +48,10 @@ func testSubtractionPrimitive(t *testing.T) {
 func testMultiplicationPrimitive(t *testing.T) {
 	vm := NewVM()
 
-	timesSelector := NewSymbol("*")
-	method := vm.lookupMethod(vm.IntegerClass, timesSelector)
-
-	// Create two integer objects
 	five := vm.NewInteger(5)
 	two := vm.NewInteger(2)
+	timesSelector := NewSymbol("*")
+	method := vm.lookupMethod(five, timesSelector)
 
 	// Execute the primitive
 	result := vm.executePrimitive(five, timesSelector, []*Object{two}, method)
@@ -77,7 +73,7 @@ func testMultiplicationPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !IsIntegerImmediate(result) && result.Class() != vm.IntegerClass {
+	if !IsIntegerImmediate(result) && result.Class() != ClassToObject(vm.IntegerClass) {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
@@ -85,12 +81,10 @@ func testMultiplicationPrimitive(t *testing.T) {
 func testAdditionPrimitive(t *testing.T) {
 	vm := NewVM()
 
-	plusSelector := NewSymbol("+")
-	method := vm.lookupMethod(vm.IntegerClass, plusSelector)
-
-	// Create two integer objects
 	three := vm.NewInteger(3)
 	four := vm.NewInteger(4)
+	plusSelector := NewSymbol("+")
+	method := vm.lookupMethod(three, plusSelector)
 
 	// Execute the primitive
 	result := vm.executePrimitive(three, plusSelector, []*Object{four}, method)
@@ -112,7 +106,7 @@ func testAdditionPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !IsIntegerImmediate(result) && result.Class() != vm.IntegerClass {
+	if !IsIntegerImmediate(result) && result.Class() != ClassToObject(vm.IntegerClass) {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
@@ -120,12 +114,10 @@ func testAdditionPrimitive(t *testing.T) {
 func testLessThanPrimitive(t *testing.T) {
 	vm := NewVM()
 
-	lessSelector := NewSymbol("<")
-	method := vm.lookupMethod(vm.IntegerClass, lessSelector)
-
-	// Create two integer objects
 	two := vm.NewInteger(2)
 	five := vm.NewInteger(5)
+	lessSelector := NewSymbol("<")
+	method := vm.lookupMethod(two, lessSelector)
 
 	// Execute the primitive
 	result := vm.executePrimitive(two, lessSelector, []*Object{five}, method)
@@ -169,12 +161,10 @@ func testLessThanPrimitive(t *testing.T) {
 func testGreaterThanPrimitive(t *testing.T) {
 	vm := NewVM()
 
-	greaterSelector := NewSymbol(">")
-	method := vm.lookupMethod(vm.IntegerClass, greaterSelector)
-
-	// Create two integer objects
 	five := vm.NewInteger(5)
 	two := vm.NewInteger(2)
+	greaterSelector := NewSymbol(">")
+	method := vm.lookupMethod(five, greaterSelector)
 
 	// Execute the primitive
 	result := vm.executePrimitive(five, greaterSelector, []*Object{two}, method)

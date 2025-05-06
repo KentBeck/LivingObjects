@@ -12,15 +12,15 @@ type VM struct {
 
 	// Special objects
 	NilObject    ObjectInterface
-	NilClass     *Object
+	NilClass     *Class
 	TrueObject   ObjectInterface
-	TrueClass    *Object
+	TrueClass    *Class
 	FalseObject  ObjectInterface
-	FalseClass   *Object
-	ObjectClass  *Object
-	IntegerClass *Object
-	FloatClass   *Object
-	BlockClass   *Object
+	FalseClass   *Class
+	ObjectClass  *Class
+	IntegerClass *Class
+	FloatClass   *Class
+	BlockClass   *Class
 }
 
 // NewVM creates a new virtual machine
@@ -45,7 +45,7 @@ func NewVM() *VM {
 	return vm
 }
 
-func (vm *VM) NewObjectClass() *Object {
+func (vm *VM) NewObjectClass() *Class {
 	result := NewClass("Object", nil) // patch this up later. then even later when we have real images all this initialization can go away
 
 	// Add basicClass method to Object class
@@ -57,7 +57,7 @@ func (vm *VM) NewObjectClass() *Object {
 	return result
 }
 
-func (vm *VM) NewIntegerClass() *Object {
+func (vm *VM) NewIntegerClass() *Class {
 	result := NewClass("Integer", vm.ObjectClass)
 
 	// Add primitive methods to the Integer class
@@ -84,7 +84,7 @@ func (vm *VM) NewIntegerClass() *Object {
 	return result
 }
 
-func (vm *VM) NewFloatClass() *Object {
+func (vm *VM) NewFloatClass() *Class {
 	result := NewClass("Float", vm.ObjectClass) // patch this up later. then even later when we have real images all this initialization can go away
 
 	// Add primitive methods to the Float class
@@ -131,13 +131,14 @@ func (vm *VM) NewFloat(value float64) *Object {
 	return MakeFloatImmediate(value)
 }
 
-func (vm *VM) NewBlockClass() *Object {
+func (vm *VM) NewBlockClass() *Class {
 	result := NewClass("Block", vm.ObjectClass)
 
 	// Add primitive methods to the Block class
 	builder := NewMethodBuilder(result)
 
 	// new method (creates a new block instance)
+	// fixme sketchy
 	builder.Selector("new").Primitive(20).Go()
 
 	// value method (executes the block with no arguments)
@@ -151,7 +152,7 @@ func (vm *VM) NewBlockClass() *Object {
 
 // LoadImage loads a Smalltalk image from a file
 func (vm *VM) LoadImage(path string) error {
-	vm.Globals["Object"] = vm.ObjectClass
+	vm.Globals["Object"] = ClassToObject(vm.ObjectClass)
 
 	return nil
 }
@@ -319,7 +320,7 @@ func (vm *VM) lookupMethod(receiver *Object, selector ObjectInterface) *Object {
 		}
 
 		// Move up the class hierarchy
-		class = class.SuperClass
+		class = ObjectToClass(class.SuperClass)
 	}
 
 	// Method not found

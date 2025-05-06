@@ -3,7 +3,7 @@ package main
 // Context represents a method activation context
 type Context struct {
 	Method       *Object
-	Receiver     *Object
+	Receiver     ObjectInterface
 	Arguments    []*Object
 	TempVars     []ObjectInterface // Temporary variables stored by index
 	Sender       *Context
@@ -30,7 +30,7 @@ func NewContext(method *Object, receiver ObjectInterface, arguments []*Object, s
 
 	return &Context{
 		Method:       method,
-		Receiver:     receiver.(*Object),
+		Receiver:     receiver,
 		Arguments:    arguments,
 		TempVars:     tempVars,
 		Sender:       sender,

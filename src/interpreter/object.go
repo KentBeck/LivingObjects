@@ -25,7 +25,7 @@ const (
 // Object represents a Smalltalk object
 type Object struct {
 	type1            ObjectType
-	class            *Object
+	class            *Class
 	moved            bool      // Used for garbage collection
 	forwardingPtr    *Object   // Used for garbage collection
 	instanceVars     []*Object // Instance variables stored by index
@@ -50,6 +50,8 @@ type ObjectInterface interface {
 	SetForwardingPtr(ptr *Object)
 	InstanceVars() []*Object
 	SetInstanceVars(vars []*Object)
+	GetInstanceVarByIndex(index int) *Object
+	SetInstanceVarByIndex(index int, value *Object)
 	IsTrue() bool // for now
 	String() string
 }
@@ -64,12 +66,12 @@ func (o *Object) SetType(t ObjectType) {
 
 // Class returns the class of the object
 func (o *Object) Class() *Object {
-	return o.class
+	return ClassToObject(o.class)
 }
 
 // SetClass sets the class of the object
-func (o *Object) SetClass(class *Object) {
-	o.class = class
+func (o *Object) SetClass(class *Object) { // FIXME
+	o.class = ObjectToClass(class)
 }
 
 // Moved returns whether the object has been moved during garbage collection
@@ -102,6 +104,23 @@ func (o *Object) SetInstanceVars(vars []*Object) {
 	o.instanceVars = vars
 }
 
+func (o *Object) GetInstanceVarByIndex(index int) *Object {
+	if index < 0 || index >= len(o.InstanceVars()) {
+		panic("index out of bounds")
+	}
+
+	return o.InstanceVars()[index]
+}
+
+func (o *Object) SetInstanceVarByIndex(index int, value *Object) {
+	if index < 0 || index >= len(o.InstanceVars()) {
+		panic("index out of bounds")
+	}
+
+	vars := o.InstanceVars()
+	vars[index] = value
+}
+
 // String represents a Smalltalk string object
 type String struct {
 	Object
@@ -131,7 +150,7 @@ type Method struct {
 	Bytecodes      []byte
 	Literals       []*Object
 	Selector       *Object
-	MethodClass    *Object
+	MethodClass    *Class
 	TempVarNames   []string
 	IsPrimitive    bool
 	PrimitiveIndex int
@@ -206,7 +225,7 @@ func NewDictionary() *Object {
 }
 
 // NewInstance creates a new instance of a class
-func NewInstance(class *Object) *Object {
+func NewInstance(class *Class) *Object {
 	// Initialize instance variables array with nil values
 	instVarsSize := 0
 	if class != nil && len(class.InstanceVarNames) > 0 {
@@ -226,28 +245,28 @@ func NewInstance(class *Object) *Object {
 }
 
 // NewClass creates a new class object
-func NewClass(name string, superClass *Object) *Object {
+func NewClass(name string, superClass *Class) *Class {
 	// For classes, we need a special instance variable for the method dictionary
 	// We'll store it at index 0
 	instVars := make([]*Object, 1)
 	instVars[0] = NewDictionary() // methodDict at index 0
 
 	// Create a Symbol for the class name
-	sym := &Symbol{
+	result := &Class{
 		Value: name,
 	}
 
-	// Set up the Symbol as a class
-	sym.type1 = OBJ_CLASS
-	sym.SuperClass = superClass
-	sym.InstanceVarNames = make([]string, 0)
-	sym.SetInstanceVars(instVars)
+	result.Name = name
+	result.type1 = OBJ_CLASS
+	result.SuperClass = ClassToObject(superClass)
+	result.InstanceVarNames = make([]string, 0)
+	result.SetInstanceVars(instVars)
 
-	return SymbolToObject(sym)
+	return result
 }
 
 // NewMethod creates a new method object
-func NewMethod(selector *Object, class *Object) *Object {
+func NewMethod(selector *Object, class *Class) *Object {
 	method := &Method{
 		Bytecodes:    make([]byte, 0),
 		Literals:     make([]*Object, 0),
@@ -348,25 +367,6 @@ func (o *Object) String() string {
 	default:
 		return "Unknown object"
 	}
-}
-
-// GetInstanceVarByIndex gets an instance variable by index
-func (o *Object) GetInstanceVarByIndex(index int) *Object {
-	if index < 0 || index >= len(o.InstanceVars()) {
-		panic("index out of bounds")
-	}
-
-	return o.InstanceVars()[index]
-}
-
-// SetInstanceVarByIndex sets an instance variable by index
-func (o *Object) SetInstanceVarByIndex(index int, value *Object) {
-	if index < 0 || index >= len(o.InstanceVars()) {
-		panic("index out of bounds")
-	}
-
-	vars := o.InstanceVars()
-	vars[index] = value
 }
 
 // GetMethodDict gets the method dictionary for a class

@@ -168,7 +168,6 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 
 	class := NewClass("TestClass", nil)
 	class.InstanceVarNames = append(class.InstanceVarNames, "testVar")
-
 	instance := NewInstance(class)
 	instance.SetInstanceVarByIndex(0, vm.NewInteger(42))
 

@@ -47,7 +47,7 @@ func TestCollectWithSpecialObjects(t *testing.T) {
 	vm.ObjectClass = objectClass
 
 	// Allocate the object class
-	om.Allocate(objectClass)
+	om.Allocate(ClassToObject(objectClass)) // Convert to Object for allocation
 
 	// Perform garbage collection
 	om.Collect(vm)
@@ -74,7 +74,7 @@ func TestCollectWithSpecialObjects(t *testing.T) {
 
 	for i := 0; i < om.AllocPtr; i++ {
 		obj := om.FromSpace[i]
-		if obj == objectClass {
+		if obj == ClassToObject(objectClass) {
 			foundObjectClass = true
 		}
 	}

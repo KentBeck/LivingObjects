@@ -64,7 +64,7 @@ func TestLookupMethod(t *testing.T) {
 	}
 
 	// 5. Look up a method on a class object directly
-	method = vm.lookupMethod(arrayClass, sizeSelector)
+	method = vm.lookupMethod(ClassToObject(arrayClass), sizeSelector)
 	if method != sizeMethod {
 		t.Errorf("Expected to find size method from Object class when looking up on class, got %v", method)
 	}
@@ -159,7 +159,7 @@ func TestLookupMethodWithInheritance(t *testing.T) {
 	}
 
 	// 4. Method lookup should work with class objects too
-	method = vm.lookupMethod(arrayClass, sizeSelector)
+	method = vm.lookupMethod(ClassToObject(arrayClass), sizeSelector)
 	if method != collectionSizeMethod {
 		t.Errorf("Expected to find size method in Collection class when looking up on class, got %v", method)
 	}

@@ -11,7 +11,7 @@ func TestGetClass(t *testing.T) {
 	tests := []struct {
 		name     string
 		obj      ObjectInterface
-		expected *Object
+		expected ObjectInterface
 	}{
 		{
 			name:     "Integer",
@@ -35,7 +35,7 @@ func TestGetClass(t *testing.T) {
 		},
 		{
 			name:     "Class",
-			obj:      vm.ObjectClass,
+			obj:      ClassToObject(vm.ObjectClass),
 			expected: vm.ObjectClass, // A class is its own class
 		},
 	}

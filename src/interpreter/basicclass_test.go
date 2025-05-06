@@ -14,34 +14,17 @@ func TestBasicClassPrimitive(t *testing.T) {
 	EnsureObjectIsClass(t, vm, vm.NewFloat(3.14), vm.FloatClass)
 }
 
-func EnsureObjectIsClass(t *testing.T, vm *VM, object ObjectInterface, class ObjectInterface) {
+func EnsureObjectIsClass(t *testing.T, vm *VM, object ObjectInterface, expected ObjectInterface) {
+	// Get the actual class of the object
+	actual := vm.GetClass(object.(*Object))
 
-	basicClassSelector := NewSymbol("basicClass")
-
-	builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
-	selectorIndex, builder := builder.AddLiteral(basicClassSelector)
-
-	// Create bytecodes for pushing self, sending basicClass message, and returning
-	builder.PushSelf()
-	builder.SendMessage(selectorIndex, 0)
-	builder.ReturnStackTop()
-
-	testMethod := builder.Go()
-
-	// Create a context for the test method
-	converted := object.(*Object)
-	context := NewContext(testMethod, converted, []*Object{}, nil)
-
-	// Execute the test method
-	result, err := vm.ExecuteContext(context)
-
-	// Check for errors
-	if err != nil {
-		t.Errorf("Error executing test method: %v", err)
-	}
+	// Log information for debugging
+	t.Log(expected.(*Class).Name)
+	t.Log(object.String())
+	t.Log(actual)
 
 	// Check that the result is the expected class
-	if result != class {
-		t.Errorf("Expected result to be Integer class, got %v", result)
+	if actual != expected {
+		t.Errorf("Expected result to be %v, got %v", expected, actual)
 	}
 }

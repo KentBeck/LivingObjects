@@ -124,8 +124,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 		// Set the VM's object class
 		vm.ObjectClass = objectClass
-		vm.Globals["Object"] = objectClass
-		vm.Globals["Integer"] = integerClass
+		vm.Globals["Object"] = ClassToObject(objectClass)
+		vm.Globals["Integer"] = ClassToObject(integerClass)
 
 		// Execute the PUSH_LITERAL bytecode to set up the stack
 		context.PC = 0
