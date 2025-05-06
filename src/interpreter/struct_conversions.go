@@ -33,9 +33,10 @@ func GetStringValue(obj *Object) string {
 }
 
 // GetClassName gets the name of a class
-func GetClassName(obj *Object) string {
+func GetClassName(obj ObjectInterface) string {
 	if obj.Type() != OBJ_CLASS {
 		return ""
 	}
-	return ObjectToClass(obj).Name
+	class := obj.(*Class)
+	return class.Name
 }

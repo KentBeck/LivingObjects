@@ -118,6 +118,7 @@ type Symbol struct {
 type Class struct {
 	Object
 	Name             string
+	Value            string
 	SuperClass       *Object
 	InstanceVarNames []string
 }
