@@ -218,11 +218,6 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 			}
 		}
 
-		// Update superclass reference
-		if obj.SuperClass != nil {
-			obj.SuperClass = om.copyObject(obj.SuperClass, toPtr)
-		}
-
 		// Update class reference
 		if obj.Class() != nil {
 			obj.SetClass(om.copyObject(obj.Class(), toPtr))
@@ -238,8 +233,9 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 		}
 
 		// Update superclass reference
-		if obj.SuperClass != nil {
-			obj.SuperClass = om.copyObject(obj.SuperClass, toPtr)
+		class := ObjectToClass(obj)
+		if class.SuperClass != nil {
+			class.SuperClass = om.copyObject(class.SuperClass, toPtr)
 		}
 
 	case OBJ_METHOD:

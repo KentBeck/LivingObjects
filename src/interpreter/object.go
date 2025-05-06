@@ -35,7 +35,6 @@ type Object struct {
 	Bytecodes     []byte
 	Literals      []*Object
 	Selector      *Object
-	SuperClass    *Object
 }
 
 type ObjectInterface interface {

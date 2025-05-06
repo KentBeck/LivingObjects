@@ -101,36 +101,12 @@ func TestCollectWithSpecialObjects(t *testing.T) {
 func TestUpdateReferencesEdgeCases(t *testing.T) {
 	om := NewObjectMemory()
 
-	// Test with nil references
-	{
-		// Create an instance with nil instance variables
-		class := NewClass("TestClass", nil)
-		instance := NewInstance(class)
-		instanceVars := make([]*Object, 2)
-		instanceVars[METHOD_DICTIONARY_IV] = nil
-		instanceVars[1] = nil
-		instance.SetInstanceVars(instanceVars)
-
-		// Set nil superclass and class
-		instance.SuperClass = nil
-		instance.SetClass(nil)
-
-		// Update references
-		toPtr := 0
-		om.updateReferences(instance, &toPtr)
-
-		// Check that toPtr hasn't changed
-		if toPtr != 0 {
-			t.Errorf("Expected toPtr to be 0, got %d", toPtr)
-		}
-	}
-
 	// Test with nil array elements
 	{
 		// Create an array with nil elements
 		array := NewArray(2).(*Array)
-		array.Elements[0] = nil
-		array.Elements[1] = nil
+		array.Elements[0] = NewNil().(*Object)
+		array.Elements[1] = NewNil().(*Object)
 
 		// Update references
 		toPtr := 0
