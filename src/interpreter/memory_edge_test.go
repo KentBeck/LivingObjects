@@ -122,8 +122,8 @@ func TestUpdateReferencesEdgeCases(t *testing.T) {
 	{
 		// Create a dictionary with nil entries
 		dict := NewDictionary()
-		dict.Entries["key1"] = nil
-		dict.Entries["key2"] = nil
+		dict.Entries["key1"] = NewNil().(*Object)
+		dict.Entries["key2"] = NewNil().(*Object)
 
 		// Update references
 		toPtr := 0

@@ -887,25 +887,23 @@ func TestUpdateReferences(t *testing.T) {
 
 		// Create an instance with instance variables
 		class := NewClass("TestClass", nil)
+		class.InstanceVarNames = append(class.InstanceVarNames, "var1", "var2")
 		instance := NewInstance(class)
-		instanceVars := make([]*Object, 2)
 
 		// Use immediate values for instance variables
-		instanceVars[METHOD_DICTIONARY_IV] = vm.NewInteger(1) // Immediate value
-		instanceVars[1] = vm.NewInteger(2)                    // Immediate value
-		instance.SetInstanceVars(instanceVars)
+		instance.SetInstanceVarByIndex(0, vm.NewInteger(1)) // Immediate value
+		instance.SetInstanceVarByIndex(1, vm.NewInteger(2)) // Immediate value
 
 		// Update references
 		toPtr := 0
 		om.updateReferences(instance, &toPtr)
 
 		// Check that the instance variables are still immediate values
-		instanceVars = instance.InstanceVars()
-		if !IsIntegerImmediate(instanceVars[0]) {
+		if !IsIntegerImmediate(instance.GetInstanceVarByIndex(0)) {
 			t.Errorf("Expected instance.InstanceVars()[0] to be an immediate value")
 		}
 
-		if !IsIntegerImmediate(instanceVars[1]) {
+		if !IsIntegerImmediate(instance.GetInstanceVarByIndex(1)) {
 			t.Errorf("Expected instance.InstanceVars()[1] to be an immediate value")
 		}
 

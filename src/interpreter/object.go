@@ -47,7 +47,6 @@ type ObjectInterface interface {
 	ForwardingPtr() *Object
 	SetForwardingPtr(ptr *Object)
 	InstanceVars() []*Object
-	SetInstanceVars(vars []*Object)
 	GetInstanceVarByIndex(index int) *Object
 	SetInstanceVarByIndex(index int, value *Object)
 	IsTrue() bool // for now
@@ -97,11 +96,6 @@ func (o *Object) InstanceVars() []*Object {
 	return o.instanceVars
 }
 
-// SetInstanceVars sets the instance variables of the object
-func (o *Object) SetInstanceVars(vars []*Object) {
-	o.instanceVars = vars
-}
-
 func (o *Object) GetInstanceVarByIndex(index int) *Object {
 	if index < 0 || index >= len(o.InstanceVars()) {
 		panic("index out of bounds")
@@ -135,7 +129,6 @@ type Symbol struct {
 type Class struct {
 	Object
 	Name             string
-	Value            string
 	SuperClass       *Object
 	InstanceVarNames []string
 }
@@ -166,6 +159,11 @@ type Block struct {
 type Array struct {
 	Object
 	Elements []*Object
+}
+
+type Dictionary struct {
+	Object
+	Entries map[string]*Object // later Object->Object
 }
 
 // NewBoolean creates a new boolean object
@@ -215,11 +213,14 @@ func NewArray(size int) ObjectInterface {
 
 // NewDictionary creates a new dictionary object
 func NewDictionary() *Object {
-	obj := &Object{
-		type1:   OBJ_DICTIONARY,
+	obj := &Dictionary{
+		Object: Object{
+			type1:   OBJ_DICTIONARY,
+			Entries: make(map[string]*Object),
+		},
 		Entries: make(map[string]*Object),
 	}
-	return obj
+	return DictionaryToObject(obj)
 }
 
 // NewInstance creates a new instance of a class
@@ -249,16 +250,15 @@ func NewClass(name string, superClass *Class) *Class {
 	instVars := make([]*Object, 1)
 	instVars[0] = NewDictionary() // methodDict at index 0
 
-	// Create a Symbol for the class name
 	result := &Class{
-		Value: name,
+		Object: Object{
+			type1:        OBJ_CLASS,
+			instanceVars: instVars,
+		},
+		SuperClass:       ClassToObject(superClass),
+		InstanceVarNames: make([]string, 0),
+		Name:             name,
 	}
-
-	result.Name = name
-	result.type1 = OBJ_CLASS
-	result.SuperClass = ClassToObject(superClass)
-	result.InstanceVarNames = make([]string, 0)
-	result.SetInstanceVars(instVars)
 
 	return result
 }
@@ -401,4 +401,14 @@ func GetSymbolValue(o ObjectInterface) string {
 		return ObjectToSymbol(o.(*Object)).Value
 	}
 	panic("GetSymbolValue: not a symbol")
+}
+
+// DictionaryToObject converts a Dictionary to an Object
+func DictionaryToObject(d *Dictionary) *Object {
+	return (*Object)(unsafe.Pointer(d))
+}
+
+// ObjectToDictionary converts an Object to a Dictionary
+func ObjectToDictionary(o ObjectInterface) *Dictionary {
+	return (*Dictionary)(unsafe.Pointer(o.(*Object)))
 }
