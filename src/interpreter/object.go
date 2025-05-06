@@ -26,15 +26,11 @@ const (
 type Object struct {
 	type1         ObjectType
 	class         *Class
-	moved         bool               // Used for garbage collection
-	forwardingPtr *Object            // Used for garbage collection
-	instanceVars  []*Object          // Instance variables stored by index
-	Entries       map[string]*Object // This field should only be used by Dictionary struct
+	moved         bool      // Used for garbage collection
+	forwardingPtr *Object   // Used for garbage collection
+	instanceVars  []*Object // Instance variables stored by index
 	Method        *Method
 	Block         *Block
-	Bytecodes     []byte
-	Literals      []*Object
-	Selector      *Object
 }
 
 type ObjectInterface interface {
@@ -217,8 +213,6 @@ func NewDictionary() *Object {
 	obj := &Dictionary{
 		Object: Object{
 			type1: OBJ_DICTIONARY,
-			// Entries field in Object is not initialized here
-			// as it should only be accessed through Dictionary struct
 		},
 		Entries: entries,
 	}

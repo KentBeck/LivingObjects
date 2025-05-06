@@ -259,9 +259,9 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 
 	case OBJ_BLOCK:
 		// Update block literals
-		for i, lit := range obj.Literals {
+		for i, lit := range obj.Block.Literals {
 			if lit != nil {
-				obj.Literals[i] = om.copyObject(lit, toPtr)
+				obj.Block.Literals[i] = om.copyObject(lit, toPtr)
 			}
 		}
 	}
