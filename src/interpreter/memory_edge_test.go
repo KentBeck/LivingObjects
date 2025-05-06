@@ -128,13 +128,13 @@ func TestUpdateReferencesEdgeCases(t *testing.T) {
 	// Test with nil array elements
 	{
 		// Create an array with nil elements
-		array := NewArray(2)
+		array := NewArray(2).(*Array)
 		array.Elements[0] = nil
 		array.Elements[1] = nil
 
 		// Update references
 		toPtr := 0
-		om.updateReferences(array, &toPtr)
+		om.updateReferences(&array.Object, &toPtr)
 
 		// Check that toPtr hasn't changed
 		if toPtr != 0 {

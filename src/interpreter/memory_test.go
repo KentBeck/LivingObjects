@@ -137,13 +137,13 @@ func TestCollect(t *testing.T) {
 	om.Allocate(strObjAsObj)
 
 	// Create a root object that references the other objects
-	rootObj := NewArray(3)
+	rootObj := NewArray(3).(*Array)
 	rootObj.Elements[0] = intObj
 	rootObj.Elements[1] = boolObj.(*Object)
 	rootObj.Elements[2] = strObjAsObj
 
 	// Add the root object to the VM's globals
-	vm.Globals["root"] = rootObj
+	vm.Globals["root"] = &rootObj.Object
 
 	// Create an unreachable non-immediate object and keep a reference to verify it's collected
 	unreachableObj := NewString("unreachable")
@@ -180,7 +180,7 @@ func TestCollect(t *testing.T) {
 
 	for i := 0; i < om.AllocPtr; i++ {
 		obj := om.FromSpace[i]
-		if obj == rootObj {
+		if obj == &rootObj.Object {
 			foundRoot = true
 		} else if obj == strObjAsObj {
 			foundStr = true
@@ -216,7 +216,7 @@ func TestCollect(t *testing.T) {
 	}
 
 	// Check that the root object is still in the VM's globals
-	if vm.Globals["root"] != rootObj {
+	if vm.Globals["root"] != &rootObj.Object {
 		t.Errorf("Expected vm.Globals[\"root\"] to still be rootObj")
 	}
 
@@ -437,27 +437,27 @@ func TestCollectWithCycles(t *testing.T) {
 	vm := NewVM()
 
 	// Create objects that reference each other
-	obj1 := NewArray(1)
-	obj2 := NewArray(1)
+	obj1 := NewArray(1).(*Array)
+	obj2 := NewArray(1).(*Array)
 
 	// Create the cycle
-	obj1.Elements[0] = obj2
-	obj2.Elements[0] = obj1
+	obj1.Elements[0] = &obj2.Object
+	obj2.Elements[0] = &obj1.Object
 
 	// Add obj1 to the VM's globals to make it reachable
-	vm.Globals["cycle"] = obj1
+	vm.Globals["cycle"] = &obj1.Object
 
 	// Create another cycle that is unreachable
-	unreachableObj1 := NewArray(1)
-	unreachableObj2 := NewArray(1)
-	unreachableObj1.Elements[0] = unreachableObj2
-	unreachableObj2.Elements[0] = unreachableObj1
+	unreachableObj1 := NewArray(1).(*Array)
+	unreachableObj2 := NewArray(1).(*Array)
+	unreachableObj1.Elements[0] = &unreachableObj2.Object
+	unreachableObj2.Elements[0] = &unreachableObj1.Object
 
 	// Allocate the objects
-	om.Allocate(obj1)
-	om.Allocate(obj2)
-	om.Allocate(unreachableObj1)
-	om.Allocate(unreachableObj2)
+	om.Allocate(&obj1.Object)
+	om.Allocate(&obj2.Object)
+	om.Allocate(&unreachableObj1.Object)
+	om.Allocate(&unreachableObj2.Object)
 
 	// Mark the unreachable objects so we can identify them later
 	unreachableObj1.SetMoved(true)
@@ -483,9 +483,9 @@ func TestCollectWithCycles(t *testing.T) {
 
 	for i := 0; i < om.AllocPtr; i++ {
 		obj := om.FromSpace[i]
-		if obj == obj1 {
+		if obj == &obj1.Object {
 			foundObj1 = true
-		} else if obj == obj2 {
+		} else if obj == &obj2.Object {
 			foundObj2 = true
 		}
 	}
@@ -503,9 +503,9 @@ func TestCollectWithCycles(t *testing.T) {
 
 	for i := 0; i < om.AllocPtr; i++ {
 		obj := om.FromSpace[i]
-		if obj == unreachableObj1 {
+		if obj == &unreachableObj1.Object {
 			foundUnreachable1 = true
-		} else if obj == unreachableObj2 {
+		} else if obj == &unreachableObj2.Object {
 			foundUnreachable2 = true
 		}
 	}
@@ -518,16 +518,16 @@ func TestCollectWithCycles(t *testing.T) {
 	}
 
 	// Check that obj1 is still in the VM's globals
-	if vm.Globals["cycle"] != obj1 {
+	if vm.Globals["cycle"] != &obj1.Object {
 		t.Errorf("Expected vm.Globals[\"cycle\"] to still be obj1")
 	}
 
 	// Check that the cycle is preserved
-	if obj1.Elements[0] != obj2 {
+	if obj1.Elements[0] != &obj2.Object {
 		t.Errorf("Expected obj1.Elements[0] to still be obj2")
 	}
 
-	if obj2.Elements[0] != obj1 {
+	if obj2.Elements[0] != &obj1.Object {
 		t.Errorf("Expected obj2.Elements[0] to still be obj1")
 	}
 
@@ -926,13 +926,13 @@ func TestUpdateReferences(t *testing.T) {
 		vm := NewVM()
 
 		// Create an array with immediate value elements
-		array := NewArray(2)
+		array := NewArray(2).(*Array)
 		array.Elements[0] = vm.NewInteger(1) // Immediate value
 		array.Elements[1] = vm.NewInteger(2) // Immediate value
 
 		// Update references
 		toPtr := 0
-		om.updateReferences(array, &toPtr)
+		om.updateReferences(&array.Object, &toPtr)
 
 		// Check that the elements are still immediate values
 		if !IsIntegerImmediate(array.Elements[0]) {
