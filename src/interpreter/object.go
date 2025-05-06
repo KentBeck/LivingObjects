@@ -24,19 +24,18 @@ const (
 
 // Object represents a Smalltalk object
 type Object struct {
-	type1            ObjectType
-	class            *Class
-	moved            bool      // Used for garbage collection
-	forwardingPtr    *Object   // Used for garbage collection
-	instanceVars     []*Object // Instance variables stored by index
-	Entries          map[string]*Object
-	Method           *Method
-	Block            *Block
-	Bytecodes        []byte
-	Literals         []*Object
-	Selector         *Object
-	SuperClass       *Object
-	InstanceVarNames []string
+	type1         ObjectType
+	class         *Class
+	moved         bool      // Used for garbage collection
+	forwardingPtr *Object   // Used for garbage collection
+	instanceVars  []*Object // Instance variables stored by index
+	Entries       map[string]*Object
+	Method        *Method
+	Block         *Block
+	Bytecodes     []byte
+	Literals      []*Object
+	Selector      *Object
+	SuperClass    *Object
 }
 
 type ObjectInterface interface {
