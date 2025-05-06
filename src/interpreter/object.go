@@ -29,7 +29,6 @@ type Object struct {
 	moved            bool      // Used for garbage collection
 	forwardingPtr    *Object   // Used for garbage collection
 	instanceVars     []*Object // Instance variables stored by index
-	Elements         []*Object
 	Entries          map[string]*Object
 	Method           *Method
 	Block            *Block
