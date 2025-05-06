@@ -146,6 +146,11 @@ type Block struct {
 	OuterContext *Context
 }
 
+type Array struct {
+	Object
+	Elements []*Object
+}
+
 // NewBoolean creates a new boolean object
 // This now returns an immediate value
 func NewBoolean(value bool) ObjectInterface {
@@ -181,9 +186,11 @@ func NewSymbol(value string) *Object {
 }
 
 // NewArray creates a new array object
-func NewArray(size int) *Object {
-	obj := &Object{
-		type1:    OBJ_ARRAY,
+func NewArray(size int) ObjectInterface {
+	obj := &Array{
+		Object: Object{
+			type1: OBJ_ARRAY,
+		},
 		Elements: make([]*Object, size),
 	}
 	return obj
@@ -327,7 +334,8 @@ func (o *Object) String() string {
 		class := ObjectToClass(o)
 		return fmt.Sprintf("Class %s", class.Name)
 	case OBJ_ARRAY:
-		return fmt.Sprintf("Array(%d)", len(o.Elements))
+		array := (*Array)(unsafe.Pointer(o))
+		return fmt.Sprintf("Array(%d)", len(array.Elements))
 	case OBJ_DICTIONARY:
 		return fmt.Sprintf("Dictionary(%d)", len(o.Entries))
 	case OBJ_BLOCK:
