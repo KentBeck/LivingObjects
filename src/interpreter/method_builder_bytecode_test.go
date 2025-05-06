@@ -11,7 +11,7 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 	t.Run("PushLiteral", func(t *testing.T) {
 		// Create a method with PushLiteral bytecode
 		literal := MakeIntegerImmediate(42)
-		
+
 		builder := NewMethodBuilder(testClass).Selector("testPushLiteral")
 		literalIndex, builder := builder.AddLiteral(literal)
 		method := builder.PushLiteral(literalIndex).ReturnStackTop().Go()
@@ -62,7 +62,7 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 	t.Run("SendMessage", func(t *testing.T) {
 		// Create a method with SendMessage bytecode
 		plusSelector := NewSymbol("+")
-		
+
 		builder := NewMethodBuilder(testClass).Selector("testSendMessage")
 		selectorIndex, builder := builder.AddLiteral(plusSelector)
 		method := builder.
@@ -98,7 +98,7 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 		method := NewMethodBuilder(testClass).
 			Selector("testInstanceVars").
 			PushSelf().
-			PushInstanceVariable(0). // Push instance variable at index 0
+			PushInstanceVariable(0).  // Push instance variable at index 0
 			StoreInstanceVariable(1). // Store into instance variable at index 1
 			ReturnStackTop().
 			Go()
@@ -130,7 +130,7 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 			Selector("testTempVars").
 			TempVars([]string{"temp1", "temp2"}).
 			PushSelf().
-			PushTemporaryVariable(0). // Push temporary variable at index 0
+			PushTemporaryVariable(0).  // Push temporary variable at index 0
 			StoreTemporaryVariable(1). // Store into temporary variable at index 1
 			ReturnStackTop().
 			Go()
@@ -213,7 +213,7 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 			Selector("testStackOps").
 			PushSelf().
 			Duplicate(). // Duplicate the top of the stack
-			Pop(). // Pop the top of the stack
+			Pop().       // Pop the top of the stack
 			ReturnStackTop().
 			Go()
 
@@ -250,7 +250,7 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 
 		// Create the method
 		builder := NewMethodBuilder(testClass).Selector("factorial")
-		
+
 		// Add literals
 		oneIndex, builder := builder.AddLiteral(oneObj)
 		minusIndex, builder := builder.AddLiteral(minusSelector)
@@ -264,10 +264,10 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 			PushSelf().
 			PushLiteral(oneIndex).
 			SendMessage(lessThanOrEqualIndex, 1).
-			
+
 			// If self <= 1, jump to the "then" branch
 			JumpIfTrue(5).
-			
+
 			// "else" branch: return self * (self - 1) factorial
 			PushSelf().
 			Duplicate().
@@ -276,11 +276,10 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 			SendMessage(factorialIndex, 0).
 			SendMessage(timesIndex, 1).
 			ReturnStackTop().
-			
+
 			// "then" branch: return 1
 			PushLiteral(oneIndex).
 			ReturnStackTop().
-			
 			Go()
 
 		// We don't verify the exact bytecodes here because the jump offsets
@@ -292,8 +291,10 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 
 		// Check that the method is in the method dictionary
 		methodDict := testClass.GetMethodDict()
+		// Convert to Dictionary to access entries
+		dict := ObjectToDictionary(methodDict)
 		selectorValue := "factorial"
-		methodInDict := methodDict.Entries[selectorValue]
+		methodInDict := dict.Entries[selectorValue]
 
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)

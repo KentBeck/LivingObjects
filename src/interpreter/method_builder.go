@@ -167,7 +167,9 @@ func (mb *MethodBuilder) Go() *Object {
 	// Add the method to the method dictionary
 	symbolValue := GetSymbolValue(mb.selectorObj)
 	methodDict := mb.class.GetMethodDict()
-	methodDict.Entries[symbolValue] = method
+	// Convert to Dictionary to access entries
+	dict := ObjectToDictionary(methodDict)
+	dict.Entries[symbolValue] = method
 
 	// Reset the builder state for reuse
 	mb.bytecodes = make([]byte, 0)

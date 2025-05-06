@@ -18,8 +18,10 @@ func TestNilClassPanic(t *testing.T) {
 
 	// Get the method dictionary for later use
 	objectMethodDict := vm.ObjectClass.GetMethodDict()
-	if objectMethodDict.Entries == nil {
-		objectMethodDict.Entries = make(map[string]*Object)
+	// Convert to Dictionary to access entries
+	dict := ObjectToDictionary(objectMethodDict)
+	if dict.Entries == nil {
+		dict.Entries = make(map[string]*Object)
 	}
 
 	// Create an object with a nil class

@@ -310,10 +310,14 @@ func (vm *VM) lookupMethod(receiver *Object, selector ObjectInterface) *Object {
 	for class != nil {
 		// Check if the class has a method dictionary
 		methodDict := class.GetMethodDict()
-		if methodDict != nil && methodDict.Type() == OBJ_DICTIONARY && methodDict.Entries != nil {
-			// Check if the method dictionary has the selector
-			if method, ok := methodDict.Entries[GetSymbolValue(selector)]; ok {
-				return method
+		if methodDict != nil && methodDict.Type() == OBJ_DICTIONARY {
+			// Convert to Dictionary to access entries
+			dict := ObjectToDictionary(methodDict)
+			if dict.Entries != nil {
+				// Check if the method dictionary has the selector
+				if method, ok := dict.Entries[GetSymbolValue(selector)]; ok {
+					return method
+				}
 			}
 		} else {
 			panic("method dictionary is nil or not a dictionary")

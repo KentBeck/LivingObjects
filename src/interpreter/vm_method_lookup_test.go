@@ -179,8 +179,10 @@ func TestGetMethodDict(t *testing.T) {
 	}
 
 	// Check that it's empty
-	if len(methodDict.Entries) != 0 {
-		t.Errorf("Expected method dictionary to be empty, got %d entries", len(methodDict.Entries))
+	// Convert to Dictionary to access entries
+	dict := ObjectToDictionary(methodDict)
+	if len(dict.Entries) != 0 {
+		t.Errorf("Expected method dictionary to be empty, got %d entries", len(dict.Entries))
 	}
 
 	// Add a method to the dictionary using MethodBuilder
@@ -198,7 +200,9 @@ func TestGetMethodDict(t *testing.T) {
 	}
 
 	// Check that the method is in the dictionary
-	if methodDict2.Entries[selectorName] != method {
+	// Convert to Dictionary to access entries
+	dict2 := ObjectToDictionary(methodDict2)
+	if dict2.Entries[selectorName] != method {
 		t.Errorf("Expected to find method in dictionary")
 	}
 

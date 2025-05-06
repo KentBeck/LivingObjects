@@ -26,10 +26,10 @@ const (
 type Object struct {
 	type1         ObjectType
 	class         *Class
-	moved         bool      // Used for garbage collection
-	forwardingPtr *Object   // Used for garbage collection
-	instanceVars  []*Object // Instance variables stored by index
-	Entries       map[string]*Object
+	moved         bool               // Used for garbage collection
+	forwardingPtr *Object            // Used for garbage collection
+	instanceVars  []*Object          // Instance variables stored by index
+	Entries       map[string]*Object // This field should only be used by Dictionary struct
 	Method        *Method
 	Block         *Block
 	Bytecodes     []byte
@@ -213,12 +213,14 @@ func NewArray(size int) ObjectInterface {
 
 // NewDictionary creates a new dictionary object
 func NewDictionary() *Object {
+	entries := make(map[string]*Object)
 	obj := &Dictionary{
 		Object: Object{
-			type1:   OBJ_DICTIONARY,
-			Entries: make(map[string]*Object),
+			type1: OBJ_DICTIONARY,
+			// Entries field in Object is not initialized here
+			// as it should only be accessed through Dictionary struct
 		},
-		Entries: make(map[string]*Object),
+		Entries: entries,
 	}
 	return DictionaryToObject(obj)
 }
@@ -354,7 +356,8 @@ func (o *Object) String() string {
 		array := (*Array)(unsafe.Pointer(o))
 		return fmt.Sprintf("Array(%d)", len(array.Elements))
 	case OBJ_DICTIONARY:
-		return fmt.Sprintf("Dictionary(%d)", len(o.Entries))
+		dict := ObjectToDictionary(o)
+		return fmt.Sprintf("Dictionary(%d)", len(dict.Entries))
 	case OBJ_BLOCK:
 		return "Block"
 	case OBJ_METHOD:

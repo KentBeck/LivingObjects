@@ -66,10 +66,8 @@ func TestObjectInstanceVarMethods(t *testing.T) {
 	instance := NewInstance(class)
 
 	// Test GetInstanceVarByIndex
-	instanceVars := make([]*Object, 2)
-	instanceVars[0] = vm.NewInteger(42)
-	instanceVars[1] = StringToObject(NewString("hello"))
-	instance.SetInstanceVars(instanceVars)
+	instance.SetInstanceVarByIndex(0, vm.NewInteger(42))
+	instance.SetInstanceVarByIndex(1, StringToObject(NewString("hello")))
 
 	// Get the instance variable and check its value
 	var0 := instance.GetInstanceVarByIndex(0)

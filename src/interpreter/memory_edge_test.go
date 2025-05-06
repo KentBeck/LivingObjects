@@ -121,13 +121,15 @@ func TestUpdateReferencesEdgeCases(t *testing.T) {
 	// Test with nil dictionary entries
 	{
 		// Create a dictionary with nil entries
-		dict := NewDictionary()
+		dictObj := NewDictionary()
+		// Convert to Dictionary to access entries
+		dict := ObjectToDictionary(dictObj)
 		dict.Entries["key1"] = NewNil().(*Object)
 		dict.Entries["key2"] = NewNil().(*Object)
 
 		// Update references
 		toPtr := 0
-		om.updateReferences(dict, &toPtr)
+		om.updateReferences(dictObj, &toPtr)
 
 		// Check that toPtr hasn't changed
 		if toPtr != 0 {

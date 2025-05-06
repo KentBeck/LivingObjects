@@ -50,7 +50,9 @@ func TestFloatPrimitives(t *testing.T) {
 	}
 
 	// Check if the method dictionary has entries
-	if floatMethodDict.Entries == nil {
+	// Convert to Dictionary to access entries
+	dict := ObjectToDictionary(floatMethodDict)
+	if dict.Entries == nil {
 		t.Fatalf("FloatClass method dictionary entries is nil")
 	}
 
@@ -65,7 +67,9 @@ func TestFloatPrimitives(t *testing.T) {
 
 		// Get the + method
 		plusSelector := NewSymbol("+")
-		plusMethod := testVM.FloatClass.GetMethodDict().Entries[GetSymbolValue(plusSelector)]
+		methodDict := testVM.FloatClass.GetMethodDict()
+		dict := ObjectToDictionary(methodDict)
+		plusMethod := dict.Entries[GetSymbolValue(plusSelector)]
 
 		// Execute the primitive
 		result := testVM.executePrimitive(float1, plusSelector, []*Object{float2}, plusMethod)
@@ -92,7 +96,9 @@ func TestFloatPrimitives(t *testing.T) {
 
 		// Get the - method
 		minusSelector := NewSymbol("-")
-		minusMethod := testVM.FloatClass.GetMethodDict().Entries[GetSymbolValue(minusSelector)]
+		methodDict := testVM.FloatClass.GetMethodDict()
+		dict := ObjectToDictionary(methodDict)
+		minusMethod := dict.Entries[GetSymbolValue(minusSelector)]
 
 		// Execute the primitive
 		result := testVM.executePrimitive(float1, minusSelector, []*Object{float2}, minusMethod)
@@ -119,7 +125,9 @@ func TestFloatPrimitives(t *testing.T) {
 
 		// Get the * method
 		timesSelector := NewSymbol("*")
-		timesMethod := testVM.FloatClass.GetMethodDict().Entries[GetSymbolValue(timesSelector)]
+		methodDict := testVM.FloatClass.GetMethodDict()
+		dict := ObjectToDictionary(methodDict)
+		timesMethod := dict.Entries[GetSymbolValue(timesSelector)]
 
 		// Execute the primitive
 		result := testVM.executePrimitive(float1, timesSelector, []*Object{float2}, timesMethod)
@@ -146,7 +154,9 @@ func TestFloatPrimitives(t *testing.T) {
 
 		// Get the / method
 		divideSelector := NewSymbol("/")
-		divideMethod := testVM.FloatClass.GetMethodDict().Entries[GetSymbolValue(divideSelector)]
+		methodDict := testVM.FloatClass.GetMethodDict()
+		dict := ObjectToDictionary(methodDict)
+		divideMethod := dict.Entries[GetSymbolValue(divideSelector)]
 
 		// Execute the primitive
 		result := testVM.executePrimitive(float1, divideSelector, []*Object{float2}, divideMethod)
@@ -174,7 +184,9 @@ func TestFloatPrimitives(t *testing.T) {
 
 		// Get the = method
 		equalsSelector := NewSymbol("=")
-		equalsMethod := testVM.FloatClass.GetMethodDict().Entries[GetSymbolValue(equalsSelector)]
+		methodDict := testVM.FloatClass.GetMethodDict()
+		dict := ObjectToDictionary(methodDict)
+		equalsMethod := dict.Entries[GetSymbolValue(equalsSelector)]
 
 		// Test equality with equal values
 		result := testVM.executePrimitive(float1, equalsSelector, []*Object{float2}, equalsMethod)
@@ -200,7 +212,9 @@ func TestFloatPrimitives(t *testing.T) {
 
 		// Get the < method
 		lessSelector := NewSymbol("<")
-		lessMethod := testVM.FloatClass.GetMethodDict().Entries[GetSymbolValue(lessSelector)]
+		methodDict := testVM.FloatClass.GetMethodDict()
+		dict := ObjectToDictionary(methodDict)
+		lessMethod := dict.Entries[GetSymbolValue(lessSelector)]
 
 		// Test less than with smaller value first
 		result := testVM.executePrimitive(float1, lessSelector, []*Object{float2}, lessMethod)
@@ -226,7 +240,9 @@ func TestFloatPrimitives(t *testing.T) {
 
 		// Get the > method
 		greaterSelector := NewSymbol(">")
-		greaterMethod := testVM.FloatClass.GetMethodDict().Entries[GetSymbolValue(greaterSelector)]
+		methodDict := testVM.FloatClass.GetMethodDict()
+		dict := ObjectToDictionary(methodDict)
+		greaterMethod := dict.Entries[GetSymbolValue(greaterSelector)]
 
 		// Test greater than with larger value first
 		result := testVM.executePrimitive(float1, greaterSelector, []*Object{float2}, greaterMethod)
@@ -252,7 +268,9 @@ func TestFloatPrimitives(t *testing.T) {
 
 		// Test float + integer
 		plusSelector := NewSymbol("+")
-		floatPlusMethod := testVM.FloatClass.GetMethodDict().Entries[GetSymbolValue(plusSelector)]
+		methodDict := testVM.FloatClass.GetMethodDict()
+		dict := ObjectToDictionary(methodDict)
+		floatPlusMethod := dict.Entries[GetSymbolValue(plusSelector)]
 		result := testVM.executePrimitive(float1, plusSelector, []*Object{int1}, floatPlusMethod)
 		if !IsFloatImmediate(result) {
 			t.Errorf("Expected result to be a float immediate")

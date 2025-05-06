@@ -21,8 +21,10 @@ func TestMethodBuilder(t *testing.T) {
 
 		// Check that the method is in the method dictionary
 		methodDict := testClass.GetMethodDict()
+		// Convert to Dictionary to access entries
+		dict := ObjectToDictionary(methodDict)
 		selectorValue := "testPrimitive"
-		methodInDict := methodDict.Entries[selectorValue]
+		methodInDict := dict.Entries[selectorValue]
 
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
@@ -53,8 +55,10 @@ func TestMethodBuilder(t *testing.T) {
 
 		// Check that the method is in the method dictionary
 		methodDict := testClass.GetMethodDict()
+		// Convert to Dictionary to access entries
+		dict := ObjectToDictionary(methodDict)
 		selectorValue := "testMethod"
-		methodInDict := methodDict.Entries[selectorValue]
+		methodInDict := dict.Entries[selectorValue]
 
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
@@ -88,8 +92,10 @@ func TestMethodBuilder(t *testing.T) {
 
 		// Check that the method is in the method dictionary
 		methodDict := testClass.GetMethodDict()
+		// Convert to Dictionary to access entries
+		dict := ObjectToDictionary(methodDict)
 		selectorValue := "testLiterals"
-		methodInDict := methodDict.Entries[selectorValue]
+		methodInDict := dict.Entries[selectorValue]
 
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
@@ -125,8 +131,10 @@ func TestMethodBuilder(t *testing.T) {
 
 		// Check that the method is in the method dictionary
 		methodDict := testClass.GetMethodDict()
+		// Convert to Dictionary to access entries
+		dict := ObjectToDictionary(methodDict)
 		selectorValue := "completeMethod"
-		methodInDict := methodDict.Entries[selectorValue]
+		methodInDict := dict.Entries[selectorValue]
 
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)

@@ -953,13 +953,15 @@ func TestUpdateReferences(t *testing.T) {
 		vm := NewVM()
 
 		// Create a dictionary with immediate value entries
-		dict := NewDictionary()
+		dictObj := NewDictionary()
+		// Convert to Dictionary to access entries
+		dict := ObjectToDictionary(dictObj)
 		dict.Entries["key1"] = vm.NewInteger(1) // Immediate value
 		dict.Entries["key2"] = vm.NewInteger(2) // Immediate value
 
 		// Update references
 		toPtr := 0
-		om.updateReferences(dict, &toPtr)
+		om.updateReferences(dictObj, &toPtr)
 
 		// Check that the entries are still immediate values
 		if !IsIntegerImmediate(dict.Entries["key1"]) {

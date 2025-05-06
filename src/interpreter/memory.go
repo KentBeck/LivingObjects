@@ -203,9 +203,10 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 
 	case OBJ_DICTIONARY:
 		// Update dictionary entries
-		for key, value := range obj.Entries {
+		dict := ObjectToDictionary(obj)
+		for key, value := range dict.Entries {
 			if value != nil {
-				obj.Entries[key] = om.copyObject(value, toPtr)
+				dict.Entries[key] = om.copyObject(value, toPtr)
 			}
 		}
 
