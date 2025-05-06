@@ -20,17 +20,17 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name:     "Boolean true",
-			obj:      NewBoolean(true).(*Object),
+			obj:      NewBoolean(true),
 			expected: "true",
 		},
 		{
 			name:     "Boolean false",
-			obj:      NewBoolean(false).(*Object),
+			obj:      NewBoolean(false),
 			expected: "false",
 		},
 		{
 			name:     "Nil",
-			obj:      NewNil().(*Object),
+			obj:      NewNil(),
 			expected: "nil",
 		},
 		{
@@ -59,7 +59,7 @@ func TestObjectString(t *testing.T) {
 			expected: "a Object",
 		},
 		{
-			name: "Instance without class",
+			name: "Instance without class", // This should panic
 			obj: &Object{
 				type1: OBJ_INSTANCE,
 			},
