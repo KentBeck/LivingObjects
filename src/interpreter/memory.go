@@ -1,5 +1,7 @@
 package main
 
+import "unsafe"
+
 // ObjectMemory manages the Smalltalk object memory with stop & copy garbage collection
 type ObjectMemory struct {
 	FromSpace   []*Object
@@ -192,9 +194,10 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 
 	case OBJ_ARRAY:
 		// Update array elements
-		for i, elem := range obj.Elements {
+		array := (*Array)(unsafe.Pointer(obj))
+		for i, elem := range array.Elements {
 			if elem != nil {
-				obj.Elements[i] = om.copyObject(elem, toPtr)
+				array.Elements[i] = om.copyObject(elem, toPtr)
 			}
 		}
 
