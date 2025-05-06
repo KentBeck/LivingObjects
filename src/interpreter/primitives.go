@@ -61,7 +61,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			val1 := GetIntegerImmediate(receiver)
 			val2 := GetIntegerImmediate(args[0])
 			result := val1 == val2
-			return NewBoolean(result)
+			return NewBoolean(result).(*Object)
 		}
 		// Handle non-immediate integers - should panic
 		if receiver.Type() == OBJ_INTEGER || (len(args) > 0 && args[0].Type() == OBJ_INTEGER) {
@@ -90,7 +90,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			val1 := GetIntegerImmediate(receiver)
 			val2 := GetIntegerImmediate(args[0])
 			result := val1 < val2
-			return NewBoolean(result)
+			return NewBoolean(result).(*Object)
 		}
 		// Handle non-immediate integers - should panic
 		if receiver.Type() == OBJ_INTEGER || (len(args) > 0 && args[0].Type() == OBJ_INTEGER) {
@@ -102,7 +102,7 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			val1 := GetIntegerImmediate(receiver)
 			val2 := GetIntegerImmediate(args[0])
 			result := val1 > val2
-			return NewBoolean(result)
+			return NewBoolean(result).(*Object)
 		}
 		// Handle non-immediate integers - should panic
 		if receiver.Type() == OBJ_INTEGER || (len(args) > 0 && args[0].Type() == OBJ_INTEGER) {
@@ -174,14 +174,14 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			val1 := GetFloatImmediate(receiver)
 			val2 := GetFloatImmediate(args[0])
 			result := val1 == val2
-			return NewBoolean(result)
+			return NewBoolean(result).(*Object)
 		}
 		// Handle float = integer
 		if IsFloatImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
 			val1 := GetFloatImmediate(receiver)
 			val2 := float64(GetIntegerImmediate(args[0]))
 			result := val1 == val2
-			return NewBoolean(result)
+			return NewBoolean(result).(*Object)
 		}
 	case 15: // Float less than
 		// Handle float < float
@@ -189,14 +189,14 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			val1 := GetFloatImmediate(receiver)
 			val2 := GetFloatImmediate(args[0])
 			result := val1 < val2
-			return NewBoolean(result)
+			return NewBoolean(result).(*Object)
 		}
 		// Handle float < integer
 		if IsFloatImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
 			val1 := GetFloatImmediate(receiver)
 			val2 := float64(GetIntegerImmediate(args[0]))
 			result := val1 < val2
-			return NewBoolean(result)
+			return NewBoolean(result).(*Object)
 		}
 	case 16: // Float greater than
 		// Handle float > float
@@ -204,14 +204,14 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 			val1 := GetFloatImmediate(receiver)
 			val2 := GetFloatImmediate(args[0])
 			result := val1 > val2
-			return NewBoolean(result)
+			return NewBoolean(result).(*Object)
 		}
 		// Handle float > integer
 		if IsFloatImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
 			val1 := GetFloatImmediate(receiver)
 			val2 := float64(GetIntegerImmediate(args[0]))
 			result := val1 > val2
-			return NewBoolean(result)
+			return NewBoolean(result).(*Object)
 		}
 	case 20: // Block new - create a new block instance
 		if receiver.Type() == OBJ_CLASS && receiver == vm.BlockClass {

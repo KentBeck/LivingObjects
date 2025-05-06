@@ -10,7 +10,7 @@ func TestObjectString(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		obj      *Object
+		obj      ObjectInterface
 		expected string
 	}{
 		{
@@ -20,12 +20,12 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name:     "Boolean true",
-			obj:      NewBoolean(true),
+			obj:      NewBoolean(true).(*Object),
 			expected: "true",
 		},
 		{
 			name:     "Boolean false",
-			obj:      NewBoolean(false),
+			obj:      NewBoolean(false).(*Object),
 			expected: "false",
 		},
 		{

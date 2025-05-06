@@ -49,7 +49,7 @@ func TestAllocate(t *testing.T) {
 
 	// Allocate them in the object memory
 	allocatedObj1 := om.Allocate(obj1)
-	allocatedObj2 := om.Allocate(obj2)
+	allocatedObj2 := om.Allocate(obj2.(*Object))
 	allocatedObj3 := om.Allocate(obj3Obj)
 
 	// Check that the allocated objects are the same as the original objects
@@ -139,7 +139,7 @@ func TestCollect(t *testing.T) {
 	// Create a root object that references the other objects
 	rootObj := NewArray(3)
 	rootObj.Elements[0] = intObj
-	rootObj.Elements[1] = boolObj
+	rootObj.Elements[1] = boolObj.(*Object)
 	rootObj.Elements[2] = strObjAsObj
 
 	// Add the root object to the VM's globals

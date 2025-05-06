@@ -148,7 +148,7 @@ type Block struct {
 
 // NewBoolean creates a new boolean object
 // This now returns an immediate value
-func NewBoolean(value bool) *Object {
+func NewBoolean(value bool) ObjectInterface {
 	if value {
 		return MakeTrueImmediate()
 	} else {

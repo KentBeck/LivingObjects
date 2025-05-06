@@ -10,7 +10,7 @@ func TestObjectIsTrue(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		obj      *Object
+		obj      ObjectInterface // Fix this once all the special cases have been fixed
 		expected bool
 	}{
 		{
@@ -25,7 +25,7 @@ func TestObjectIsTrue(t *testing.T) {
 		},
 		{
 			name:     "Nil",
-			obj:      NewNil().(*Object),
+			obj:      NewNil(),
 			expected: false,
 		},
 		{

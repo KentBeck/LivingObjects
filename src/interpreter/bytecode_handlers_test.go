@@ -514,11 +514,11 @@ func TestComplexJumpScenario(t *testing.T) {
 	builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
 
 	// Add literals
-	condition1Index, builder := builder.AddLiteral(NewBoolean(true))  // condition1
-	condition2Index, builder := builder.AddLiteral(NewBoolean(false)) // condition2
-	result1Index, builder := builder.AddLiteral(vm.NewInteger(1))     // result 1
-	result2Index, builder := builder.AddLiteral(vm.NewInteger(2))     // result 2
-	result3Index, builder := builder.AddLiteral(vm.NewInteger(3))     // result 3
+	condition1Index, builder := builder.AddLiteral(NewBoolean(true).(*Object))  // condition1
+	condition2Index, builder := builder.AddLiteral(NewBoolean(false).(*Object)) // condition2
+	result1Index, builder := builder.AddLiteral(vm.NewInteger(1))               // result 1
+	result2Index, builder := builder.AddLiteral(vm.NewInteger(2))               // result 2
+	result3Index, builder := builder.AddLiteral(vm.NewInteger(3))               // result 3
 
 	// Bytecode implementation for a simple if-else-if structure
 	// Push condition1 (true in this case)
