@@ -8,6 +8,17 @@ This is a bytecode interpreter for the SmalltalkLSP project, implemented in Go.
 - Stop & copy garbage collection
 - Image-based persistence
 - Support for 2^32 temporary and instance variables
+- Modular architecture with clear separation of concerns
+
+## Directory Structure
+
+The interpreter is organized into the following packages:
+
+- **core**: Core functionality including base Object type, memory management, and immediate values
+- **classes**: Smalltalk class implementations (Array, Dictionary, String, Symbol, Block, etc.)
+- **vm**: Virtual Machine implementation including context, bytecode handlers, and primitives
+- **compiler**: Compiler subsystem including method builder
+- **utils**: Utility functions including type conversions and image loading/saving
 
 ## Bytecode Set
 
@@ -35,6 +46,9 @@ go build -o smalltalk-vm
 
 # Run with an image file
 ./smalltalk-vm image.st
+
+# Run the factorial demo
+./smalltalk-vm demo
 ```
 
 ## Object Memory and Garbage Collection

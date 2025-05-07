@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"smalltalklsp/interpreter/vm"
 )
 
 func main() {
@@ -17,13 +19,13 @@ func main() {
 			fmt.Printf("Loading image from: %s\n", imagePath)
 
 			// Load and execute the image
-			vm := NewVM()
-			if err := vm.LoadImage(imagePath); err != nil {
+			virtualMachine := vm.NewVM()
+			if err := virtualMachine.LoadImage(imagePath); err != nil {
 				fmt.Printf("Error loading image: %s\n", err)
 				os.Exit(1)
 			}
 
-			result, err := vm.Execute()
+			result, err := virtualMachine.Execute()
 			if err != nil {
 				fmt.Printf("Error executing image: %s\n", err)
 				os.Exit(1)

@@ -2,26 +2,31 @@ package main
 
 import (
 	"fmt"
+
+	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/compiler"
+	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/vm"
 )
 
 func DemoFactorial() {
 	fmt.Println("SmalltalkLSP Bytecode Interpreter Demo")
 
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
-	integerClass := vm.IntegerClass
-	objectClass := vm.ObjectClass
+	integerClass := virtualMachine.IntegerClass
+	objectClass := virtualMachine.ObjectClass
 
-	factorialSelector := NewSymbol("factorial")
+	factorialSelector := classes.NewSymbol("factorial")
 
 	// Create literals for the factorial method
-	oneObj := vm.NewInteger(1)
-	equalsSymbol := NewSymbol("=")
-	minusSymbol := NewSymbol("-")
-	timesSymbol := NewSymbol("*")
+	oneObj := virtualMachine.NewInteger(1)
+	equalsSymbol := classes.NewSymbol("=")
+	minusSymbol := classes.NewSymbol("-")
+	timesSymbol := classes.NewSymbol("*")
 
 	// Create the method using MethodBuilder with AddLiteral
-	builder := NewMethodBuilder(integerClass).Selector("factorial")
+	builder := compiler.NewMethodBuilder(integerClass).Selector("factorial")
 
 	// Add literals to the method builder
 	oneIndex, builder := builder.AddLiteral(oneObj)                  // Literal 0: 1
@@ -87,11 +92,11 @@ func DemoFactorial() {
 	factorialMethod := builder.Go()
 
 	// Create literals for the main method
-	fourObj := vm.NewInteger(4)
-	factorialSelectorObj := NewSymbol("factorial") // Create the selector for use in literals
+	fourObj := virtualMachine.NewInteger(4)
+	factorialSelectorObj := classes.NewSymbol("factorial") // Create the selector for use in literals
 
 	// Create a method to compute factorial of 4 using AddLiteral
-	mainBuilder := NewMethodBuilder(objectClass).Selector("main")
+	mainBuilder := compiler.NewMethodBuilder(objectClass).Selector("main")
 
 	// Add literals to the method builder
 	fourIndex, mainBuilder := mainBuilder.AddLiteral(fourObj)                           // Literal 0: 4
@@ -107,17 +112,17 @@ func DemoFactorial() {
 
 	// Print the bytecodes for debugging
 	fmt.Println("\nFactorial method bytecodes:")
-	method := ObjectToMethod(factorialMethod)
-	for i := 0; i < len(method.Bytecodes); i++ {
+	method := classes.ObjectToMethod(factorialMethod)
+	for i := 0; i < len(method.GetBytecodes()); i++ {
 		if i%5 == 0 {
 			fmt.Printf("\n%3d: ", i)
 		}
-		fmt.Printf("%3d ", method.Bytecodes[i])
+		fmt.Printf("%3d ", method.GetBytecodes()[i])
 	}
 
-	vm.CurrentContext = NewContext(mainMethod, fourObj, []*Object{}, nil)
+	virtualMachine.CurrentContext = vm.NewContext(mainMethod, fourObj, []*core.Object{}, nil)
 
-	result, err := vm.Execute()
+	result, err := virtualMachine.Execute()
 	if err != nil {
 		fmt.Printf("Error executing: %s\n", err)
 		return
