@@ -1,37 +1,34 @@
-package main
+package vm_test
 
 import (
 	"testing"
+
+	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/compiler"
+	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/vm"
 )
 
 func TestNilClassPanic(t *testing.T) {
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	// Create a method with the basicClass primitive using MethodBuilder
-	basicClassSelector := NewSymbol("basicClass")
+	basicClassSelector := classes.NewSymbol("basicClass")
 
 	// Create the method using MethodBuilder
-	NewMethodBuilder(vm.ObjectClass).
+	compiler.NewMethodBuilder(virtualMachine.ObjectClass).
 		Selector("basicClass").
 		Primitive(5). // basicClass primitive
 		Go()
 
-	// Get the method dictionary for later use
-	objectMethodDict := vm.ObjectClass.GetMethodDict()
-	// Convert to Dictionary to access entries
-	dict := ObjectToDictionary(objectMethodDict)
-	if dict.Entries == nil {
-		dict.Entries = make(map[string]*Object)
-	}
-
 	// Create an object with a nil class
-	objWithNilClass := &Object{
-		type1: OBJ_INSTANCE,
-		class: nil, // Explicitly set class to nil
+	objWithNilClass := &core.Object{
+		TypeField: core.OBJ_INSTANCE,
+		// ClassField is nil by default
 	}
 
 	// Create a test method that will send the basicClass message
-	builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+	builder := compiler.NewMethodBuilder(virtualMachine.ObjectClass).Selector("test")
 	selectorIndex, builder := builder.AddLiteral(basicClassSelector)
 
 	// Create bytecodes for the test method
@@ -42,7 +39,7 @@ func TestNilClassPanic(t *testing.T) {
 	testMethod := builder.Go()
 
 	// Create a context for the test method
-	context := NewContext(testMethod, objWithNilClass, []*Object{}, nil)
+	context := vm.NewContext(testMethod, objWithNilClass, []*core.Object{}, nil)
 
 	// Execute the test method and expect a panic
 	defer func() {
@@ -55,5 +52,5 @@ func TestNilClassPanic(t *testing.T) {
 	}()
 
 	// This should panic
-	vm.ExecuteContext(context)
+	virtualMachine.ExecuteContext(context)
 }

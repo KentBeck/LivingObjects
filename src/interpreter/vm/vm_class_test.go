@@ -1,48 +1,52 @@
-package main
+package vm_test
 
 import (
 	"testing"
+
+	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/vm"
 )
 
 func TestGetClass(t *testing.T) {
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	// Test cases
 	tests := []struct {
 		name     string
-		obj      ObjectInterface
-		expected ObjectInterface
+		obj      core.ObjectInterface
+		expected core.ObjectInterface
 	}{
 		{
 			name:     "Integer",
-			obj:      vm.NewInteger(42),
-			expected: vm.IntegerClass,
+			obj:      virtualMachine.NewInteger(42),
+			expected: virtualMachine.IntegerClass,
 		},
 		{
 			name:     "Boolean true",
-			obj:      vm.TrueObject,
-			expected: vm.TrueClass,
+			obj:      virtualMachine.TrueObject,
+			expected: virtualMachine.TrueClass,
 		},
 		{
 			name:     "Boolean false",
-			obj:      vm.FalseObject,
-			expected: vm.FalseClass,
+			obj:      virtualMachine.FalseObject,
+			expected: virtualMachine.FalseClass,
 		},
 		{
 			name:     "Nil",
-			obj:      vm.NilObject,
-			expected: vm.NilClass,
+			obj:      virtualMachine.NilObject,
+			expected: virtualMachine.NilClass,
 		},
 		{
 			name:     "Class",
-			obj:      ClassToObject(vm.ObjectClass),
-			expected: vm.ObjectClass, // A class is its own class
+			obj:      classes.ClassToObject(virtualMachine.ObjectClass),
+			expected: virtualMachine.ObjectClass, // A class is its own class
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			result := vm.GetClass(test.obj.(*Object))
+			result := virtualMachine.GetClass(test.obj.(*core.Object))
 			if result != test.expected {
 				t.Errorf("Expected %v, got %v", test.expected, result)
 			}
@@ -51,7 +55,7 @@ func TestGetClass(t *testing.T) {
 }
 
 func TestGetClassPanics(t *testing.T) {
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	// Test with nil object
 	t.Run("Nil object", func(t *testing.T) {
@@ -60,7 +64,7 @@ func TestGetClassPanics(t *testing.T) {
 				t.Errorf("Expected panic with nil object, but no panic occurred")
 			}
 		}()
-		vm.GetClass(nil)
+		virtualMachine.GetClass(nil)
 	})
 
 	// Test with object that has nil class
@@ -70,10 +74,10 @@ func TestGetClassPanics(t *testing.T) {
 				t.Errorf("Expected panic with object that has nil class, but no panic occurred")
 			}
 		}()
-		objWithNilClass := &Object{
-			type1: OBJ_METHOD,
-			class: nil, // Explicitly set class to nil
+		objWithNilClass := &core.Object{
+			TypeField:  core.OBJ_METHOD,
+			ClassField: nil, // Explicitly set class to nil
 		}
-		vm.GetClass(objWithNilClass)
+		virtualMachine.GetClass(objWithNilClass)
 	})
 }

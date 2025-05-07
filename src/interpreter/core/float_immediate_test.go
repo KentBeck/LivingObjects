@@ -1,33 +1,35 @@
-package main
+package core_test
 
 import (
 	"math"
 	"testing"
+
+	"smalltalklsp/interpreter/core"
 )
 
-// TestFloatImmediateSimple tests the immediate float implementation
-func TestFloatImmediateSimple(t *testing.T) {
+// TestFloatImmediate tests the immediate float implementation
+func TestFloatImmediate(t *testing.T) {
 	// Test MakeFloatImmediate and GetFloatImmediate
 	value := 3.14159
-	obj := MakeFloatImmediate(value)
+	obj := core.MakeFloatImmediate(value)
 
 	// Check that it's an immediate value
-	if !IsImmediate(obj) {
+	if !core.IsImmediate(obj) {
 		t.Errorf("Expected obj to be an immediate value")
 	}
 
 	// Check that it's a float immediate
-	if !IsFloatImmediate(obj) {
+	if !core.IsFloatImmediate(obj) {
 		t.Errorf("Expected obj to be a float immediate")
 	}
 
 	// Check that the tag is correct
-	if GetTag(obj) != TAG_FLOAT {
-		t.Errorf("Expected tag to be TAG_FLOAT, got %d", GetTag(obj))
+	if core.GetTag(obj) != core.TAG_FLOAT {
+		t.Errorf("Expected tag to be TAG_FLOAT, got %d", core.GetTag(obj))
 	}
 
 	// Check that we can get the value back
-	retrievedValue := GetFloatImmediate(obj)
+	retrievedValue := core.GetFloatImmediate(obj)
 	if math.Abs(retrievedValue-value) > 1e-10 {
 		t.Errorf("Expected to get back %f, got %f", value, retrievedValue)
 	}

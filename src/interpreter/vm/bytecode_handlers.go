@@ -139,13 +139,13 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*core.Object, error) {
 		return nil, fmt.Errorf("nil receiver for message: %s", classes.GetSymbolValue(selector))
 	}
 
-	methodObj := vm.lookupMethod(receiver, selector)
+	methodObj := vm.LookupMethod(receiver, selector)
 	if methodObj == nil {
 		return nil, fmt.Errorf("method not found: %s", classes.GetSymbolValue(selector))
 	}
 
 	// Handle primitive methods
-	if result := vm.executePrimitive(receiver, selector, args, methodObj); result != nil {
+	if result := vm.ExecutePrimitive(receiver, selector, args, methodObj); result != nil {
 		context.Push(result)
 		return result, nil
 	}

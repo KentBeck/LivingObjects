@@ -1,93 +1,99 @@
-package main
+package core_test
 
 import (
 	"testing"
+	"unsafe"
+
+	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/compiler"
+	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/vm"
 )
 
 func TestObjectString(t *testing.T) {
 	// Create a VM for testing
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	tests := []struct {
 		name     string
-		obj      ObjectInterface
+		obj      core.ObjectInterface
 		expected string
 	}{
 		{
 			name:     "Integer",
-			obj:      vm.NewInteger(42),
+			obj:      virtualMachine.NewInteger(42),
 			expected: "42",
 		},
 		{
 			name:     "Boolean true",
-			obj:      NewBoolean(true),
+			obj:      core.NewBoolean(true),
 			expected: "true",
 		},
 		{
 			name:     "Boolean false",
-			obj:      NewBoolean(false),
+			obj:      core.NewBoolean(false),
 			expected: "false",
 		},
 		{
 			name:     "Nil",
-			obj:      NewNil(),
+			obj:      core.NewNil(),
 			expected: "nil",
 		},
 		{
 			name:     "String",
-			obj:      StringToObject(NewString("hello")),
+			obj:      classes.StringToObject(classes.NewString("hello")),
 			expected: "'hello'",
 		},
 		{
 			name:     "Symbol",
-			obj:      NewSymbol("test"),
+			obj:      classes.NewSymbol("test"),
 			expected: "#test",
 		},
 		{
 			name:     "Array",
-			obj:      NewArray(3),
+			obj:      classes.ArrayToObject(classes.NewArray(3)),
 			expected: "Array(3)",
 		},
 		{
 			name:     "Dictionary",
-			obj:      NewDictionary(),
+			obj:      classes.NewDictionary(),
 			expected: "Dictionary(0)",
 		},
 		{
 			name:     "Instance with class",
-			obj:      NewInstance(vm.ObjectClass),
+			obj:      core.NewInstance((*core.Class)(unsafe.Pointer(virtualMachine.ObjectClass))),
 			expected: "a Object",
 		},
 		{
 			name: "Instance without class", // This should panic
-			obj: &Object{
-				type1: OBJ_INSTANCE,
+			obj: &core.Object{
+				TypeField: core.OBJ_INSTANCE,
 			},
 			expected: "an Object",
 		},
 		{
 			name:     "Class",
-			obj:      vm.ObjectClass,
+			obj:      classes.ClassToObject(virtualMachine.ObjectClass),
 			expected: "Class Object",
 		},
 		{
 			name:     "Method with selector",
-			obj:      NewMethodBuilder(vm.ObjectClass).Selector("test").Go(),
+			obj:      compiler.NewMethodBuilder(virtualMachine.ObjectClass).Selector("test").Go(),
 			expected: "Method test",
 		},
 		{
 			name: "Method without selector",
-			obj: MethodToObject(&Method{
-				Object: Object{
-					type1: OBJ_METHOD,
+			obj: classes.MethodToObject(&classes.Method{
+				Object: core.Object{
+					TypeField: core.OBJ_METHOD,
 				},
 			}),
 			expected: "a Method",
 		},
 		{
 			name: "Unknown object type",
-			obj: &Object{
-				type1: 255, // Invalid type
+			obj: &core.Object{
+				TypeField: 255, // Invalid type
 			},
 			expected: "Unknown object",
 		},

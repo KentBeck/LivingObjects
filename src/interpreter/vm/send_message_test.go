@@ -1,22 +1,34 @@
-package main
+package vm_test
 
 import (
 	"testing"
+
+	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/compiler"
+	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/vm"
 )
 
 // TestExecuteSendMessageExtended tests the ExecuteSendMessage function with more complex scenarios
 func TestExecuteSendMessageExtended(t *testing.T) {
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	// Test cases
 	t.Run("primitive method", func(t *testing.T) {
+		// Add primitive methods to the Integer class
+		integerClass := virtualMachine.IntegerClass
+		plusSymbol := classes.NewSymbol("+")
+		compiler.NewMethodBuilder(integerClass).
+			Selector("+").
+			Primitive(1). // Addition primitive
+			Go()
+
 		// Create literals
-		twoObj := vm.NewInteger(2)
-		threeObj := vm.NewInteger(3)
-		plusSymbol := NewSymbol("+")
+		twoObj := virtualMachine.NewInteger(2)
+		threeObj := virtualMachine.NewInteger(3)
 
 		// Create a method with a SEND_MESSAGE bytecode for addition using AddLiteral
-		builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+		builder := compiler.NewMethodBuilder(virtualMachine.ObjectClass).Selector("test")
 
 		// Add literals to the method builder
 		twoIndex, builder := builder.AddLiteral(twoObj)      // Index 0
@@ -32,31 +44,31 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		method := builder.Go()
 
 		// Create a context
-		context := NewContext(method, vm.ObjectClass, []*Object{}, nil)
+		context := vm.NewContext(method, virtualMachine.ObjectClass, []*core.Object{}, nil)
 
 		// Execute the PUSH_LITERAL bytecodes to set up the stack
 		context.PC = 0
-		if err := vm.ExecutePushLiteral(context); err != nil {
+		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += InstructionSize(PUSH_LITERAL)
+		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
 
 		context.PC = 5
-		if err := vm.ExecutePushLiteral(context); err != nil {
+		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += InstructionSize(PUSH_LITERAL)
+		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
 
 		// Execute the SEND_MESSAGE bytecode
 		context.PC = 10
-		result, err := vm.ExecuteSendMessage(context)
+		result, err := virtualMachine.ExecuteSendMessage(context)
 		if err != nil {
 			t.Fatalf("Error executing SEND_MESSAGE: %s", err)
 		}
 
 		// Check the result
-		if IsIntegerImmediate(result) {
-			intValue := GetIntegerImmediate(result)
+		if core.IsIntegerImmediate(result) {
+			intValue := core.GetIntegerImmediate(result)
 			if intValue != 5 {
 				t.Errorf("Expected 5, got %d", intValue)
 			}
@@ -71,8 +83,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 		// Check the stack top
 		stackTop := context.Stack[0]
-		if IsIntegerImmediate(stackTop) {
-			intValue := GetIntegerImmediate(stackTop)
+		if core.IsIntegerImmediate(stackTop) {
+			intValue := core.GetIntegerImmediate(stackTop)
 			if intValue != 5 {
 				t.Errorf("Expected stack top to be 5, got %d", intValue)
 			}
@@ -83,16 +95,16 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 	t.Run("non-primitive method", func(t *testing.T) {
 		// We'll use the VM's Object and Integer classes
-		objectClass := vm.ObjectClass
-		integerClass := vm.IntegerClass
+		objectClass := virtualMachine.ObjectClass
+		integerClass := virtualMachine.IntegerClass
 
 		// Create literals
-		factorialSelector := NewSymbol("factorial")
-		oneObj := vm.NewInteger(1)
-		fiveObj := vm.NewInteger(5)
+		factorialSelector := classes.NewSymbol("factorial")
+		oneObj := virtualMachine.NewInteger(1)
+		fiveObj := virtualMachine.NewInteger(5)
 
 		// Create a factorial method for Integer using AddLiteral
-		factorialBuilder := NewMethodBuilder(integerClass).Selector("factorial")
+		factorialBuilder := compiler.NewMethodBuilder(integerClass).Selector("factorial")
 
 		// Add literals to the factorial method builder
 		oneIndex, factorialBuilder := factorialBuilder.AddLiteral(oneObj) // Index 0
@@ -106,7 +118,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		factorialBuilder.Go()
 
 		// Create a method that calls factorial using AddLiteral
-		testBuilder := NewMethodBuilder(objectClass).Selector("test")
+		testBuilder := compiler.NewMethodBuilder(objectClass).Selector("test")
 
 		// Add literals to the test method builder
 		fiveIndex, testBuilder := testBuilder.AddLiteral(fiveObj)                        // Index 0
@@ -120,30 +132,30 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		testMethod := testBuilder.Go()
 
 		// Create a context
-		context := NewContext(testMethod, objectClass, []*Object{}, nil)
+		context := vm.NewContext(testMethod, objectClass, []*core.Object{}, nil)
 
 		// Set the VM's object class
-		vm.ObjectClass = objectClass
-		vm.Globals["Object"] = ClassToObject(objectClass)
-		vm.Globals["Integer"] = ClassToObject(integerClass)
+		virtualMachine.ObjectClass = objectClass
+		virtualMachine.Globals["Object"] = classes.ClassToObject(objectClass)
+		virtualMachine.Globals["Integer"] = classes.ClassToObject(integerClass)
 
 		// Execute the PUSH_LITERAL bytecode to set up the stack
 		context.PC = 0
-		if err := vm.ExecutePushLiteral(context); err != nil {
+		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += InstructionSize(PUSH_LITERAL)
+		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
 
 		// Execute the SEND_MESSAGE bytecode
 		context.PC = 5
-		result, err := vm.ExecuteSendMessage(context)
+		result, err := virtualMachine.ExecuteSendMessage(context)
 		if err != nil {
 			t.Fatalf("Error executing SEND_MESSAGE: %s", err)
 		}
 
 		// Check the result
-		if IsIntegerImmediate(result) {
-			intValue := GetIntegerImmediate(result)
+		if core.IsIntegerImmediate(result) {
+			intValue := core.GetIntegerImmediate(result)
 			if intValue != 1 {
 				t.Errorf("Expected 1, got %d", intValue)
 			}
@@ -158,8 +170,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 		// Check the stack top
 		stackTop := context.Stack[0]
-		if IsIntegerImmediate(stackTop) {
-			intValue := GetIntegerImmediate(stackTop)
+		if core.IsIntegerImmediate(stackTop) {
+			intValue := core.GetIntegerImmediate(stackTop)
 			if intValue != 1 {
 				t.Errorf("Expected stack top to be 1, got %d", intValue)
 			}
@@ -172,11 +184,11 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		t.Skip("Implement message not understood later")
 
 		// Create literals
-		receiver := vm.NewInteger(2)
-		unknownSelector := NewSymbol("unknown")
+		receiver := virtualMachine.NewInteger(2)
+		unknownSelector := classes.NewSymbol("unknown")
 
 		// Create a method with a SEND_MESSAGE bytecode for an unknown method using AddLiteral
-		builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+		builder := compiler.NewMethodBuilder(virtualMachine.ObjectClass).Selector("test")
 
 		// Add literals to the method builder
 		receiverIndex, builder := builder.AddLiteral(receiver)               // Index 0
@@ -190,18 +202,18 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		method := builder.Go()
 
 		// Create a context
-		context := NewContext(method, vm.ObjectClass, []*Object{}, nil)
+		context := vm.NewContext(method, virtualMachine.ObjectClass, []*core.Object{}, nil)
 
 		// Execute the PUSH_LITERAL bytecode to set up the stack
 		context.PC = 0
-		if err := vm.ExecutePushLiteral(context); err != nil {
+		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += InstructionSize(PUSH_LITERAL)
+		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
 
 		// Execute the SEND_MESSAGE bytecode
 		context.PC = 5
-		_, err := vm.ExecuteSendMessage(context)
+		_, err := virtualMachine.ExecuteSendMessage(context)
 
 		// Check that we got an error
 		if err == nil {
@@ -212,18 +224,25 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 // TestExecuteSendMessageWithMultipleArguments tests the ExecuteSendMessage function with multiple arguments
 func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	// Test case for a method with multiple arguments
 	t.Run("direct primitive call with multiple arguments", func(t *testing.T) {
+		// Add primitive methods to the Integer class
+		integerClass := virtualMachine.IntegerClass
+		plusSymbol := classes.NewSymbol("+")
+		compiler.NewMethodBuilder(integerClass).
+			Selector("+").
+			Primitive(1). // Addition primitive
+			Go()
+
 		// Create literals
-		twoObj := vm.NewInteger(2)
-		threeObj := vm.NewInteger(3)
-		fourObj := vm.NewInteger(4)
-		plusSymbol := NewSymbol("+")
+		twoObj := virtualMachine.NewInteger(2)
+		threeObj := virtualMachine.NewInteger(3)
+		fourObj := virtualMachine.NewInteger(4)
 
 		// Create a method with a SEND_MESSAGE bytecode for addition using AddLiteral
-		builder := NewMethodBuilder(vm.ObjectClass).Selector("test")
+		builder := compiler.NewMethodBuilder(virtualMachine.ObjectClass).Selector("test")
 
 		// Add literals to the method builder
 		twoIndex, builder := builder.AddLiteral(twoObj)      // Index 0
@@ -242,31 +261,31 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		method := builder.Go()
 
 		// Create a context
-		context := NewContext(method, vm.ObjectClass, []*Object{}, nil)
+		context := vm.NewContext(method, virtualMachine.ObjectClass, []*core.Object{}, nil)
 
 		// Execute the first PUSH_LITERAL bytecode
 		context.PC = 0
-		if err := vm.ExecutePushLiteral(context); err != nil {
+		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += InstructionSize(PUSH_LITERAL)
+		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
 
 		// Execute the second PUSH_LITERAL bytecode
-		if err := vm.ExecutePushLiteral(context); err != nil {
+		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += InstructionSize(PUSH_LITERAL)
+		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
 
 		// Execute the first SEND_MESSAGE bytecode (2 + 3)
-		result, err := vm.ExecuteSendMessage(context)
+		result, err := virtualMachine.ExecuteSendMessage(context)
 		if err != nil {
 			t.Fatalf("Error executing SEND_MESSAGE: %s", err)
 		}
-		context.PC += InstructionSize(SEND_MESSAGE)
+		context.PC += vm.InstructionSize(vm.SEND_MESSAGE)
 
 		// Check the intermediate result
-		if IsIntegerImmediate(result) {
-			intValue := GetIntegerImmediate(result)
+		if core.IsIntegerImmediate(result) {
+			intValue := core.GetIntegerImmediate(result)
 			if intValue != 5 {
 				t.Errorf("Expected 5, got %d", intValue)
 			}
@@ -275,20 +294,20 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		}
 
 		// Execute the third PUSH_LITERAL bytecode
-		if err := vm.ExecutePushLiteral(context); err != nil {
+		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += InstructionSize(PUSH_LITERAL)
+		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
 
 		// Execute the second SEND_MESSAGE bytecode (5 + 4)
-		result, err = vm.ExecuteSendMessage(context)
+		result, err = virtualMachine.ExecuteSendMessage(context)
 		if err != nil {
 			t.Fatalf("Error executing SEND_MESSAGE: %s", err)
 		}
 
 		// Check the final result
-		if IsIntegerImmediate(result) {
-			intValue := GetIntegerImmediate(result)
+		if core.IsIntegerImmediate(result) {
+			intValue := core.GetIntegerImmediate(result)
 			if intValue != 9 {
 				t.Errorf("Expected 9, got %d", intValue)
 			}
@@ -303,8 +322,8 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 
 		// Check the stack top
 		stackTop := context.Stack[0]
-		if IsIntegerImmediate(stackTop) {
-			intValue := GetIntegerImmediate(stackTop)
+		if core.IsIntegerImmediate(stackTop) {
+			intValue := core.GetIntegerImmediate(stackTop)
 			if intValue != 9 {
 				t.Errorf("Expected stack top to be 9, got %d", intValue)
 			}

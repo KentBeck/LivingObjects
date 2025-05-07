@@ -1,26 +1,31 @@
-package main
+package vm_test
 
 import (
 	"testing"
+
+	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/compiler"
+	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/vm"
 )
 
 func TestFactorial(t *testing.T) {
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	// We'll use the VM's Integer class
-	integerClass := vm.IntegerClass
+	integerClass := virtualMachine.IntegerClass
 
 	// Create selectors for use in literals
-	minusSelector := NewSymbol("-")
-	timesSelector := NewSymbol("*")
-	equalsSelector := NewSymbol("=")
-	factorialSelector := NewSymbol("factorial")
+	minusSelector := classes.NewSymbol("-")
+	timesSelector := classes.NewSymbol("*")
+	equalsSelector := classes.NewSymbol("=")
+	factorialSelector := classes.NewSymbol("factorial")
 
 	// Create literals for the factorial method
-	oneObj := vm.NewInteger(1)
+	oneObj := virtualMachine.NewInteger(1)
 
 	// Create a simple factorial method using MethodBuilder with AddLiteral
-	builder := NewMethodBuilder(integerClass).Selector("factorial")
+	builder := compiler.NewMethodBuilder(integerClass).Selector("factorial")
 
 	// Add literals to the method builder
 	oneIndex, builder := builder.AddLiteral(oneObj)                  // Literal 0: 1
@@ -85,22 +90,43 @@ func TestFactorial(t *testing.T) {
 	// Finalize the method
 	factorialMethod := builder.Go()
 
+	// Create primitive methods for the Integer class
+	compiler.NewMethodBuilder(virtualMachine.IntegerClass).
+		Selector("+").
+		Primitive(1). // Addition
+		Go()
+
+	compiler.NewMethodBuilder(virtualMachine.IntegerClass).
+		Selector("-").
+		Primitive(4). // Subtraction
+		Go()
+
+	compiler.NewMethodBuilder(virtualMachine.IntegerClass).
+		Selector("*").
+		Primitive(2). // Multiplication
+		Go()
+
+	compiler.NewMethodBuilder(virtualMachine.IntegerClass).
+		Selector("=").
+		Primitive(3). // Equality
+		Go()
+
 	// Test factorial of 1
 	t.Run("Factorial of 1", func(t *testing.T) {
 		// Create a context for the factorial method
-		oneObj := vm.NewInteger(1)
-		context := NewContext(factorialMethod, oneObj, []*Object{}, nil)
+		oneObj := virtualMachine.NewInteger(1)
+		context := vm.NewContext(factorialMethod, oneObj, []*core.Object{}, nil)
 
 		// Execute the context
-		result, err := vm.ExecuteContext(context)
+		result, err := virtualMachine.ExecuteContext(context)
 		if err != nil {
 			t.Errorf("Error executing factorial of 1: %v", err)
 			return
 		}
 
 		// Check the result
-		if IsIntegerImmediate(result) {
-			intValue := GetIntegerImmediate(result)
+		if core.IsIntegerImmediate(result) {
+			intValue := core.GetIntegerImmediate(result)
 			if intValue != 1 {
 				t.Errorf("Expected result to be 1, got %d", intValue)
 			}
@@ -112,19 +138,19 @@ func TestFactorial(t *testing.T) {
 	// Test factorial of 4
 	t.Run("Factorial of 4", func(t *testing.T) {
 		// Create a context for the factorial method
-		fourObj := vm.NewInteger(4)
-		context := NewContext(factorialMethod, fourObj, []*Object{}, nil)
+		fourObj := virtualMachine.NewInteger(4)
+		context := vm.NewContext(factorialMethod, fourObj, []*core.Object{}, nil)
 
 		// Execute the context
-		result, err := vm.ExecuteContext(context)
+		result, err := virtualMachine.ExecuteContext(context)
 		if err != nil {
 			t.Errorf("Error executing factorial of 4: %v", err)
 			return
 		}
 
 		// Check the result
-		if IsIntegerImmediate(result) {
-			intValue := GetIntegerImmediate(result)
+		if core.IsIntegerImmediate(result) {
+			intValue := core.GetIntegerImmediate(result)
 			if intValue != 24 {
 				t.Errorf("Expected result to be 24, got %d", intValue)
 			}

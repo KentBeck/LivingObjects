@@ -1,12 +1,14 @@
-package main
+package core_test
 
 import (
 	"testing"
 	"unsafe"
+
+	"smalltalklsp/interpreter/core"
 )
 
 func TestSizeOfObject(t *testing.T) {
-	obj := &Object{}
+	obj := &core.Object{}
 	size := unsafe.Sizeof(*obj)
 
 	// Assert that the size is less than or equal to 232 bytes

@@ -1,45 +1,50 @@
-package main
+package core_test
 
 import (
 	"testing"
+	"unsafe"
+
+	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/vm"
 )
 
 func TestObjectIsTrue(t *testing.T) {
 	// Create a VM for testing
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	tests := []struct {
 		name     string
-		obj      ObjectInterface // Fix this once all the special cases have been fixed
+		obj      core.ObjectInterface
 		expected bool
 	}{
 		{
 			name:     "Boolean true",
-			obj:      NewBoolean(true),
+			obj:      core.NewBoolean(true),
 			expected: true,
 		},
 		{
 			name:     "Boolean false",
-			obj:      NewBoolean(false),
+			obj:      core.NewBoolean(false),
 			expected: false,
 		},
 		{
 			name:     "Nil",
-			obj:      NewNil(),
+			obj:      core.NewNil(),
 			expected: false,
 		},
 		{
 			name:     "Integer",
-			obj:      vm.NewInteger(42),
+			obj:      virtualMachine.NewInteger(42),
 			expected: false,
 		}, {
 			name:     "Float",
-			obj:      vm.NewFloat(42.0),
+			obj:      virtualMachine.NewFloat(42.0),
 			expected: false,
 		},
 		{
 			name:     "String",
-			obj:      StringToObject(NewString("hello")),
+			obj:      classes.StringToObject(classes.NewString("hello")),
 			expected: false,
 		},
 	}
@@ -56,23 +61,23 @@ func TestObjectIsTrue(t *testing.T) {
 
 func TestObjectInstanceVarMethods(t *testing.T) {
 	// Create a VM for testing
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	// Create a class with instance variables
-	class := NewClass("TestClass", nil)
+	class := classes.NewClass("TestClass", nil)
 	class.InstanceVarNames = append(class.InstanceVarNames, "var1", "var2")
 
 	// Create an instance
-	instance := NewInstance(class)
+	instance := core.NewInstance((*core.Class)(unsafe.Pointer(class)))
 
 	// Test GetInstanceVarByIndex
-	instance.SetInstanceVarByIndex(0, vm.NewInteger(42))
-	instance.SetInstanceVarByIndex(1, StringToObject(NewString("hello")))
+	instance.SetInstanceVarByIndex(0, virtualMachine.NewInteger(42))
+	instance.SetInstanceVarByIndex(1, classes.StringToObject(classes.NewString("hello")))
 
 	// Get the instance variable and check its value
 	var0 := instance.GetInstanceVarByIndex(0)
-	if IsIntegerImmediate(var0) {
-		intValue := GetIntegerImmediate(var0)
+	if core.IsIntegerImmediate(var0) {
+		intValue := core.GetIntegerImmediate(var0)
 		if intValue != 42 {
 			t.Errorf("Expected instance var 0 to be 42, got %d", intValue)
 		}
@@ -81,8 +86,8 @@ func TestObjectInstanceVarMethods(t *testing.T) {
 	}
 
 	var1 := instance.GetInstanceVarByIndex(1)
-	var1Str := ObjectToString(var1)
-	if var1.Type() != OBJ_STRING || var1Str.Value != "hello" {
+	var1Str := classes.ObjectToString(var1)
+	if var1.Type() != core.OBJ_STRING || var1Str.Value != "hello" {
 		t.Errorf("Expected instance variable 1 to be a string with value 'hello', got %v", var1)
 	}
 
@@ -97,24 +102,24 @@ func TestObjectInstanceVarMethods(t *testing.T) {
 
 func TestObjectSetInstanceVarByIndex(t *testing.T) {
 	// Create a VM for testing
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	// Create a class with instance variables
-	class := NewClass("TestClass", nil)
+	class := classes.NewClass("TestClass", nil)
 	class.InstanceVarNames = append(class.InstanceVarNames, "var1", "var2")
 
 	// Create an instance
-	instance := NewInstance(class)
+	instance := core.NewInstance((*core.Class)(unsafe.Pointer(class)))
 
 	// Test SetInstanceVarByIndex
-	instance.SetInstanceVarByIndex(0, vm.NewInteger(42))
-	instance.SetInstanceVarByIndex(1, StringToObject(NewString("hello")))
+	instance.SetInstanceVarByIndex(0, virtualMachine.NewInteger(42))
+	instance.SetInstanceVarByIndex(1, classes.StringToObject(classes.NewString("hello")))
 
 	// Check the instance variables
 	var instanceVars2 = instance.InstanceVars()
 	var0 := instanceVars2[0]
-	if IsIntegerImmediate(var0) {
-		intValue := GetIntegerImmediate(var0)
+	if core.IsIntegerImmediate(var0) {
+		intValue := core.GetIntegerImmediate(var0)
 		if intValue != 42 {
 			t.Errorf("Expected instance var 0 to be 42, got %d", intValue)
 		}
@@ -123,8 +128,8 @@ func TestObjectSetInstanceVarByIndex(t *testing.T) {
 	}
 
 	var1 := instanceVars2[1]
-	var1Str := ObjectToString(var1)
-	if var1.Type() != OBJ_STRING || var1Str.Value != "hello" {
+	var1Str := classes.ObjectToString(var1)
+	if var1.Type() != core.OBJ_STRING || var1Str.Value != "hello" {
 		t.Errorf("Expected instance variable 1 to be a string with value 'hello', got %v", var1)
 	}
 
@@ -134,22 +139,22 @@ func TestObjectSetInstanceVarByIndex(t *testing.T) {
 			t.Errorf("Expected panic on out of bounds access, but no panic occurred")
 		}
 	}()
-	instance.SetInstanceVarByIndex(2, vm.NewInteger(42)) // This should panic
+	instance.SetInstanceVarByIndex(2, virtualMachine.NewInteger(42)) // This should panic
 }
 
 func TestObjectGetMethodDict(t *testing.T) {
 	// Create a VM for testing
-	_ = NewVM()
+	_ = vm.NewVM()
 
 	// Test with a class
-	class := NewClass("TestClass", nil)
+	class := classes.NewClass("TestClass", nil)
 	methodDict := class.GetMethodDict()
-	if methodDict.Type() != OBJ_DICTIONARY {
+	if methodDict.Type() != core.OBJ_DICTIONARY {
 		t.Errorf("Expected method dictionary to be a dictionary, got %v", methodDict.Type())
 	}
 
 	// Test with a non-class object
-	instance := NewInstance(class)
+	instance := core.NewInstance((*core.Class)(unsafe.Pointer(class)))
 	defer func() {
 		if r := recover(); r == nil {
 			t.Errorf("Expected panic when calling GetMethodDict on a non-class object, but no panic occurred")

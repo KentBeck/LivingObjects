@@ -1,7 +1,12 @@
-package main
+package vm_test
 
 import (
 	"testing"
+
+	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/compiler"
+	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/vm"
 )
 
 func TestIntegerPrimitives(t *testing.T) {
@@ -13,15 +18,22 @@ func TestIntegerPrimitives(t *testing.T) {
 }
 
 func testSubtractionPrimitive(t *testing.T) {
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
-	five := vm.NewInteger(5)
-	two := vm.NewInteger(2)
-	minusSelector := NewSymbol("-")
-	method := vm.lookupMethod(five, minusSelector)
+	// Add primitive methods to the Integer class
+	integerClass := virtualMachine.IntegerClass
+	minusSelector := classes.NewSymbol("-")
+	minusMethod := compiler.NewMethodBuilder(integerClass).
+		Selector("-").
+		Primitive(4). // Subtraction primitive
+		Go()
+
+	five := virtualMachine.NewInteger(5)
+	two := virtualMachine.NewInteger(2)
+	method := minusMethod
 
 	// Execute the primitive
-	result := vm.executePrimitive(five, minusSelector, []*Object{two}, method)
+	result := virtualMachine.ExecutePrimitive(five, minusSelector, []*core.Object{two}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -30,8 +42,8 @@ func testSubtractionPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is correct
-	if IsIntegerImmediate(result) {
-		intValue := GetIntegerImmediate(result)
+	if core.IsIntegerImmediate(result) {
+		intValue := core.GetIntegerImmediate(result)
 		if intValue != 3 {
 			t.Errorf("Expected result to be 3, got %d", intValue)
 		}
@@ -40,21 +52,28 @@ func testSubtractionPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !IsIntegerImmediate(result) && result.Class() != ClassToObject(vm.IntegerClass) {
+	if !core.IsIntegerImmediate(result) && result.Class() != classes.ClassToObject(virtualMachine.IntegerClass) {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
 
 func testMultiplicationPrimitive(t *testing.T) {
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
-	five := vm.NewInteger(5)
-	two := vm.NewInteger(2)
-	timesSelector := NewSymbol("*")
-	method := vm.lookupMethod(five, timesSelector)
+	// Add primitive methods to the Integer class
+	integerClass := virtualMachine.IntegerClass
+	timesSelector := classes.NewSymbol("*")
+	timesMethod := compiler.NewMethodBuilder(integerClass).
+		Selector("*").
+		Primitive(2). // Multiplication primitive
+		Go()
+
+	five := virtualMachine.NewInteger(5)
+	two := virtualMachine.NewInteger(2)
+	method := timesMethod
 
 	// Execute the primitive
-	result := vm.executePrimitive(five, timesSelector, []*Object{two}, method)
+	result := virtualMachine.ExecutePrimitive(five, timesSelector, []*core.Object{two}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -63,8 +82,8 @@ func testMultiplicationPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is correct
-	if IsIntegerImmediate(result) {
-		intValue := GetIntegerImmediate(result)
+	if core.IsIntegerImmediate(result) {
+		intValue := core.GetIntegerImmediate(result)
 		if intValue != 10 {
 			t.Errorf("Expected result to be 10, got %d", intValue)
 		}
@@ -73,21 +92,28 @@ func testMultiplicationPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !IsIntegerImmediate(result) && result.Class() != ClassToObject(vm.IntegerClass) {
+	if !core.IsIntegerImmediate(result) && result.Class() != classes.ClassToObject(virtualMachine.IntegerClass) {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
 
 func testAdditionPrimitive(t *testing.T) {
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
-	three := vm.NewInteger(3)
-	four := vm.NewInteger(4)
-	plusSelector := NewSymbol("+")
-	method := vm.lookupMethod(three, plusSelector)
+	// Add primitive methods to the Integer class
+	integerClass := virtualMachine.IntegerClass
+	plusSelector := classes.NewSymbol("+")
+	plusMethod := compiler.NewMethodBuilder(integerClass).
+		Selector("+").
+		Primitive(1). // Addition primitive
+		Go()
+
+	three := virtualMachine.NewInteger(3)
+	four := virtualMachine.NewInteger(4)
+	method := plusMethod
 
 	// Execute the primitive
-	result := vm.executePrimitive(three, plusSelector, []*Object{four}, method)
+	result := virtualMachine.ExecutePrimitive(three, plusSelector, []*core.Object{four}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -96,8 +122,8 @@ func testAdditionPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is correct
-	if IsIntegerImmediate(result) {
-		intValue := GetIntegerImmediate(result)
+	if core.IsIntegerImmediate(result) {
+		intValue := core.GetIntegerImmediate(result)
 		if intValue != 7 {
 			t.Errorf("Expected result to be 7, got %d", intValue)
 		}
@@ -106,21 +132,28 @@ func testAdditionPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !IsIntegerImmediate(result) && result.Class() != ClassToObject(vm.IntegerClass) {
+	if !core.IsIntegerImmediate(result) && result.Class() != classes.ClassToObject(virtualMachine.IntegerClass) {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
 
 func testLessThanPrimitive(t *testing.T) {
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
-	two := vm.NewInteger(2)
-	five := vm.NewInteger(5)
-	lessSelector := NewSymbol("<")
-	method := vm.lookupMethod(two, lessSelector)
+	// Add primitive methods to the Integer class
+	integerClass := virtualMachine.IntegerClass
+	lessSelector := classes.NewSymbol("<")
+	lessMethod := compiler.NewMethodBuilder(integerClass).
+		Selector("<").
+		Primitive(6). // Less than primitive
+		Go()
+
+	two := virtualMachine.NewInteger(2)
+	five := virtualMachine.NewInteger(5)
+	method := lessMethod
 
 	// Execute the primitive
-	result := vm.executePrimitive(two, lessSelector, []*Object{five}, method)
+	result := virtualMachine.ExecutePrimitive(two, lessSelector, []*core.Object{five}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -130,7 +163,7 @@ func testLessThanPrimitive(t *testing.T) {
 
 	// Check that the result is correct
 	// For immediate values, we can't access the Type field directly
-	if !IsTrueImmediate(result) && !IsFalseImmediate(result) {
+	if !core.IsTrueImmediate(result) && !core.IsFalseImmediate(result) {
 		t.Errorf("Expected result to be a boolean immediate value")
 	}
 
@@ -139,7 +172,7 @@ func testLessThanPrimitive(t *testing.T) {
 	}
 
 	// Test the opposite case
-	result = vm.executePrimitive(five, lessSelector, []*Object{two}, method)
+	result = virtualMachine.ExecutePrimitive(five, lessSelector, []*core.Object{two}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -149,7 +182,7 @@ func testLessThanPrimitive(t *testing.T) {
 
 	// Check that the result is correct
 	// For immediate values, we can't access the Type field directly
-	if !IsTrueImmediate(result) && !IsFalseImmediate(result) {
+	if !core.IsTrueImmediate(result) && !core.IsFalseImmediate(result) {
 		t.Errorf("Expected result to be a boolean immediate value")
 	}
 
@@ -159,15 +192,22 @@ func testLessThanPrimitive(t *testing.T) {
 }
 
 func testGreaterThanPrimitive(t *testing.T) {
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
-	five := vm.NewInteger(5)
-	two := vm.NewInteger(2)
-	greaterSelector := NewSymbol(">")
-	method := vm.lookupMethod(five, greaterSelector)
+	// Add primitive methods to the Integer class
+	integerClass := virtualMachine.IntegerClass
+	greaterSelector := classes.NewSymbol(">")
+	greaterMethod := compiler.NewMethodBuilder(integerClass).
+		Selector(">").
+		Primitive(7). // Greater than primitive
+		Go()
+
+	five := virtualMachine.NewInteger(5)
+	two := virtualMachine.NewInteger(2)
+	method := greaterMethod
 
 	// Execute the primitive
-	result := vm.executePrimitive(five, greaterSelector, []*Object{two}, method)
+	result := virtualMachine.ExecutePrimitive(five, greaterSelector, []*core.Object{two}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -177,7 +217,7 @@ func testGreaterThanPrimitive(t *testing.T) {
 
 	// Check that the result is correct
 	// For immediate values, we can't access the Type field directly
-	if !IsTrueImmediate(result) && !IsFalseImmediate(result) {
+	if !core.IsTrueImmediate(result) && !core.IsFalseImmediate(result) {
 		t.Errorf("Expected result to be a boolean immediate value")
 	}
 
@@ -186,7 +226,7 @@ func testGreaterThanPrimitive(t *testing.T) {
 	}
 
 	// Test the opposite case
-	result = vm.executePrimitive(two, greaterSelector, []*Object{five}, method)
+	result = virtualMachine.ExecutePrimitive(two, greaterSelector, []*core.Object{five}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -196,7 +236,7 @@ func testGreaterThanPrimitive(t *testing.T) {
 
 	// Check that the result is correct
 	// For immediate values, we can't access the Type field directly
-	if !IsTrueImmediate(result) && !IsFalseImmediate(result) {
+	if !core.IsTrueImmediate(result) && !core.IsFalseImmediate(result) {
 		t.Errorf("Expected result to be a boolean immediate value")
 	}
 

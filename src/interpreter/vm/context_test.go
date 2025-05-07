@@ -1,22 +1,27 @@
-package main
+package vm_test
 
 import (
 	"testing"
+
+	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/compiler"
+	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/vm"
 )
 
 func TestContextPush(t *testing.T) {
 	// Create a VM for testing
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
-	methodObj := NewMethodBuilder(vm.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
 
 	// Test pushing an object
-	obj := vm.NewInteger(42)
+	obj := virtualMachine.NewInteger(42)
 	context.Push(obj)
 
 	if context.StackPointer != 1 {
@@ -56,14 +61,14 @@ func TestContextPush(t *testing.T) {
 
 func TestContextPop(t *testing.T) {
 	// Create a VM for testing
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
-	methodObj := NewMethodBuilder(vm.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
 
 	// Test popping from an empty stack
 	defer func() {
@@ -73,7 +78,7 @@ func TestContextPop(t *testing.T) {
 	}()
 
 	// Push an object and then pop it
-	obj := vm.NewInteger(42)
+	obj := virtualMachine.NewInteger(42)
 	context.Push(obj)
 	popped := context.Pop()
 
@@ -91,14 +96,14 @@ func TestContextPop(t *testing.T) {
 
 func TestContextTop(t *testing.T) {
 	// Create a VM for testing
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
-	methodObj := NewMethodBuilder(vm.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
 
 	// Test top on an empty stack
 	defer func() {
@@ -108,7 +113,7 @@ func TestContextTop(t *testing.T) {
 	}()
 
 	// Push an object and then check top
-	obj := vm.NewInteger(42)
+	obj := virtualMachine.NewInteger(42)
 	context.Push(obj)
 	top := context.Top()
 
@@ -129,20 +134,20 @@ func TestContextTop(t *testing.T) {
 
 func TestContextTempVars(t *testing.T) {
 	// Create a VM for testing
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
-	methodObj := NewMethodBuilder(vm.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
 
 	// Set up temporary variables
-	context.TempVars = make([]ObjectInterface, 2)
+	context.TempVars = make([]core.ObjectInterface, 2)
 
 	// Test setting and getting temporary variables
-	obj := vm.NewInteger(42)
+	obj := virtualMachine.NewInteger(42)
 	context.SetTempVarByIndex(0, obj)
 
 	if context.GetTempVarByIndex(0) != obj {
