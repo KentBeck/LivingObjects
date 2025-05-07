@@ -141,5 +141,5 @@ func GetClassName(obj core.ObjectInterface) string {
 		return ""
 	}
 	class := ObjectToClass(obj.(*core.Object))
-	return class.Name
+	return class.GetName()
 }

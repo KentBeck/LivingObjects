@@ -95,12 +95,3 @@ func GetSymbolValue(o core.ObjectInterface) string {
 	}
 	panic("GetSymbolValue: not a symbol")
 }
-
-// GetClassName gets the name of a class
-func GetClassName(obj core.ObjectInterface) string {
-	if obj.Type() != core.OBJ_CLASS {
-		return ""
-	}
-	class := ObjectToClass(obj.(*core.Object))
-	return class.GetName()
-}
