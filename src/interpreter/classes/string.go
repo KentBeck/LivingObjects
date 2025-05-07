@@ -81,15 +81,16 @@ func (s *String) Equal(other *String) bool {
 }
 
 // GetStringValue gets the string value of a string
+// Panics if the object is not a string
 func GetStringValue(obj *core.Object) string {
 	// Check if it's an immediate value
 	if core.IsImmediate(obj) {
-		return ""
+		panic("GetStringValue: expected a string object, got an immediate value")
 	}
 
 	// Check if it's a string object
 	if obj.Type() != core.OBJ_STRING {
-		return ""
+		panic("GetStringValue: expected a string object, got a different type")
 	}
 
 	return ObjectToString(obj).GetValue()

@@ -250,9 +250,31 @@ func TestGetStringValue(t *testing.T) {
 		t.Errorf("GetStringValue(strObj) = %q, want %q", GetStringValue(strObj), "hello")
 	}
 
-	// Test with a non-string object
-	intObj := core.MakeIntegerImmediate(int64(42))
-	if GetStringValue(intObj) != "" {
-		t.Errorf("GetStringValue(intObj) = %q, want %q", GetStringValue(intObj), "")
-	}
+	// Test that GetStringValue panics with an immediate value
+	t.Run("panic with immediate value", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("GetStringValue with immediate value did not panic")
+			}
+		}()
+
+		intObj := core.MakeIntegerImmediate(int64(42))
+		GetStringValue(intObj) // This should panic
+	})
+
+	// Test that GetStringValue panics with a non-string object
+	t.Run("panic with non-string object", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("GetStringValue with non-string object did not panic")
+			}
+		}()
+
+		// Create a simple non-string object
+		nonStringObj := &core.Object{
+			TypeField: core.OBJ_INSTANCE, // Not a string
+		}
+
+		GetStringValue(nonStringObj) // This should panic
+	})
 }
