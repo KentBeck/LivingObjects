@@ -48,6 +48,15 @@ func (vm *VM) ExecuteBlock(block *core.Object, args []*core.Object) *core.Object
 		outerContext,
 	)
 
+	// Manually set up the temporary variables with the arguments
+	// This is necessary because the arguments passed to NewContext
+	// are not automatically copied to the temporary variables
+	for i, arg := range args {
+		if i < len(blockObj.GetTempVarNames()) {
+			blockContext.SetTempVarByIndex(i, arg)
+		}
+	}
+
 	// Save the current context
 	savedContext := vm.CurrentContext
 

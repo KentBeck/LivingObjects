@@ -8,208 +8,6 @@ import (
 	"smalltalklsp/interpreter/runtime"
 )
 
-// Helper function to create a simple block test
-func createBlockTest(t *testing.T, blockBytecodes []byte, expectedResult int64) {
-	// Create a VM
-	vm := NewVM()
-
-	// Create a method with bytecodes to create and execute a block
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
-		},
-		Bytecodes: []byte{
-			// Create a block
-			CREATE_BLOCK,
-			0, 0, 0, byte(len(blockBytecodes)), // bytecode size
-			0, 0, 0, 1, // literal count
-			0, 0, 0, 0, // temp var count
-
-			// Execute the block
-			EXECUTE_BLOCK,
-			0, 0, 0, 0, // arg count
-		},
-		Literals: []*core.Object{
-			core.MakeIntegerImmediate(expectedResult), // The expected result
-		},
-	}
-
-	// Create a context
-	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
-		nil,
-	)
-
-	// Set the VM's current context
-	vm.CurrentContext = context
-
-	// Execute the CREATE_BLOCK bytecode
-	err := vm.ExecuteCreateBlock(context)
-	if err != nil {
-		t.Fatalf("ExecuteCreateBlock returned an error: %v", err)
-	}
-
-	// Get the block from the stack
-	block := context.Pop()
-	blockObj := classes.ObjectToBlock(block)
-
-	// Set the block's bytecodes
-	blockObj.SetBytecodes(blockBytecodes)
-
-	// Set the block's literals
-	blockObj.Literals = method.Literals
-
-	// Add the + method to the Integer class (needed for all tests)
-	integerClass := vm.IntegerClass
-	addMethod := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
-		},
-		Bytecodes: []byte{
-			// This is a primitive method, so it doesn't have bytecodes
-		},
-		Literals:       []*core.Object{},
-		TempVarNames:   []string{},
-		IsPrimitive:    true,
-		PrimitiveIndex: 1, // Primitive index for +
-	}
-	integerClass.AddMethod(classes.NewSymbol("+"), classes.MethodToObject(addMethod))
-
-	// Push the block back onto the stack
-	context.Push(block)
-
-	// Execute the method
-	result, err := vm.Execute()
-	if err != nil {
-		t.Fatalf("Execute returned an error: %v", err)
-	}
-
-	// Check that the result is the expected value
-	if !core.IsIntegerImmediate(result) {
-		t.Errorf("Result is not an integer: %v", result)
-	}
-
-	value := core.GetIntegerImmediate(result)
-	if value != expectedResult {
-		t.Errorf("Result = %d, want %d", value, expectedResult)
-	}
-}
-
-// Helper function to create a block test with arguments
-func createBlockTestWithArgs(t *testing.T, blockBytecodes []byte, args []*core.Object, expectedResult int64) {
-	// Create a VM
-	vm := NewVM()
-
-	// Add the + method to the Integer class
-	integerClass := vm.IntegerClass
-	addMethod := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
-		},
-		Bytecodes: []byte{
-			// This is a primitive method, so it doesn't have bytecodes
-		},
-		Literals:       []*core.Object{},
-		TempVarNames:   []string{},
-		IsPrimitive:    true,
-		PrimitiveIndex: 1, // Primitive index for +
-	}
-	integerClass.AddMethod(classes.NewSymbol("+"), classes.MethodToObject(addMethod))
-
-	// Create a method with bytecodes to create and execute a block
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
-		},
-		Bytecodes: []byte{
-			// Create a block
-			CREATE_BLOCK,
-			0, 0, 0, byte(len(blockBytecodes)), // bytecode size
-			0, 0, 0, 1, // literal count
-			0, 0, 0, 1, // temp var count (for the parameter)
-		},
-		Literals: []*core.Object{
-			core.MakeIntegerImmediate(expectedResult), // The expected result
-		},
-		TempVarNames: []string{},
-	}
-
-	// Add bytecodes to push arguments and execute the block
-	if args != nil && len(args) > 0 {
-		// For each argument, add a PUSH_LITERAL bytecode
-		for range args {
-			method.Bytecodes = append(method.Bytecodes, PUSH_LITERAL)
-			method.Bytecodes = append(method.Bytecodes, 0, 0, 0, 0) // literal index 0
-		}
-
-		// Add the EXECUTE_BLOCK bytecode with the argument count
-		method.Bytecodes = append(method.Bytecodes, EXECUTE_BLOCK)
-		method.Bytecodes = append(method.Bytecodes, 0, 0, 0, byte(len(args))) // arg count
-	} else {
-		// Add the EXECUTE_BLOCK bytecode with no arguments
-		method.Bytecodes = append(method.Bytecodes, EXECUTE_BLOCK)
-		method.Bytecodes = append(method.Bytecodes, 0, 0, 0, 0) // arg count 0
-	}
-
-	// Create a context
-	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
-		nil,
-	)
-
-	// Set the VM's current context
-	vm.CurrentContext = context
-
-	// Execute the CREATE_BLOCK bytecode
-	err := vm.ExecuteCreateBlock(context)
-	if err != nil {
-		t.Fatalf("ExecuteCreateBlock returned an error: %v", err)
-	}
-
-	// Get the block from the stack
-	block := context.Pop()
-	blockObj := classes.ObjectToBlock(block)
-
-	// Set the block's bytecodes
-	blockObj.SetBytecodes(blockBytecodes)
-
-	// Set the block's literals
-	blockObj.Literals = method.Literals
-
-	// Set the block's temp var names
-	blockObj.TempVarNames = []string{"x"}
-
-	// Push the block back onto the stack
-	context.Push(block)
-
-	// Push the arguments onto the stack
-	if args != nil {
-		for _, arg := range args {
-			context.Push(arg)
-		}
-	}
-
-	// Execute the method
-	result, err := vm.Execute()
-	if err != nil {
-		t.Fatalf("Execute returned an error: %v", err)
-	}
-
-	// Check that the result is the expected value
-	if !core.IsIntegerImmediate(result) {
-		t.Errorf("Result is not an integer: %v", result)
-	}
-
-	value := core.GetIntegerImmediate(result)
-	if value != expectedResult {
-		t.Errorf("Result = %d, want %d", value, expectedResult)
-	}
-}
-
 // TestBlockWithLiteral tests a block that returns a literal value: [5]
 func TestBlockWithLiteral(t *testing.T) {
 	// Create a VM and register it as a block executor
@@ -379,17 +177,28 @@ func TestBlockWithParameter(t *testing.T) {
 	block := classes.ObjectToBlock(classes.NewBlock(context))
 
 	// Set up the block's bytecodes (normally this would be done by the compiler)
+	// This implements [:x | x + 2]
 	blockBytecodes := []byte{
-		// Push a constant value 7 onto the stack
+		// Push the temporary variable 'x' (parameter)
+		PUSH_TEMPORARY_VARIABLE,
+		0, 0, 0, 0, // temp var index 0
+
+		// Push the literal 2
 		PUSH_LITERAL,
-		0, 0, 0, 0, // literal index 0 (the value 7)
+		0, 0, 0, 0, // literal index 0 (the value 2)
+
+		// Send the + message
+		SEND_MESSAGE,
+		0, 0, 0, 1, // selector index 1 (the + selector)
+		0, 0, 0, 1, // arg count 1
+
+		// Return the result
 		RETURN_STACK_TOP,
 	}
 	block.SetBytecodes(blockBytecodes)
 
 	// Set the block's literals
 	block.Literals = []*core.Object{
-		core.MakeIntegerImmediate(5), // The argument 5
 		core.MakeIntegerImmediate(2), // The literal 2
 		classes.NewSymbol("+"),       // The + selector
 	}
@@ -402,14 +211,14 @@ func TestBlockWithParameter(t *testing.T) {
 		core.MakeIntegerImmediate(5), // The argument 5
 	})
 
-	// Check that the result is 5
+	// Check that the result is 7 (5 + 2)
 	if !core.IsIntegerImmediate(result) {
 		t.Errorf("Result is not an integer: %v", result)
 	}
 
 	value := core.GetIntegerImmediate(result)
-	if value != 5 {
-		t.Errorf("Result = %d, want 5", value)
+	if value != 7 {
+		t.Errorf("Result = %d, want 7", value)
 	}
 }
 
