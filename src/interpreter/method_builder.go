@@ -158,18 +158,19 @@ func (mb *MethodBuilder) Go() *Object {
 	method := NewMethod(mb.selectorObj, mb.class)
 
 	// Set the method properties
-	method.Method.Bytecodes = mb.bytecodes
-	method.Method.Literals = mb.literals
-	method.Method.TempVarNames = mb.tempVarNames
-	method.Method.IsPrimitive = mb.isPrimitive
-	method.Method.PrimitiveIndex = mb.primitiveIndex
+	methodObj := ObjectToMethod(method)
+	methodObj.Bytecodes = mb.bytecodes
+	methodObj.Literals = mb.literals
+	methodObj.TempVarNames = mb.tempVarNames
+	methodObj.IsPrimitive = mb.isPrimitive
+	methodObj.PrimitiveIndex = mb.primitiveIndex
 
 	// Add the method to the method dictionary
 	symbolValue := GetSymbolValue(mb.selectorObj)
 	methodDict := mb.class.GetMethodDict()
 	// Convert to Dictionary to access entries
 	dict := ObjectToDictionary(methodDict)
-	dict.Entries[symbolValue] = method
+	dict.SetEntry(symbolValue, method)
 
 	// Reset the builder state for reuse
 	mb.bytecodes = make([]byte, 0)

@@ -24,19 +24,20 @@ func TestMethodBuilder(t *testing.T) {
 		// Convert to Dictionary to access entries
 		dict := ObjectToDictionary(methodDict)
 		selectorValue := "testPrimitive"
-		methodInDict := dict.Entries[selectorValue]
+		methodInDict := dict.GetEntry(selectorValue)
 
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
 		}
 
 		// Check the method properties
-		if !methodInDict.Method.IsPrimitive {
+		methodObj := ObjectToMethod(methodInDict)
+		if !methodObj.IsPrimitive {
 			t.Error("Method should be marked as primitive")
 		}
 
-		if methodInDict.Method.PrimitiveIndex != 42 {
-			t.Errorf("Expected primitive index 42, got %d", methodInDict.Method.PrimitiveIndex)
+		if methodObj.PrimitiveIndex != 42 {
+			t.Errorf("Expected primitive index 42, got %d", methodObj.PrimitiveIndex)
 		}
 	})
 
@@ -58,21 +59,22 @@ func TestMethodBuilder(t *testing.T) {
 		// Convert to Dictionary to access entries
 		dict := ObjectToDictionary(methodDict)
 		selectorValue := "testMethod"
-		methodInDict := dict.Entries[selectorValue]
+		methodInDict := dict.GetEntry(selectorValue)
 
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
 		}
 
 		// Check the method properties
+		methodObj := ObjectToMethod(methodInDict)
 		expectedBytecodes := []byte{PUSH_SELF, RETURN_STACK_TOP}
-		if len(methodInDict.Method.Bytecodes) != len(expectedBytecodes) {
-			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodInDict.Method.Bytecodes))
+		if len(methodObj.Bytecodes) != len(expectedBytecodes) {
+			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodObj.Bytecodes))
 		}
 
 		for i, b := range expectedBytecodes {
-			if methodInDict.Method.Bytecodes[i] != b {
-				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, methodInDict.Method.Bytecodes[i])
+			if methodObj.Bytecodes[i] != b {
+				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, methodObj.Bytecodes[i])
 			}
 		}
 	})
@@ -95,15 +97,16 @@ func TestMethodBuilder(t *testing.T) {
 		// Convert to Dictionary to access entries
 		dict := ObjectToDictionary(methodDict)
 		selectorValue := "testLiterals"
-		methodInDict := dict.Entries[selectorValue]
+		methodInDict := dict.GetEntry(selectorValue)
 
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
 		}
 
 		// Check the method properties
-		if len(methodInDict.Method.Literals) != len(literals) {
-			t.Errorf("Expected %d literals, got %d", len(literals), len(methodInDict.Method.Literals))
+		methodObj := ObjectToMethod(methodInDict)
+		if len(methodObj.Literals) != len(literals) {
+			t.Errorf("Expected %d literals, got %d", len(literals), len(methodObj.Literals))
 		}
 	})
 
@@ -134,32 +137,33 @@ func TestMethodBuilder(t *testing.T) {
 		// Convert to Dictionary to access entries
 		dict := ObjectToDictionary(methodDict)
 		selectorValue := "completeMethod"
-		methodInDict := dict.Entries[selectorValue]
+		methodInDict := dict.GetEntry(selectorValue)
 
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
 		}
 
 		// Check the method properties
-		if !methodInDict.Method.IsPrimitive {
+		methodObj := ObjectToMethod(methodInDict)
+		if !methodObj.IsPrimitive {
 			t.Error("Method should be marked as primitive")
 		}
 
-		if methodInDict.Method.PrimitiveIndex != 42 {
-			t.Errorf("Expected primitive index 42, got %d", methodInDict.Method.PrimitiveIndex)
+		if methodObj.PrimitiveIndex != 42 {
+			t.Errorf("Expected primitive index 42, got %d", methodObj.PrimitiveIndex)
 		}
 
 		expectedBytecodes := []byte{PUSH_SELF, RETURN_STACK_TOP}
-		if len(methodInDict.Method.Bytecodes) != len(expectedBytecodes) {
-			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodInDict.Method.Bytecodes))
+		if len(methodObj.Bytecodes) != len(expectedBytecodes) {
+			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodObj.Bytecodes))
 		}
 
-		if len(methodInDict.Method.Literals) != len(literals) {
-			t.Errorf("Expected %d literals, got %d", len(literals), len(methodInDict.Method.Literals))
+		if len(methodObj.Literals) != len(literals) {
+			t.Errorf("Expected %d literals, got %d", len(literals), len(methodObj.Literals))
 		}
 
-		if len(methodInDict.Method.TempVarNames) != len(tempVars) {
-			t.Errorf("Expected %d temp vars, got %d", len(tempVars), len(methodInDict.Method.TempVarNames))
+		if len(methodObj.TempVarNames) != len(tempVars) {
+			t.Errorf("Expected %d temp vars, got %d", len(tempVars), len(methodObj.TempVarNames))
 		}
 	})
 }

@@ -18,12 +18,13 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 	if method.Type() != OBJ_METHOD {
 		return nil
 	}
-	if !method.Method.IsPrimitive {
+	methodObj := ObjectToMethod(method)
+	if !methodObj.IsPrimitive {
 		return nil
 	}
 
 	// Execute the primitive based on its index
-	switch method.Method.PrimitiveIndex {
+	switch methodObj.PrimitiveIndex {
 	case 1: // Addition
 		// Handle immediate integers
 		if IsIntegerImmediate(receiver) && len(args) == 1 && IsIntegerImmediate(args[0]) {
@@ -220,17 +221,21 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		}
 	case 21: // Block value - execute a block with no arguments
 		if receiver.Type() == OBJ_BLOCK {
+			// Get the block
+			block := ObjectToBlock(receiver)
+
 			// Create a method object for the block's bytecodes
-			methodObj := &Object{
-				type1: OBJ_METHOD,
-				Method: &Method{
-					Bytecodes: receiver.Block.Bytecodes,
-					Literals:  receiver.Block.Literals,
+			method := &Method{
+				Object: Object{
+					type1: OBJ_METHOD,
 				},
+				Bytecodes: block.Bytecodes,
+				Literals:  block.Literals,
 			}
+			methodObj := MethodToObject(method)
 
 			// Create a new context for the block execution
-			blockContext := NewContext(methodObj, receiver, []*Object{}, receiver.Block.OuterContext)
+			blockContext := NewContext(methodObj, receiver, []*Object{}, block.OuterContext)
 
 			// Execute the block's bytecodes
 			result, err := vm.ExecuteContext(blockContext)
@@ -241,17 +246,21 @@ func (vm *VM) executePrimitive(receiver *Object, selector *Object, args []*Objec
 		}
 	case 22: // Block value: - execute a block with one argument
 		if receiver.Type() == OBJ_BLOCK && len(args) == 1 {
+			// Get the block
+			block := ObjectToBlock(receiver)
+
 			// Create a method object for the block's bytecodes
-			methodObj := &Object{
-				type1: OBJ_METHOD,
-				Method: &Method{
-					Bytecodes: receiver.Block.Bytecodes,
-					Literals:  receiver.Block.Literals,
+			method := &Method{
+				Object: Object{
+					type1: OBJ_METHOD,
 				},
+				Bytecodes: block.Bytecodes,
+				Literals:  block.Literals,
 			}
+			methodObj := MethodToObject(method)
 
 			// Create a new context for the block execution
-			blockContext := NewContext(methodObj, receiver, args, receiver.Block.OuterContext)
+			blockContext := NewContext(methodObj, receiver, args, block.OuterContext)
 
 			// Execute the block's bytecodes
 			result, err := vm.ExecuteContext(blockContext)

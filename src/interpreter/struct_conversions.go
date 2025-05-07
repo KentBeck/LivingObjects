@@ -11,6 +11,9 @@ func MethodToObject(m *Method) *Object {
 
 // ObjectToMethod converts an Object to a Method
 func ObjectToMethod(o *Object) *Method {
+	if o == nil || o.Type() != OBJ_METHOD {
+		return nil
+	}
 	return (*Method)(unsafe.Pointer(o))
 }
 

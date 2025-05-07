@@ -124,8 +124,8 @@ func TestUpdateReferencesEdgeCases(t *testing.T) {
 		dictObj := NewDictionary()
 		// Convert to Dictionary to access entries
 		dict := ObjectToDictionary(dictObj)
-		dict.Entries["key1"] = NewNil().(*Object)
-		dict.Entries["key2"] = NewNil().(*Object)
+		dict.SetEntry("key1", NewNil().(*Object))
+		dict.SetEntry("key2", NewNil().(*Object))
 
 		// Update references
 		toPtr := 0
@@ -140,17 +140,21 @@ func TestUpdateReferencesEdgeCases(t *testing.T) {
 	// Test with nil method literals, selector, and class
 	{
 		// Create a method with nil literals
-		method := &Object{
-			type1:  OBJ_METHOD,
-			Method: &Method{},
+		methodObj := &Method{
+			Object: Object{
+				type1: OBJ_METHOD,
+			},
+			Literals: make([]*Object, 2),
 		}
-		method.Method.Literals = make([]*Object, 2)
-		method.Method.Literals[0] = nil
-		method.Method.Literals[1] = nil
+		methodObj.Literals[0] = nil
+		methodObj.Literals[1] = nil
 
 		// Set nil selector and class
-		method.Method.Selector = nil
-		method.Method.MethodClass = nil
+		methodObj.Selector = nil
+		methodObj.MethodClass = nil
+
+		// Convert to Object
+		method := MethodToObject(methodObj)
 
 		// Update references
 		toPtr := 0

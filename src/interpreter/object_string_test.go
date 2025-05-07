@@ -77,10 +77,11 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name: "Method without selector",
-			obj: &Object{
-				type1:  OBJ_METHOD,
-				Method: &Method{},
-			},
+			obj: MethodToObject(&Method{
+				Object: Object{
+					type1: OBJ_METHOD,
+				},
+			}),
 			expected: "a Method",
 		},
 		{

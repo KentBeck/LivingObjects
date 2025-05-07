@@ -23,13 +23,14 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 			RETURN_STACK_TOP,
 		}
 
-		if len(method.Method.Bytecodes) != len(expectedBytecodes) {
-			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(method.Method.Bytecodes))
+		methodObj := ObjectToMethod(method)
+		if len(methodObj.Bytecodes) != len(expectedBytecodes) {
+			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodObj.Bytecodes))
 		}
 
 		for i, b := range expectedBytecodes {
-			if method.Method.Bytecodes[i] != b {
-				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, method.Method.Bytecodes[i])
+			if methodObj.Bytecodes[i] != b {
+				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, methodObj.Bytecodes[i])
 			}
 		}
 	})
@@ -48,13 +49,14 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 			RETURN_STACK_TOP,
 		}
 
-		if len(method.Method.Bytecodes) != len(expectedBytecodes) {
-			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(method.Method.Bytecodes))
+		methodObj := ObjectToMethod(method)
+		if len(methodObj.Bytecodes) != len(expectedBytecodes) {
+			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodObj.Bytecodes))
 		}
 
 		for i, b := range expectedBytecodes {
-			if method.Method.Bytecodes[i] != b {
-				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, method.Method.Bytecodes[i])
+			if methodObj.Bytecodes[i] != b {
+				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, methodObj.Bytecodes[i])
 			}
 		}
 	})
@@ -82,13 +84,14 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 			RETURN_STACK_TOP,
 		}
 
-		if len(method.Method.Bytecodes) != len(expectedBytecodes) {
-			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(method.Method.Bytecodes))
+		methodObj := ObjectToMethod(method)
+		if len(methodObj.Bytecodes) != len(expectedBytecodes) {
+			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodObj.Bytecodes))
 		}
 
 		for i, b := range expectedBytecodes {
-			if method.Method.Bytecodes[i] != b {
-				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, method.Method.Bytecodes[i])
+			if methodObj.Bytecodes[i] != b {
+				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, methodObj.Bytecodes[i])
 			}
 		}
 	})
@@ -113,13 +116,14 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 			RETURN_STACK_TOP,
 		}
 
-		if len(method.Method.Bytecodes) != len(expectedBytecodes) {
-			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(method.Method.Bytecodes))
+		methodObj := ObjectToMethod(method)
+		if len(methodObj.Bytecodes) != len(expectedBytecodes) {
+			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodObj.Bytecodes))
 		}
 
 		for i, b := range expectedBytecodes {
-			if method.Method.Bytecodes[i] != b {
-				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, method.Method.Bytecodes[i])
+			if methodObj.Bytecodes[i] != b {
+				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, methodObj.Bytecodes[i])
 			}
 		}
 	})
@@ -145,27 +149,28 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 			RETURN_STACK_TOP,
 		}
 
-		if len(method.Method.Bytecodes) != len(expectedBytecodes) {
-			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(method.Method.Bytecodes))
+		methodObj := ObjectToMethod(method)
+		if len(methodObj.Bytecodes) != len(expectedBytecodes) {
+			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodObj.Bytecodes))
 		}
 
 		for i, b := range expectedBytecodes {
-			if method.Method.Bytecodes[i] != b {
-				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, method.Method.Bytecodes[i])
+			if methodObj.Bytecodes[i] != b {
+				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, methodObj.Bytecodes[i])
 			}
 		}
 
 		// Verify the temporary variable names
-		if len(method.Method.TempVarNames) != 2 {
-			t.Errorf("Expected 2 temporary variable names, got %d", len(method.Method.TempVarNames))
+		if len(methodObj.TempVarNames) != 2 {
+			t.Errorf("Expected 2 temporary variable names, got %d", len(methodObj.TempVarNames))
 		}
 
-		if method.Method.TempVarNames[0] != "temp1" {
-			t.Errorf("Expected temporary variable name 'temp1', got '%s'", method.Method.TempVarNames[0])
+		if methodObj.TempVarNames[0] != "temp1" {
+			t.Errorf("Expected temporary variable name 'temp1', got '%s'", methodObj.TempVarNames[0])
 		}
 
-		if method.Method.TempVarNames[1] != "temp2" {
-			t.Errorf("Expected temporary variable name 'temp2', got '%s'", method.Method.TempVarNames[1])
+		if methodObj.TempVarNames[1] != "temp2" {
+			t.Errorf("Expected temporary variable name 'temp2', got '%s'", methodObj.TempVarNames[1])
 		}
 	})
 
@@ -196,13 +201,14 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 			RETURN_STACK_TOP,
 		}
 
-		if len(method.Method.Bytecodes) != len(expectedBytecodes) {
-			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(method.Method.Bytecodes))
+		methodObj := ObjectToMethod(method)
+		if len(methodObj.Bytecodes) != len(expectedBytecodes) {
+			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodObj.Bytecodes))
 		}
 
 		for i, b := range expectedBytecodes {
-			if method.Method.Bytecodes[i] != b {
-				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, method.Method.Bytecodes[i])
+			if methodObj.Bytecodes[i] != b {
+				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, methodObj.Bytecodes[i])
 			}
 		}
 	})
@@ -225,13 +231,14 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 			RETURN_STACK_TOP,
 		}
 
-		if len(method.Method.Bytecodes) != len(expectedBytecodes) {
-			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(method.Method.Bytecodes))
+		methodObj := ObjectToMethod(method)
+		if len(methodObj.Bytecodes) != len(expectedBytecodes) {
+			t.Errorf("Expected %d bytecodes, got %d", len(expectedBytecodes), len(methodObj.Bytecodes))
 		}
 
 		for i, b := range expectedBytecodes {
-			if method.Method.Bytecodes[i] != b {
-				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, method.Method.Bytecodes[i])
+			if methodObj.Bytecodes[i] != b {
+				t.Errorf("Expected bytecode %d at index %d, got %d", b, i, methodObj.Bytecodes[i])
 			}
 		}
 	})
@@ -294,15 +301,16 @@ func TestMethodBuilderBytecodes(t *testing.T) {
 		// Convert to Dictionary to access entries
 		dict := ObjectToDictionary(methodDict)
 		selectorValue := "factorial"
-		methodInDict := dict.Entries[selectorValue]
+		methodInDict := dict.GetEntry(selectorValue)
 
 		if methodInDict == nil {
 			t.Fatalf("Method not found in dictionary for selector %q", selectorValue)
 		}
 
 		// Check that the method has the expected literals
-		if len(methodInDict.Method.Literals) != 5 {
-			t.Errorf("Expected 5 literals, got %d", len(methodInDict.Method.Literals))
+		methodInDictObj := ObjectToMethod(methodInDict)
+		if len(methodInDictObj.Literals) != 5 {
+			t.Errorf("Expected 5 literals, got %d", len(methodInDictObj.Literals))
 		}
 	})
 }

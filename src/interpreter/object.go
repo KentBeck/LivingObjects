@@ -29,8 +29,6 @@ type Object struct {
 	moved         bool      // Used for garbage collection
 	forwardingPtr *Object   // Used for garbage collection
 	instanceVars  []*Object // Instance variables stored by index
-	Method        *Method
-	Block         *Block
 }
 
 type ObjectInterface interface {
@@ -137,8 +135,8 @@ type Method struct {
 	Bytecodes      []byte
 	Literals       []*Object
 	Selector       *Object
-	MethodClass    *Class
 	TempVarNames   []string
+	MethodClass    *Class
 	IsPrimitive    bool
 	PrimitiveIndex int
 }
@@ -160,6 +158,26 @@ type Array struct {
 type Dictionary struct {
 	Object
 	Entries map[string]*Object // later Object->Object
+}
+
+// GetEntries returns the entries of the dictionary
+func (d *Dictionary) GetEntries() map[string]*Object {
+	return d.Entries
+}
+
+// GetEntry gets an entry from the dictionary
+func (d *Dictionary) GetEntry(key string) *Object {
+	return d.Entries[key]
+}
+
+// SetEntry sets an entry in the dictionary
+func (d *Dictionary) SetEntry(key string, value *Object) {
+	d.Entries[key] = value
+}
+
+// GetEntryCount returns the number of entries in the dictionary
+func (d *Dictionary) GetEntryCount() int {
+	return len(d.Entries)
 }
 
 // NewBoolean creates a new boolean object
@@ -262,6 +280,9 @@ func NewClass(name string, superClass *Class) *Class {
 // NewMethod creates a new method object
 func NewMethod(selector *Object, class *Class) *Object {
 	method := &Method{
+		Object: Object{
+			type1: OBJ_METHOD,
+		},
 		Bytecodes:    make([]byte, 0),
 		Literals:     make([]*Object, 0),
 		Selector:     selector,
@@ -269,27 +290,32 @@ func NewMethod(selector *Object, class *Class) *Object {
 		TempVarNames: make([]string, 0),
 	}
 
-	obj := &Object{
-		type1:  OBJ_METHOD,
-		Method: method,
-	}
-	return obj
+	return MethodToObject(method)
 }
 
 // NewBlock creates a new block object
 func NewBlock(outerContext *Context) *Object {
 	block := &Block{
+		Object: Object{
+			type1: OBJ_BLOCK,
+		},
 		Bytecodes:    make([]byte, 0),
 		Literals:     make([]*Object, 0),
 		TempVarNames: make([]string, 0),
 		OuterContext: outerContext,
 	}
 
-	obj := &Object{
-		type1: OBJ_BLOCK,
-		Block: block,
-	}
-	return obj
+	return BlockToObject(block)
+}
+
+// BlockToObject converts a Block to an Object
+func BlockToObject(b *Block) *Object {
+	return (*Object)(unsafe.Pointer(b))
+}
+
+// ObjectToBlock converts an Object to a Block
+func ObjectToBlock(o *Object) *Block {
+	return (*Block)(unsafe.Pointer(o))
 }
 
 // IsTrue returns true if the object is considered true in Smalltalk
@@ -351,12 +377,13 @@ func (o *Object) String() string {
 		return fmt.Sprintf("Array(%d)", len(array.Elements))
 	case OBJ_DICTIONARY:
 		dict := ObjectToDictionary(o)
-		return fmt.Sprintf("Dictionary(%d)", len(dict.Entries))
+		return fmt.Sprintf("Dictionary(%d)", dict.GetEntryCount())
 	case OBJ_BLOCK:
 		return "Block"
 	case OBJ_METHOD:
-		if o.Method != nil && o.Method.Selector != nil {
-			return fmt.Sprintf("Method %s", GetSymbolValue(o.Method.Selector))
+		method := ObjectToMethod(o)
+		if method != nil && method.Selector != nil {
+			return fmt.Sprintf("Method %s", GetSymbolValue(method.Selector))
 		}
 		return "a Method"
 	default:

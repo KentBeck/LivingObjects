@@ -204,9 +204,10 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 	case OBJ_DICTIONARY:
 		// Update dictionary entries
 		dict := ObjectToDictionary(obj)
-		for key, value := range dict.Entries {
+		entries := dict.GetEntries()
+		for key, value := range entries {
 			if value != nil {
-				dict.Entries[key] = om.copyObject(value, toPtr)
+				dict.SetEntry(key, om.copyObject(value, toPtr))
 			}
 		}
 
@@ -241,27 +242,29 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 
 	case OBJ_METHOD:
 		// Update method literals
-		for i, lit := range obj.Method.Literals {
+		method := ObjectToMethod(obj)
+		for i, lit := range method.Literals {
 			if lit != nil {
-				obj.Method.Literals[i] = om.copyObject(lit, toPtr)
+				method.Literals[i] = om.copyObject(lit, toPtr)
 			}
 		}
 
 		// Update method selector
-		if obj.Method.Selector != nil {
-			obj.Method.Selector = om.copyObject(obj.Method.Selector, toPtr)
+		if method.Selector != nil {
+			method.Selector = om.copyObject(method.Selector, toPtr)
 		}
 
 		// Update method class
-		if obj.Method.MethodClass != nil {
-			obj.Method.MethodClass = ObjectToClass(om.copyObject(ClassToObject(obj.Method.MethodClass), toPtr))
+		if method.MethodClass != nil {
+			method.MethodClass = ObjectToClass(om.copyObject(ClassToObject(method.MethodClass), toPtr))
 		}
 
 	case OBJ_BLOCK:
 		// Update block literals
-		for i, lit := range obj.Block.Literals {
+		block := ObjectToBlock(obj)
+		for i, lit := range block.Literals {
 			if lit != nil {
-				obj.Block.Literals[i] = om.copyObject(lit, toPtr)
+				block.Literals[i] = om.copyObject(lit, toPtr)
 			}
 		}
 	}

@@ -7,22 +7,28 @@ import (
 
 // ExecutePushLiteral executes the PUSH_LITERAL bytecode
 func (vm *VM) ExecutePushLiteral(context *Context) error {
+	// Get the method
+	method := ObjectToMethod(context.Method)
+
 	// Get the literal index (4 bytes)
-	index := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-	if index < 0 || index >= len(context.Method.Method.Literals) {
+	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
+	if index < 0 || index >= len(method.Literals) {
 		return fmt.Errorf("literal index out of bounds: %d", index)
 	}
 
 	// Push the literal onto the stack
-	literal := context.Method.Method.Literals[index]
+	literal := method.Literals[index]
 	context.Push(literal)
 	return nil
 }
 
 // ExecutePushInstanceVariable executes the PUSH_INSTANCE_VARIABLE bytecode
 func (vm *VM) ExecutePushInstanceVariable(context *Context) error {
+	// Get the method
+	method := ObjectToMethod(context.Method)
+
 	// Get the instance variable index (4 bytes)
-	index := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 	class := vm.GetClass(context.Receiver.(*Object))
 	if index < 0 || index >= len(class.InstanceVarNames) {
 		return fmt.Errorf("instance variable index out of bounds: %d", index)
@@ -36,8 +42,11 @@ func (vm *VM) ExecutePushInstanceVariable(context *Context) error {
 
 // ExecutePushTemporaryVariable executes the PUSH_TEMPORARY_VARIABLE bytecode
 func (vm *VM) ExecutePushTemporaryVariable(context *Context) error {
+	// Get the method
+	method := ObjectToMethod(context.Method)
+
 	// Get the temporary variable index (4 bytes)
-	index := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 
 	// Push the temporary variable onto the stack
 	context.Push(context.GetTempVarByIndex(index))
@@ -52,8 +61,11 @@ func (vm *VM) ExecutePushSelf(context *Context) error {
 
 // ExecuteStoreInstanceVariable executes the STORE_INSTANCE_VARIABLE bytecode
 func (vm *VM) ExecuteStoreInstanceVariable(context *Context) error {
+	// Get the method
+	method := ObjectToMethod(context.Method)
+
 	// Get the instance variable index (4 bytes)
-	index := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 	class := vm.GetClass(context.Receiver.(*Object))
 
 	if index < 0 || index >= len(class.InstanceVarNames) {
@@ -73,8 +85,11 @@ func (vm *VM) ExecuteStoreInstanceVariable(context *Context) error {
 
 // ExecuteStoreTemporaryVariable executes the STORE_TEMPORARY_VARIABLE bytecode
 func (vm *VM) ExecuteStoreTemporaryVariable(context *Context) error {
+	// Get the method
+	method := ObjectToMethod(context.Method)
+
 	// Get the temporary variable index (4 bytes)
-	index := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 
 	// Pop the value from the stack
 	value := context.Pop()
@@ -89,17 +104,20 @@ func (vm *VM) ExecuteStoreTemporaryVariable(context *Context) error {
 
 // ExecuteSendMessage executes the SEND_MESSAGE bytecode
 func (vm *VM) ExecuteSendMessage(context *Context) (ObjectInterface, error) {
+	// Get the method
+	method := ObjectToMethod(context.Method)
+
 	// Get the selector index (4 bytes)
-	selectorIndex := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
-	if selectorIndex < 0 || selectorIndex >= len(context.Method.Method.Literals) {
+	selectorIndex := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
+	if selectorIndex < 0 || selectorIndex >= len(method.Literals) {
 		return nil, fmt.Errorf("selector index out of bounds: %d", selectorIndex)
 	}
 
 	// Get the argument count (4 bytes)
-	argCount := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+5:]))
+	argCount := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+5:]))
 
 	// Get the selector
-	selector := context.Method.Method.Literals[selectorIndex]
+	selector := method.Literals[selectorIndex]
 	if selector.Type() != OBJ_SYMBOL {
 		return nil, fmt.Errorf("selector is not a symbol: %s", selector)
 	}
@@ -118,19 +136,19 @@ func (vm *VM) ExecuteSendMessage(context *Context) (ObjectInterface, error) {
 		return nil, fmt.Errorf("nil receiver for message: %s", GetSymbolValue(selector))
 	}
 
-	method := vm.lookupMethod(receiver, selector)
-	if method == nil {
+	methodObj := vm.lookupMethod(receiver, selector)
+	if methodObj == nil {
 		return nil, fmt.Errorf("method not found: %s", GetSymbolValue(selector))
 	}
 
 	// Handle primitive methods
-	if result := vm.executePrimitive(receiver, selector, args, method); result != nil {
+	if result := vm.executePrimitive(receiver, selector, args, methodObj); result != nil {
 		context.Push(result)
 		return result, nil
 	}
 
 	// Create a new context for the method
-	newContext := NewContext(method, receiver, args, context)
+	newContext := NewContext(methodObj, receiver, args, context)
 
 	// Set the current context to the new context
 	vm.CurrentContext = newContext
@@ -165,18 +183,21 @@ func (vm *VM) ExecuteReturnStackTop(context *Context) (*Object, error) {
 
 // ExecuteJump executes the JUMP bytecode
 func (vm *VM) ExecuteJump(context *Context) (bool, error) {
+	// Get the method
+	method := ObjectToMethod(context.Method)
+
 	// Get the jump offset (4 bytes)
-	if context.PC+1 >= len(context.Method.Method.Bytecodes) {
+	if context.PC+1 >= len(method.Bytecodes) {
 		return false, fmt.Errorf("jump offset out of bounds")
 	}
-	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+	offset := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 
 	// The offset is relative to the current instruction
 	// We need to add the size of the instruction to get past this instruction
 	newPC := context.PC + InstructionSize(JUMP) + offset
 
 	// Check if the new PC is valid
-	if newPC < 0 || newPC >= len(context.Method.Method.Bytecodes) {
+	if newPC < 0 || newPC >= len(method.Bytecodes) {
 		return false, fmt.Errorf("jump target out of bounds: %d", newPC)
 	}
 
@@ -189,11 +210,14 @@ func (vm *VM) ExecuteJump(context *Context) (bool, error) {
 
 // ExecuteJumpIfTrue executes the JUMP_IF_TRUE bytecode
 func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
+	// Get the method
+	method := ObjectToMethod(context.Method)
+
 	// Get the jump offset (4 bytes)
-	if context.PC+1 >= len(context.Method.Method.Bytecodes) {
+	if context.PC+1 >= len(method.Bytecodes) {
 		return false, fmt.Errorf("jump offset out of bounds")
 	}
-	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+	offset := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 
 	// Pop the condition from the stack
 	condition := context.Pop()
@@ -205,7 +229,7 @@ func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
 		// We need to add the size of the instruction to get past this instruction
 		newPC := context.PC + InstructionSize(JUMP_IF_TRUE) + offset
 		// Check if the new PC is valid
-		if newPC < 0 || newPC >= len(context.Method.Method.Bytecodes) {
+		if newPC < 0 || newPC >= len(method.Bytecodes) {
 			return false, fmt.Errorf("jump target out of bounds: %d", newPC)
 		}
 
@@ -219,11 +243,14 @@ func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
 
 // ExecuteJumpIfFalse executes the JUMP_IF_FALSE bytecode
 func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
+	// Get the method
+	method := ObjectToMethod(context.Method)
+
 	// Get the jump offset (4 bytes)
-	if context.PC+1 >= len(context.Method.Method.Bytecodes) {
+	if context.PC+1 >= len(method.Bytecodes) {
 		return false, fmt.Errorf("jump offset out of bounds")
 	}
-	offset := int(binary.BigEndian.Uint32(context.Method.Method.Bytecodes[context.PC+1:]))
+	offset := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 
 	// Pop the condition from the stack
 	condition := context.Pop()
@@ -235,7 +262,7 @@ func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
 		// We need to add the size of the instruction to get past this instruction
 		newPC := context.PC + InstructionSize(JUMP_IF_FALSE) + offset
 		// Check if the new PC is valid
-		if newPC < 0 || newPC >= len(context.Method.Method.Bytecodes) {
+		if newPC < 0 || newPC >= len(method.Bytecodes) {
 			return false, fmt.Errorf("jump target out of bounds: %d", newPC)
 		}
 

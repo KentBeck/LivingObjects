@@ -17,12 +17,13 @@ func NewContext(method *Object, receiver ObjectInterface, arguments []*Object, s
 	if method == nil {
 		panic("NewContext: nil method")
 	}
-	if method.Method == nil { // temporary
+	methodObj := ObjectToMethod(method)
+	if methodObj == nil { // temporary
 		panic("NewContext: nil method")
 	}
 
 	// Initialize temporary variables array with nil values
-	tempVarsSize := len(method.Method.TempVarNames)
+	tempVarsSize := len(methodObj.TempVarNames)
 	tempVars := make([]ObjectInterface, tempVarsSize)
 	for i := range tempVars {
 		tempVars[i] = NewNil()

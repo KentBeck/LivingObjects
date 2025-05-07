@@ -997,23 +997,26 @@ func TestUpdateReferences(t *testing.T) {
 		toPtr := 0
 		om.updateReferences(method, &toPtr)
 
+		// Get the method object
+		methodObj := ObjectToMethod(method)
+
 		// Check that the literals are still immediate values
-		if !IsIntegerImmediate(method.Method.Literals[0]) {
-			t.Errorf("Expected method.Method.Literals[0] to be an immediate value")
+		if !IsIntegerImmediate(methodObj.Literals[0]) {
+			t.Errorf("Expected methodObj.Literals[0] to be an immediate value")
 		}
 
-		if !IsIntegerImmediate(method.Method.Literals[1]) {
-			t.Errorf("Expected method.Method.Literals[1] to be an immediate value")
+		if !IsIntegerImmediate(methodObj.Literals[1]) {
+			t.Errorf("Expected methodObj.Literals[1] to be an immediate value")
 		}
 
 		// Check that the selector has been copied
-		if !method.Method.Selector.Moved() {
-			t.Errorf("Expected method.Method.Selector.Moved() to be true")
+		if !methodObj.Selector.Moved() {
+			t.Errorf("Expected methodObj.Selector.Moved() to be true")
 		}
 
 		// Check that the class has been copied
-		if !method.Method.MethodClass.Moved() {
-			t.Errorf("Expected method.Method.Class.Moved() to be true")
+		if !methodObj.MethodClass.Moved() {
+			t.Errorf("Expected methodObj.MethodClass.Moved() to be true")
 		}
 
 		// Check that toPtr has been incremented only for the selector and class (immediate values don't get copied)

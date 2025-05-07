@@ -16,24 +16,26 @@ func TestSimpleBlockValue(t *testing.T) {
 	threeObj := vm.NewInteger(3)
 	plusSymbol := NewSymbol("+")
 
-	block.Block.Literals = []*Object{twoObj, threeObj, plusSymbol}
+	// Get the block struct
+	blockObj := ObjectToBlock(block)
+	blockObj.Literals = []*Object{twoObj, threeObj, plusSymbol}
 
 	// Create bytecodes for the block: 2 + 3
 	// 1. Push 2
-	block.Block.Bytecodes = append(block.Block.Bytecodes, PUSH_LITERAL)
-	block.Block.Bytecodes = append(block.Block.Bytecodes, 0, 0, 0, 0) // index 0 (2)
+	blockObj.Bytecodes = append(blockObj.Bytecodes, PUSH_LITERAL)
+	blockObj.Bytecodes = append(blockObj.Bytecodes, 0, 0, 0, 0) // index 0 (2)
 
 	// 2. Push 3
-	block.Block.Bytecodes = append(block.Block.Bytecodes, PUSH_LITERAL)
-	block.Block.Bytecodes = append(block.Block.Bytecodes, 0, 0, 0, 1) // index 1 (3)
+	blockObj.Bytecodes = append(blockObj.Bytecodes, PUSH_LITERAL)
+	blockObj.Bytecodes = append(blockObj.Bytecodes, 0, 0, 0, 1) // index 1 (3)
 
 	// 3. Send + message
-	block.Block.Bytecodes = append(block.Block.Bytecodes, SEND_MESSAGE)
-	block.Block.Bytecodes = append(block.Block.Bytecodes, 0, 0, 0, 2) // index 2 (+)
-	block.Block.Bytecodes = append(block.Block.Bytecodes, 0, 0, 0, 1) // 1 argument
+	blockObj.Bytecodes = append(blockObj.Bytecodes, SEND_MESSAGE)
+	blockObj.Bytecodes = append(blockObj.Bytecodes, 0, 0, 0, 2) // index 2 (+)
+	blockObj.Bytecodes = append(blockObj.Bytecodes, 0, 0, 0, 1) // 1 argument
 
 	// 4. Return the result
-	block.Block.Bytecodes = append(block.Block.Bytecodes, RETURN_STACK_TOP)
+	blockObj.Bytecodes = append(blockObj.Bytecodes, RETURN_STACK_TOP)
 
 	// Create a method that sends 'value' to the block
 	builder := NewMethodBuilder(vm.ObjectClass).Selector("testBlockValue")

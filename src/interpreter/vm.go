@@ -190,8 +190,11 @@ func (vm *VM) ExecuteContext(context *Context) (ObjectInterface, error) {
 	// Execute the context
 
 	for {
+		// Get the method
+		method := ObjectToMethod(context.Method)
+
 		// Check if we've reached the end of the method
-		if context.PC >= len(context.Method.Method.Bytecodes) {
+		if context.PC >= len(method.Bytecodes) {
 			// Reached end of bytecode array
 
 			// If we've reached the end of the method, return the top of the stack
@@ -204,7 +207,7 @@ func (vm *VM) ExecuteContext(context *Context) (ObjectInterface, error) {
 		}
 
 		// Get the current bytecode
-		bytecode := context.Method.Method.Bytecodes[context.PC]
+		bytecode := method.Bytecodes[context.PC]
 
 		// Get the instruction size
 		size := InstructionSize(bytecode)
@@ -313,9 +316,10 @@ func (vm *VM) lookupMethod(receiver *Object, selector ObjectInterface) *Object {
 		if methodDict != nil && methodDict.Type() == OBJ_DICTIONARY {
 			// Convert to Dictionary to access entries
 			dict := ObjectToDictionary(methodDict)
-			if dict.Entries != nil {
+			entries := dict.GetEntries()
+			if entries != nil {
 				// Check if the method dictionary has the selector
-				if method, ok := dict.Entries[GetSymbolValue(selector)]; ok {
+				if method, ok := entries[GetSymbolValue(selector)]; ok {
 					return method
 				}
 			}

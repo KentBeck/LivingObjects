@@ -65,7 +65,8 @@ func TestExecuteContextWithError(t *testing.T) {
 		Go()
 
 	// Set invalid bytecode manually
-	methodObj.Method.Bytecodes = []byte{255} // Invalid bytecode
+	method := ObjectToMethod(methodObj)
+	method.Bytecodes = []byte{255} // Invalid bytecode
 
 	context := NewContext(methodObj, vm.ObjectClass, []*Object{}, nil)
 

@@ -80,11 +80,12 @@ func DemoFactorial() {
 
 	// Print the bytecodes for debugging
 	fmt.Println("\nFactorial method bytecodes:")
-	for i := 0; i < len(factorialMethod.Method.Bytecodes); i++ {
+	method := ObjectToMethod(factorialMethod)
+	for i := 0; i < len(method.Bytecodes); i++ {
 		if i%5 == 0 {
 			fmt.Printf("\n%3d: ", i)
 		}
-		fmt.Printf("%3d ", factorialMethod.Method.Bytecodes[i])
+		fmt.Printf("%3d ", method.Bytecodes[i])
 	}
 
 	vm.CurrentContext = NewContext(mainMethod, fourObj, []*Object{}, nil)
