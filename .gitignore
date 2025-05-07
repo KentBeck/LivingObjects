@@ -7,3 +7,6 @@ src/.DS_Store
 src/interpreter/interpreter.test
 src/interpreter/cpu.prof
 src/js-interpreter/node_modules
+src/interpreter/compiler_coverage.out
+src/interpreter/vm_coverage.out
+src/interpreter/core_coverage.out
