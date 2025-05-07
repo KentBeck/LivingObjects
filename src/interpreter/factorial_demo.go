@@ -35,25 +35,52 @@ func DemoFactorial() {
 	//   ifTrue: [1]
 	//   ifFalse: [self * (self - 1) factorial]
 
-	// Check if self = 1
+	// First, compute self = 1
 	builder.PushSelf()
 	builder.PushLiteral(oneIndex)
 	builder.SendMessage(equalsIndex, 1)
 
-	// Jump to else branch if false
-	builder.JumpIfFalse(7)
-
-	// Then branch: return 1
-	builder.PushLiteral(oneIndex)
-	builder.ReturnStackTop()
-
-	// Else branch: self * (self - 1) factorial
-	builder.PushSelf()
+	// Now we have a boolean on the stack
+	// We need to duplicate it for the two branches
 	builder.Duplicate()
+
+	// JUMP_IF_FALSE to the false branch
+	builder.JumpIfFalse(12) // Jump past the true branch
+
+	// True branch: [1]
+	// POP the boolean (we don't need it anymore)
+	builder.Pop()
+
+	// PUSH_LITERAL oneIndex (1)
 	builder.PushLiteral(oneIndex)
+
+	// JUMP past the false branch to the return
+	builder.Jump(35) // Jump to the return
+
+	// False branch: [self * (self - 1) factorial]
+	// POP the boolean (we don't need it anymore)
+	builder.Pop()
+
+	// PUSH_SELF (for later use in multiplication)
+	builder.PushSelf()
+
+	// Compute (self - 1) factorial
+	// PUSH_SELF (for subtraction)
+	builder.PushSelf()
+
+	// PUSH_LITERAL oneIndex (1)
+	builder.PushLiteral(oneIndex)
+
+	// SEND_MESSAGE - with 1 argument
 	builder.SendMessage(minusIndex, 1)
+
+	// SEND_MESSAGE factorial with 0 arguments
 	builder.SendMessage(factorialIndex, 0)
+
+	// SEND_MESSAGE * with 1 argument (the factorial result is already on the stack)
 	builder.SendMessage(timesIndex, 1)
+
+	// Return the result
 	builder.ReturnStackTop()
 
 	// Finalize the method
