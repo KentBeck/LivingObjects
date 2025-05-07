@@ -16,6 +16,8 @@ const (
 	JUMP_IF_FALSE            byte = 10 // Jump if top of stack is false (followed by 4-byte target)
 	POP                      byte = 11 // Pop the top value from the stack
 	DUPLICATE                byte = 12 // Duplicate the top value on the stack
+	CREATE_BLOCK             byte = 13 // Create a block (followed by 4-byte bytecode size, 4-byte literal count, 4-byte temp var count)
+	EXECUTE_BLOCK            byte = 14 // Execute a block (followed by 4-byte arg count)
 )
 
 // InstructionSize returns the size of the instruction in bytes (including the opcode)
@@ -27,6 +29,10 @@ func InstructionSize(bytecode byte) int {
 		return 5 // 1 byte opcode + 4 byte operand
 	case SEND_MESSAGE:
 		return 9 // 1 byte opcode + 4 byte selector index + 4 byte arg count
+	case CREATE_BLOCK:
+		return 13 // 1 byte opcode + 4 byte bytecode size + 4 byte literal count + 4 byte temp var count
+	case EXECUTE_BLOCK:
+		return 5 // 1 byte opcode + 4 byte arg count
 	case PUSH_SELF, RETURN_STACK_TOP, POP, DUPLICATE:
 		return 1 // 1 byte opcode
 	default:
@@ -63,7 +69,10 @@ func BytecodeName(bytecode byte) string {
 		return "POP"
 	case DUPLICATE:
 		return "DUPLICATE"
-
+	case CREATE_BLOCK:
+		return "CREATE_BLOCK"
+	case EXECUTE_BLOCK:
+		return "EXECUTE_BLOCK"
 	default:
 		return "UNKNOWN"
 	}

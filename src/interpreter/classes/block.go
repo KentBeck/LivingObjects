@@ -4,6 +4,7 @@ import (
 	"unsafe"
 
 	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/runtime"
 )
 
 // Block represents a Smalltalk block
@@ -86,17 +87,15 @@ func (b *Block) SetOuterContext(outerContext interface{}) {
 }
 
 // Value evaluates the block with the given arguments
-// This is a placeholder for the actual implementation
 func (b *Block) Value(args ...*core.Object) *core.Object {
-	// In a real implementation, this would create a new context and execute the block
-	// For now, we just return nil
-	return core.MakeNilImmediate()
+	return b.ValueWithArguments(args)
 }
 
 // ValueWithArguments evaluates the block with the given arguments
-// This is a placeholder for the actual implementation
 func (b *Block) ValueWithArguments(args []*core.Object) *core.Object {
-	// In a real implementation, this would create a new context and execute the block
-	// For now, we just return nil
-	return core.MakeNilImmediate()
+	// Convert the block to an Object
+	blockObj := BlockToObject(b)
+
+	// Use the runtime package to execute the block
+	return runtime.ExecuteBlock(blockObj, args)
 }

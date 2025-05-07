@@ -45,6 +45,9 @@ func NewVM() *VM {
 	vm.FloatClass = vm.NewFloatClass()
 	vm.BlockClass = vm.NewBlockClass()
 
+	// Register the VM as a block executor
+	vm.RegisterAsBlockExecutor()
+
 	return vm
 }
 
@@ -285,6 +288,23 @@ func (vm *VM) ExecuteContext(context *Context) (core.ObjectInterface, error) {
 
 		case DUPLICATE:
 			err = vm.ExecuteDuplicate(context)
+
+		case CREATE_BLOCK:
+			err = vm.ExecuteCreateBlock(context)
+
+		case EXECUTE_BLOCK:
+			returnValue, err := vm.ExecuteExecuteBlock(context)
+			if err == nil {
+				if returnValue != nil {
+					// We got a result from executing the block
+					// Continue execution in the current context
+					context.PC += size
+					continue
+				} else {
+					// A nil return value with no error means we've started a new context
+					return vm.NilObject, nil
+				}
+			}
 
 		default:
 			return nil, fmt.Errorf("unknown bytecode: %d", bytecode)
