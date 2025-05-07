@@ -51,8 +51,19 @@ func (vm *VM) ExecutePushTemporaryVariable(context *Context) error {
 	// Get the temporary variable index (4 bytes)
 	index := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
 
-	// Push the temporary variable onto the stack
-	context.Push(context.GetTempVarByIndex(index))
+	// First try to get the variable from the current context
+	if index < len(context.TempVars) {
+		context.Push(context.GetTempVarByIndex(index))
+	} else {
+		// If the index is out of bounds in the current context,
+		// try to get it from the outer context (for blocks)
+		outerContext := context.Sender
+		if outerContext != nil && index < len(outerContext.TempVars) {
+			context.Push(outerContext.GetTempVarByIndex(index))
+		} else {
+			return fmt.Errorf("temporary variable index out of bounds: %d", index)
+		}
+	}
 	return nil
 }
 
@@ -97,8 +108,19 @@ func (vm *VM) ExecuteStoreTemporaryVariable(context *Context) error {
 	// Pop the value from the stack
 	value := context.Pop()
 
-	// Store the value in the temporary variable
-	context.SetTempVarByIndex(index, value)
+	// First try to store the value in the current context's temporary variable
+	if index < len(context.TempVars) {
+		context.SetTempVarByIndex(index, value)
+	} else {
+		// If the index is out of bounds in the current context,
+		// try to store it in the outer context (for blocks)
+		outerContext := context.Sender
+		if outerContext != nil && index < len(outerContext.TempVars) {
+			outerContext.SetTempVarByIndex(index, value)
+		} else {
+			return fmt.Errorf("temporary variable index out of bounds: %d", index)
+		}
+	}
 
 	// Push the value back onto the stack
 	context.Push(value)
