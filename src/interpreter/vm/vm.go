@@ -23,6 +23,7 @@ type VM struct {
 	ObjectClass  *classes.Class
 	IntegerClass *classes.Class
 	FloatClass   *classes.Class
+	StringClass  *classes.Class
 	BlockClass   *classes.Class
 }
 
@@ -43,6 +44,7 @@ func NewVM() *VM {
 	vm.FalseObject = core.MakeFalseImmediate()
 	vm.IntegerClass = vm.NewIntegerClass()
 	vm.FloatClass = vm.NewFloatClass()
+	vm.StringClass = vm.NewStringClass()
 	vm.BlockClass = vm.NewBlockClass()
 
 	// Register the VM as a block executor
@@ -138,6 +140,26 @@ func (vm *VM) NewInteger(value int64) *core.Object {
 
 func (vm *VM) NewFloat(value float64) *core.Object {
 	return core.MakeFloatImmediate(value)
+}
+
+func (vm *VM) NewStringClass() *classes.Class {
+	result := classes.NewClass("String", vm.ObjectClass)
+
+	// Add primitive methods to the String class
+	// Add the , method (concatenation)
+	commaMethod := &classes.Method{
+		Object: core.Object{
+			TypeField: core.OBJ_METHOD,
+		},
+		Bytecodes:      []byte{},
+		Literals:       []*core.Object{},
+		TempVarNames:   []string{},
+		IsPrimitive:    true,
+		PrimitiveIndex: 30, // Primitive index for string concatenation
+	}
+	result.AddMethod(classes.NewSymbol(","), classes.MethodToObject(commaMethod))
+
+	return result
 }
 
 func (vm *VM) NewBlockClass() *classes.Class {

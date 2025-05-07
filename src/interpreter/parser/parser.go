@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"smalltalklsp/interpreter/ast"
+	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
 )
 
@@ -319,6 +320,31 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 		return &ast.SelfNode{}, nil
 	}
 
+	// Handle string literals
+	if p.CurrentToken.Type == TOKEN_STRING {
+		// Create a string literal node
+		strObj := classes.NewString(p.CurrentToken.Value)
+		literalNode := &ast.LiteralNode{
+			Value: classes.StringToObject(strObj),
+		}
+		p.advanceToken()
+		return literalNode, nil
+	}
+
+	// Handle number literals
+	if p.CurrentToken.Type == TOKEN_NUMBER {
+		// Parse the number
+		var value int64
+		fmt.Sscanf(p.CurrentToken.Value, "%d", &value)
+
+		// Create a number literal node
+		literalNode := &ast.LiteralNode{
+			Value: core.MakeIntegerImmediate(value),
+		}
+		p.advanceToken()
+		return literalNode, nil
+	}
+
 	// Handle variables
 	if p.CurrentToken.Type == TOKEN_IDENTIFIER {
 		name := p.CurrentToken.Value
@@ -399,7 +425,7 @@ func (p *Parser) isDigit(c byte) bool {
 
 // isSpecial returns true if the character is a special character
 func (p *Parser) isSpecial(c byte) bool {
-	return strings.ContainsRune("+-*/=<>[](){}^.|:", rune(c))
+	return strings.ContainsRune("+-*/=<>[](){}^.|:,~", rune(c))
 }
 
 // parseIdentifier parses an identifier
