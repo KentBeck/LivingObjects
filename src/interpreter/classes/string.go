@@ -79,3 +79,11 @@ func (s *String) Concat(other *String) *String {
 func (s *String) Equal(other *String) bool {
 	return s.Value == other.Value
 }
+
+// GetStringValue gets the string value of a string
+func GetStringValue(obj *core.Object) string {
+	if obj.Type() != core.OBJ_STRING {
+		return ""
+	}
+	return ObjectToString(obj).GetValue()
+}
