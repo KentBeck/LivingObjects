@@ -19,6 +19,11 @@ func RegisterBlockExecutor(executor BlockExecutor) {
 	currentBlockExecutor = executor
 }
 
+// GetCurrentBlockExecutor returns the current block executor
+func GetCurrentBlockExecutor() BlockExecutor {
+	return currentBlockExecutor
+}
+
 // ExecuteBlock executes a block with the given arguments and returns the result
 func ExecuteBlock(block *core.Object, args []*core.Object) *core.Object {
 	if currentBlockExecutor == nil {

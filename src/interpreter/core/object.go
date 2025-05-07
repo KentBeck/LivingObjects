@@ -20,6 +20,7 @@ const (
 	OBJ_CLASS
 	OBJ_METHOD
 	OBJ_SYMBOL
+	OBJ_EXCEPTION
 )
 
 // Object represents a Smalltalk object

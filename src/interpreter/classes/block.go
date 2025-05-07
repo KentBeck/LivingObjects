@@ -99,3 +99,53 @@ func (b *Block) ValueWithArguments(args []*core.Object) *core.Object {
 	// Use the runtime package to execute the block
 	return runtime.ExecuteBlock(blockObj, args)
 }
+
+// OnDo implements the on:do: method for exception handling
+func (b *Block) OnDo(exceptionClass *core.Object, handlerBlock *core.Object) *core.Object {
+	// Convert blocks to proper types
+	handlerBlockObj := ObjectToBlock(handlerBlock)
+
+	// Store the current exception handler
+	savedHandler := runtime.CurrentExceptionHandler
+
+	// Create a new exception handler
+	handler := &runtime.ExceptionHandler{
+		ExceptionClass: exceptionClass,
+		HandlerBlock:   handlerBlock,
+		NextHandler:    savedHandler,
+	}
+
+	// Set the current exception handler
+	runtime.CurrentExceptionHandler = handler
+
+	// Execute the receiver block
+	var result *core.Object
+
+	// We need to use a defer to ensure the handler is restored
+	defer func() {
+		// Restore the previous exception handler
+		runtime.CurrentExceptionHandler = savedHandler
+
+		// Handle panic if it's an exception
+		if r := recover(); r != nil {
+			if exception, ok := r.(*core.Object); ok && exception.Type() == core.OBJ_EXCEPTION {
+				// Check if the exception is of the handled class
+				if runtime.IsKindOf(exception, exceptionClass) {
+					// Execute the handler block with the exception as argument
+					result = handlerBlockObj.ValueWithArguments([]*core.Object{exception})
+				} else {
+					// Re-panic for unhandled exceptions
+					panic(r)
+				}
+			} else {
+				// Re-panic for non-exception panics
+				panic(r)
+			}
+		}
+	}()
+
+	// Execute the protected block
+	result = b.Value()
+
+	return result
+}
