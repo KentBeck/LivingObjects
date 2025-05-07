@@ -70,16 +70,6 @@ func ObjectToBlock(o *core.Object) *classes.Block {
 	return (*classes.Block)(unsafe.Pointer(o))
 }
 
-// DictionaryToObject converts a Dictionary to an Object
-func DictionaryToObject(d *classes.Dictionary) *core.Object {
-	return (*core.Object)(unsafe.Pointer(d))
-}
-
-// ObjectToDictionary converts an Object to a Dictionary
-func ObjectToDictionary(o core.ObjectInterface) *classes.Dictionary {
-	return (*classes.Dictionary)(unsafe.Pointer(o.(*core.Object)))
-}
-
 // GetStringValue gets the string value of a string
 func GetStringValue(obj *core.Object) string {
 	if obj.Type() != core.OBJ_STRING {
