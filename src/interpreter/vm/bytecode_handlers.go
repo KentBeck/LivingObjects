@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
+	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
 )
@@ -219,7 +220,7 @@ func (vm *VM) ExecuteJump(context *Context) (bool, error) {
 
 	// The offset is relative to the current instruction
 	// We need to add the size of the instruction to get past this instruction
-	newPC := context.PC + InstructionSize(JUMP) + offset
+	newPC := context.PC + bytecode.InstructionSize(bytecode.JUMP) + offset
 
 	// Check if the new PC is valid
 	if newPC < 0 || newPC >= len(method.GetBytecodes()) {
@@ -252,7 +253,7 @@ func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
 	if isTrue {
 		// The offset is relative to the current instruction
 		// We need to add the size of the instruction to get past this instruction
-		newPC := context.PC + InstructionSize(JUMP_IF_TRUE) + offset
+		newPC := context.PC + bytecode.InstructionSize(bytecode.JUMP_IF_TRUE) + offset
 		// Check if the new PC is valid
 		if newPC < 0 || newPC >= len(method.GetBytecodes()) {
 			return false, fmt.Errorf("jump target out of bounds: %d", newPC)
@@ -285,7 +286,7 @@ func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
 	if !isTrue {
 		// The offset is relative to the current instruction
 		// We need to add the size of the instruction to get past this instruction
-		newPC := context.PC + InstructionSize(JUMP_IF_FALSE) + offset
+		newPC := context.PC + bytecode.InstructionSize(bytecode.JUMP_IF_FALSE) + offset
 		// Check if the new PC is valid
 		if newPC < 0 || newPC >= len(method.GetBytecodes()) {
 			return false, fmt.Errorf("jump target out of bounds: %d", newPC)

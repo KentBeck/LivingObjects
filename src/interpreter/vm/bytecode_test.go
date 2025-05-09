@@ -3,7 +3,7 @@ package vm_test
 import (
 	"testing"
 
-	"smalltalklsp/interpreter/vm"
+	"smalltalklsp/interpreter/bytecode"
 )
 
 func TestBytecodeName(t *testing.T) {
@@ -11,24 +11,24 @@ func TestBytecodeName(t *testing.T) {
 		bytecode byte
 		expected string
 	}{
-		{vm.PUSH_LITERAL, "PUSH_LITERAL"},
-		{vm.PUSH_INSTANCE_VARIABLE, "PUSH_INSTANCE_VARIABLE"},
-		{vm.PUSH_TEMPORARY_VARIABLE, "PUSH_TEMPORARY_VARIABLE"},
-		{vm.PUSH_SELF, "PUSH_SELF"},
-		{vm.STORE_INSTANCE_VARIABLE, "STORE_INSTANCE_VARIABLE"},
-		{vm.STORE_TEMPORARY_VARIABLE, "STORE_TEMPORARY_VARIABLE"},
-		{vm.SEND_MESSAGE, "SEND_MESSAGE"},
-		{vm.RETURN_STACK_TOP, "RETURN_STACK_TOP"},
-		{vm.JUMP, "JUMP"},
-		{vm.JUMP_IF_TRUE, "JUMP_IF_TRUE"},
-		{vm.JUMP_IF_FALSE, "JUMP_IF_FALSE"},
-		{vm.POP, "POP"},
-		{vm.DUPLICATE, "DUPLICATE"},
+		{bytecode.PUSH_LITERAL, "PUSH_LITERAL"},
+		{bytecode.PUSH_INSTANCE_VARIABLE, "PUSH_INSTANCE_VARIABLE"},
+		{bytecode.PUSH_TEMPORARY_VARIABLE, "PUSH_TEMPORARY_VARIABLE"},
+		{bytecode.PUSH_SELF, "PUSH_SELF"},
+		{bytecode.STORE_INSTANCE_VARIABLE, "STORE_INSTANCE_VARIABLE"},
+		{bytecode.STORE_TEMPORARY_VARIABLE, "STORE_TEMPORARY_VARIABLE"},
+		{bytecode.SEND_MESSAGE, "SEND_MESSAGE"},
+		{bytecode.RETURN_STACK_TOP, "RETURN_STACK_TOP"},
+		{bytecode.JUMP, "JUMP"},
+		{bytecode.JUMP_IF_TRUE, "JUMP_IF_TRUE"},
+		{bytecode.JUMP_IF_FALSE, "JUMP_IF_FALSE"},
+		{bytecode.POP, "POP"},
+		{bytecode.DUPLICATE, "DUPLICATE"},
 		{255, "UNKNOWN"}, // Test unknown bytecode
 	}
 
 	for _, test := range tests {
-		result := vm.BytecodeName(test.bytecode)
+		result := bytecode.BytecodeName(test.bytecode)
 		if result != test.expected {
 			t.Errorf("BytecodeName(%d) = %s, expected %s", test.bytecode, result, test.expected)
 		}
@@ -40,24 +40,24 @@ func TestInstructionSize(t *testing.T) {
 		bytecode byte
 		expected int
 	}{
-		{vm.PUSH_LITERAL, 5},
-		{vm.PUSH_INSTANCE_VARIABLE, 5},
-		{vm.PUSH_TEMPORARY_VARIABLE, 5},
-		{vm.PUSH_SELF, 1},
-		{vm.STORE_INSTANCE_VARIABLE, 5},
-		{vm.STORE_TEMPORARY_VARIABLE, 5},
-		{vm.SEND_MESSAGE, 9},
-		{vm.RETURN_STACK_TOP, 1},
-		{vm.JUMP, 5},
-		{vm.JUMP_IF_TRUE, 5},
-		{vm.JUMP_IF_FALSE, 5},
-		{vm.POP, 1},
-		{vm.DUPLICATE, 1},
+		{bytecode.PUSH_LITERAL, 5},
+		{bytecode.PUSH_INSTANCE_VARIABLE, 5},
+		{bytecode.PUSH_TEMPORARY_VARIABLE, 5},
+		{bytecode.PUSH_SELF, 1},
+		{bytecode.STORE_INSTANCE_VARIABLE, 5},
+		{bytecode.STORE_TEMPORARY_VARIABLE, 5},
+		{bytecode.SEND_MESSAGE, 9},
+		{bytecode.RETURN_STACK_TOP, 1},
+		{bytecode.JUMP, 5},
+		{bytecode.JUMP_IF_TRUE, 5},
+		{bytecode.JUMP_IF_FALSE, 5},
+		{bytecode.POP, 1},
+		{bytecode.DUPLICATE, 1},
 		{255, 1}, // Test unknown bytecode
 	}
 
 	for _, test := range tests {
-		result := vm.InstructionSize(test.bytecode)
+		result := bytecode.InstructionSize(test.bytecode)
 		if result != test.expected {
 			t.Errorf("InstructionSize(%d) = %d, expected %d", test.bytecode, result, test.expected)
 		}

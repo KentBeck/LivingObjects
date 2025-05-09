@@ -3,6 +3,7 @@ package vm
 import (
 	"testing"
 
+	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
 )
@@ -17,7 +18,7 @@ func TestExecuteCreateBlock(t *testing.T) {
 			TypeField: core.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
-			CREATE_BLOCK,
+			bytecode.CREATE_BLOCK,
 			0, 0, 0, 10, // bytecode size
 			0, 0, 0, 2, // literal count
 			0, 0, 0, 3, // temp var count
@@ -87,7 +88,7 @@ func TestExecuteExecuteBlock(t *testing.T) {
 			TypeField: core.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
-			EXECUTE_BLOCK,
+			bytecode.EXECUTE_BLOCK,
 			0, 0, 0, 2, // arg count
 		},
 		Literals:     []*core.Object{},

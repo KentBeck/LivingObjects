@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"smalltalklsp/interpreter/ast"
+	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/core"
@@ -297,11 +298,11 @@ func (r *StringTestRunner) compile(node ast.Node) *core.Object {
 						},
 						Bytecodes: []byte{
 							// Push the string onto the stack
-							vm.PUSH_LITERAL,
+							bytecode.PUSH_LITERAL,
 							0, 0, 0, 0, // literal index 0 (the string)
 
 							// Return the result
-							vm.RETURN_STACK_TOP,
+							bytecode.RETURN_STACK_TOP,
 						},
 						Literals: []*core.Object{
 							literalNode.Value, // The string literal
@@ -329,20 +330,20 @@ func (r *StringTestRunner) compile(node ast.Node) *core.Object {
 						},
 						Bytecodes: []byte{
 							// Push 2 onto the stack
-							vm.PUSH_LITERAL,
+							bytecode.PUSH_LITERAL,
 							0, 0, 0, 0, // literal index 0 (the value 2)
 
 							// Push 3 onto the stack
-							vm.PUSH_LITERAL,
+							bytecode.PUSH_LITERAL,
 							0, 0, 0, 1, // literal index 1 (the value 3)
 
 							// Send the + message
-							vm.SEND_MESSAGE,
+							bytecode.SEND_MESSAGE,
 							0, 0, 0, 2, // selector index 2 (the + selector)
 							0, 0, 0, 1, // arg count 1
 
 							// Return the result
-							vm.RETURN_STACK_TOP,
+							bytecode.RETURN_STACK_TOP,
 						},
 						Literals: []*core.Object{
 							core.MakeIntegerImmediate(2), // The literal 2
@@ -372,20 +373,20 @@ func (r *StringTestRunner) compile(node ast.Node) *core.Object {
 										},
 										Bytecodes: []byte{
 											// Push the first string onto the stack
-											vm.PUSH_LITERAL,
+											bytecode.PUSH_LITERAL,
 											0, 0, 0, 0, // literal index 0 (the first string)
 
 											// Push the second string onto the stack
-											vm.PUSH_LITERAL,
+											bytecode.PUSH_LITERAL,
 											0, 0, 0, 1, // literal index 1 (the second string)
 
 											// Send the , message
-											vm.SEND_MESSAGE,
+											bytecode.SEND_MESSAGE,
 											0, 0, 0, 2, // selector index 2 (the , selector)
 											0, 0, 0, 1, // arg count 1
 
 											// Return the result
-											vm.RETURN_STACK_TOP,
+											bytecode.RETURN_STACK_TOP,
 										},
 										Literals: []*core.Object{
 											literalNode1.Value,     // The first string
@@ -498,12 +499,7 @@ func (r *StringTestRunner) execute(methodObj *core.Object) (*core.Object, error)
 	}
 
 	// Convert the result to a core.Object
-	objResult, ok := result.(*core.Object)
-	if !ok {
-		return nil, fmt.Errorf("execution returned non-object result: %v", result)
-	}
-
-	return objResult, nil
+	return result.(*core.Object), nil
 }
 
 // objectToString converts an object to a string
@@ -512,35 +508,32 @@ func (r *StringTestRunner) objectToString(obj *core.Object) string {
 		return "nil"
 	}
 
-	// Special case for integer immediates
-	if core.IsIntegerImmediate(obj) {
-		return fmt.Sprintf("%d", core.GetIntegerImmediate(obj))
-	}
-
-	// Handle other types
-	switch obj.Type() {
-	case core.OBJ_INTEGER:
-		return fmt.Sprintf("%d", core.GetIntegerImmediate(obj))
-	case core.OBJ_STRING:
-		strObj := classes.ObjectToString(obj)
-		if strObj == nil {
-			return "<invalid string>"
+	// Handle immediate values first
+	if core.IsImmediate(obj) {
+		if core.IsNilImmediate(obj) {
+			return "nil"
 		}
-		return strObj.Value
-	case core.OBJ_SYMBOL:
-		symObj := classes.ObjectToSymbol(obj)
-		if symObj == nil {
-			return "<invalid symbol>"
-		}
-		return "#" + symObj.Value
-	case core.OBJ_BOOLEAN:
-		if obj == r.VM.TrueObject {
+		if core.IsTrueImmediate(obj) {
 			return "true"
 		}
-		return "false"
+		if core.IsFalseImmediate(obj) {
+			return "false"
+		}
+		if core.IsIntegerImmediate(obj) {
+			return fmt.Sprintf("%d", core.GetIntegerImmediate(obj))
+		}
+		if core.IsFloatImmediate(obj) {
+			return fmt.Sprintf("%f", core.GetFloatImmediate(obj))
+		}
+	}
+
+	// Handle regular objects
+	switch obj.Type() {
+	case core.OBJ_STRING:
+		return classes.ObjectToString(obj).GetValue()
 	case core.OBJ_NIL:
 		return "nil"
 	default:
-		return fmt.Sprintf("Object of type %d", obj.Type())
+		return fmt.Sprintf("<%s>", obj.String())
 	}
 }

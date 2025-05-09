@@ -3,6 +3,7 @@ package vm_test
 import (
 	"testing"
 
+	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/core"
@@ -51,13 +52,13 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
+		context.PC += bytecode.InstructionSize(bytecode.PUSH_LITERAL)
 
 		context.PC = 5
 		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
+		context.PC += bytecode.InstructionSize(bytecode.PUSH_LITERAL)
 
 		// Execute the SEND_MESSAGE bytecode
 		context.PC = 10
@@ -144,7 +145,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
+		context.PC += bytecode.InstructionSize(bytecode.PUSH_LITERAL)
 
 		// Execute the SEND_MESSAGE bytecode
 		context.PC = 5
@@ -209,7 +210,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
+		context.PC += bytecode.InstructionSize(bytecode.PUSH_LITERAL)
 
 		// Execute the SEND_MESSAGE bytecode
 		context.PC = 5
@@ -268,20 +269,20 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
+		context.PC += bytecode.InstructionSize(bytecode.PUSH_LITERAL)
 
 		// Execute the second PUSH_LITERAL bytecode
 		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
+		context.PC += bytecode.InstructionSize(bytecode.PUSH_LITERAL)
 
 		// Execute the first SEND_MESSAGE bytecode (2 + 3)
 		result, err := virtualMachine.ExecuteSendMessage(context)
 		if err != nil {
 			t.Fatalf("Error executing SEND_MESSAGE: %s", err)
 		}
-		context.PC += vm.InstructionSize(vm.SEND_MESSAGE)
+		context.PC += bytecode.InstructionSize(bytecode.SEND_MESSAGE)
 
 		// Check the intermediate result
 		if core.IsIntegerImmediate(result) {
@@ -297,7 +298,7 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		if err := virtualMachine.ExecutePushLiteral(context); err != nil {
 			t.Fatalf("Error executing PUSH_LITERAL: %s", err)
 		}
-		context.PC += vm.InstructionSize(vm.PUSH_LITERAL)
+		context.PC += bytecode.InstructionSize(bytecode.PUSH_LITERAL)
 
 		// Execute the second SEND_MESSAGE bytecode (5 + 4)
 		result, err = virtualMachine.ExecuteSendMessage(context)

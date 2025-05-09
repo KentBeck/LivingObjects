@@ -4,6 +4,7 @@ import (
 	"testing"
 	"unsafe"
 
+	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/core"
@@ -396,7 +397,7 @@ func TestExecuteJump(t *testing.T) {
 		t.Errorf("ExecuteJump returned an error: %v", err)
 	}
 
-	expectedPC := 0 + vm.InstructionSize(vm.JUMP) + 10
+	expectedPC := 0 + bytecode.InstructionSize(bytecode.JUMP) + 10
 	if context.PC != expectedPC {
 		t.Errorf("Expected PC to be %d, got %d", expectedPC, context.PC)
 	}
@@ -429,7 +430,7 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 			t.Errorf("ExecuteJumpIfTrue returned an error: %v", err)
 		}
 
-		expectedPC := 0 + vm.InstructionSize(vm.JUMP_IF_TRUE) + 10
+		expectedPC := 0 + bytecode.InstructionSize(bytecode.JUMP_IF_TRUE) + 10
 		if context.PC != expectedPC {
 			t.Errorf("Expected PC to be %d, got %d", expectedPC, context.PC)
 		}
@@ -483,7 +484,7 @@ func TestExecuteJumpIfFalse(t *testing.T) {
 			t.Errorf("ExecuteJumpIfFalse returned an error: %v", err)
 		}
 
-		expectedPC := 0 + vm.InstructionSize(vm.JUMP_IF_FALSE) + 10
+		expectedPC := 0 + bytecode.InstructionSize(bytecode.JUMP_IF_FALSE) + 10
 		if context.PC != expectedPC {
 			t.Errorf("Expected PC to be %d, got %d", expectedPC, context.PC)
 		}

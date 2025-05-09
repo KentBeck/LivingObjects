@@ -3,6 +3,7 @@ package vm
 import (
 	"testing"
 
+	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/runtime"
@@ -35,9 +36,9 @@ func TestBlockWithLiteral(t *testing.T) {
 
 	// Set the block's bytecodes
 	blockBytecodes := []byte{
-		PUSH_LITERAL,
+		bytecode.PUSH_LITERAL,
 		0, 0, 0, 0, // literal index 0 (the value 5)
-		RETURN_STACK_TOP,
+		bytecode.RETURN_STACK_TOP,
 	}
 	block.SetBytecodes(blockBytecodes)
 
@@ -103,14 +104,14 @@ func TestBlockWithExpression(t *testing.T) {
 
 	// Set up the block's bytecodes (normally this would be done by the compiler)
 	blockBytecodes := []byte{
-		PUSH_LITERAL,
+		bytecode.PUSH_LITERAL,
 		0, 0, 0, 0, // literal index 0 (the value 5)
-		PUSH_LITERAL,
+		bytecode.PUSH_LITERAL,
 		0, 0, 0, 1, // literal index 1 (the value 4)
-		SEND_MESSAGE,
+		bytecode.SEND_MESSAGE,
 		0, 0, 0, 2, // selector index 2 (the + selector)
 		0, 0, 0, 1, // arg count 1
-		RETURN_STACK_TOP,
+		bytecode.RETURN_STACK_TOP,
 	}
 	block.SetBytecodes(blockBytecodes)
 
@@ -180,20 +181,20 @@ func TestBlockWithParameter(t *testing.T) {
 	// This implements [:x | x + 2]
 	blockBytecodes := []byte{
 		// Push the temporary variable 'x' (parameter)
-		PUSH_TEMPORARY_VARIABLE,
+		bytecode.PUSH_TEMPORARY_VARIABLE,
 		0, 0, 0, 0, // temp var index 0
 
 		// Push the literal 2
-		PUSH_LITERAL,
+		bytecode.PUSH_LITERAL,
 		0, 0, 0, 0, // literal index 0 (the value 2)
 
 		// Send the + message
-		SEND_MESSAGE,
+		bytecode.SEND_MESSAGE,
 		0, 0, 0, 1, // selector index 1 (the + selector)
 		0, 0, 0, 1, // arg count 1
 
 		// Return the result
-		RETURN_STACK_TOP,
+		bytecode.RETURN_STACK_TOP,
 	}
 	block.SetBytecodes(blockBytecodes)
 
@@ -254,9 +255,9 @@ func TestBlockWithNonLocalReturn(t *testing.T) {
 
 	// Set up the block's bytecodes (normally this would be done by the compiler)
 	blockBytecodes := []byte{
-		PUSH_LITERAL,
+		bytecode.PUSH_LITERAL,
 		0, 0, 0, 0, // literal index 0 (the value 7)
-		RETURN_STACK_TOP, // This should return from the outer method, not just the block
+		bytecode.RETURN_STACK_TOP, // This should return from the outer method, not just the block
 	}
 	block.SetBytecodes(blockBytecodes)
 

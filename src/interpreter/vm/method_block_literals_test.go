@@ -3,6 +3,7 @@ package vm
 import (
 	"testing"
 
+	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/runtime"
@@ -21,13 +22,13 @@ func TestSimpleBlockLiteral(t *testing.T) {
 		},
 		Bytecodes: []byte{
 			// Create a block and push it onto the stack
-			CREATE_BLOCK,
+			bytecode.CREATE_BLOCK,
 			0, 0, 0, 6, // bytecode size (PUSH_LITERAL + index + RETURN_STACK_TOP)
 			0, 0, 0, 1, // literal count (just the 5)
 			0, 0, 0, 0, // temp var count (none)
 
 			// Return the block
-			RETURN_STACK_TOP,
+			bytecode.RETURN_STACK_TOP,
 		},
 		Literals: []*core.Object{
 			core.MakeIntegerImmediate(5), // The literal 5
@@ -59,9 +60,9 @@ func TestSimpleBlockLiteral(t *testing.T) {
 
 	// Set the block's bytecodes (this would normally be done by the VM)
 	blockBytecodes := []byte{
-		PUSH_LITERAL,
+		bytecode.PUSH_LITERAL,
 		0, 0, 0, 0, // literal index 0 (the value 5)
-		RETURN_STACK_TOP,
+		bytecode.RETURN_STACK_TOP,
 	}
 	block.SetBytecodes(blockBytecodes)
 
@@ -110,22 +111,22 @@ func TestBlockWithMethodVariables(t *testing.T) {
 		},
 		Bytecodes: []byte{
 			// Push 7 onto the stack as the temp value
-			PUSH_LITERAL,
+			bytecode.PUSH_LITERAL,
 			0, 0, 0, 2, // literal index 2 (the value 7)
 
 			// Store it in temp
-			STORE_TEMPORARY_VARIABLE,
+			bytecode.STORE_TEMPORARY_VARIABLE,
 			0, 0, 0, 1, // temp var index 1 (temp)
-			POP, // Pop the stored value
+			bytecode.POP, // Pop the stored value
 
 			// Create a block that accesses temp
-			CREATE_BLOCK,
+			bytecode.CREATE_BLOCK,
 			0, 0, 0, 15, // bytecode size
 			0, 0, 0, 2, // literal count (3 and +)
 			0, 0, 0, 0, // temp var count (none)
 
 			// Return the block
-			RETURN_STACK_TOP,
+			bytecode.RETURN_STACK_TOP,
 		},
 		Literals: []*core.Object{
 			core.MakeIntegerImmediate(2), // The literal 2
@@ -160,14 +161,14 @@ func TestBlockWithMethodVariables(t *testing.T) {
 
 	// Set the block's bytecodes (this would normally be done by the VM)
 	blockBytecodes := []byte{
-		PUSH_TEMPORARY_VARIABLE,
+		bytecode.PUSH_TEMPORARY_VARIABLE,
 		0, 0, 0, 1, // temp var index 1 (temp)
-		PUSH_LITERAL,
+		bytecode.PUSH_LITERAL,
 		0, 0, 0, 0, // literal index 0 (the value 3)
-		SEND_MESSAGE,
+		bytecode.SEND_MESSAGE,
 		0, 0, 0, 1, // selector index 1 (the + selector)
 		0, 0, 0, 1, // arg count 1
-		RETURN_STACK_TOP,
+		bytecode.RETURN_STACK_TOP,
 	}
 	block.SetBytecodes(blockBytecodes)
 
@@ -206,13 +207,13 @@ func TestBlockWithNestedBlocks(t *testing.T) {
 		},
 		Bytecodes: []byte{
 			// Create a block and push it onto the stack
-			CREATE_BLOCK,
+			bytecode.CREATE_BLOCK,
 			0, 0, 0, 20, // bytecode size
 			0, 0, 0, 2, // literal count (42 and value)
 			0, 0, 0, 0, // temp var count (none)
 
 			// Return the block
-			RETURN_STACK_TOP,
+			bytecode.RETURN_STACK_TOP,
 		},
 		Literals: []*core.Object{
 			core.MakeIntegerImmediate(42), // The literal 42
@@ -245,14 +246,14 @@ func TestBlockWithNestedBlocks(t *testing.T) {
 
 	// Set the outer block's bytecodes (this would normally be done by the VM)
 	outerBlockBytecodes := []byte{
-		CREATE_BLOCK,
+		bytecode.CREATE_BLOCK,
 		0, 0, 0, 6, // bytecode size (PUSH_LITERAL + index + RETURN_STACK_TOP)
 		0, 0, 0, 1, // literal count (just the 42)
 		0, 0, 0, 0, // temp var count (none)
-		SEND_MESSAGE,
+		bytecode.SEND_MESSAGE,
 		0, 0, 0, 1, // selector index 1 (value)
 		0, 0, 0, 0, // arg count 0
-		RETURN_STACK_TOP,
+		bytecode.RETURN_STACK_TOP,
 	}
 	outerBlock.SetBytecodes(outerBlockBytecodes)
 
@@ -299,9 +300,9 @@ func TestMethodBlockWithNonLocalReturn(t *testing.T) {
 		},
 		Bytecodes: []byte{
 			// Push 99 and return
-			PUSH_LITERAL,
+			bytecode.PUSH_LITERAL,
 			0, 0, 0, 0, // literal index 0 (the value 99)
-			RETURN_STACK_TOP,
+			bytecode.RETURN_STACK_TOP,
 		},
 		Literals: []*core.Object{
 			core.MakeIntegerImmediate(99), // The literal 99
@@ -351,13 +352,13 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 		},
 		Bytecodes: []byte{
 			// Create a block and push it onto the stack
-			CREATE_BLOCK,
+			bytecode.CREATE_BLOCK,
 			0, 0, 0, 6, // bytecode size (PUSH_LITERAL + index + RETURN_STACK_TOP)
 			0, 0, 0, 1, // literal count (just the 10)
 			0, 0, 0, 0, // temp var count (none)
 
 			// Return the block
-			RETURN_STACK_TOP,
+			bytecode.RETURN_STACK_TOP,
 		},
 		Literals: []*core.Object{
 			core.MakeIntegerImmediate(10), // The literal 10
@@ -372,13 +373,13 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 		},
 		Bytecodes: []byte{
 			// Create a block and push it onto the stack
-			CREATE_BLOCK,
+			bytecode.CREATE_BLOCK,
 			0, 0, 0, 6, // bytecode size (PUSH_LITERAL + index + RETURN_STACK_TOP)
 			0, 0, 0, 1, // literal count (just the 20)
 			0, 0, 0, 0, // temp var count (none)
 
 			// Return the block
-			RETURN_STACK_TOP,
+			bytecode.RETURN_STACK_TOP,
 		},
 		Literals: []*core.Object{
 			core.MakeIntegerImmediate(20), // The literal 20
@@ -420,9 +421,9 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 
 		// Set the block's bytecodes (this would normally be done by the VM)
 		blockBytecodes := []byte{
-			PUSH_LITERAL,
+			bytecode.PUSH_LITERAL,
 			0, 0, 0, 0, // literal index 0 (the value 10)
-			RETURN_STACK_TOP,
+			bytecode.RETURN_STACK_TOP,
 		}
 		block.SetBytecodes(blockBytecodes)
 
@@ -475,9 +476,9 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 
 		// Set the block's bytecodes (this would normally be done by the VM)
 		blockBytecodes := []byte{
-			PUSH_LITERAL,
+			bytecode.PUSH_LITERAL,
 			0, 0, 0, 0, // literal index 0 (the value 20)
-			RETURN_STACK_TOP,
+			bytecode.RETURN_STACK_TOP,
 		}
 		block.SetBytecodes(blockBytecodes)
 

@@ -3,6 +3,7 @@ package vm
 import (
 	"fmt"
 
+	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/core"
@@ -232,32 +233,32 @@ func (vm *VM) ExecuteContext(context *Context) (core.ObjectInterface, error) {
 		opcode := method.GetBytecodes()[context.PC]
 
 		// Get the instruction size
-		size := InstructionSize(opcode)
+		size := bytecode.InstructionSize(opcode)
 
 		// Execute the bytecode
 		var err error
 		var skipIncrement bool
 
 		switch opcode {
-		case PUSH_LITERAL:
+		case bytecode.PUSH_LITERAL:
 			err = vm.ExecutePushLiteral(context)
 
-		case PUSH_INSTANCE_VARIABLE:
+		case bytecode.PUSH_INSTANCE_VARIABLE:
 			err = vm.ExecutePushInstanceVariable(context)
 
-		case PUSH_TEMPORARY_VARIABLE:
+		case bytecode.PUSH_TEMPORARY_VARIABLE:
 			err = vm.ExecutePushTemporaryVariable(context)
 
-		case PUSH_SELF:
+		case bytecode.PUSH_SELF:
 			err = vm.ExecutePushSelf(context)
 
-		case STORE_INSTANCE_VARIABLE:
+		case bytecode.STORE_INSTANCE_VARIABLE:
 			err = vm.ExecuteStoreInstanceVariable(context)
 
-		case STORE_TEMPORARY_VARIABLE:
+		case bytecode.STORE_TEMPORARY_VARIABLE:
 			err = vm.ExecuteStoreTemporaryVariable(context)
 
-		case SEND_MESSAGE:
+		case bytecode.SEND_MESSAGE:
 			returnValue, err := vm.ExecuteSendMessage(context)
 			if err == nil {
 				if returnValue != nil {
@@ -271,40 +272,40 @@ func (vm *VM) ExecuteContext(context *Context) (core.ObjectInterface, error) {
 				}
 			}
 
-		case RETURN_STACK_TOP:
+		case bytecode.RETURN_STACK_TOP:
 			returnValue, err := vm.ExecuteReturnStackTop(context)
 			if err == nil {
 				return returnValue, nil
 			}
 
-		case JUMP:
+		case bytecode.JUMP:
 			skipIncrement, err = vm.ExecuteJump(context)
 			if err == nil && skipIncrement {
 				continue
 			}
 
-		case JUMP_IF_TRUE:
+		case bytecode.JUMP_IF_TRUE:
 			skipIncrement, err = vm.ExecuteJumpIfTrue(context)
 			if err == nil && skipIncrement {
 				continue
 			}
 
-		case JUMP_IF_FALSE:
+		case bytecode.JUMP_IF_FALSE:
 			skipIncrement, err = vm.ExecuteJumpIfFalse(context)
 			if err == nil && skipIncrement {
 				continue
 			}
 
-		case POP:
+		case bytecode.POP:
 			err = vm.ExecutePop(context)
 
-		case DUPLICATE:
+		case bytecode.DUPLICATE:
 			err = vm.ExecuteDuplicate(context)
 
-		case CREATE_BLOCK:
+		case bytecode.CREATE_BLOCK:
 			err = vm.ExecuteCreateBlock(context)
 
-		case EXECUTE_BLOCK:
+		case bytecode.EXECUTE_BLOCK:
 			returnValue, err := vm.ExecuteExecuteBlock(context)
 			if err == nil {
 				if returnValue != nil {

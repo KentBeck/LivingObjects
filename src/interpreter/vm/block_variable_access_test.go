@@ -3,6 +3,7 @@ package vm
 import (
 	"testing"
 
+	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/runtime"
@@ -23,11 +24,11 @@ func TestBlockModifiesLocalVariable(t *testing.T) {
 	// The block bytecodes ([a := 2])
 	blockBytecodes := []byte{
 		// Push the literal 2
-		PUSH_LITERAL,
+		bytecode.PUSH_LITERAL,
 		0, 0, 0, 0, // literal index 0 (the value 2)
 
 		// Store it in the outer context's temporary variable 'a'
-		STORE_TEMPORARY_VARIABLE,
+		bytecode.STORE_TEMPORARY_VARIABLE,
 		0, 0, 0, 0, // temp var index 0 (a)
 
 		// Return nil (implicit)
@@ -41,25 +42,25 @@ func TestBlockModifiesLocalVariable(t *testing.T) {
 	//   ^a
 	methodBytecodes := []byte{
 		// Store 1 in temporary variable 'a'
-		PUSH_LITERAL,
+		bytecode.PUSH_LITERAL,
 		0, 0, 0, 0, // literal index 0 (the value 1)
-		STORE_TEMPORARY_VARIABLE,
+		bytecode.STORE_TEMPORARY_VARIABLE,
 		0, 0, 0, 0, // temp var index 0 (a)
 
 		// Create a block that assigns 2 to 'a'
-		CREATE_BLOCK,
+		bytecode.CREATE_BLOCK,
 		0, 0, 0, byte(len(blockBytecodes)), // bytecode size
 		0, 0, 0, 1, // literal count (1 literal)
 		0, 0, 0, 0, // temp var count (0 temp vars)
 
 		// Execute the block
-		EXECUTE_BLOCK,
+		bytecode.EXECUTE_BLOCK,
 		0, 0, 0, 0, // arg count 0
 
 		// Return the value of 'a'
-		PUSH_TEMPORARY_VARIABLE,
+		bytecode.PUSH_TEMPORARY_VARIABLE,
 		0, 0, 0, 0, // temp var index 0 (a)
-		RETURN_STACK_TOP,
+		bytecode.RETURN_STACK_TOP,
 	}
 
 	// Create a method with the bytecodes
@@ -92,13 +93,13 @@ func TestBlockModifiesLocalVariable(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ExecutePushLiteral returned an error: %v", err)
 	}
-	context.PC += InstructionSize(PUSH_LITERAL)
+	context.PC += bytecode.InstructionSize(bytecode.PUSH_LITERAL)
 
 	err = vm.ExecuteStoreTemporaryVariable(context)
 	if err != nil {
 		t.Fatalf("ExecuteStoreTemporaryVariable returned an error: %v", err)
 	}
-	context.PC += InstructionSize(STORE_TEMPORARY_VARIABLE)
+	context.PC += bytecode.InstructionSize(bytecode.STORE_TEMPORARY_VARIABLE)
 
 	// Execute the CREATE_BLOCK bytecode
 	err = vm.ExecuteCreateBlock(context)
@@ -122,7 +123,7 @@ func TestBlockModifiesLocalVariable(t *testing.T) {
 	context.Push(block)
 
 	// Advance the PC to the EXECUTE_BLOCK bytecode
-	context.PC += InstructionSize(CREATE_BLOCK)
+	context.PC += bytecode.InstructionSize(bytecode.CREATE_BLOCK)
 
 	// Execute the EXECUTE_BLOCK bytecode
 	_, err = vm.ExecuteExecuteBlock(context)
@@ -131,7 +132,7 @@ func TestBlockModifiesLocalVariable(t *testing.T) {
 	}
 
 	// Advance the PC to the PUSH_TEMPORARY_VARIABLE bytecode
-	context.PC += InstructionSize(EXECUTE_BLOCK)
+	context.PC += bytecode.InstructionSize(bytecode.EXECUTE_BLOCK)
 
 	// Execute the PUSH_TEMPORARY_VARIABLE bytecode
 	err = vm.ExecutePushTemporaryVariable(context)
@@ -140,7 +141,7 @@ func TestBlockModifiesLocalVariable(t *testing.T) {
 	}
 
 	// Advance the PC to the RETURN_STACK_TOP bytecode
-	context.PC += InstructionSize(PUSH_TEMPORARY_VARIABLE)
+	context.PC += bytecode.InstructionSize(bytecode.PUSH_TEMPORARY_VARIABLE)
 
 	// Execute the RETURN_STACK_TOP bytecode
 	result, err := vm.ExecuteReturnStackTop(context)
