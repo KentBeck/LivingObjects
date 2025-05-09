@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"smalltalklsp/interpreter/ast"
+	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
-	"smalltalklsp/interpreter/vm"
 )
 
 // BytecodeCompiler compiles AST to bytecode
@@ -87,7 +87,7 @@ func (c *BytecodeCompiler) VisitReturnNode(node *ast.ReturnNode) interface{} {
 	node.Expression.Accept(c)
 
 	// Add the return bytecode
-	c.Bytecodes = append(c.Bytecodes, vm.RETURN_STACK_TOP)
+	c.Bytecodes = append(c.Bytecodes, bytecode.RETURN_STACK_TOP)
 
 	return nil
 }
@@ -95,7 +95,7 @@ func (c *BytecodeCompiler) VisitReturnNode(node *ast.ReturnNode) interface{} {
 // VisitSelfNode visits a self node
 func (c *BytecodeCompiler) VisitSelfNode(node *ast.SelfNode) interface{} {
 	// Add the push self bytecode
-	c.Bytecodes = append(c.Bytecodes, vm.PUSH_SELF)
+	c.Bytecodes = append(c.Bytecodes, bytecode.PUSH_SELF)
 
 	return nil
 }
@@ -106,7 +106,7 @@ func (c *BytecodeCompiler) VisitLiteralNode(node *ast.LiteralNode) interface{} {
 	literalIndex := c.addLiteral(node.Value)
 
 	// Add the push literal bytecode
-	c.Bytecodes = append(c.Bytecodes, vm.PUSH_LITERAL)
+	c.Bytecodes = append(c.Bytecodes, bytecode.PUSH_LITERAL)
 
 	// Add the literal index (4 bytes)
 	indexBytes := make([]byte, 4)
@@ -122,7 +122,7 @@ func (c *BytecodeCompiler) VisitVariableNode(node *ast.VariableNode) interface{}
 	for i, name := range c.TempVarNames {
 		if name == node.Name {
 			// Add the push temporary variable bytecode
-			c.Bytecodes = append(c.Bytecodes, vm.PUSH_TEMPORARY_VARIABLE)
+			c.Bytecodes = append(c.Bytecodes, bytecode.PUSH_TEMPORARY_VARIABLE)
 
 			// Add the temporary variable index (4 bytes)
 			indexBytes := make([]byte, 4)
@@ -149,7 +149,7 @@ func (c *BytecodeCompiler) VisitAssignmentNode(node *ast.AssignmentNode) interfa
 	for i, name := range c.TempVarNames {
 		if name == node.Variable {
 			// Add the store temporary variable bytecode
-			c.Bytecodes = append(c.Bytecodes, vm.STORE_TEMPORARY_VARIABLE)
+			c.Bytecodes = append(c.Bytecodes, bytecode.STORE_TEMPORARY_VARIABLE)
 
 			// Add the temporary variable index (4 bytes)
 			indexBytes := make([]byte, 4)
@@ -182,7 +182,7 @@ func (c *BytecodeCompiler) VisitMessageSendNode(node *ast.MessageSendNode) inter
 	selectorIndex := c.addLiteral(symbol)
 
 	// Add the send message bytecode
-	c.Bytecodes = append(c.Bytecodes, vm.SEND_MESSAGE)
+	c.Bytecodes = append(c.Bytecodes, bytecode.SEND_MESSAGE)
 
 	// Add the selector index (4 bytes)
 	selectorIndexBytes := make([]byte, 4)
@@ -210,7 +210,7 @@ func (c *BytecodeCompiler) VisitBlockNode(node *ast.BlockNode) interface{} {
 	node.Body.Accept(blockCompiler)
 
 	// Add the create block bytecode
-	c.Bytecodes = append(c.Bytecodes, vm.CREATE_BLOCK)
+	c.Bytecodes = append(c.Bytecodes, bytecode.CREATE_BLOCK)
 
 	// Add the bytecode size (4 bytes)
 	bytecodeSize := len(blockCompiler.Bytecodes)

@@ -274,18 +274,6 @@ func (vm *VM) executePrimitive(receiver *core.Object, selector *core.Object, arg
 			}
 			return result.(*core.Object)
 		}
-	case 30: // String concatenation (,)
-		if receiver.Type() == core.OBJ_STRING && len(args) == 1 && args[0].Type() == core.OBJ_STRING {
-			// Get the string values
-			str1 := classes.ObjectToString(receiver)
-			str2 := classes.ObjectToString(args[0])
-
-			// Concatenate the strings
-			result := str1.Concat(str2)
-
-			// Return the result
-			return classes.StringToObject(result)
-		}
 	default:
 		panic("executePrimitive: unknown primitive index\n")
 	}

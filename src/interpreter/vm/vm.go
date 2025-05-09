@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/core"
 )
 
@@ -57,11 +58,10 @@ func (vm *VM) NewObjectClass() *classes.Class {
 	result := classes.NewClass("Object", nil) // patch this up later. then even later when we have real images all this initialization can go away
 
 	// Add basicClass method to Object class
-	// TODO: Implement method builder in compiler package
-	// NewMethodBuilder(result).
-	// 	Selector("basicClass").
-	// 	Primitive(5). // basicClass primitive
-	// 	Go()
+	compiler.NewMethodBuilder(result).
+		Selector("basicClass").
+		Primitive(5). // basicClass primitive
+		Go()
 
 	return result
 }
@@ -70,26 +70,25 @@ func (vm *VM) NewIntegerClass() *classes.Class {
 	result := classes.NewClass("Integer", vm.ObjectClass)
 
 	// Add primitive methods to the Integer class
-	// TODO: Implement method builder in compiler package
-	// builder := NewMethodBuilder(result)
+	builder := compiler.NewMethodBuilder(result)
 
-	// // + method (addition)
-	// builder.Selector("+").Primitive(1).Go()
+	// + method (addition)
+	builder.Selector("+").Primitive(1).Go()
 
-	// // - method (subtraction)
-	// builder.Selector("-").Primitive(4).Go()
+	// - method (subtraction)
+	builder.Selector("-").Primitive(4).Go()
 
-	// // * method (multiplication)
-	// builder.Selector("*").Primitive(2).Go()
+	// * method (multiplication)
+	builder.Selector("*").Primitive(2).Go()
 
-	// // = method (equality)
-	// builder.Selector("=").Primitive(3).Go()
+	// = method (equality)
+	builder.Selector("=").Primitive(3).Go()
 
-	// // < method (less than)
-	// builder.Selector("<").Primitive(6).Go()
+	// < method (less than)
+	builder.Selector("<").Primitive(6).Go()
 
-	// // > method (greater than)
-	// builder.Selector(">").Primitive(7).Go()
+	// > method (greater than)
+	builder.Selector(">").Primitive(7).Go()
 
 	return result
 }
@@ -98,29 +97,28 @@ func (vm *VM) NewFloatClass() *classes.Class {
 	result := classes.NewClass("Float", vm.ObjectClass) // patch this up later. then even later when we have real images all this initialization can go away
 
 	// Add primitive methods to the Float class
-	// TODO: Implement method builder in compiler package
-	// builder := NewMethodBuilder(result)
+	builder := compiler.NewMethodBuilder(result)
 
-	// // + method (addition)
-	// builder.Selector("+").Primitive(10).Go()
+	// + method (addition)
+	builder.Selector("+").Primitive(10).Go()
 
-	// // - method (subtraction)
-	// builder.Selector("-").Primitive(11).Go()
+	// - method (subtraction)
+	builder.Selector("-").Primitive(11).Go()
 
-	// // * method (multiplication)
-	// builder.Selector("*").Primitive(12).Go()
+	// * method (multiplication)
+	builder.Selector("*").Primitive(12).Go()
 
-	// // / method (division)
-	// builder.Selector("/").Primitive(13).Go()
+	// / method (division)
+	builder.Selector("/").Primitive(13).Go()
 
-	// // = method (equality)
-	// builder.Selector("=").Primitive(14).Go()
+	// = method (equality)
+	builder.Selector("=").Primitive(14).Go()
 
-	// // < method (less than)
-	// builder.Selector("<").Primitive(15).Go()
+	// < method (less than)
+	builder.Selector("<").Primitive(15).Go()
 
-	// // > method (greater than)
-	// builder.Selector(">").Primitive(16).Go()
+	// > method (greater than)
+	builder.Selector(">").Primitive(16).Go()
 
 	return result
 }
@@ -142,23 +140,16 @@ func (vm *VM) NewFloat(value float64) *core.Object {
 	return core.MakeFloatImmediate(value)
 }
 
+// NewString creates a new string object
+func (vm *VM) NewString(value string) *core.Object {
+	str := classes.NewString(value)
+	strObj := classes.StringToObject(str)
+	strObj.SetClass(classes.ClassToObject(vm.StringClass))
+	return strObj
+}
+
 func (vm *VM) NewStringClass() *classes.Class {
 	result := classes.NewClass("String", vm.ObjectClass)
-
-	// Add primitive methods to the String class
-	// Add the , method (concatenation)
-	commaMethod := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
-		},
-		Bytecodes:      []byte{},
-		Literals:       []*core.Object{},
-		TempVarNames:   []string{},
-		IsPrimitive:    true,
-		PrimitiveIndex: 30, // Primitive index for string concatenation
-	}
-	result.AddMethod(classes.NewSymbol(","), classes.MethodToObject(commaMethod))
-
 	return result
 }
 
@@ -166,18 +157,17 @@ func (vm *VM) NewBlockClass() *classes.Class {
 	result := classes.NewClass("Block", vm.ObjectClass)
 
 	// Add primitive methods to the Block class
-	// TODO: Implement method builder in compiler package
-	// builder := NewMethodBuilder(result)
+	builder := compiler.NewMethodBuilder(result)
 
-	// // new method (creates a new block instance)
-	// // fixme sketchy
-	// builder.Selector("new").Primitive(20).Go()
+	// new method (creates a new block instance)
+	// fixme sketchy
+	builder.Selector("new").Primitive(20).Go()
 
-	// // value method (executes the block with no arguments)
-	// builder.Selector("value").Primitive(21).Go()
+	// value method (executes the block with no arguments)
+	builder.Selector("value").Primitive(21).Go()
 
-	// // value: method (executes the block with one argument)
-	// builder.Selector("value:").Primitive(22).Go()
+	// value: method (executes the block with one argument)
+	builder.Selector("value:").Primitive(22).Go()
 
 	return result
 }
@@ -239,16 +229,16 @@ func (vm *VM) ExecuteContext(context *Context) (core.ObjectInterface, error) {
 		}
 
 		// Get the current bytecode
-		bytecode := method.GetBytecodes()[context.PC]
+		opcode := method.GetBytecodes()[context.PC]
 
 		// Get the instruction size
-		size := InstructionSize(bytecode)
+		size := InstructionSize(opcode)
 
 		// Execute the bytecode
 		var err error
 		var skipIncrement bool
 
-		switch bytecode {
+		switch opcode {
 		case PUSH_LITERAL:
 			err = vm.ExecutePushLiteral(context)
 
@@ -329,7 +319,7 @@ func (vm *VM) ExecuteContext(context *Context) (core.ObjectInterface, error) {
 			}
 
 		default:
-			return nil, fmt.Errorf("unknown bytecode: %d", bytecode)
+			return nil, fmt.Errorf("unknown bytecode: %d", opcode)
 		}
 
 		// Check for errors

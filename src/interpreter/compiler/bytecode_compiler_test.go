@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"smalltalklsp/interpreter/ast"
+	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
-	"smalltalklsp/interpreter/vm"
 )
 
 // TestCompileYourself tests compiling the method Object>>yourself ^self
@@ -43,8 +43,8 @@ func TestCompileYourself(t *testing.T) {
 
 	// Check the method bytecodes
 	expectedBytecodes := []byte{
-		vm.PUSH_SELF,        // Push self
-		vm.RETURN_STACK_TOP, // Return the value on top of the stack
+		bytecode.PUSH_SELF,        // Push self
+		bytecode.RETURN_STACK_TOP, // Return the value on top of the stack
 	}
 
 	if len(method.Bytecodes) != len(expectedBytecodes) {
@@ -116,13 +116,13 @@ func TestCompileAdd(t *testing.T) {
 
 	// Check the method bytecodes
 	expectedBytecodes := []byte{
-		vm.PUSH_SELF,               // Push self
-		vm.PUSH_TEMPORARY_VARIABLE, // Push aNumber
-		0, 0, 0, 0,                 // Temporary variable index 0
-		vm.SEND_MESSAGE, // Send message +
-		0, 0, 0, 0,      // Selector index 0
+		bytecode.PUSH_SELF,               // Push self
+		bytecode.PUSH_TEMPORARY_VARIABLE, // Push aNumber
+		0, 0, 0, 0,                       // Temporary variable index 0
+		bytecode.SEND_MESSAGE, // Send message +
+		0, 0, 0, 0,            // Selector index 0
 		0, 0, 0, 1, // Argument count 1
-		vm.RETURN_STACK_TOP, // Return the value on top of the stack
+		bytecode.RETURN_STACK_TOP, // Return the value on top of the stack
 	}
 
 	if len(method.Bytecodes) != len(expectedBytecodes) {
