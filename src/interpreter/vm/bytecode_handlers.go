@@ -203,6 +203,10 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*core.Object, error) {
 
 // ExecuteReturnStackTop executes the RETURN_STACK_TOP bytecode
 func (vm *VM) ExecuteReturnStackTop(context *Context) (*core.Object, error) {
+	if context.StackPointer <= 0 {
+		// If the stack is empty, return nil
+		return vm.NilObject.(*core.Object), nil
+	}
 	returnValue := context.Pop()
 	return returnValue, nil
 }

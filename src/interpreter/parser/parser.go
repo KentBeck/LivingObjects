@@ -85,6 +85,39 @@ func (p *Parser) Parse() (ast.Node, error) {
 	return p.parseMethod()
 }
 
+// ParseExpression parses the input and returns an AST
+func (p *Parser) ParseExpression() (ast.Node, error) {
+	// Tokenize the input
+	err := p.tokenize()
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize the current token
+	p.CurrentToken = p.Tokens[0]
+	p.CurrentTokenIndex = 0
+
+	// Check if the input starts with a return statement
+	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "^" {
+		// Skip the return token
+		p.advanceToken()
+
+		// Parse the expression
+		expr, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+
+		// Create a return node
+		return &ast.ReturnNode{
+			Expression: expr,
+		}, nil
+	}
+
+	// Parse the expression
+	return p.parseExpression()
+}
+
 // tokenize tokenizes the input
 func (p *Parser) tokenize() error {
 	for p.Position < len(p.Input) {
@@ -279,6 +312,11 @@ func (p *Parser) parseStatements() (ast.Node, error) {
 	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "^" {
 		p.advanceToken()
 
+		// Initialize the current token index if needed
+		if p.CurrentTokenIndex >= len(p.Tokens) {
+			return nil, fmt.Errorf("unexpected end of input after return token")
+		}
+
 		// Parse the expression
 		expression, err := p.parseExpression()
 		if err != nil {
@@ -298,18 +336,110 @@ func (p *Parser) parseStatements() (ast.Node, error) {
 
 // parseExpression parses an expression
 func (p *Parser) parseExpression() (ast.Node, error) {
-	// Parse the primary expression
-	primary, err := p.parsePrimary()
+	// In Smalltalk, expressions are evaluated with the following precedence:
+	// 1. Parenthesized expressions
+	// 2. Unary messages (e.g., obj size)
+	// 3. Binary messages (e.g., a + b)
+	// 4. Keyword messages (e.g., dict at: key put: value)
+
+	// Start with a primary expression
+	return p.parseKeywordMessage()
+}
+
+// parseKeywordMessage parses a keyword message (lowest precedence)
+func (p *Parser) parseKeywordMessage() (ast.Node, error) {
+	// First parse a binary expression
+	receiver, err := p.parseBinaryMessage()
 	if err != nil {
 		return nil, err
 	}
 
-	// Check if there's a message send
-	if p.CurrentToken.Type == TOKEN_SPECIAL || p.CurrentToken.Type == TOKEN_IDENTIFIER || p.CurrentToken.Type == TOKEN_KEYWORD {
-		return p.parseMessageSend(primary)
+	// Check if there's a keyword message
+	if p.CurrentToken.Type == TOKEN_IDENTIFIER && strings.HasSuffix(p.CurrentToken.Value, ":") {
+		// Collect all keyword parts and arguments
+		var keywordParts []string
+		var arguments []ast.Node
+
+		for p.CurrentToken.Type == TOKEN_IDENTIFIER && strings.HasSuffix(p.CurrentToken.Value, ":") {
+			// Add the keyword part
+			keywordParts = append(keywordParts, p.CurrentToken.Value)
+			p.advanceToken()
+
+			// Parse the argument (which can be any expression except a keyword message)
+			arg, err := p.parseBinaryMessage()
+			if err != nil {
+				return nil, err
+			}
+			arguments = append(arguments, arg)
+		}
+
+		// Combine the keyword parts to form the selector
+		selector := strings.Join(keywordParts, "")
+
+		return &ast.MessageSendNode{
+			Receiver:  receiver,
+			Selector:  selector,
+			Arguments: arguments,
+		}, nil
 	}
 
-	return primary, nil
+	return receiver, nil
+}
+
+// parseBinaryMessage parses a binary message (medium precedence)
+func (p *Parser) parseBinaryMessage() (ast.Node, error) {
+	// First parse a unary message
+	left, err := p.parseUnaryMessage()
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse a chain of binary messages
+	for p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value != ")" {
+		// Get the binary selector
+		selector := p.CurrentToken.Value
+		p.advanceToken()
+
+		// Parse the right operand (which can be any expression except a binary or keyword message)
+		right, err := p.parseUnaryMessage()
+		if err != nil {
+			return nil, err
+		}
+
+		// Create a message send node
+		left = &ast.MessageSendNode{
+			Receiver:  left,
+			Selector:  selector,
+			Arguments: []ast.Node{right},
+		}
+	}
+
+	return left, nil
+}
+
+// parseUnaryMessage parses a unary message (highest precedence)
+func (p *Parser) parseUnaryMessage() (ast.Node, error) {
+	// First parse a primary expression
+	receiver, err := p.parsePrimary()
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse a chain of unary messages
+	for p.CurrentToken.Type == TOKEN_IDENTIFIER && !strings.HasSuffix(p.CurrentToken.Value, ":") {
+		// Get the unary selector
+		selector := p.CurrentToken.Value
+		p.advanceToken()
+
+		// Create a message send node
+		receiver = &ast.MessageSendNode{
+			Receiver:  receiver,
+			Selector:  selector,
+			Arguments: []ast.Node{},
+		}
+	}
+
+	return receiver, nil
 }
 
 // parsePrimary parses a primary expression
@@ -318,6 +448,21 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 	if p.CurrentToken.Type == TOKEN_IDENTIFIER && p.CurrentToken.Value == "self" {
 		p.advanceToken()
 		return &ast.SelfNode{}, nil
+	}
+
+	// Handle true and false
+	if p.CurrentToken.Type == TOKEN_IDENTIFIER && p.CurrentToken.Value == "true" {
+		p.advanceToken()
+		return &ast.LiteralNode{
+			Value: core.MakeTrueImmediate(),
+		}, nil
+	}
+
+	if p.CurrentToken.Type == TOKEN_IDENTIFIER && p.CurrentToken.Value == "false" {
+		p.advanceToken()
+		return &ast.LiteralNode{
+			Value: core.MakeFalseImmediate(),
+		}, nil
 	}
 
 	// Handle string literals
@@ -345,6 +490,30 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 		return literalNode, nil
 	}
 
+	// Handle array literals - must check this before parenthesized expressions
+	if p.CurrentToken.Type == TOKEN_SYMBOL && p.CurrentToken.Value == "(" {
+		return p.parseArrayLiteral()
+	}
+
+	// Handle parenthesized expressions
+	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "(" {
+		p.advanceToken() // Skip the opening parenthesis
+
+		// Parse the expression inside the parentheses
+		expr, err := p.parseKeywordMessage()
+		if err != nil {
+			return nil, err
+		}
+
+		// Expect a closing parenthesis
+		if p.CurrentToken.Type != TOKEN_SPECIAL || p.CurrentToken.Value != ")" {
+			return nil, fmt.Errorf("expected closing parenthesis, got %v", p.CurrentToken)
+		}
+		p.advanceToken() // Skip the closing parenthesis
+
+		return expr, nil
+	}
+
 	// Handle variables
 	if p.CurrentToken.Type == TOKEN_IDENTIFIER {
 		name := p.CurrentToken.Value
@@ -355,42 +524,94 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 	return nil, fmt.Errorf("expected primary expression, got %v", p.CurrentToken)
 }
 
-// parseMessageSend parses a message send
-func (p *Parser) parseMessageSend(receiver ast.Node) (ast.Node, error) {
-	// Handle binary messages
-	if p.CurrentToken.Type == TOKEN_SPECIAL {
-		selector := p.CurrentToken.Value
-		p.advanceToken()
+// parseArrayLiteral parses an array literal like #(1 2 3)
+func (p *Parser) parseArrayLiteral() (ast.Node, error) {
+	// Skip the opening symbol token (the # has already been handled by the tokenizer)
+	p.advanceToken()
 
-		// Parse the argument
-		argument, err := p.parsePrimary()
-		if err != nil {
-			return nil, err
+	// Check if the next token is the opening parenthesis
+	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "(" {
+		// Skip the opening parenthesis
+		p.advanceToken()
+	} else {
+		return nil, fmt.Errorf("expected opening parenthesis for array literal, got %v", p.CurrentToken)
+	}
+
+	// Parse the array elements
+	var elements []ast.Node
+
+	// Continue parsing elements until we reach the closing parenthesis
+	for p.CurrentToken.Type != TOKEN_SPECIAL || p.CurrentToken.Value != ")" {
+		// Parse the element (only literals are allowed in array literals)
+		if p.CurrentToken.Type == TOKEN_NUMBER {
+			// Parse number literal
+			var value int64
+			fmt.Sscanf(p.CurrentToken.Value, "%d", &value)
+
+			element := &ast.LiteralNode{
+				Value: core.MakeIntegerImmediate(value),
+			}
+			elements = append(elements, element)
+			p.advanceToken()
+		} else if p.CurrentToken.Type == TOKEN_STRING {
+			// Parse string literal
+			strObj := classes.NewString(p.CurrentToken.Value)
+			element := &ast.LiteralNode{
+				Value: classes.StringToObject(strObj),
+			}
+			elements = append(elements, element)
+			p.advanceToken()
+		} else if p.CurrentToken.Type == TOKEN_IDENTIFIER &&
+			(p.CurrentToken.Value == "true" || p.CurrentToken.Value == "false") {
+			// Parse boolean literal
+			var value *core.Object
+			if p.CurrentToken.Value == "true" {
+				value = core.MakeTrueImmediate()
+			} else {
+				value = core.MakeFalseImmediate()
+			}
+			element := &ast.LiteralNode{
+				Value: value,
+			}
+			elements = append(elements, element)
+			p.advanceToken()
+		} else {
+			return nil, fmt.Errorf("unexpected token in array literal: %v", p.CurrentToken)
 		}
 
-		return &ast.MessageSendNode{
-			Receiver:  receiver,
-			Selector:  selector,
-			Arguments: []ast.Node{argument},
-		}, nil
+		// If we've reached the end of the array, break
+		if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == ")" {
+			break
+		}
 	}
 
-	// Handle unary messages
-	if p.CurrentToken.Type == TOKEN_IDENTIFIER {
-		selector := p.CurrentToken.Value
-		p.advanceToken()
+	// Expect a closing parenthesis
+	if p.CurrentToken.Type != TOKEN_SPECIAL || p.CurrentToken.Value != ")" {
+		return nil, fmt.Errorf("expected closing parenthesis for array literal, got %v", p.CurrentToken)
+	}
+	p.advanceToken() // Skip the closing parenthesis
 
-		return &ast.MessageSendNode{
-			Receiver:  receiver,
-			Selector:  selector,
-			Arguments: []ast.Node{},
-		}, nil
+	// Create an actual Array object
+	array := classes.NewArray(len(elements))
+
+	// Fill the array with the parsed elements
+	for i, element := range elements {
+		// We need to extract the actual value from each element node
+		if literalNode, ok := element.(*ast.LiteralNode); ok {
+			array.AtPut(i, literalNode.Value)
+		} else {
+			return nil, fmt.Errorf("expected literal node for array element, got %T", element)
+		}
 	}
 
-	// Handle keyword messages (not implemented yet)
-
-	return nil, fmt.Errorf("expected message selector, got %v", p.CurrentToken)
+	// Create a literal node with the array object
+	return &ast.LiteralNode{
+		Value: classes.ArrayToObject(array),
+	}, nil
 }
+
+// We don't need parseMessageSend anymore as it's been replaced by the more specific
+// parseUnaryMessage, parseBinaryMessage, and parseKeywordMessage methods
 
 // advance advances to the next character
 func (p *Parser) advance() {
@@ -522,6 +743,12 @@ func (p *Parser) parseSymbol() (Token, error) {
 			return Token{}, err
 		}
 		return Token{Type: TOKEN_SYMBOL, Value: token.Value}, nil
+	}
+
+	// If the next character is an opening parenthesis, it's an array literal
+	if p.CurrentChar == '(' {
+		// Return a special token for array literals
+		return Token{Type: TOKEN_SYMBOL, Value: "("}, nil
 	}
 
 	// Otherwise, parse an identifier symbol
