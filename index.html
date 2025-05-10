@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Smalltalk Manifesto</title>
+    <style>
+        :root {
+            --primary-color: #34A853;
+            --secondary-color: #4285F4;
+            --dark-color: #222;
+            --light-color: #f8f9fa;
+            --accent-color: #FBBC05;
+        }
+        
+        body {
+            font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: var(--light-color);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            margin-bottom: 3rem;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 1.5rem;
+        }
+        
+        h1 {
+            font-size: 3.2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            color: var(--secondary-color);
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            margin-top: 2rem;
+        }
+        
+        .cold-open {
+            font-style: italic;
+            padding: 1.5rem;
+            background-color: rgba(52, 168, 83, 0.05);
+            border-left: 4px solid var(--primary-color);
+            margin: 2rem 0;
+        }
+        
+        .principle {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .principle:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .principle h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .principle h3::before {
+            content: "";
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            margin-right: 12px;
+            color: white;
+            text-align: center;
+            line-height: 24px;
+            font-size: 14px;
+        }
+        
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--accent-color);
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .final-note {
+            padding: 2rem;
+            background-color: rgba(251, 188, 5, 0.1);
+            border-radius: 8px;
+            margin: 3rem 0;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Server Smalltalk Manifesto</h1>
+    </header>
+    
+    <section class="cold-open">
+        <p>I once hot-patched a production system in front of a room full of skeptics.</p>
+        
+        <p>The server had been running for 18 months without downtime. A bug surfaced—obscure, intermittent, annoying. I opened a debugger on the live system, traced the problem, edited the method, saved, and watched the behavior correct itself without restarting anything. One of the ops folks blinked and said, "Wait, you just… changed it? Right now?"</p>
+        
+        <p>Yes. No deploy pipeline, no CI delay, no downtime window. Just live code, live data, and enough trust in the environment to change what needed changing.</p>
+        
+        <p>That's what Server Smalltalk makes possible: a system that stays up, stays correct, and stays malleable. Not because it's reckless—but because it's designed for living systems, not disposable processes.</p>
+        
+        <p>And beneath it all: the same old goal. Encouraging the creative spirit in everyone.</p>
+    </section>
+    
+    <h2>Principles</h2>
+    
+    <div class="principle">
+        <h3>Large Memory is a Feature, Not a Problem</h3>
+        <p>Most systems pretend memory is scarce. Ours assumes it's cheap. If you can afford to remember, you can afford to think more clearly. Objects persist in RAM not because it's trendy, but because it's humane—navigable, inspectable, alive.</p>
+    </div>
+    
+    <div class="principle">
+        <h3>Persistence is the Default</h3>
+        <p>In traditional systems, persistence is something you earn. In Server Smalltalk, it's the baseline. If you don't say otherwise, your data survives. The system encourages habits of care, not hacks of storage.</p>
+    </div>
+    
+    <div class="principle">
+        <h3>Transactions Define Intent</h3>
+        <p>A transaction isn't a scary word from the database world. It's a tool for saying: "This goes together." Transactions in Server Smalltalk help systems grow in coherent, recoverable steps. They're optimistic, rollback-friendly, and integrated.</p>
+    </div>
+    
+    <div class="principle">
+        <h3>Parallelism Shouldn't Hurt</h3>
+        <p>Concurrency is the price of scale, but it doesn't have to be the price of sanity. Server Smalltalk favors message passing over locks, actors over race conditions, clarity over cleverness. You don't need a PhD to write safe, parallel code.</p>
+    </div>
+    
+    <div class="principle">
+        <h3>The System is the Source</h3>
+        <p>There's no distinction between "source" and "running system." The image is the truth. Code lives where it runs, changes where it's needed, and grows in the same place users feel its effects. Version control exists, but it's in service to the live world, not the other way around.</p>
+    </div>
+    
+    <div class="principle">
+        <h3>Everything is Live</h3>
+        <p>Debuggers open on the server. Logs are objects. Stack traces are clickable. A crash is not the end—it's an invitation to learn, adjust, retry. You're never blind, never shut out. Development continues at runtime.</p>
+    </div>
+    
+    <div class="principle">
+        <h3>Interop is Table Stakes</h3>
+        <p>Smalltalk doesn't live in a vacuum. Server Smalltalk speaks HTTP, talks to databases, runs scheduled jobs, listens to queues. It integrates because that's what creative systems do—they converse.</p>
+    </div>
+    
+    <section class="final-note">
+        <h2>Final Note</h2>
+        <p>Server Smalltalk isn't just infrastructure. It's an invitation. To build things that live. To maintain systems that stay up and stay kind to the people working on them. To close the gap between idea and reality.</p>
+        
+        <p>And most of all, to encourage the creative spirit in everyone who touches the system—developer, ops, or user.</p>
+    </section>
+    
+    <footer>
+        <p>Join the movement. Build systems that live.</p>
+    </footer>
+</body>
+</html>
