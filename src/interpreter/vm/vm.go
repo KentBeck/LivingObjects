@@ -3,7 +3,6 @@ package vm
 import (
 	"fmt"
 
-	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/core"
@@ -12,8 +11,9 @@ import (
 // VM represents the Smalltalk virtual machine
 type VM struct {
 	Globals        map[string]*core.Object
-	CurrentContext *Context
 	ObjectMemory   *core.ObjectMemory
+	Executor       *Executor
+	CurrentContext *Context // For backward compatibility
 
 	// Special objects
 	NilObject    core.ObjectInterface
@@ -48,6 +48,12 @@ func NewVM() *VM {
 	vm.FloatClass = vm.NewFloatClass()
 	vm.StringClass = vm.NewStringClass()
 	vm.BlockClass = vm.NewBlockClass()
+
+	// Initialize the executor
+	vm.Executor = NewExecutor(vm)
+
+	// For backward compatibility
+	vm.CurrentContext = nil
 
 	// Register the VM as a block executor
 	vm.RegisterAsBlockExecutor()
@@ -180,157 +186,42 @@ func (vm *VM) LoadImage(path string) error {
 	return nil
 }
 
+// GetExecutorContext returns the current context from the executor
+func (vm *VM) GetExecutorContext() *Context {
+	return vm.Executor.CurrentContext
+}
+
+// SetExecutorContext sets the current context in the executor
+func (vm *VM) SetExecutorContext(context *Context) {
+	vm.Executor.CurrentContext = context
+}
+
 // Execute executes the current context
 func (vm *VM) Execute() (core.ObjectInterface, error) {
-	var finalResult core.ObjectInterface
+	// Sync the CurrentContext field with the Executor
+	vm.Executor.CurrentContext = vm.CurrentContext
 
-	for vm.CurrentContext != nil {
-		// Execute the current context
-		result, err := vm.ExecuteContext(vm.CurrentContext)
-		if err != nil {
-			return nil, err
-		}
+	// Execute
+	result, err := vm.Executor.Execute()
 
-		// Save the result if this is the top-level context
-		if vm.CurrentContext.Sender == nil {
-			finalResult = result
-		}
+	// Update the CurrentContext field
+	vm.CurrentContext = vm.Executor.CurrentContext
 
-		// Move to the sender context
-		vm.CurrentContext = vm.CurrentContext.Sender
-
-		// If we have a sender, push the result onto its stack
-		if vm.CurrentContext != nil {
-			vm.CurrentContext.Push(result)
-		}
-	}
-
-	return finalResult, nil
+	return result, err
 }
 
 // ExecuteContext executes a single context until it returns
 func (vm *VM) ExecuteContext(context *Context) (core.ObjectInterface, error) {
-	// Execute the context
+	// Set the context in the Executor
+	vm.CurrentContext = context
 
-	for {
-		// Get the method
-		method := classes.ObjectToMethod(context.Method)
+	// Execute
+	result, err := vm.Executor.ExecuteContext(context)
 
-		// Check if we've reached the end of the method
-		if context.PC >= len(method.GetBytecodes()) {
-			// Reached end of bytecode array
+	// Update the CurrentContext field
+	vm.CurrentContext = vm.Executor.CurrentContext
 
-			// If we've reached the end of the method, return the top of the stack
-			// This handles the case where we jump to the end of the bytecode array
-			if context.StackPointer > 0 {
-				returnValue := context.Pop()
-				return returnValue, nil
-			}
-			return vm.NilObject, nil
-		}
-
-		// Get the current bytecode
-		opcode := method.GetBytecodes()[context.PC]
-
-		// Get the instruction size
-		size := bytecode.InstructionSize(opcode)
-
-		// Execute the bytecode
-		var err error
-		var skipIncrement bool
-
-		switch opcode {
-		case bytecode.PUSH_LITERAL:
-			err = vm.ExecutePushLiteral(context)
-
-		case bytecode.PUSH_INSTANCE_VARIABLE:
-			err = vm.ExecutePushInstanceVariable(context)
-
-		case bytecode.PUSH_TEMPORARY_VARIABLE:
-			err = vm.ExecutePushTemporaryVariable(context)
-
-		case bytecode.PUSH_SELF:
-			err = vm.ExecutePushSelf(context)
-
-		case bytecode.STORE_INSTANCE_VARIABLE:
-			err = vm.ExecuteStoreInstanceVariable(context)
-
-		case bytecode.STORE_TEMPORARY_VARIABLE:
-			err = vm.ExecuteStoreTemporaryVariable(context)
-
-		case bytecode.SEND_MESSAGE:
-			returnValue, err := vm.ExecuteSendMessage(context)
-			if err == nil {
-				if returnValue != nil {
-					// We got a result from a primitive method
-					// Continue execution in the current context
-					context.PC += size
-					continue
-				} else {
-					// A nil return value with no error means we've started a new context
-					return vm.NilObject, nil
-				}
-			}
-
-		case bytecode.RETURN_STACK_TOP:
-			returnValue, err := vm.ExecuteReturnStackTop(context)
-			if err == nil {
-				return returnValue, nil
-			}
-
-		case bytecode.JUMP:
-			skipIncrement, err = vm.ExecuteJump(context)
-			if err == nil && skipIncrement {
-				continue
-			}
-
-		case bytecode.JUMP_IF_TRUE:
-			skipIncrement, err = vm.ExecuteJumpIfTrue(context)
-			if err == nil && skipIncrement {
-				continue
-			}
-
-		case bytecode.JUMP_IF_FALSE:
-			skipIncrement, err = vm.ExecuteJumpIfFalse(context)
-			if err == nil && skipIncrement {
-				continue
-			}
-
-		case bytecode.POP:
-			err = vm.ExecutePop(context)
-
-		case bytecode.DUPLICATE:
-			err = vm.ExecuteDuplicate(context)
-
-		case bytecode.CREATE_BLOCK:
-			err = vm.ExecuteCreateBlock(context)
-
-		case bytecode.EXECUTE_BLOCK:
-			returnValue, err := vm.ExecuteExecuteBlock(context)
-			if err == nil {
-				if returnValue != nil {
-					// We got a result from executing the block
-					// Continue execution in the current context
-					context.PC += size
-					continue
-				} else {
-					// A nil return value with no error means we've started a new context
-					return vm.NilObject, nil
-				}
-			}
-
-		default:
-			return nil, fmt.Errorf("unknown bytecode: %d", opcode)
-		}
-
-		// Check for errors
-		if err != nil {
-			return nil, err
-		}
-
-		// Increment the PC
-		context.PC += size
-	}
+	return result, err
 }
 
 // GetClass returns the class of an object
@@ -703,8 +594,8 @@ func (vm *VM) GetGlobals() []*core.Object {
 	return globals
 }
 
-// GetCurrentContext returns the current context
-func (vm *VM) GetCurrentContext() interface{} {
+// GetCurrentContext returns the current context (for backward compatibility)
+func (vm *VM) GetCurrentContext() *Context {
 	return vm.CurrentContext
 }
 
