@@ -161,6 +161,21 @@ func (vm *VM) NewArray(size int) *core.Object {
 	return arrayObj
 }
 
+// NewTrue returns the true object
+func (vm *VM) NewTrue() *core.Object {
+	return core.MakeTrueImmediate()
+}
+
+// NewFalse returns the false object
+func (vm *VM) NewFalse() *core.Object {
+	return core.MakeFalseImmediate()
+}
+
+// NewNil returns the nil object
+func (vm *VM) NewNil() *core.Object {
+	return core.MakeNilImmediate()
+}
+
 func (vm *VM) NewTrueClass() *classes.Class {
 	result := classes.NewClass("True", vm.ObjectClass)
 
