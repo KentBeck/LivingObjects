@@ -163,6 +163,13 @@ func (vm *VM) NewArray(size int) *core.Object {
 
 func (vm *VM) NewStringClass() *classes.Class {
 	result := classes.NewClass("String", vm.ObjectClass)
+
+	// Add primitive methods to the String class
+	builder := compiler.NewMethodBuilder(result)
+
+	// size method (returns the length of the string)
+	builder.Selector("size").Primitive(30).Go()
+
 	return result
 }
 
@@ -565,6 +572,17 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 				panic(fmt.Sprintf("Error executing block: %v", err))
 			}
 			return result.(*core.Object)
+		}
+	case 30: // String size - return the length of the string
+		if receiver.Type() == core.OBJ_STRING {
+			// Get the string
+			str := classes.ObjectToString(receiver)
+
+			// Get the length of the string
+			length := str.Length()
+
+			// Return the length as an integer
+			return vm.NewInteger(int64(length))
 		}
 	default:
 		panic("executePrimitive: unknown primitive index\n")
