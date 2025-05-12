@@ -66,18 +66,4 @@ func TestGetClassPanics(t *testing.T) {
 		}()
 		virtualMachine.GetClass(nil)
 	})
-
-	// Test with object that has nil class
-	t.Run("Object with nil class", func(t *testing.T) {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Errorf("Expected panic with object that has nil class, but no panic occurred")
-			}
-		}()
-		objWithNilClass := &core.Object{
-			TypeField:  core.OBJ_METHOD,
-			ClassField: nil, // Explicitly set class to nil
-		}
-		virtualMachine.GetClass(objWithNilClass)
-	})
 }

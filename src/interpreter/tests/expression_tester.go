@@ -89,13 +89,8 @@ func RunTests(filename string) ([]ExpressionTest, error) {
 }
 
 func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, error) {
-	// Wrap the expression in a method with a return statement
-	wrappedExpression := expression
-
-	fmt.Printf("Evaluating: %s\n", wrappedExpression)
-
-	// Parse the wrapped expression
-	parsed, err := parser.NewParser(wrappedExpression, classes.ClassToObject(vmInstance.ObjectClass), vmInstance).ParseExpression()
+	// Parse the expression
+	parsed, err := parser.NewParser(expression, classes.ClassToObject(vmInstance.ObjectClass), vmInstance).ParseExpression()
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse expression: %s - %v", expression, err)
 	}
