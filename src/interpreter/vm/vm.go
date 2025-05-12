@@ -164,11 +164,17 @@ func (vm *VM) NewArray(size int) *core.Object {
 func (vm *VM) NewTrueClass() *classes.Class {
 	result := classes.NewClass("True", vm.ObjectClass)
 
-	// Add primitive methods to the True class
+	// Add methods to the True class
 	builder := compiler.NewMethodBuilder(result)
 
+	// Create a literal for false
+	falseIndex, builder := builder.AddLiteral(core.MakeFalseImmediate())
+
 	// not method (returns false)
-	builder.Selector("not").Primitive(50).Go()
+	builder.Selector("not").
+		PushLiteral(falseIndex).
+		ReturnStackTop().
+		Go()
 
 	return result
 }
@@ -176,11 +182,17 @@ func (vm *VM) NewTrueClass() *classes.Class {
 func (vm *VM) NewFalseClass() *classes.Class {
 	result := classes.NewClass("False", vm.ObjectClass)
 
-	// Add primitive methods to the False class
+	// Add methods to the False class
 	builder := compiler.NewMethodBuilder(result)
 
+	// Create a literal for true
+	trueIndex, builder := builder.AddLiteral(core.MakeTrueImmediate())
+
 	// not method (returns true)
-	builder.Selector("not").Primitive(51).Go()
+	builder.Selector("not").
+		PushLiteral(trueIndex).
+		ReturnStackTop().
+		Go()
 
 	return result
 }
@@ -630,14 +642,6 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 
 			// Return the element at the given index
 			return array.At(int(index))
-		}
-	case 50: // True not - return false
-		if core.IsTrueImmediate(receiver) {
-			return core.MakeFalseImmediate()
-		}
-	case 51: // False not - return true
-		if core.IsFalseImmediate(receiver) {
-			return core.MakeTrueImmediate()
 		}
 	default:
 		panic("executePrimitive: unknown primitive index\n")
