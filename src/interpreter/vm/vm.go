@@ -186,16 +186,6 @@ func (vm *VM) LoadImage(path string) error {
 	return nil
 }
 
-// GetExecutorContext returns the current context from the executor
-func (vm *VM) GetExecutorContext() *Context {
-	return vm.Executor.CurrentContext
-}
-
-// SetExecutorContext sets the current context in the executor
-func (vm *VM) SetExecutorContext(context *Context) {
-	vm.Executor.CurrentContext = context
-}
-
 // Execute executes the current context
 func (vm *VM) Execute() (core.ObjectInterface, error) {
 	// Sync the CurrentContext field with the Executor

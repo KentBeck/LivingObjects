@@ -120,9 +120,9 @@ func DemoFactorial() {
 		fmt.Printf("%3d ", method.GetBytecodes()[i])
 	}
 
-	virtualMachine.CurrentContext = vm.NewContext(mainMethod, fourObj, []*core.Object{}, nil)
+	context := vm.NewContext(mainMethod, fourObj, []*core.Object{}, nil)
 
-	result, err := virtualMachine.Execute()
+	result, err := virtualMachine.ExecuteContext(context)
 	if err != nil {
 		fmt.Printf("Error executing: %s\n", err)
 		return
