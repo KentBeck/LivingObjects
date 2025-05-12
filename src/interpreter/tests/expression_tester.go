@@ -110,16 +110,11 @@ func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, err
 	// Create a context for execution
 	context := vm.NewContext(methodObj, classes.ClassToObject(vmInstance.ObjectClass), []*core.Object{}, nil)
 
-	// Set the current context and execute
-	vmInstance.Executor.CurrentContext = context
-
 	// Execute through VM.Execute()
-	result, err := vmInstance.Execute()
+	result, err := vmInstance.ExecuteContext(context)
 	if err != nil {
 		return nil, err
 	}
 
 	return result.(*core.Object), nil
 }
-
-// No debug printing functions
