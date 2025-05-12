@@ -90,7 +90,7 @@ func RunTests(filename string) ([]ExpressionTest, error) {
 
 func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, error) {
 	// Wrap the expression in a method with a return statement
-	wrappedExpression := "^ " + expression
+	wrappedExpression := expression
 
 	// Parse the wrapped expression
 	parsed, err := parser.NewParser(wrappedExpression, classes.ClassToObject(vmInstance.ObjectClass)).ParseExpression()
@@ -104,8 +104,6 @@ func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, err
 	// Compile the parsed expression
 	method := compiler.NewBytecodeCompiler(classes.ClassToObject(vmInstance.ObjectClass)).Compile(parsed)
 	methodObj := classes.MethodToObject(method)
-
-	// No debug printing
 
 	// Create a context for execution
 	context := vm.NewContext(methodObj, classes.ClassToObject(vmInstance.ObjectClass), []*core.Object{}, nil)
