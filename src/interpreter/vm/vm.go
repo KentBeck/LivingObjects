@@ -26,6 +26,7 @@ type VM struct {
 	FloatClass   *classes.Class
 	StringClass  *classes.Class
 	BlockClass   *classes.Class
+	ArrayClass   *classes.Class
 }
 
 // NewVM creates a new virtual machine
@@ -47,6 +48,7 @@ func NewVM() *VM {
 	vm.FloatClass = vm.NewFloatClass()
 	vm.StringClass = vm.NewStringClass()
 	vm.BlockClass = vm.NewBlockClass()
+	vm.ArrayClass = vm.NewArrayClass()
 
 	// Initialize the executor
 	vm.Executor = NewExecutor(vm)
@@ -151,8 +153,21 @@ func (vm *VM) NewString(value string) *core.Object {
 	return strObj
 }
 
+// NewArray creates a new array object
+func (vm *VM) NewArray(size int) *core.Object {
+	array := classes.NewArray(size)
+	arrayObj := classes.ArrayToObject(array)
+	arrayObj.SetClass(classes.ClassToObject(vm.ArrayClass))
+	return arrayObj
+}
+
 func (vm *VM) NewStringClass() *classes.Class {
 	result := classes.NewClass("String", vm.ObjectClass)
+	return result
+}
+
+func (vm *VM) NewArrayClass() *classes.Class {
+	result := classes.NewClass("Array", vm.ObjectClass)
 	return result
 }
 
@@ -244,7 +259,7 @@ func (vm *VM) GetClass(obj *core.Object) *classes.Class {
 
 	// Otherwise, return the class field
 	if obj.Class() == nil {
-		panic("GetClass: object has nil class")
+		panic(fmt.Sprintf("GetClass: object has nil class %s\n", obj.String()))
 	}
 
 	return classes.ObjectToClass(obj.Class())
@@ -565,11 +580,6 @@ func (vm *VM) GetGlobals() []*core.Object {
 		globals = append(globals, obj)
 	}
 	return globals
-}
-
-// GetCurrentContext returns the current context (for backward compatibility)
-func (vm *VM) GetCurrentContext() *Context {
-	return vm.Executor.CurrentContext
 }
 
 // GetObjectClass returns the object class

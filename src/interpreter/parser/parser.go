@@ -17,6 +17,13 @@ type Parser struct {
 	// Class is the class the method belongs to
 	Class *core.Object
 
+	// VM is the virtual machine used for creating literals
+	VM interface {
+		NewInteger(value int64) *core.Object
+		NewString(value string) *core.Object
+		NewArray(size int) *core.Object
+	}
+
 	// Position is the current position in the input
 	Position int
 
@@ -57,10 +64,15 @@ type Token struct {
 }
 
 // NewParser creates a new parser
-func NewParser(input string, class *core.Object) *Parser {
+func NewParser(input string, class *core.Object, vm interface {
+	NewInteger(value int64) *core.Object
+	NewString(value string) *core.Object
+	NewArray(size int) *core.Object
+}) *Parser {
 	p := &Parser{
 		Input:             input,
 		Class:             class,
+		VM:                vm,
 		Position:          0,
 		CurrentTokenIndex: 0,
 		Tokens:            []Token{},
@@ -467,10 +479,9 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 
 	// Handle string literals
 	if p.CurrentToken.Type == TOKEN_STRING {
-		// Create a string literal node
-		strObj := classes.NewString(p.CurrentToken.Value)
+		// Create a string literal node using the VM
 		literalNode := &ast.LiteralNode{
-			Value: classes.StringToObject(strObj),
+			Value: p.VM.NewString(p.CurrentToken.Value),
 		}
 		p.advanceToken()
 		return literalNode, nil
@@ -482,9 +493,9 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 		var value int64
 		fmt.Sscanf(p.CurrentToken.Value, "%d", &value)
 
-		// Create a number literal node
+		// Create a number literal node using the VM
 		literalNode := &ast.LiteralNode{
-			Value: core.MakeIntegerImmediate(value),
+			Value: p.VM.NewInteger(value),
 		}
 		p.advanceToken()
 		return literalNode, nil
@@ -549,15 +560,14 @@ func (p *Parser) parseArrayLiteral() (ast.Node, error) {
 			fmt.Sscanf(p.CurrentToken.Value, "%d", &value)
 
 			element := &ast.LiteralNode{
-				Value: core.MakeIntegerImmediate(value),
+				Value: p.VM.NewInteger(value),
 			}
 			elements = append(elements, element)
 			p.advanceToken()
 		} else if p.CurrentToken.Type == TOKEN_STRING {
 			// Parse string literal
-			strObj := classes.NewString(p.CurrentToken.Value)
 			element := &ast.LiteralNode{
-				Value: classes.StringToObject(strObj),
+				Value: p.VM.NewString(p.CurrentToken.Value),
 			}
 			elements = append(elements, element)
 			p.advanceToken()
@@ -591,8 +601,9 @@ func (p *Parser) parseArrayLiteral() (ast.Node, error) {
 	}
 	p.advanceToken() // Skip the closing parenthesis
 
-	// Create an actual Array object
-	array := classes.NewArray(len(elements))
+	// Create an actual Array object using the VM
+	arrayObj := p.VM.NewArray(len(elements))
+	array := classes.ObjectToArray(arrayObj)
 
 	// Fill the array with the parsed elements
 	for i, element := range elements {
@@ -606,7 +617,7 @@ func (p *Parser) parseArrayLiteral() (ast.Node, error) {
 
 	// Create a literal node with the array object
 	return &ast.LiteralNode{
-		Value: classes.ArrayToObject(array),
+		Value: arrayObj,
 	}, nil
 }
 

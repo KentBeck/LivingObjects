@@ -92,8 +92,10 @@ func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, err
 	// Wrap the expression in a method with a return statement
 	wrappedExpression := expression
 
+	fmt.Printf("Evaluating: %s\n", wrappedExpression)
+
 	// Parse the wrapped expression
-	parsed, err := parser.NewParser(wrappedExpression, classes.ClassToObject(vmInstance.ObjectClass)).ParseExpression()
+	parsed, err := parser.NewParser(wrappedExpression, classes.ClassToObject(vmInstance.ObjectClass), vmInstance).ParseExpression()
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse expression: %s - %v", expression, err)
 	}

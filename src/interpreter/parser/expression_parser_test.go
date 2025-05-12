@@ -6,6 +6,7 @@ import (
 	"smalltalklsp/interpreter/ast"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/vm"
 )
 
 // TestParseExpression tests parsing various Smalltalk expressions
@@ -448,11 +449,14 @@ func TestParseExpression(t *testing.T) {
 		},
 	}
 
+	// Create a real VM for testing
+	vmInstance := vm.NewVM()
+
 	// Run the tests
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// Create a parser for the expression
-			p := NewParser(test.input, classObj)
+			p := NewParser(test.input, classObj, vmInstance)
 
 			// Initialize tokens
 			err := p.tokenize()
@@ -490,8 +494,11 @@ func TestParseArrayLiteral(t *testing.T) {
 	objectClass := classes.NewClass("Object", nil)
 	classObj := classes.ClassToObject(objectClass)
 
+	// Create a real VM for testing
+	vmInstance := vm.NewVM()
+
 	// Create a parser for the expression
-	p := NewParser("#(1 2 3)", classObj)
+	p := NewParser("#(1 2 3)", classObj, vmInstance)
 
 	// Initialize tokens
 	err := p.tokenize()
@@ -574,8 +581,11 @@ func TestArrayLiteralWithKeywordMessage(t *testing.T) {
 	objectClass := classes.NewClass("Object", nil)
 	classObj := classes.ClassToObject(objectClass)
 
+	// Create a real VM for testing
+	vmInstance := vm.NewVM()
+
 	// Create a parser for the expression
-	p := NewParser("#(1 2 3) at: 2", classObj)
+	p := NewParser("#(1 2 3) at: 2", classObj, vmInstance)
 
 	// Initialize tokens
 	err := p.tokenize()

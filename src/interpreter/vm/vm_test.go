@@ -80,3 +80,52 @@ func TestExecuteContextWithError(t *testing.T) {
 		t.Errorf("Expected an error, got nil")
 	}
 }
+
+// TestNewArray tests that when we create an Array through the VM, the class is set correctly
+func TestNewArray(t *testing.T) {
+	// Create a new VM
+	virtualMachine := vm.NewVM()
+
+	// Create a new array
+	arrayObj := virtualMachine.NewArray(3)
+
+	// Check that the array is of the correct type
+	if arrayObj.Type() != core.OBJ_ARRAY {
+		t.Errorf("Expected array type to be OBJ_ARRAY, got %v", arrayObj.Type())
+	}
+
+	// Check that the array has the correct class
+	if arrayObj.Class() == nil {
+		t.Errorf("Expected array class to be set, got nil")
+	}
+
+	// Get the class of the array
+	arrayClass := classes.ObjectToClass(arrayObj.Class())
+	if arrayClass == nil {
+		t.Errorf("Expected array class to be a valid class, got nil")
+	}
+
+	// Check that the class name is "Array"
+	if arrayClass.GetName() != "Array" {
+		t.Errorf("Expected array class name to be 'Array', got '%s'", arrayClass.GetName())
+	}
+
+	// Check that the class is the same as vm.ArrayClass
+	if arrayClass != virtualMachine.ArrayClass {
+		t.Errorf("Expected array class to be vm.ArrayClass")
+	}
+
+	// Check that the array has the correct size
+	array := classes.ObjectToArray(arrayObj)
+	if array.Size() != 3 {
+		t.Errorf("Expected array size to be 3, got %d", array.Size())
+	}
+
+	// Check that the array elements are initialized to nil
+	for i := 0; i < array.Size(); i++ {
+		elem := array.At(i)
+		if elem != nil {
+			t.Errorf("Expected array element %d to be nil, got %v", i, elem)
+		}
+	}
+}

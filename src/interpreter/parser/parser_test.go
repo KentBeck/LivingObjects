@@ -5,6 +5,7 @@ import (
 
 	"smalltalklsp/interpreter/ast"
 	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/vm"
 )
 
 // TestParseYourself tests parsing the method "yourself ^self"
@@ -12,8 +13,11 @@ func TestParseYourself(t *testing.T) {
 	// Create a class
 	objectClass := classes.NewClass("Object", nil)
 
+	// Create a real VM for testing
+	vmInstance := vm.NewVM()
+
 	// Create a parser
-	p := NewParser("yourself ^self", classes.ClassToObject(objectClass))
+	p := NewParser("yourself ^self", classes.ClassToObject(objectClass), vmInstance)
 
 	// Parse the method
 	node, err := p.Parse()
@@ -66,8 +70,11 @@ func TestParseAdd(t *testing.T) {
 	objectClass := classes.NewClass("Object", nil)
 	integerClass := classes.NewClass("Integer", objectClass)
 
+	// Create a real VM for testing
+	vmInstance := vm.NewVM()
+
 	// Create a parser
-	p := NewParser("+ aNumber ^self + aNumber", classes.ClassToObject(integerClass))
+	p := NewParser("+ aNumber ^self + aNumber", classes.ClassToObject(integerClass), vmInstance)
 
 	// Parse the method
 	node, err := p.Parse()
@@ -147,8 +154,11 @@ func TestParseWithTemporaries(t *testing.T) {
 	// Create a class
 	objectClass := classes.NewClass("Object", nil)
 
+	// Create a real VM for testing
+	vmInstance := vm.NewVM()
+
 	// Create a parser
-	p := NewParser("factorial | temp | ^temp", classes.ClassToObject(objectClass))
+	p := NewParser("factorial | temp | ^temp", classes.ClassToObject(objectClass), vmInstance)
 
 	// Parse the method
 	node, err := p.Parse()
@@ -190,8 +200,11 @@ func TestParseWithBlock(t *testing.T) {
 	// Create a class
 	objectClass := classes.NewClass("Object", nil)
 
+	// Create a real VM for testing
+	vmInstance := vm.NewVM()
+
 	// Create a parser
-	p := NewParser("do: aBlock ^aBlock value", classes.ClassToObject(objectClass))
+	p := NewParser("do: aBlock ^aBlock value", classes.ClassToObject(objectClass), vmInstance)
 
 	// Parse the method
 	node, err := p.Parse()
