@@ -3,8 +3,6 @@
 2 + 2 * 3 ! 8
 (2 + 2) * 3 ! 12
 1 + 2 + 3 ! 6
-1 to: 3 ! an OrderedCollection(1 2 3)
-'hello' , ' world' ! 'hello world'
 'hello' size ! 5
 #(1 2 3) at: 2 ! 2
 true not ! false
