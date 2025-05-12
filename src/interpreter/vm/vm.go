@@ -175,6 +175,13 @@ func (vm *VM) NewStringClass() *classes.Class {
 
 func (vm *VM) NewArrayClass() *classes.Class {
 	result := classes.NewClass("Array", vm.ObjectClass)
+
+	// Add primitive methods to the Array class
+	builder := compiler.NewMethodBuilder(result)
+
+	// at: method (returns the element at the given index)
+	builder.Selector("at:").Primitive(40).Go()
+
 	return result
 }
 
@@ -583,6 +590,22 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 
 			// Return the length as an integer
 			return vm.NewInteger(int64(length))
+		}
+	case 40: // Array at: - return the element at the given index
+		if receiver.Type() == core.OBJ_ARRAY && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
+			// Get the array
+			array := classes.ObjectToArray(receiver)
+
+			// Get the index (1-based in Smalltalk, 0-based in Go)
+			index := core.GetIntegerImmediate(args[0]) - 1
+
+			// Check bounds
+			if index < 0 || int(index) >= array.Size() {
+				panic(fmt.Sprintf("Array index out of bounds: %d", index+1))
+			}
+
+			// Return the element at the given index
+			return array.At(int(index))
 		}
 	default:
 		panic("executePrimitive: unknown primitive index\n")
