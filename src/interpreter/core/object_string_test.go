@@ -26,22 +26,22 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name:     "Boolean true",
-			obj:      core.NewBoolean(true),
+			obj:      virtualMachine.NewTrue(),
 			expected: "true",
 		},
 		{
 			name:     "Boolean false",
-			obj:      core.NewBoolean(false),
+			obj:      virtualMachine.NewFalse(),
 			expected: "false",
 		},
 		{
 			name:     "Nil",
-			obj:      core.NewNil(),
+			obj:      virtualMachine.NewNil(),
 			expected: "nil",
 		},
 		{
 			name:     "String",
-			obj:      classes.StringToObject(classes.NewString("hello")),
+			obj:      virtualMachine.NewString("hello"),
 			expected: "'hello'",
 		},
 		{
@@ -51,7 +51,7 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name:     "Array",
-			obj:      classes.ArrayToObject(classes.NewArray(3)),
+			obj:      virtualMachine.NewArray(3),
 			expected: "Array(3)",
 		},
 		{
