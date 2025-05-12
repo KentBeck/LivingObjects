@@ -10,10 +10,9 @@ import (
 
 // VM represents the Smalltalk virtual machine
 type VM struct {
-	Globals        map[string]*core.Object
-	ObjectMemory   *core.ObjectMemory
-	Executor       *Executor
-	CurrentContext *Context // For backward compatibility
+	Globals      map[string]*core.Object
+	ObjectMemory *core.ObjectMemory
+	Executor     *Executor
 
 	// Special objects
 	NilObject    core.ObjectInterface
@@ -51,9 +50,6 @@ func NewVM() *VM {
 
 	// Initialize the executor
 	vm.Executor = NewExecutor(vm)
-
-	// For backward compatibility
-	vm.CurrentContext = nil
 
 	// Register the VM as a block executor
 	vm.RegisterAsBlockExecutor()
@@ -188,30 +184,17 @@ func (vm *VM) LoadImage(path string) error {
 
 // Execute executes the current context
 func (vm *VM) Execute() (core.ObjectInterface, error) {
-	// Sync the CurrentContext field with the Executor
-	vm.Executor.CurrentContext = vm.CurrentContext
-
-	// Execute
-	result, err := vm.Executor.Execute()
-
-	// Update the CurrentContext field
-	vm.CurrentContext = vm.Executor.CurrentContext
-
-	return result, err
+	// Execute using the executor
+	return vm.Executor.Execute()
 }
 
 // ExecuteContext executes a single context until it returns
 func (vm *VM) ExecuteContext(context *Context) (core.ObjectInterface, error) {
 	// Set the context in the Executor
-	vm.CurrentContext = context
+	vm.Executor.CurrentContext = context
 
 	// Execute
-	result, err := vm.Executor.ExecuteContext(context)
-
-	// Update the CurrentContext field
-	vm.CurrentContext = vm.Executor.CurrentContext
-
-	return result, err
+	return vm.Executor.ExecuteContext(context)
 }
 
 // GetClass returns the class of an object
@@ -514,7 +497,7 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 	case 20: // Block new - create a new block instance
 		if receiver.Type() == core.OBJ_CLASS && receiver == classes.ClassToObject(vm.BlockClass) {
 			// Create a new block instance
-			blockInstance := classes.NewBlock(vm.CurrentContext)
+			blockInstance := classes.NewBlock(vm.Executor.CurrentContext)
 			blockInstance.SetClass(classes.ClassToObject(vm.BlockClass))
 			return blockInstance
 		}
@@ -586,7 +569,7 @@ func (vm *VM) GetGlobals() []*core.Object {
 
 // GetCurrentContext returns the current context (for backward compatibility)
 func (vm *VM) GetCurrentContext() *Context {
-	return vm.CurrentContext
+	return vm.Executor.CurrentContext
 }
 
 // GetObjectClass returns the object class

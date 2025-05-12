@@ -428,7 +428,7 @@ func (r *StringTestRunner) execute(methodObj *core.Object) (*core.Object, error)
 	)
 
 	// Set the VM's current context
-	r.VM.CurrentContext = context
+	r.VM.Executor.CurrentContext = context
 
 	// Check for special cases
 	method := classes.ObjectToMethod(methodObj)

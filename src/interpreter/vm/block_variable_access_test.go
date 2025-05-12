@@ -85,7 +85,7 @@ func TestBlockModifiesLocalVariable(t *testing.T) {
 	)
 
 	// Set the VM's current context
-	vm.CurrentContext = context
+	vm.Executor.CurrentContext = context
 
 	// Execute the PUSH_LITERAL and STORE_TEMPORARY_VARIABLE bytecodes
 	// This sets a := 1

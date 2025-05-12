@@ -176,8 +176,8 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*core.Object, error) {
 	// Create a new context for the method
 	newContext := NewContext(methodObj, receiver, args, context)
 
-	// Set the current context to the new context
-	vm.CurrentContext = newContext
+	// Set the current context to the new context in the executor
+	vm.Executor.CurrentContext = newContext
 
 	// Return from this context execution to start executing the new context
 	// We need to execute the new context immediately
@@ -191,8 +191,8 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*core.Object, error) {
 		return nil, fmt.Errorf("method not found: %s", classes.GetSymbolValue(selector))
 	}
 
-	// Move back to the sender context
-	vm.CurrentContext = context
+	// Move back to the sender context in the executor
+	vm.Executor.CurrentContext = context
 
 	// Push the result onto the stack
 	context.Push(result)

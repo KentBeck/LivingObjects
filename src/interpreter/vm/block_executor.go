@@ -58,10 +58,10 @@ func (vm *VM) ExecuteBlock(block *core.Object, args []*core.Object) *core.Object
 	}
 
 	// Save the current context
-	savedContext := vm.CurrentContext
+	savedContext := vm.Executor.CurrentContext
 
 	// Set the current context to the block context
-	vm.CurrentContext = blockContext
+	vm.Executor.CurrentContext = blockContext
 
 	// Execute the block
 	result, err := vm.ExecuteContext(blockContext)
@@ -70,7 +70,7 @@ func (vm *VM) ExecuteBlock(block *core.Object, args []*core.Object) *core.Object
 	}
 
 	// Restore the current context
-	vm.CurrentContext = savedContext
+	vm.Executor.CurrentContext = savedContext
 
 	// Return the result
 	return result.(*core.Object)

@@ -29,8 +29,6 @@ type ExpressionTest struct {
 
 // RunTests runs all the tests in the specified file
 func RunTests(filename string) ([]ExpressionTest, error) {
-	vmInstance := vm.NewVM()
-
 	// Open the file
 	file, err := os.Open(filename)
 	if err != nil {
@@ -64,6 +62,9 @@ func RunTests(filename string) ([]ExpressionTest, error) {
 			Expression:     strings.TrimSpace(parts[0]),
 			ExpectedResult: strings.TrimSpace(parts[1]),
 		}
+
+		// Create a new VM instance for each test
+		vmInstance := vm.NewVM()
 
 		// Run the test
 		result, err := evaluateExpression(vmInstance, test.Expression)
@@ -110,7 +111,7 @@ func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, err
 	context := vm.NewContext(methodObj, classes.ClassToObject(vmInstance.ObjectClass), []*core.Object{}, nil)
 
 	// Set the current context and execute
-	vmInstance.CurrentContext = context
+	vmInstance.Executor.CurrentContext = context
 
 	// Execute through VM.Execute()
 	result, err := vmInstance.Execute()

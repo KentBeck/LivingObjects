@@ -220,7 +220,7 @@ func (vm *VM) executePrimitive(receiver *core.Object, selector *core.Object, arg
 	case 20: // Block new - create a new block instance
 		if receiver.Type() == core.OBJ_CLASS && receiver == classes.ClassToObject(vm.BlockClass) {
 			// Create a new block instance
-			blockInstance := classes.NewBlock(vm.CurrentContext)
+			blockInstance := classes.NewBlock(vm.Executor.CurrentContext)
 			blockInstance.SetClass(classes.ClassToObject(vm.BlockClass))
 			return blockInstance
 		}
