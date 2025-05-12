@@ -40,9 +40,9 @@ func NewVM() *VM {
 	vm.ObjectClass = vm.NewObjectClass()
 	vm.NilClass = classes.NewClass("UndefinedObject", vm.ObjectClass)
 	vm.NilObject = core.MakeNilImmediate()
-	vm.TrueClass = classes.NewClass("True", vm.ObjectClass)
+	vm.TrueClass = vm.NewTrueClass()
 	vm.TrueObject = core.MakeTrueImmediate()
-	vm.FalseClass = classes.NewClass("False", vm.ObjectClass)
+	vm.FalseClass = vm.NewFalseClass()
 	vm.FalseObject = core.MakeFalseImmediate()
 	vm.IntegerClass = vm.NewIntegerClass()
 	vm.FloatClass = vm.NewFloatClass()
@@ -159,6 +159,30 @@ func (vm *VM) NewArray(size int) *core.Object {
 	arrayObj := classes.ArrayToObject(array)
 	arrayObj.SetClass(classes.ClassToObject(vm.ArrayClass))
 	return arrayObj
+}
+
+func (vm *VM) NewTrueClass() *classes.Class {
+	result := classes.NewClass("True", vm.ObjectClass)
+
+	// Add primitive methods to the True class
+	builder := compiler.NewMethodBuilder(result)
+
+	// not method (returns false)
+	builder.Selector("not").Primitive(50).Go()
+
+	return result
+}
+
+func (vm *VM) NewFalseClass() *classes.Class {
+	result := classes.NewClass("False", vm.ObjectClass)
+
+	// Add primitive methods to the False class
+	builder := compiler.NewMethodBuilder(result)
+
+	// not method (returns true)
+	builder.Selector("not").Primitive(51).Go()
+
+	return result
 }
 
 func (vm *VM) NewStringClass() *classes.Class {
@@ -606,6 +630,14 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 
 			// Return the element at the given index
 			return array.At(int(index))
+		}
+	case 50: // True not - return false
+		if core.IsTrueImmediate(receiver) {
+			return core.MakeFalseImmediate()
+		}
+	case 51: // False not - return true
+		if core.IsFalseImmediate(receiver) {
+			return core.MakeTrueImmediate()
 		}
 	default:
 		panic("executePrimitive: unknown primitive index\n")
