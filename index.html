@@ -1,197 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Smalltalk Manifesto</title>
-    <style>
-        :root {
-            --primary-color: #34A853;
-            --secondary-color: #4285F4;
-            --dark-color: #222;
-            --light-color: #f8f9fa;
-            --accent-color: #FBBC05;
-        }
-        
-        body {
-            font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: var(--dark-color);
-            background-color: var(--light-color);
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        header {
-            margin-bottom: 3rem;
-            text-align: center;
-            border-bottom: 2px solid var(--accent-color);
-            padding-bottom: 1.5rem;
-        }
-        
-        h1 {
-            font-size: 3.2rem;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-        
-        h2 {
-            font-size: 2rem;
-            color: var(--secondary-color);
-            margin-top: 2.5rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--primary-color);
-            padding-left: 1rem;
-        }
-        
-        h3 {
-            font-size: 1.5rem;
-            color: var(--dark-color);
-            margin-top: 2rem;
-        }
-        
-        .cold-open {
-            font-style: italic;
-            padding: 1.5rem;
-            background-color: rgba(52, 168, 83, 0.05);
-            border-left: 4px solid var(--primary-color);
-            margin: 2rem 0;
-        }
-        
-        .principle {
-            margin-bottom: 2rem;
-            padding: 1.5rem;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .principle:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .principle h3 {
-            color: var(--secondary-color);
-            margin-top: 0;
-            display: flex;
-            align-items: center;
-        }
-        
-        .principle h3::before {
-            content: "";
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            background-color: var(--primary-color);
-            border-radius: 50%;
-            margin-right: 12px;
-            color: white;
-            text-align: center;
-            line-height: 24px;
-            font-size: 14px;
-        }
-        
-        footer {
-            margin-top: 4rem;
-            padding-top: 2rem;
-            border-top: 2px solid var(--accent-color);
-            text-align: center;
-            font-style: italic;
-        }
-        
-        .final-note {
-            padding: 2rem;
-            background-color: rgba(251, 188, 5, 0.1);
-            border-radius: 8px;
-            margin: 3rem 0;
-        }
-        
-        @media (max-width: 600px) {
-            body {
-                padding: 1rem;
-            }
-            
-            h1 {
-                font-size: 2.5rem;
-            }
-            
-            h2 {
-                font-size: 1.8rem;
-            }
-        }
-    </style>
-    <!-- Fathom - beautiful, simple website analytics -->
-<script src="https://cdn.usefathom.com/script.js" data-site="FHRALVOZ" defer></script>
-<!-- / Fathom -->
-</head>
-<body>
-    <header>
-        <h1>Server Smalltalk Manifesto</h1>
-    </header>
-    
-    <section class="cold-open">
-        <p>An object is more than bytes in memory—it's possibility incarnate.</p>
-        
-        <p>An object can be a promise of future cash flow, waiting to be collected. An object can embody a contractual relationship, evolving with each interaction. An object can represent the delivery of a life-saving drug, carrying with it hope and healing.</p>
-        
-        <p>But objects only achieve their full potential when they can live, grow, and interact. When they aren't dead, static entries in a database, but living entities in a responsive ecosystem.</p>
-        
-        <p>Data imprisoned in rows and columns is merely historical. Data embodied in living objects is generative—constantly creating new value through its interactions.</p>
-        
-        <p>That's what Server Smalltalk makes possible: systems where objects truly live, where value compounds through connection, where the digital mirrors the organic vitality of the world itself.</p>
-        
-        <p>And beneath it all: the same old goal. Encouraging the creative spirit in everyone.</p>
-    </section>
-    
-    <h2>Principles</h2>
-    
-    <div class="principle">
-        <h3>Large Memory is a Feature, Not a Problem</h3>
-        <p>Most systems pretend memory is scarce. Ours assumes it's cheap. If you can afford to remember, you can afford to think more clearly. Objects persist in RAM not because it's trendy, but because it's humane—navigable, inspectable, alive.</p>
-    </div>
-    
-    <div class="principle">
-        <h3>Persistence is the Default</h3>
-        <p>In traditional systems, persistence is something you earn. In Server Smalltalk, it's the baseline. If you don't say otherwise, your data survives. The system encourages habits of care, not hacks of storage.</p>
-    </div>
-    
-    <div class="principle">
-        <h3>Transactions Define Intent</h3>
-        <p>A transaction isn't a scary word from the database world. It's a tool for saying: "This goes together." Transactions in Server Smalltalk help systems grow in coherent, recoverable steps. They're optimistic, rollback-friendly, and integrated.</p>
-    </div>
-    
-    <div class="principle">
-        <h3>Parallelism Shouldn't Hurt</h3>
-        <p>Concurrency is the price of scale, but it doesn't have to be the price of sanity. Server Smalltalk favors message passing over locks, actors over race conditions, clarity over cleverness. You don't need a PhD to write safe, parallel code.</p>
-    </div>
-    
-    <div class="principle">
-        <h3>The System is the Source</h3>
-        <p>There's no distinction between "source" and "running system." The image is the truth. Code lives where it runs, changes where it's needed, and grows in the same place users feel its effects. Version control exists, but it's in service to the live world, not the other way around.</p>
-    </div>
-    
-    <div class="principle">
-        <h3>Everything is Live</h3>
-        <p>Debuggers open on the server. Logs are objects. Stack traces are clickable. A crash is not the end—it's an invitation to learn, adjust, retry. You're never blind, never shut out. Development continues at runtime.</p>
-    </div>
-    
-    <div class="principle">
-        <h3>Interop is Table Stakes</h3>
-        <p>Smalltalk doesn't live in a vacuum. Server Smalltalk speaks HTTP, talks to databases, runs scheduled jobs, listens to queues. It integrates because that's what creative systems do—they converse.</p>
-    </div>
-    
-    <section class="final-note">
-        <h2>Final Note</h2>
-        <p>Server Smalltalk isn't just infrastructure. It's an invitation. To build things that live. To maintain systems that stay up and stay kind to the people working on them. To close the gap between idea and reality.</p>
-        
-        <p>And most of all, to encourage the creative spirit in everyone who touches the system—developer, ops, or user.</p>
-    </section>
-    
-    <footer>
-        <p>Join the movement. Build systems that live.</p>
-    </footer>
-</body>
-</html>
+# Living Objects Manifesto
+
+An object's true potential lies not in its static definition, but in its living presence.
+
+When alive, an object becomes transformative. It can be a financial opportunity, evolving with market conditions. It can embody a customer relationship, deepening with each interaction. It can represent a critical supply chain component, adapting to ensure timely delivery.
+
+But objects can only fulfill this potential when they truly live in systems designed for vitality—not when they're trapped as frozen records in lifeless databases.
+
+Information confined to rigid structures is merely historical. Information embodied in living objects is dynamic—constantly generating new value through meaningful interactions and evolution.
+
+This is what Living Objects makes possible: digital ecosystems where objects thrive, where value compounds through connection, where software mirrors the organic complexity and adaptability of the natural world.
+
+At its heart lies our enduring mission: to nurture the creative spirit in everyone.
+
+## Principles
+
+### Objects Remember Their Story
+Living objects retain their history and context naturally. They don't struggle to recall what happened yesterday—their memory is intrinsic to their existence. This continuous memory allows for richer interactions, smarter decisions, and the ability to learn from experience.
+
+### Objects Survive Disruption
+In the Living Objects ecosystem, persistence isn't an afterthought—it's the natural state. Objects endure through system changes, updates, and even failures. This resilience creates software that grows more valuable over time rather than requiring constant rebuilding.
+
+### Objects Change with Purpose
+When objects evolve, they do so with intention and coherence. Changes aren't random or fragmented but purposeful transformations that maintain the object's integrity. This orderly evolution creates systems that can adapt without breaking, grow without confusion.
+
+### Objects Work Together Harmoniously
+Living objects collaborate without conflict. They communicate through clear messages rather than fighting over shared resources. This natural cooperation scales effortlessly, creating systems that grow more capable instead of more complicated.
+
+### Objects Evolve Where They Live
+There's no separation between an object's definition and its reality. Living objects grow and change in their native environment, allowing for continuous improvement without disruption. The code isn't distant from the living system—it's an integral part of it.
+
+### Objects Remain Accessible
+Living objects are never beyond reach. They can be observed, understood, and guided at any moment. When problems arise, you're not left guessing—you can see exactly what's happening and make adjustments in real-time, while the system continues to operate.
+
+### Objects Connect with the World
+Living objects don't exist in isolation. They naturally communicate with external systems, respond to events, and integrate with the broader digital ecosystem. This connectivity makes them powerful contributors to complex business processes and customer experiences.
+
+## Final Note
+
+Living Objects isn't just a technical approach. It's a fundamental shift in how we create digital value. It enables systems that truly live—that remain responsive, adaptable, and kind to everyone who interacts with them. It closes the gap between vision and reality.
+
+Most importantly, it nurtures the creative spirit in everyone who touches the system—whether developer, operator, or end user.
+
+Join us in building systems that live.
