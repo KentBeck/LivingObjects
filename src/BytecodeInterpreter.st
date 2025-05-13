@@ -39,14 +39,19 @@ step
 !
 
 readInt32At: offset
-    "Read a 32-bit integer from the bytecode array at the given offset"
-    | value |
-    value := 0.
-    value := value + ((method at: offset) bitShift: 24).
-    value := value + ((method at: offset + 1) bitShift: 16).
-    value := value + ((method at: offset + 2) bitShift: 8).
-    value := value + (method at: offset + 3).
-    ^value
+    "Read a 32-bit unsigned integer from the bytecode array at the given offset"
+    (method isKindOf: ByteArray)
+        ifTrue: [^method uint32At: offset]
+        ifFalse: [
+            "Legacy support for OrderedCollection bytecodes"
+            | value |
+            value := 0.
+            value := value + ((method at: offset) bitShift: 0).
+            value := value + ((method at: offset + 1) bitShift: 8).
+            value := value + ((method at: offset + 2) bitShift: 16).
+            value := value + ((method at: offset + 3) bitShift: 24).
+            ^value
+        ]
 !
 
 interpretBytecode: aBytecode
@@ -195,3 +200,4 @@ sendMessageWithSelector: selectorIndex argCount: argCount
 returnStackTop
     "Return the value on top of the stack"
     result := stack removeLast
+!
