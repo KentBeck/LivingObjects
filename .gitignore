@@ -10,3 +10,4 @@ src/js-interpreter/node_modules
 src/interpreter/compiler_coverage.out
 src/interpreter/vm_coverage.out
 src/interpreter/core_coverage.out
+src/interpreter/cmd/expression_tester/expression_tester
