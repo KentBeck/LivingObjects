@@ -15,18 +15,19 @@ type VM struct {
 	Executor     *Executor
 
 	// Special objects
-	NilObject    core.ObjectInterface
-	NilClass     *classes.Class
-	TrueObject   core.ObjectInterface
-	TrueClass    *classes.Class
-	FalseObject  core.ObjectInterface
-	FalseClass   *classes.Class
-	ObjectClass  *classes.Class
-	IntegerClass *classes.Class
-	FloatClass   *classes.Class
-	StringClass  *classes.Class
-	BlockClass   *classes.Class
-	ArrayClass   *classes.Class
+	NilObject      core.ObjectInterface
+	NilClass       *classes.Class
+	TrueObject     core.ObjectInterface
+	TrueClass      *classes.Class
+	FalseObject    core.ObjectInterface
+	FalseClass     *classes.Class
+	ObjectClass    *classes.Class
+	IntegerClass   *classes.Class
+	FloatClass     *classes.Class
+	StringClass    *classes.Class
+	BlockClass     *classes.Class
+	ArrayClass     *classes.Class
+	ByteArrayClass *classes.Class
 }
 
 // NewVM creates a new virtual machine
@@ -49,6 +50,7 @@ func NewVM() *VM {
 	vm.StringClass = vm.NewStringClass()
 	vm.BlockClass = vm.NewBlockClass()
 	vm.ArrayClass = vm.NewArrayClass()
+	vm.ByteArrayClass = vm.NewByteArrayClass()
 
 	// Initialize the executor
 	vm.Executor = NewExecutor(vm)
@@ -657,6 +659,50 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 
 			// Return the element at the given index
 			return array.At(int(index))
+		}
+	case 50: // ByteArray at: - return the byte at the given index
+		if receiver.Type() == core.OBJ_BYTE_ARRAY && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
+			// Get the byte array
+			byteArray := classes.ObjectToByteArray(receiver)
+
+			// Get the index (1-based in Smalltalk, 0-based in Go)
+			index := core.GetIntegerImmediate(args[0]) - 1
+
+			// Check bounds
+			if index < 0 || int(index) >= byteArray.Size() {
+				panic(fmt.Sprintf("ByteArray index out of bounds: %d", index+1))
+			}
+
+			// Return the byte at the given index as an integer
+			return vm.NewInteger(int64(byteArray.At(int(index))))
+		}
+	case 51: // ByteArray at:put: - set the byte at the given index
+		if receiver.Type() == core.OBJ_BYTE_ARRAY && len(args) == 2 &&
+			core.IsIntegerImmediate(args[0]) && core.IsIntegerImmediate(args[1]) {
+			// Get the byte array
+			byteArray := classes.ObjectToByteArray(receiver)
+
+			// Get the index (1-based in Smalltalk, 0-based in Go)
+			index := core.GetIntegerImmediate(args[0]) - 1
+
+			// Get the value
+			value := core.GetIntegerImmediate(args[1])
+
+			// Check bounds
+			if index < 0 || int(index) >= byteArray.Size() {
+				panic(fmt.Sprintf("ByteArray index out of bounds: %d", index+1))
+			}
+
+			// Check value range (0-255)
+			if value < 0 || value > 255 {
+				panic(fmt.Sprintf("ByteArray value out of range (0-255): %d", value))
+			}
+
+			// Set the byte at the given index
+			byteArray.AtPut(int(index), byte(value))
+
+			// Return the value
+			return args[1]
 		}
 	default:
 		panic("executePrimitive: unknown primitive index\n")

@@ -21,6 +21,7 @@ const (
 	OBJ_METHOD
 	OBJ_SYMBOL
 	OBJ_EXCEPTION
+	OBJ_BYTE_ARRAY
 )
 
 // Object represents a Smalltalk object
@@ -166,6 +167,9 @@ func (o *Object) String() string {
 	case OBJ_ARRAY:
 		array := (*Array)(unsafe.Pointer(o))
 		return fmt.Sprintf("Array(%d)", len(array.Elements))
+	case OBJ_BYTE_ARRAY:
+		// ByteArray is handled in the classes package
+		return "ByteArray"
 	case OBJ_DICTIONARY:
 		dict := (*Dictionary)(unsafe.Pointer(o))
 		return fmt.Sprintf("Dictionary(%d)", dict.GetEntryCount())
