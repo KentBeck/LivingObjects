@@ -23,7 +23,7 @@ func (vm *VM) ExecuteCreateBlock(context *Context) error {
 	tempVarCount := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+9:]))
 
 	// Create a new block
-	block := classes.ObjectToBlock(classes.NewBlock(context))
+	block := classes.ObjectToBlock(vm.NewBlock(context))
 
 	// Set the bytecodes
 	// In a real implementation, we would extract the bytecodes from the method
