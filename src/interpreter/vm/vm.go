@@ -172,7 +172,7 @@ func (vm *VM) NewString(value string) *core.Object {
 
 // NewArray creates a new array object
 func (vm *VM) NewArray(size int) *core.Object {
-	array := classes.NewArrayInternal(size)
+	array := &classes.Array{Object: core.Object{TypeField: core.OBJ_ARRAY}, Elements: make([]*core.Object, size)}
 	arrayObj := classes.ArrayToObject(array)
 	arrayObj.SetClass(classes.ClassToObject(vm.Classes.Get(Array)))
 	return arrayObj
@@ -734,4 +734,3 @@ func (vm *VM) GetGlobals() []*core.Object {
 	}
 	return globals
 }
-
