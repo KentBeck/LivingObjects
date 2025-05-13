@@ -76,7 +76,7 @@ func NewVM() *VM {
 	return vm
 }
 
-func (vm *VM) NewObjectClass() *classes.Class {
+func (vm *VM) NewObjectClass() *core.Class {
 	result := classes.NewClass("Object", nil) // patch this up later. then even later when we have real images all this initialization can go away
 
 	// Add basicClass method to Object class
@@ -88,7 +88,7 @@ func (vm *VM) NewObjectClass() *classes.Class {
 	return result
 }
 
-func (vm *VM) NewIntegerClass() *classes.Class {
+func (vm *VM) NewIntegerClass() *core.Class {
 	result := classes.NewClass("Integer", vm.Classes.Get(Object))
 
 	// Add primitive methods to the Integer class
@@ -115,7 +115,7 @@ func (vm *VM) NewIntegerClass() *classes.Class {
 	return result
 }
 
-func (vm *VM) NewFloatClass() *classes.Class {
+func (vm *VM) NewFloatClass() *core.Class {
 	result := classes.NewClass("Float", vm.Classes.Get(Object)) // patch this up later. then even later when we have real images all this initialization can go away
 
 	// Add primitive methods to the Float class
@@ -193,7 +193,7 @@ func (vm *VM) NewNil() *core.Object {
 	return core.MakeNilImmediate()
 }
 
-func (vm *VM) NewTrueClass() *classes.Class {
+func (vm *VM) NewTrueClass() *core.Class {
 	result := classes.NewClass("True", vm.Classes.Get(Object))
 
 	// Add methods to the True class
@@ -211,7 +211,7 @@ func (vm *VM) NewTrueClass() *classes.Class {
 	return result
 }
 
-func (vm *VM) NewFalseClass() *classes.Class {
+func (vm *VM) NewFalseClass() *core.Class {
 	result := classes.NewClass("False", vm.Classes.Get(Object))
 
 	// Add methods to the False class
@@ -229,7 +229,7 @@ func (vm *VM) NewFalseClass() *classes.Class {
 	return result
 }
 
-func (vm *VM) NewStringClass() *classes.Class {
+func (vm *VM) NewStringClass() *core.Class {
 	result := classes.NewClass("String", vm.Classes.Get(Object))
 
 	// Add primitive methods to the String class
@@ -241,7 +241,7 @@ func (vm *VM) NewStringClass() *classes.Class {
 	return result
 }
 
-func (vm *VM) NewArrayClass() *classes.Class {
+func (vm *VM) NewArrayClass() *core.Class {
 	result := classes.NewClass("Array", vm.Classes.Get(Object))
 
 	// Add primitive methods to the Array class
@@ -253,7 +253,7 @@ func (vm *VM) NewArrayClass() *classes.Class {
 	return result
 }
 
-func (vm *VM) NewBlockClass() *classes.Class {
+func (vm *VM) NewBlockClass() *core.Class {
 	result := classes.NewClass("Block", vm.Classes.Get(Object))
 
 	// Add primitive methods to the Block class
@@ -296,7 +296,7 @@ func (vm *VM) ExecuteContext(context *Context) (core.ObjectInterface, error) {
 
 // GetClass returns the class of an object
 // This is the single function that should be used to get the class of an object
-func (vm *VM) GetClass(obj *core.Object) *classes.Class {
+func (vm *VM) GetClass(obj *core.Object) *core.Class {
 	if obj == nil {
 		panic("GetClass: nil object")
 	}
@@ -366,7 +366,7 @@ func (vm *VM) LookupMethod(receiver *core.Object, selector core.ObjectInterface)
 	// Look up the method in the class hierarchy
 	for class != nil {
 		// Check if the class has a method dictionary
-		methodDict := class.GetMethodDictionary()
+		methodDict := classes.GetClassMethodDictionary(class)
 		if methodDict != nil && methodDict.GetEntryCount() > 0 {
 			// Check if the method dictionary has the selector
 			selectorSymbol := classes.ObjectToSymbol(selector.(*core.Object))
@@ -376,7 +376,7 @@ func (vm *VM) LookupMethod(receiver *core.Object, selector core.ObjectInterface)
 		}
 
 		// Move up the class hierarchy
-		class = classes.ObjectToClass(class.GetSuperClass())
+		class = classes.ObjectToClass(classes.GetClassSuperClass(class))
 	}
 
 	// Method not found

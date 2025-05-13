@@ -7,7 +7,7 @@ import (
 
 // MethodFactory defines an interface for creating Method objects
 type MethodFactory interface {
-	NewMethod(selector *core.Object, class *classes.Class) *core.Object
+	NewMethod(selector *core.Object, class *core.Class) *core.Object
 	NewSymbol(name string) *core.Object
 }
 
@@ -23,7 +23,7 @@ func RegisterMethodFactory(factory MethodFactory) {
 
 // CreateMethod creates a method with the registered factory
 // If no factory is registered, it falls back to using classes.NewMethod
-func CreateMethod(selector *core.Object, class *classes.Class) *core.Object {
+func CreateMethod(selector *core.Object, class *core.Class) *core.Object {
 	if RegisteredMethodFactory != nil {
 		return RegisteredMethodFactory.NewMethod(selector, class)
 	}

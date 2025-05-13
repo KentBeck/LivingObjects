@@ -14,14 +14,14 @@ type Method struct {
 	Literals       []*core.Object
 	Selector       *core.Object
 	TempVarNames   []string
-	MethodClass    *Class
+	MethodClass    *core.Class
 	IsPrimitive    bool
 	PrimitiveIndex int
 }
 
 // newMethod creates a new method object without setting its class field
 // This is a private helper function used by vm.NewMethod
-func NewMethodInternal(selector *core.Object, class *Class) *Method {
+func NewMethodInternal(selector *core.Object, class *core.Class) *Method {
 	return &Method{
 		Object: core.Object{
 			TypeField: core.OBJ_METHOD,
@@ -35,7 +35,7 @@ func NewMethodInternal(selector *core.Object, class *Class) *Method {
 }
 
 // NewMethod creates a new method object (deprecated - use vm.NewMethod instead)
-func NewMethod(selector *core.Object, class *Class) *core.Object {
+func NewMethod(selector *core.Object, class *core.Class) *core.Object {
 	return MethodToObject(NewMethodInternal(selector, class))
 }
 
@@ -101,12 +101,12 @@ func (m *Method) AddTempVarName(name string) {
 }
 
 // GetMethodClass returns the class of the method
-func (m *Method) GetMethodClass() *Class {
+func (m *Method) GetMethodClass() *core.Class {
 	return m.MethodClass
 }
 
 // SetMethodClass sets the class of the method
-func (m *Method) SetMethodClass(class *Class) {
+func (m *Method) SetMethodClass(class *core.Class) {
 	m.MethodClass = class
 }
 

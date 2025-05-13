@@ -182,7 +182,7 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	class := classes.NewClass("TestClass", nil)
-	class.AddInstanceVarName("testVar")
+	classes.AddClassInstanceVarName(class, "testVar")
 
 	// Convert classes.Class to core.Class using unsafe.Pointer
 	coreClass := (*core.Class)(unsafe.Pointer(class))
@@ -255,7 +255,7 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	class := classes.NewClass("TestClass", nil)
-	class.AddInstanceVarName("testVar")
+	classes.AddClassInstanceVarName(class, "testVar")
 
 	// Convert classes.Class to core.Class using unsafe.Pointer
 	coreClass := (*core.Class)(unsafe.Pointer(class))

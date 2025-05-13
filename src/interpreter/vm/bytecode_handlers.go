@@ -34,7 +34,7 @@ func (vm *VM) ExecutePushInstanceVariable(context *Context) error {
 	// Get the instance variable index (4 bytes)
 	index := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
 	class := vm.GetClass(context.Receiver.(*core.Object))
-	if index < 0 || index >= len(class.GetInstanceVarNames()) {
+	if index < 0 || index >= len(classes.GetClassInstanceVarNames(class)) {
 		return fmt.Errorf("instance variable index out of bounds: %d", index)
 	}
 
@@ -83,7 +83,7 @@ func (vm *VM) ExecuteStoreInstanceVariable(context *Context) error {
 	index := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
 	class := vm.GetClass(context.Receiver.(*core.Object))
 
-	if index < 0 || index >= len(class.GetInstanceVarNames()) {
+	if index < 0 || index >= len(classes.GetClassInstanceVarNames(class)) {
 		return fmt.Errorf("instance variable index out of bounds: %d", index)
 	}
 

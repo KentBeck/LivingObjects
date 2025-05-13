@@ -7,7 +7,7 @@ import (
 )
 
 // NewByteArrayClass creates a new ByteArray class
-func (vm *VM) NewByteArrayClass() *classes.Class {
+func (vm *VM) NewByteArrayClass() *core.Class {
 	result := classes.NewClass("ByteArray", vm.Classes.Get(Object))
 
 	// Add primitive methods to the ByteArray class

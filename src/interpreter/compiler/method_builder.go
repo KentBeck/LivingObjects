@@ -10,7 +10,7 @@ import (
 
 // MethodBuilder provides a fluent interface for creating methods
 type MethodBuilder struct {
-	class          *classes.Class
+	class          *core.Class
 	selectorName   string
 	selectorObj    *core.Object
 	bytecodes      []byte
@@ -21,7 +21,7 @@ type MethodBuilder struct {
 }
 
 // NewMethodBuilder creates a new MethodBuilder for the given class
-func NewMethodBuilder(class *classes.Class) *MethodBuilder {
+func NewMethodBuilder(class *core.Class) *MethodBuilder {
 	return &MethodBuilder{
 		class:          class,
 		bytecodes:      make([]byte, 0),
@@ -169,9 +169,9 @@ func (mb *MethodBuilder) Go() *core.Object {
 	methodObj.SetPrimitive(mb.isPrimitive)
 	methodObj.SetPrimitiveIndex(mb.primitiveIndex)
 
-	// Add the method to the method dictionary
+	// Add the method to the class's method dictionary
 	symbolValue := classes.GetSymbolValue(mb.selectorObj)
-	methodDict := mb.class.GetMethodDictionary()
+	methodDict := classes.GetClassMethodDictionary(mb.class)
 	methodDict.SetEntry(symbolValue, method)
 
 	// Reset the builder state for reuse

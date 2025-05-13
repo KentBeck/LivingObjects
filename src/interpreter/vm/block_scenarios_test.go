@@ -81,7 +81,7 @@ func TestBlockWithExpression(t *testing.T) {
 		IsPrimitive:    true,
 		PrimitiveIndex: 1, // Primitive index for +
 	}
-	integerClass.AddMethod(classes.NewSymbol("+"), classes.MethodToObject(addMethod))
+	classes.AddClassMethod(integerClass, classes.NewSymbol("+"), classes.MethodToObject(addMethod))
 
 	// Create a context to serve as the outer context
 	method := &classes.Method{
@@ -156,7 +156,7 @@ func TestBlockWithParameter(t *testing.T) {
 		IsPrimitive:    true,
 		PrimitiveIndex: 1, // Primitive index for +
 	}
-	integerClass.AddMethod(classes.NewSymbol("+"), classes.MethodToObject(addMethod))
+	classes.AddClassMethod(integerClass, classes.NewSymbol("+"), classes.MethodToObject(addMethod))
 
 	// Create a context to serve as the outer context
 	method := &classes.Method{

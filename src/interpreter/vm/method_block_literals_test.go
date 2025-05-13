@@ -102,7 +102,7 @@ func TestBlockWithMethodVariables(t *testing.T) {
 		IsPrimitive:    true,
 		PrimitiveIndex: 1, // Primitive index for +
 	}
-	integerClass.AddMethod(classes.NewSymbol("+"), classes.MethodToObject(addMethod))
+	classes.AddClassMethod(integerClass, classes.NewSymbol("+"), classes.MethodToObject(addMethod))
 
 	// Create a method that will store a value in a temporary variable and then return a block that accesses it
 	method := &classes.Method{

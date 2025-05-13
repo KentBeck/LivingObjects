@@ -52,69 +52,69 @@ func TestClassToObjectAndBack(t *testing.T) {
 	}
 }
 
-func TestClassString(t *testing.T) {
+func TestGetClassString(t *testing.T) {
 	class := NewClass("TestClass", nil)
 
-	if class.String() != "Class TestClass" {
-		t.Errorf("class.String() = %q, want %q", class.String(), "Class TestClass")
+	if GetClassString(class) != "Class TestClass" {
+		t.Errorf("GetClassString(class) = %q, want %q", GetClassString(class), "Class TestClass")
 	}
 }
 
-func TestClassGetName(t *testing.T) {
+func TestGetClassName(t *testing.T) {
 	class := NewClass("TestClass", nil)
 
-	if class.GetName() != "TestClass" {
-		t.Errorf("class.GetName() = %q, want %q", class.GetName(), "TestClass")
+	if GetClassName(class) != "TestClass" {
+		t.Errorf("GetClassName(class) = %q, want %q", GetClassName(class), "TestClass")
 	}
 }
 
-func TestClassSetName(t *testing.T) {
+func TestSetClassName(t *testing.T) {
 	class := NewClass("TestClass", nil)
-	class.SetName("ModifiedClass")
+	SetClassName(class, "ModifiedClass")
 
 	if class.Name != "ModifiedClass" {
-		t.Errorf("After SetName(\"ModifiedClass\"), class.Name = %q, want %q", class.Name, "ModifiedClass")
+		t.Errorf("After SetClassName(class, \"ModifiedClass\"), class.Name = %q, want %q", class.Name, "ModifiedClass")
 	}
 }
 
-func TestClassGetSuperClass(t *testing.T) {
+func TestGetClassSuperClass(t *testing.T) {
 	superClass := NewClass("SuperClass", nil)
 	class := NewClass("TestClass", superClass)
 
-	if class.GetSuperClass() == nil {
-		t.Errorf("class.GetSuperClass() is nil, want non-nil")
+	if GetClassSuperClass(class) == nil {
+		t.Errorf("GetClassSuperClass(class) is nil, want non-nil")
 	}
 }
 
-func TestClassSetSuperClass(t *testing.T) {
+func TestSetClassSuperClass(t *testing.T) {
 	class := NewClass("TestClass", nil)
 	superClass := NewClass("SuperClass", nil)
 
-	class.SetSuperClass(ClassToObject(superClass))
+	SetClassSuperClass(class, ClassToObject(superClass))
 
 	if class.SuperClass == nil {
-		t.Errorf("After SetSuperClass(), class.SuperClass is nil, want non-nil")
+		t.Errorf("After SetClassSuperClass(), class.SuperClass is nil, want non-nil")
 	}
 }
 
-func TestClassGetInstanceVarNames(t *testing.T) {
+func TestGetClassInstanceVarNames(t *testing.T) {
 	class := NewClass("TestClass", nil)
 
-	if len(class.GetInstanceVarNames()) != 0 {
-		t.Errorf("len(class.GetInstanceVarNames()) = %d, want 0", len(class.GetInstanceVarNames()))
+	if len(GetClassInstanceVarNames(class)) != 0 {
+		t.Errorf("len(GetClassInstanceVarNames(class)) = %d, want 0", len(GetClassInstanceVarNames(class)))
 	}
 }
 
-func TestClassAddInstanceVarName(t *testing.T) {
+func TestAddClassInstanceVarName(t *testing.T) {
 	class := NewClass("TestClass", nil)
 
-	class.AddInstanceVarName("var1")
-	class.AddInstanceVarName("var2")
+	AddClassInstanceVarName(class, "var1")
+	AddClassInstanceVarName(class, "var2")
 
-	varNames := class.GetInstanceVarNames()
+	varNames := GetClassInstanceVarNames(class)
 
 	if len(varNames) != 2 {
-		t.Errorf("len(class.GetInstanceVarNames()) = %d, want 2", len(varNames))
+		t.Errorf("len(GetClassInstanceVarNames(class)) = %d, want 2", len(varNames))
 	}
 
 	if varNames[0] != "var1" {
@@ -126,13 +126,13 @@ func TestClassAddInstanceVarName(t *testing.T) {
 	}
 }
 
-func TestClassGetMethodDictionary(t *testing.T) {
+func TestGetClassMethodDictionary(t *testing.T) {
 	class := NewClass("TestClass", nil)
 
-	methodDict := class.GetMethodDictionary()
+	methodDict := GetClassMethodDictionary(class)
 
 	if methodDict == nil {
-		t.Errorf("class.GetMethodDictionary() is nil, want non-nil")
+		t.Errorf("GetClassMethodDictionary(class) is nil, want non-nil")
 	}
 
 	if methodDict.GetEntryCount() != 0 {
@@ -140,7 +140,7 @@ func TestClassGetMethodDictionary(t *testing.T) {
 	}
 }
 
-func TestClassAddMethod(t *testing.T) {
+func TestAddClassMethod(t *testing.T) {
 	class := NewClass("TestClass", nil)
 
 	// Create a selector and method
@@ -148,10 +148,10 @@ func TestClassAddMethod(t *testing.T) {
 	method := NewMethod(selector, class)
 
 	// Add the method to the class
-	class.AddMethod(selector, method)
+	AddClassMethod(class, selector, method)
 
 	// Check that the method was added
-	methodDict := class.GetMethodDictionary()
+	methodDict := GetClassMethodDictionary(class)
 
 	if methodDict.GetEntryCount() != 1 {
 		t.Errorf("methodDict.GetEntryCount() = %d, want 1", methodDict.GetEntryCount())
@@ -162,7 +162,7 @@ func TestClassAddMethod(t *testing.T) {
 	}
 }
 
-func TestClassLookupMethod(t *testing.T) {
+func TestLookupClassMethod(t *testing.T) {
 	// Create a class hierarchy
 	superClass := NewClass("SuperClass", nil)
 	class := NewClass("TestClass", superClass)
@@ -170,40 +170,40 @@ func TestClassLookupMethod(t *testing.T) {
 	// Add a method to the superclass
 	superSelector := NewSymbol("superMethod")
 	superMethod := NewMethod(superSelector, superClass)
-	superClass.AddMethod(superSelector, superMethod)
+	AddClassMethod(superClass, superSelector, superMethod)
 
 	// Add a method to the class
 	classSelector := NewSymbol("classMethod")
 	classMethod := NewMethod(classSelector, class)
-	class.AddMethod(classSelector, classMethod)
+	AddClassMethod(class, classSelector, classMethod)
 
 	// Look up methods
-	foundSuperMethod := class.LookupMethod(superSelector)
-	foundClassMethod := class.LookupMethod(classSelector)
-	notFoundMethod := class.LookupMethod(NewSymbol("nonExistentMethod"))
+	foundSuperMethod := LookupClassMethod(class, superSelector)
+	foundClassMethod := LookupClassMethod(class, classSelector)
+	notFoundMethod := LookupClassMethod(class, NewSymbol("nonExistentMethod"))
 
 	// Check results
 	if foundSuperMethod != superMethod {
-		t.Errorf("class.LookupMethod(superSelector) = %v, want %v", foundSuperMethod, superMethod)
+		t.Errorf("LookupClassMethod(class, superSelector) = %v, want %v", foundSuperMethod, superMethod)
 	}
 
 	if foundClassMethod != classMethod {
-		t.Errorf("class.LookupMethod(classSelector) = %v, want %v", foundClassMethod, classMethod)
+		t.Errorf("LookupClassMethod(class, classSelector) = %v, want %v", foundClassMethod, classMethod)
 	}
 
 	if notFoundMethod != nil {
-		t.Errorf("class.LookupMethod(\"nonExistentMethod\") = %v, want nil", notFoundMethod)
+		t.Errorf("LookupClassMethod(class, \"nonExistentMethod\") = %v, want nil", notFoundMethod)
 	}
 }
 
-func TestClassNewInstance(t *testing.T) {
+func TestNewClassInstance(t *testing.T) {
 	// Create a class with instance variables
 	class := NewClass("TestClass", nil)
-	class.AddInstanceVarName("var1")
-	class.AddInstanceVarName("var2")
+	AddClassInstanceVarName(class, "var1")
+	AddClassInstanceVarName(class, "var2")
 
 	// Create an instance
-	instance := class.NewInstance()
+	instance := NewClassInstance(class)
 
 	if instance.Type() != core.OBJ_INSTANCE {
 		t.Errorf("instance.Type() = %d, want %d", instance.Type(), core.OBJ_INSTANCE)
@@ -228,19 +228,19 @@ func TestClassNewInstance(t *testing.T) {
 	}
 }
 
-func TestGetClassName(t *testing.T) {
+func TestGetClassNameFromObject(t *testing.T) {
 	// Test with a class object
 	class := NewClass("TestClass", nil)
 	classObj := ClassToObject(class)
 
-	if GetClassName(classObj) != "TestClass" {
-		t.Errorf("GetClassName(classObj) = %q, want %q", GetClassName(classObj), "TestClass")
+	if GetClassNameFromObject(classObj) != "TestClass" {
+		t.Errorf("GetClassNameFromObject(classObj) = %q, want %q", GetClassNameFromObject(classObj), "TestClass")
 	}
 
 	// Test with a non-class object
 	// Create a string object instead of using an immediate value
 	strObj := StringToObject(NewString("test"))
-	if GetClassName(strObj) != "" {
-		t.Errorf("GetClassName(strObj) = %q, want %q", GetClassName(strObj), "")
+	if GetClassNameFromObject(strObj) != "" {
+		t.Errorf("GetClassNameFromObject(strObj) = %q, want %q", GetClassNameFromObject(strObj), "")
 	}
 }

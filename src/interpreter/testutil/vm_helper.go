@@ -4,7 +4,6 @@ import (
 	"sync"
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/vm"
 )
@@ -26,7 +25,7 @@ func GetTestVM(t *testing.T) *vm.VM {
 // These should eventually replace the direct object creation functions
 
 // NewMethod creates a method for tests
-func NewMethod(t *testing.T, selector *core.Object, class *classes.Class) *core.Object {
+func NewMethod(t *testing.T, selector *core.Object, class *core.Class) *core.Object {
 	vm := GetTestVM(t)
 	return vm.NewMethod(selector, class)
 }

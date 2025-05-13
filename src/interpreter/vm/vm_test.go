@@ -106,8 +106,8 @@ func TestNewArray(t *testing.T) {
 	}
 
 	// Check that the class name is "Array"
-	if arrayClass.GetName() != "Array" {
-		t.Errorf("Expected array class name to be 'Array', got '%s'", arrayClass.GetName())
+	if classes.GetClassName(arrayClass) != "Array" {
+		t.Errorf("Expected array class name to be 'Array', got '%s'", classes.GetClassName(arrayClass))
 	}
 
 	// Check that the class is the same as the Array class in the registry

@@ -1,6 +1,7 @@
 package classes
 
 import (
+	"unsafe"
 	"smalltalklsp/interpreter/core"
 )
 
@@ -12,14 +13,14 @@ var ClassRegistry = &Registry{
 
 // Registry holds references to standard classes
 type Registry struct {
-	ObjectClass    *Class
-	StringClass    *Class
-	ArrayClass     *Class
-	SymbolClass    *Class
-	DictionaryClass *Class
-	BlockClass     *Class
-	MethodClass    *Class
-	ByteArrayClass *Class
+	ObjectClass    *core.Class
+	StringClass    *core.Class
+	ArrayClass     *core.Class
+	SymbolClass    *core.Class
+	DictionaryClass *core.Class
+	BlockClass     *core.Class
+	MethodClass    *core.Class
+	ByteArrayClass *core.Class
 	
 	// Track initialization state
 	initialized bool
@@ -29,7 +30,7 @@ type Registry struct {
 // It should be called once by the VM after all classes are created
 func (r *Registry) Initialize(
 	objectClass, stringClass, arrayClass, symbolClass, 
-	dictionaryClass, blockClass, methodClass, byteArrayClass *Class) {
+	dictionaryClass, blockClass, methodClass, byteArrayClass *core.Class) {
 	
 	r.ObjectClass = objectClass
 	r.StringClass = stringClass
@@ -50,8 +51,8 @@ func (r *Registry) IsInitialized() bool {
 
 // SetClassField sets the class field of an object
 // If the registry is not initialized, it does nothing
-func (r *Registry) SetClassField(obj *core.Object, class *Class) {
+func (r *Registry) SetClassField(obj *core.Object, class *core.Class) {
 	if r.initialized {
-		obj.SetClass(ClassToObject(class))
+		obj.SetClass((*core.Object)(unsafe.Pointer(class)))
 	}
 }

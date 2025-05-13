@@ -1,7 +1,7 @@
 package vm
 
 import (
-	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/core"
 )
 
 // For backward compatibility
@@ -10,6 +10,6 @@ import (
 
 // ObjectClass field (struct member, not a method)
 // Deprecated: Use vm.Classes.Get(Object) instead
-func (vm *VM) GetObjectClass() *classes.Class {
+func (vm *VM) GetObjectClass() *core.Class {
 	return vm.Classes.Get(Object)
 }

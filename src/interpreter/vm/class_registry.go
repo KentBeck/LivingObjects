@@ -32,32 +32,32 @@ const (
 // access classes than having many separate fields in the VM struct
 type ClassRegistry struct {
 	// Map of registered classes by ClassType
-	classesByType map[ClassType]*classes.Class
+	classesByType map[ClassType]*core.Class
 	
 	// Map of registered classes by name (for non-standard classes)
-	classesByName map[string]*classes.Class
+	classesByName map[string]*core.Class
 }
 
 // NewClassRegistry creates a new class registry
 func NewClassRegistry() *ClassRegistry {
 	return &ClassRegistry{
-		classesByType: make(map[ClassType]*classes.Class),
-		classesByName: make(map[string]*classes.Class),
+		classesByType: make(map[ClassType]*core.Class),
+		classesByName: make(map[string]*core.Class),
 	}
 }
 
 // Register adds a class to the registry
-func (r *ClassRegistry) Register(classType ClassType, class *classes.Class) {
+func (r *ClassRegistry) Register(classType ClassType, class *core.Class) {
 	if class == nil {
 		return
 	}
 	
 	r.classesByType[classType] = class
-	r.classesByName[class.GetName()] = class
+	r.classesByName[classes.GetClassName(class)] = class
 }
 
 // RegisterNamed adds a class to the registry by name only (for non-standard classes)
-func (r *ClassRegistry) RegisterNamed(name string, class *classes.Class) {
+func (r *ClassRegistry) RegisterNamed(name string, class *core.Class) {
 	if class == nil {
 		return
 	}
@@ -66,19 +66,19 @@ func (r *ClassRegistry) RegisterNamed(name string, class *classes.Class) {
 }
 
 // Get retrieves a class by type
-func (r *ClassRegistry) Get(classType ClassType) *classes.Class {
+func (r *ClassRegistry) Get(classType ClassType) *core.Class {
 	return r.classesByType[classType]
 }
 
 // GetByName retrieves a class by name
-func (r *ClassRegistry) GetByName(name string) *classes.Class {
+func (r *ClassRegistry) GetByName(name string) *core.Class {
 	return r.classesByName[name]
 }
 
 // All returns all registered classes
-func (r *ClassRegistry) All() []*classes.Class {
+func (r *ClassRegistry) All() []*core.Class {
 	// Combine both maps (avoiding duplicates)
-	uniqueClasses := make(map[*classes.Class]bool)
+	uniqueClasses := make(map[*core.Class]bool)
 	
 	for _, class := range r.classesByType {
 		uniqueClasses[class] = true
@@ -89,7 +89,7 @@ func (r *ClassRegistry) All() []*classes.Class {
 	}
 	
 	// Convert to slice
-	result := make([]*classes.Class, 0, len(uniqueClasses))
+	result := make([]*core.Class, 0, len(uniqueClasses))
 	for class := range uniqueClasses {
 		result = append(result, class)
 	}
