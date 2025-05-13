@@ -32,7 +32,7 @@ func TestBlockWithLiteral(t *testing.T) {
 	)
 
 	// Create a block with the context
-	block := classes.ObjectToBlock(classes.NewBlock(context))
+	block := classes.ObjectToBlock(vm.NewBlock(context))
 
 	// Set the block's bytecodes
 	blockBytecodes := []byte{
@@ -100,7 +100,7 @@ func TestBlockWithExpression(t *testing.T) {
 	)
 
 	// Create a block with the context
-	block := classes.ObjectToBlock(classes.NewBlock(context))
+	block := classes.ObjectToBlock(vm.NewBlock(context))
 
 	// Set up the block's bytecodes (normally this would be done by the compiler)
 	blockBytecodes := []byte{
@@ -175,7 +175,7 @@ func TestBlockWithParameter(t *testing.T) {
 	)
 
 	// Create a block with the context
-	block := classes.ObjectToBlock(classes.NewBlock(context))
+	block := classes.ObjectToBlock(vm.NewBlock(context))
 
 	// Set up the block's bytecodes (normally this would be done by the compiler)
 	// This implements [:x | x + 2]
@@ -251,7 +251,7 @@ func TestBlockWithNonLocalReturn(t *testing.T) {
 	)
 
 	// Create a block with the outer context
-	block := classes.ObjectToBlock(classes.NewBlock(outerContext))
+	block := classes.ObjectToBlock(vm.NewBlock(outerContext))
 
 	// Set up the block's bytecodes (normally this would be done by the compiler)
 	blockBytecodes := []byte{

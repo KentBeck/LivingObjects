@@ -44,7 +44,7 @@ func TestObjectIsTrue(t *testing.T) {
 		},
 		{
 			name:     "String",
-			obj:      classes.StringToObject(classes.NewString("hello")),
+			obj:      virtualMachine.NewString("hello"),
 			expected: false,
 		},
 	}
@@ -72,7 +72,7 @@ func TestObjectInstanceVarMethods(t *testing.T) {
 
 	// Test GetInstanceVarByIndex
 	instance.SetInstanceVarByIndex(0, virtualMachine.NewInteger(42))
-	instance.SetInstanceVarByIndex(1, classes.StringToObject(classes.NewString("hello")))
+	instance.SetInstanceVarByIndex(1, virtualMachine.NewString("hello"))
 
 	// Get the instance variable and check its value
 	var0 := instance.GetInstanceVarByIndex(0)
@@ -113,7 +113,7 @@ func TestObjectSetInstanceVarByIndex(t *testing.T) {
 
 	// Test SetInstanceVarByIndex
 	instance.SetInstanceVarByIndex(0, virtualMachine.NewInteger(42))
-	instance.SetInstanceVarByIndex(1, classes.StringToObject(classes.NewString("hello")))
+	instance.SetInstanceVarByIndex(1, virtualMachine.NewString("hello"))
 
 	// Check the instance variables
 	var instanceVars2 = instance.InstanceVars()

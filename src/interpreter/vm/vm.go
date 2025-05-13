@@ -164,7 +164,7 @@ func (vm *VM) NewFloat(value float64) *core.Object {
 
 // NewString creates a new string object
 func (vm *VM) NewString(value string) *core.Object {
-	str := classes.NewString(value)
+	str := classes.NewStringInternal(value)
 	strObj := classes.StringToObject(str)
 	strObj.SetClass(classes.ClassToObject(vm.Classes.Get(String)))
 	return strObj
@@ -172,7 +172,7 @@ func (vm *VM) NewString(value string) *core.Object {
 
 // NewArray creates a new array object
 func (vm *VM) NewArray(size int) *core.Object {
-	array := classes.NewArray(size)
+	array := classes.NewArrayInternal(size)
 	arrayObj := classes.ArrayToObject(array)
 	arrayObj.SetClass(classes.ClassToObject(vm.Classes.Get(Array)))
 	return arrayObj

@@ -13,15 +13,20 @@ type String struct {
 	Value string
 }
 
-// NewString creates a new string object
-func NewString(value string) *String {
-	str := &String{
+// newString creates a new string object without setting its class field
+// This is a private helper function used by vm.NewString
+func NewStringInternal(value string) *String {
+	return &String{
 		Object: core.Object{
 			TypeField: core.OBJ_STRING,
 		},
 		Value: value,
 	}
-	return str
+}
+
+// NewString creates a new string object (deprecated - use vm.NewString instead)
+func NewString(value string) *String {
+	return NewStringInternal(value)
 }
 
 // StringToObject converts a String to an Object

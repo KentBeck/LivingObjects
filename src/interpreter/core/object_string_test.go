@@ -46,7 +46,7 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name:     "Symbol",
-			obj:      classes.NewSymbol("test"),
+			obj:      virtualMachine.NewSymbol("test"),
 			expected: "#test",
 		},
 		{
@@ -56,7 +56,7 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name:     "Dictionary",
-			obj:      classes.NewDictionary(),
+			obj:      virtualMachine.NewDictionary(),
 			expected: "Dictionary(0)",
 		},
 		{

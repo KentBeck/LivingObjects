@@ -13,14 +13,20 @@ type Symbol struct {
 	Value string
 }
 
-// NewSymbol creates a new symbol object
-func NewSymbol(value string) *core.Object {
-	sym := &Symbol{
+// newSymbol creates a new symbol object without setting its class field
+// This is a private helper function used by vm.NewSymbol
+func NewSymbolInternal(value string) *Symbol {
+	return &Symbol{
 		Object: core.Object{
 			TypeField: core.OBJ_SYMBOL,
 		},
 		Value: value,
 	}
+}
+
+// NewSymbol creates a new symbol object (deprecated - use vm.NewSymbol instead)
+func NewSymbol(value string) *core.Object {
+	sym := NewSymbolInternal(value)
 	return SymbolToObject(sym)
 }
 

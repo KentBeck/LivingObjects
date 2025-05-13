@@ -19,9 +19,10 @@ type Method struct {
 	PrimitiveIndex int
 }
 
-// NewMethod creates a new method object
-func NewMethod(selector *core.Object, class *Class) *core.Object {
-	method := &Method{
+// newMethod creates a new method object without setting its class field
+// This is a private helper function used by vm.NewMethod
+func NewMethodInternal(selector *core.Object, class *Class) *Method {
+	return &Method{
 		Object: core.Object{
 			TypeField: core.OBJ_METHOD,
 		},
@@ -31,8 +32,11 @@ func NewMethod(selector *core.Object, class *Class) *core.Object {
 		MethodClass:  class,
 		TempVarNames: make([]string, 0),
 	}
+}
 
-	return MethodToObject(method)
+// NewMethod creates a new method object (deprecated - use vm.NewMethod instead)
+func NewMethod(selector *core.Object, class *Class) *core.Object {
+	return MethodToObject(NewMethodInternal(selector, class))
 }
 
 // MethodToObject converts a Method to an Object

@@ -13,15 +13,20 @@ type Array struct {
 	Elements []*core.Object
 }
 
-// NewArray creates a new array object
-func NewArray(size int) *Array {
-	obj := &Array{
+// newArray creates a new array object without setting its class field
+// This is a private helper function used by vm.NewArray
+func NewArrayInternal(size int) *Array {
+	return &Array{
 		Object: core.Object{
 			TypeField: core.OBJ_ARRAY,
 		},
 		Elements: make([]*core.Object, size),
 	}
-	return obj
+}
+
+// NewArray creates a new array object (deprecated - use vm.NewArray instead)
+func NewArray(size int) *Array {
+	return NewArrayInternal(size)
 }
 
 // ArrayToObject converts an Array to an Object

@@ -13,16 +13,20 @@ type Dictionary struct {
 	Entries map[string]*core.Object // later Object->Object
 }
 
-// NewDictionary creates a new dictionary object
-func NewDictionary() *core.Object {
-	entries := make(map[string]*core.Object)
-	obj := &Dictionary{
+// newDictionary creates a new dictionary object without setting its class field
+// This is a private helper function used by vm.NewDictionary
+func NewDictionaryInternal() *Dictionary {
+	return &Dictionary{
 		Object: core.Object{
 			TypeField: core.OBJ_DICTIONARY,
 		},
-		Entries: entries,
+		Entries: make(map[string]*core.Object),
 	}
-	return DictionaryToObject(obj)
+}
+
+// NewDictionary creates a new dictionary object (deprecated - use vm.NewDictionary instead)
+func NewDictionary() *core.Object {
+	return DictionaryToObject(NewDictionaryInternal())
 }
 
 // DictionaryToObject converts a Dictionary to an Object

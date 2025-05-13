@@ -16,9 +16,10 @@ type Block struct {
 	OuterContext interface{} // Using interface{} to avoid circular dependency
 }
 
-// NewBlock creates a new block object
-func NewBlock(outerContext interface{}) *core.Object {
-	block := &Block{
+// newBlock creates a new block object without setting its class field
+// This is a private helper function used by vm.NewBlock
+func NewBlockInternal(outerContext interface{}) *Block {
+	return &Block{
 		Object: core.Object{
 			TypeField: core.OBJ_BLOCK,
 		},
@@ -27,8 +28,11 @@ func NewBlock(outerContext interface{}) *core.Object {
 		TempVarNames: make([]string, 0),
 		OuterContext: outerContext,
 	}
+}
 
-	return BlockToObject(block)
+// NewBlock creates a new block object (deprecated - use vm.NewBlock instead)
+func NewBlock(outerContext interface{}) *core.Object {
+	return BlockToObject(NewBlockInternal(outerContext))
 }
 
 // BlockToObject converts a Block to an Object
