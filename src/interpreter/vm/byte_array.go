@@ -22,9 +22,20 @@ func (vm *VM) NewByteArrayClass() *classes.Class {
 	return result
 }
 
+// newByteArrayInternal creates a new byte array object without setting its class
+// This is a private helper function used by NewByteArray
+func (vm *VM) newByteArrayInternal(size int) *classes.ByteArray {
+	return &classes.ByteArray{
+		Object: core.Object{
+			TypeField: core.OBJ_BYTE_ARRAY,
+		},
+		Bytes: make([]byte, size),
+	}
+}
+
 // NewByteArray creates a new byte array object
 func (vm *VM) NewByteArray(size int) *core.Object {
-	byteArray := classes.NewByteArray(size)
+	byteArray := vm.newByteArrayInternal(size)
 	byteArrayObj := classes.ByteArrayToObject(byteArray)
 	byteArrayObj.SetClass(classes.ClassToObject(vm.ByteArrayClass))
 	return byteArrayObj

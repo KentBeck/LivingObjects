@@ -1,12 +1,14 @@
-package classes
+package vm_test
 
 import (
 	"testing"
 
+	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/vm"
 )
 
-func TestNewByteArray(t *testing.T) {
+func TestByteArrayCreation(t *testing.T) {
 	tests := []struct {
 		name string
 		size int
@@ -19,22 +21,24 @@ func TestNewByteArray(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			byteArray := NewByteArray(tt.size)
+			virtualMachine := vm.NewVM()
+			byteArray := classes.ObjectToByteArray(virtualMachine.NewByteArray(tt.size))
 			if byteArray.Size() != tt.want {
-				t.Errorf("NewByteArray(%d).Size() = %d, want %d", tt.size, byteArray.Size(), tt.want)
+				t.Errorf("ByteArray.Size() = %d, want %d", byteArray.Size(), tt.want)
 			}
 			if byteArray.Type() != core.OBJ_BYTE_ARRAY {
-				t.Errorf("NewByteArray(%d).Type() = %d, want %d", tt.size, byteArray.Type(), core.OBJ_BYTE_ARRAY)
+				t.Errorf("ByteArray.Type() = %d, want %d", byteArray.Type(), core.OBJ_BYTE_ARRAY)
 			}
 			if len(byteArray.Bytes) != tt.size {
-				t.Errorf("len(NewByteArray(%d).Bytes) = %d, want %d", tt.size, len(byteArray.Bytes), tt.size)
+				t.Errorf("len(ByteArray.Bytes) = %d, want %d", len(byteArray.Bytes), tt.size)
 			}
 		})
 	}
 }
 
 func TestByteArrayAtAndAtPut(t *testing.T) {
-	byteArray := NewByteArray(5)
+	virtualMachine := vm.NewVM()
+	byteArray := classes.ObjectToByteArray(virtualMachine.NewByteArray(5))
 
 	// Test initial values (should be 0)
 	for i := 0; i < byteArray.Size(); i++ {
@@ -95,7 +99,8 @@ func TestByteArrayAtAndAtPut(t *testing.T) {
 }
 
 func TestByteArrayCopy(t *testing.T) {
-	byteArray := NewByteArray(5)
+	virtualMachine := vm.NewVM()
+	byteArray := classes.ObjectToByteArray(virtualMachine.NewByteArray(5))
 	for i := 0; i < byteArray.Size(); i++ {
 		byteArray.AtPut(i, byte(i+1))
 	}
@@ -119,7 +124,8 @@ func TestByteArrayCopy(t *testing.T) {
 }
 
 func TestByteArrayCopyFrom(t *testing.T) {
-	byteArray := NewByteArray(5)
+	virtualMachine := vm.NewVM()
+	byteArray := classes.ObjectToByteArray(virtualMachine.NewByteArray(5))
 	for i := 0; i < byteArray.Size(); i++ {
 		byteArray.AtPut(i, byte(i+1))
 	}
@@ -165,7 +171,8 @@ func TestByteArrayCopyFrom(t *testing.T) {
 }
 
 func TestByteArrayUint32AtAndUint32AtPut(t *testing.T) {
-	byteArray := NewByteArray(8)
+	virtualMachine := vm.NewVM()
+	byteArray := classes.ObjectToByteArray(virtualMachine.NewByteArray(8))
 
 	// Test setting and getting uint32 values
 	testValues := []uint32{42, 0xFFFFFFFF}
@@ -213,6 +220,6 @@ func TestByteArrayUint32AtAndUint32AtPut(t *testing.T) {
 				t.Errorf("Expected panic for index out of bounds, but got none")
 			}
 		}()
-		byteArray.Uint32AtPut(byteArray.Size() - 3, 0)
+		byteArray.Uint32AtPut(byteArray.Size()-3, 0)
 	}()
 }

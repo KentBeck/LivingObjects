@@ -13,17 +13,7 @@ type ByteArray struct {
 	Bytes []byte
 }
 
-// NewByteArray creates a new byte array object
-// This should only be called by the VM - applications should use VM.NewByteArray instead
-func NewByteArray(size int) *ByteArray {
-	obj := &ByteArray{
-		Object: core.Object{
-			TypeField: core.OBJ_BYTE_ARRAY,
-		},
-		Bytes: make([]byte, size),
-	}
-	return obj
-}
+// ByteArray is created by the VM using NewByteArray
 
 // ByteArrayToObject converts a ByteArray to an Object
 func ByteArrayToObject(ba *ByteArray) *core.Object {
@@ -63,7 +53,12 @@ func (ba *ByteArray) AtPut(index int, value byte) {
 
 // Copy returns a copy of the byte array
 func (ba *ByteArray) Copy() *ByteArray {
-	newBA := NewByteArray(len(ba.Bytes))
+	newBA := &ByteArray{
+		Object: core.Object{
+			TypeField: core.OBJ_BYTE_ARRAY,
+		},
+		Bytes: make([]byte, len(ba.Bytes)),
+	}
 	copy(newBA.Bytes, ba.Bytes)
 	return newBA
 }
@@ -78,7 +73,12 @@ func (ba *ByteArray) CopyFrom(startIndex, endIndex int) *ByteArray {
 	}
 
 	newSize := endIndex - startIndex + 1
-	newBA := NewByteArray(newSize)
+	newBA := &ByteArray{
+		Object: core.Object{
+			TypeField: core.OBJ_BYTE_ARRAY,
+		},
+		Bytes: make([]byte, newSize),
+	}
 	copy(newBA.Bytes, ba.Bytes[startIndex:endIndex+1])
 	return newBA
 }
