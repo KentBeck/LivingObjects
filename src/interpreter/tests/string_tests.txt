@@ -7,3 +7,6 @@
 #(1 2 3) at: 2 ! 2
 true not ! false
 false not ! true
+3 < 5 ! true
+5 > 3 ! true
+5 = 5 ! true
