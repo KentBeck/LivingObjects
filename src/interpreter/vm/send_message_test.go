@@ -17,7 +17,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 	// Test cases
 	t.Run("primitive method", func(t *testing.T) {
 		// Add primitive methods to the Integer class
-		integerClass := virtualMachine.IntegerClass
+		integerClass := virtualMachine.Classes.Get(vm.Integer)
 		plusSymbol := classes.NewSymbol("+")
 		compiler.NewMethodBuilder(integerClass).
 			Selector("+").
@@ -29,7 +29,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		threeObj := virtualMachine.NewInteger(3)
 
 		// Create a method with a SEND_MESSAGE bytecode for addition using AddLiteral
-		builder := compiler.NewMethodBuilder(virtualMachine.ObjectClass).Selector("test")
+		builder := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).Selector("test")
 
 		// Add literals to the method builder
 		twoIndex, builder := builder.AddLiteral(twoObj)      // Index 0
@@ -45,7 +45,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		method := builder.Go()
 
 		// Create a context
-		context := vm.NewContext(method, virtualMachine.ObjectClass, []*core.Object{}, nil)
+		context := vm.NewContext(method, virtualMachine.Classes.Get(vm.Object), []*core.Object{}, nil)
 
 		// Execute the PUSH_LITERAL bytecodes to set up the stack
 		context.PC = 0
@@ -96,8 +96,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 	t.Run("non-primitive method", func(t *testing.T) {
 		// We'll use the VM's Object and Integer classes
-		objectClass := virtualMachine.ObjectClass
-		integerClass := virtualMachine.IntegerClass
+		objectClass := virtualMachine.Classes.Get(vm.Object)
+		integerClass := virtualMachine.Classes.Get(vm.Integer)
 
 		// Create literals
 		factorialSelector := classes.NewSymbol("factorial")
@@ -136,7 +136,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		context := vm.NewContext(testMethod, objectClass, []*core.Object{}, nil)
 
 		// Set the VM's object class
-		virtualMachine.ObjectClass = objectClass
+		virtualMachine.Classes.Register(vm.Object, objectClass)
 		virtualMachine.Globals["Object"] = classes.ClassToObject(objectClass)
 		virtualMachine.Globals["Integer"] = classes.ClassToObject(integerClass)
 
@@ -189,7 +189,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		unknownSelector := classes.NewSymbol("unknown")
 
 		// Create a method with a SEND_MESSAGE bytecode for an unknown method using AddLiteral
-		builder := compiler.NewMethodBuilder(virtualMachine.ObjectClass).Selector("test")
+		builder := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).Selector("test")
 
 		// Add literals to the method builder
 		receiverIndex, builder := builder.AddLiteral(receiver)               // Index 0
@@ -203,7 +203,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		method := builder.Go()
 
 		// Create a context
-		context := vm.NewContext(method, virtualMachine.ObjectClass, []*core.Object{}, nil)
+		context := vm.NewContext(method, virtualMachine.Classes.Get(vm.Object), []*core.Object{}, nil)
 
 		// Execute the PUSH_LITERAL bytecode to set up the stack
 		context.PC = 0
@@ -230,7 +230,7 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 	// Test case for a method with multiple arguments
 	t.Run("direct primitive call with multiple arguments", func(t *testing.T) {
 		// Add primitive methods to the Integer class
-		integerClass := virtualMachine.IntegerClass
+		integerClass := virtualMachine.Classes.Get(vm.Integer)
 		plusSymbol := classes.NewSymbol("+")
 		compiler.NewMethodBuilder(integerClass).
 			Selector("+").
@@ -243,7 +243,7 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		fourObj := virtualMachine.NewInteger(4)
 
 		// Create a method with a SEND_MESSAGE bytecode for addition using AddLiteral
-		builder := compiler.NewMethodBuilder(virtualMachine.ObjectClass).Selector("test")
+		builder := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).Selector("test")
 
 		// Add literals to the method builder
 		twoIndex, builder := builder.AddLiteral(twoObj)      // Index 0
@@ -262,7 +262,7 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		method := builder.Go()
 
 		// Create a context
-		context := vm.NewContext(method, virtualMachine.ObjectClass, []*core.Object{}, nil)
+		context := vm.NewContext(method, virtualMachine.Classes.Get(vm.Object), []*core.Object{}, nil)
 
 		// Execute the first PUSH_LITERAL bytecode
 		context.PC = 0

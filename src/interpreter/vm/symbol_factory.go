@@ -15,6 +15,6 @@ func (vm *VM) NewSymbol(value string) *core.Object {
 	}
 	
 	symObj := classes.SymbolToObject(sym)
-	symObj.SetClass(classes.ClassToObject(vm.ObjectClass)) // Symbols are instances of the Object class for now
+	symObj.SetClass(classes.ClassToObject(vm.Classes.Get(Object))) // Symbols are instances of the Object class for now
 	return symObj
 }

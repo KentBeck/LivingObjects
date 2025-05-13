@@ -15,6 +15,6 @@ func (vm *VM) NewDictionary() *core.Object {
 	}
 	
 	dictObj := classes.DictionaryToObject(dict)
-	dictObj.SetClass(classes.ClassToObject(vm.ObjectClass)) // Dictionary is an instance of Object class for now
+	dictObj.SetClass(classes.ClassToObject(vm.Classes.Get(Object))) // Dictionary is an instance of Object class for now
 	return dictObj
 }

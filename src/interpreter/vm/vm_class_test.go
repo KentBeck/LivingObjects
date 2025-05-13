@@ -20,27 +20,27 @@ func TestGetClass(t *testing.T) {
 		{
 			name:     "Integer",
 			obj:      virtualMachine.NewInteger(42),
-			expected: virtualMachine.IntegerClass,
+			expected: virtualMachine.Classes.Get(vm.Integer),
 		},
 		{
 			name:     "Boolean true",
 			obj:      virtualMachine.TrueObject,
-			expected: virtualMachine.TrueClass,
+			expected: virtualMachine.Classes.Get(vm.True),
 		},
 		{
 			name:     "Boolean false",
 			obj:      virtualMachine.FalseObject,
-			expected: virtualMachine.FalseClass,
+			expected: virtualMachine.Classes.Get(vm.False),
 		},
 		{
 			name:     "Nil",
 			obj:      virtualMachine.NilObject,
-			expected: virtualMachine.NilClass,
+			expected: virtualMachine.Classes.Get(vm.UndefinedObject),
 		},
 		{
 			name:     "Class",
-			obj:      classes.ClassToObject(virtualMachine.ObjectClass),
-			expected: virtualMachine.ObjectClass, // A class is its own class
+			obj:      classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)),
+			expected: virtualMachine.Classes.Get(vm.Object), // A class is its own class
 		},
 	}
 

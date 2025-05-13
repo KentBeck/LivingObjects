@@ -40,8 +40,8 @@ func TestVMNewString(t *testing.T) {
 
 			// Check that the object has the correct class
 			class := virtualMachine.GetClass(strObj)
-			if class != virtualMachine.StringClass {
-				t.Errorf("NewString(%q) has class %v, want %v", tt.value, class, virtualMachine.StringClass)
+			if class != virtualMachine.Classes.Get(vm.String) {
+				t.Errorf("NewString(%q) has class %v, want %v", tt.value, class, virtualMachine.Classes.Get(vm.String))
 			}
 
 			// Check that the object has the correct value

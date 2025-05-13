@@ -19,6 +19,6 @@ func (vm *VM) NewMethod(selector *core.Object, class *classes.Class) *core.Objec
 	}
 
 	methodObj := classes.MethodToObject(method)
-	methodObj.SetClass(classes.ClassToObject(vm.ObjectClass)) // Methods are instances of the Object class for now
+	methodObj.SetClass(classes.ClassToObject(vm.Classes.Get(Object))) // Methods are instances of the Object class for now
 	return methodObj
 }

@@ -14,11 +14,11 @@ import (
 func TestExecutePushLiteral(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	builder := compiler.NewMethodBuilder(virtualMachine.ObjectClass).Selector("test")
+	builder := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).Selector("test")
 	literalIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(42))
 	methodObj := builder.PushLiteral(literalIndex).Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	err := virtualMachine.ExecutePushLiteral(context)
 	if err != nil {
@@ -44,12 +44,12 @@ func TestExecutePushLiteral(t *testing.T) {
 func TestExecutePushSelf(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		Go()
 
 	// Convert classes.Class to core.Class using unsafe.Pointer
-	coreClass := (*core.Class)(unsafe.Pointer(virtualMachine.ObjectClass))
+	coreClass := (*core.Class)(unsafe.Pointer(virtualMachine.Classes.Get(vm.Object)))
 	receiver := core.NewInstance(coreClass)
 
 	context := vm.NewContext(methodObj, receiver, []*core.Object{}, nil)
@@ -72,11 +72,11 @@ func TestExecutePushSelf(t *testing.T) {
 func TestExecutePop(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	context.Push(virtualMachine.NewInteger(42))
 
@@ -93,11 +93,11 @@ func TestExecutePop(t *testing.T) {
 func TestExecuteDuplicate(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	context.Push(virtualMachine.NewInteger(42))
 
@@ -138,12 +138,12 @@ func TestExecuteSendMessage(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Create a simple addition method for the Integer class
-	compiler.NewMethodBuilder(virtualMachine.IntegerClass).
+	compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Integer)).
 		Selector("+").
 		Primitive(1). // Addition primitive
 		Go()
 
-	builder := compiler.NewMethodBuilder(virtualMachine.ObjectClass).Selector("test")
+	builder := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).Selector("test")
 	twoIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(2))
 	threeIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(3))
 	plusIndex, builder := builder.AddLiteral(classes.NewSymbol("+"))
@@ -154,7 +154,7 @@ func TestExecuteSendMessage(t *testing.T) {
 		SendMessage(plusIndex, 1).
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	context.PC = 10 // After the two PUSH_LITERAL instructions
 
@@ -220,13 +220,13 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 func TestExecutePushTemporaryVariable(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		TempVars([]string{"temp"}).
 		PushTemporaryVariable(0).
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	context.SetTempVarByIndex(0, virtualMachine.NewInteger(42))
 
@@ -305,13 +305,13 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 func TestExecuteStoreTemporaryVariable(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		TempVars([]string{"temp"}).
 		StoreTemporaryVariable(0).
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	context.Push(virtualMachine.NewInteger(42))
 
@@ -350,11 +350,11 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 func TestExecuteReturnStackTop(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	context.Push(virtualMachine.NewInteger(42))
 
@@ -381,7 +381,7 @@ func TestExecuteReturnStackTop(t *testing.T) {
 func TestExecuteJump(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		Jump(10).
 		// Add some dummy bytecodes to make the jump valid
@@ -390,7 +390,7 @@ func TestExecuteJump(t *testing.T) {
 		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	skipIncrement, err := virtualMachine.ExecuteJump(context)
 	if err != nil {
@@ -410,7 +410,7 @@ func TestExecuteJump(t *testing.T) {
 func TestExecuteJumpIfTrue(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		JumpIfTrue(10).
 		// Add some dummy bytecodes to make the jump valid
@@ -421,7 +421,7 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 
 	// Test with true condition
 	{
-		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 		context.Push(virtualMachine.TrueObject)
 
@@ -442,7 +442,7 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 
 	// Test with false condition
 	{
-		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 		context.Push(core.NewBoolean(false))
 
@@ -464,7 +464,7 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 func TestExecuteJumpIfFalse(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		JumpIfFalse(10).
 		// Add some dummy bytecodes to make the jump valid
@@ -475,7 +475,7 @@ func TestExecuteJumpIfFalse(t *testing.T) {
 
 	// Test with false condition
 	{
-		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 		context.Push(core.NewBoolean(false))
 
@@ -496,7 +496,7 @@ func TestExecuteJumpIfFalse(t *testing.T) {
 
 	// Test with true condition
 	{
-		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 		context.Push(core.NewBoolean(true))
 

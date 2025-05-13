@@ -68,7 +68,7 @@ func TestBlockWithExpression(t *testing.T) {
 	runtime.RegisterBlockExecutor(vm)
 
 	// Add the + method to the Integer class
-	integerClass := vm.IntegerClass
+	integerClass := vm.Classes.Get(Integer)
 	addMethod := &classes.Method{
 		Object: core.Object{
 			TypeField: core.OBJ_METHOD,
@@ -143,7 +143,7 @@ func TestBlockWithParameter(t *testing.T) {
 	runtime.RegisterBlockExecutor(vm)
 
 	// Add the + method to the Integer class
-	integerClass := vm.IntegerClass
+	integerClass := vm.Classes.Get(Integer)
 	addMethod := &classes.Method{
 		Object: core.Object{
 			TypeField: core.OBJ_METHOD,

@@ -22,8 +22,8 @@ func TestImmediateNil(t *testing.T) {
 
 	// Test that GetClass returns the correct class for immediate nil
 	nilClass := virtualMachine.GetClass(virtualMachine.NilObject.(*core.Object))
-	if nilClass != virtualMachine.NilClass {
-		t.Errorf("Expected GetClass(NilObject) to return NilClass, got %v", nilClass)
+	if nilClass != virtualMachine.Classes.Get(vm.UndefinedObject) {
+		t.Errorf("Expected GetClass(NilObject) to return UndefinedObject class, got %v", nilClass)
 	}
 
 	// Test that IsTrue returns false for immediate nil
@@ -62,8 +62,8 @@ func TestImmediateBoolean(t *testing.T) {
 
 	// Test that GetClass returns the correct class for immediate true
 	trueClass := virtualMachine.GetClass(virtualMachine.TrueObject.(*core.Object))
-	if trueClass != virtualMachine.TrueClass {
-		t.Errorf("Expected GetClass(TrueObject) to return TrueClass, got %v", trueClass)
+	if trueClass != virtualMachine.Classes.Get(vm.True) {
+		t.Errorf("Expected GetClass(TrueObject) to return True class, got %v", trueClass)
 	}
 
 	// Test that IsTrue returns true for immediate true
@@ -89,8 +89,8 @@ func TestImmediateBoolean(t *testing.T) {
 
 	// Test that GetClass returns the correct class for immediate false
 	falseClass := virtualMachine.GetClass(virtualMachine.FalseObject.(*core.Object))
-	if falseClass != virtualMachine.FalseClass {
-		t.Errorf("Expected GetClass(FalseObject) to return FalseClass, got %v", falseClass)
+	if falseClass != virtualMachine.Classes.Get(vm.False) {
+		t.Errorf("Expected GetClass(FalseObject) to return False class, got %v", falseClass)
 	}
 
 	// Test that IsTrue returns false for immediate false
@@ -139,8 +139,8 @@ func TestImmediateInteger(t *testing.T) {
 
 	// Test that GetClass returns the correct class for immediate integer
 	intClass := virtualMachine.GetClass(intObj)
-	if intClass != virtualMachine.IntegerClass {
-		t.Errorf("Expected GetClass(intObj) to return IntegerClass, got %v", intClass)
+	if intClass != virtualMachine.Classes.Get(vm.Integer) {
+		t.Errorf("Expected GetClass(intObj) to return Integer class, got %v", intClass)
 	}
 
 	// Test that IsTrue returns true for immediate integer

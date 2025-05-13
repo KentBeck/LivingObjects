@@ -61,7 +61,7 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name:     "Instance with class",
-			obj:      core.NewInstance((*core.Class)(unsafe.Pointer(virtualMachine.ObjectClass))),
+			obj:      core.NewInstance((*core.Class)(unsafe.Pointer(virtualMachine.Classes.Get(vm.Object)))),
 			expected: "a Object",
 		},
 		{
@@ -73,12 +73,12 @@ func TestObjectString(t *testing.T) {
 		},
 		{
 			name:     "Class",
-			obj:      classes.ClassToObject(virtualMachine.ObjectClass),
+			obj:      classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)),
 			expected: "Class Object",
 		},
 		{
 			name:     "Method with selector",
-			obj:      compiler.NewMethodBuilder(virtualMachine.ObjectClass).Selector("test").Go(),
+			obj:      compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).Selector("test").Go(),
 			expected: "Method test",
 		},
 		{

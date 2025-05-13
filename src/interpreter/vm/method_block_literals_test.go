@@ -91,7 +91,7 @@ func TestBlockWithMethodVariables(t *testing.T) {
 	runtime.RegisterBlockExecutor(vm)
 
 	// Add primitive methods to Integer class
-	integerClass := vm.IntegerClass
+	integerClass := vm.Classes.Get(Integer)
 	addMethod := &classes.Method{
 		Object: core.Object{
 			TypeField: core.OBJ_METHOD,

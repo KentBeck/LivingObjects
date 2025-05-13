@@ -90,7 +90,7 @@ func RunTests(filename string) ([]ExpressionTest, error) {
 
 func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, error) {
 	// Parse the expression
-	parsed, err := parser.NewParser(expression, classes.ClassToObject(vmInstance.ObjectClass), vmInstance).ParseExpression()
+	parsed, err := parser.NewParser(expression, classes.ClassToObject(vmInstance.Classes.Get(vm.Object)), vmInstance).ParseExpression()
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse expression: %s - %v", expression, err)
 	}
@@ -99,11 +99,11 @@ func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, err
 	}
 
 	// Compile the parsed expression
-	method := compiler.NewBytecodeCompiler(classes.ClassToObject(vmInstance.ObjectClass)).Compile(parsed)
+	method := compiler.NewBytecodeCompiler(classes.ClassToObject(vmInstance.Classes.Get(vm.Object))).Compile(parsed)
 	methodObj := classes.MethodToObject(method)
 
 	// Create a context for execution
-	context := vm.NewContext(methodObj, classes.ClassToObject(vmInstance.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(vmInstance.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	// Execute through VM.Execute()
 	result, err := vmInstance.ExecuteContext(context)

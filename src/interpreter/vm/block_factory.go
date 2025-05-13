@@ -18,6 +18,6 @@ func (vm *VM) NewBlock(outerContext interface{}) *core.Object {
 	}
 	
 	blockObj := classes.BlockToObject(block)
-	blockObj.SetClass(classes.ClassToObject(vm.BlockClass))
+	blockObj.SetClass(classes.ClassToObject(vm.Classes.Get(Block)))
 	return blockObj
 }

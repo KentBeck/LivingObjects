@@ -13,12 +13,12 @@ func TestContextPush(t *testing.T) {
 	// Create a VM for testing
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	// Test pushing an object
 	obj := virtualMachine.NewInteger(42)
@@ -63,12 +63,12 @@ func TestContextPop(t *testing.T) {
 	// Create a VM for testing
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	// Test popping from an empty stack
 	defer func() {
@@ -98,12 +98,12 @@ func TestContextTop(t *testing.T) {
 	// Create a VM for testing
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	// Test top on an empty stack
 	defer func() {
@@ -136,12 +136,12 @@ func TestContextTempVars(t *testing.T) {
 	// Create a VM for testing
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.ObjectClass).
+	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.ObjectClass), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	// Set up temporary variables
 	context.TempVars = make([]core.ObjectInterface, 2)

@@ -8,7 +8,7 @@ import (
 
 // NewByteArrayClass creates a new ByteArray class
 func (vm *VM) NewByteArrayClass() *classes.Class {
-	result := classes.NewClass("ByteArray", vm.ObjectClass)
+	result := classes.NewClass("ByteArray", vm.Classes.Get(Object))
 
 	// Add primitive methods to the ByteArray class
 	builder := compiler.NewMethodBuilder(result)
@@ -37,6 +37,6 @@ func (vm *VM) newByteArrayInternal(size int) *classes.ByteArray {
 func (vm *VM) NewByteArray(size int) *core.Object {
 	byteArray := vm.newByteArrayInternal(size)
 	byteArrayObj := classes.ByteArrayToObject(byteArray)
-	byteArrayObj.SetClass(classes.ClassToObject(vm.ByteArrayClass))
+	byteArrayObj.SetClass(classes.ClassToObject(vm.Classes.Get(ByteArray)))
 	return byteArrayObj
 }

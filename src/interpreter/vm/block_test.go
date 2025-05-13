@@ -13,12 +13,12 @@ func TestBasicBlock(t *testing.T) {
 
 	// Create a block
 	block := classes.NewBlock(nil)
-	block.SetClass(classes.ClassToObject(virtualMachine.BlockClass))
+	block.SetClass(classes.ClassToObject(virtualMachine.Classes.Get(vm.Block)))
 
 	// Check that the block is of the correct class
 	blockClass := virtualMachine.GetClass(block)
-	if blockClass != virtualMachine.BlockClass {
-		t.Errorf("Expected block class to be BlockClass, got %v", blockClass)
+	if blockClass != virtualMachine.Classes.Get(vm.Block) {
+		t.Errorf("Expected block class to be Block class, got %v", blockClass)
 	}
 
 	// Check that the block has the correct type

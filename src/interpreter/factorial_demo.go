@@ -14,8 +14,8 @@ func DemoFactorial() {
 
 	virtualMachine := vm.NewVM()
 
-	integerClass := virtualMachine.IntegerClass
-	objectClass := virtualMachine.ObjectClass
+	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	objectClass := virtualMachine.Classes.Get(vm.Object)
 
 	factorialSelector := classes.NewSymbol("factorial")
 

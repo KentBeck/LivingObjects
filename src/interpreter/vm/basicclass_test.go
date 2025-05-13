@@ -10,11 +10,11 @@ import (
 func TestBasicClassPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	EnsureObjectIsClass(t, virtualMachine, virtualMachine.NewInteger(42), virtualMachine.IntegerClass)
-	EnsureObjectIsClass(t, virtualMachine, core.NewNil(), virtualMachine.NilClass)
-	EnsureObjectIsClass(t, virtualMachine, virtualMachine.TrueObject, virtualMachine.TrueClass)
-	EnsureObjectIsClass(t, virtualMachine, virtualMachine.FalseObject, virtualMachine.FalseClass)
-	EnsureObjectIsClass(t, virtualMachine, virtualMachine.NewFloat(3.14), virtualMachine.FloatClass)
+	EnsureObjectIsClass(t, virtualMachine, virtualMachine.NewInteger(42), virtualMachine.Classes.Get(vm.Integer))
+	EnsureObjectIsClass(t, virtualMachine, core.NewNil(), virtualMachine.Classes.Get(vm.UndefinedObject))
+	EnsureObjectIsClass(t, virtualMachine, virtualMachine.TrueObject, virtualMachine.Classes.Get(vm.True))
+	EnsureObjectIsClass(t, virtualMachine, virtualMachine.FalseObject, virtualMachine.Classes.Get(vm.False))
+	EnsureObjectIsClass(t, virtualMachine, virtualMachine.NewFloat(3.14), virtualMachine.Classes.Get(vm.Float))
 }
 
 func EnsureObjectIsClass(t *testing.T, virtualMachine *vm.VM, object core.ObjectInterface, expected interface{}) {

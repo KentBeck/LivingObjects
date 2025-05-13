@@ -14,20 +14,13 @@ type VM struct {
 	ObjectMemory *core.ObjectMemory
 	Executor     *Executor
 
+	// Class registry for all Smalltalk classes
+	Classes *ClassRegistry
+
 	// Special objects
-	NilObject      core.ObjectInterface
-	NilClass       *classes.Class
-	TrueObject     core.ObjectInterface
-	TrueClass      *classes.Class
-	FalseObject    core.ObjectInterface
-	FalseClass     *classes.Class
-	ObjectClass    *classes.Class
-	IntegerClass   *classes.Class
-	FloatClass     *classes.Class
-	StringClass    *classes.Class
-	BlockClass     *classes.Class
-	ArrayClass     *classes.Class
-	ByteArrayClass *classes.Class
+	NilObject   core.ObjectInterface
+	TrueObject  core.ObjectInterface
+	FalseObject core.ObjectInterface
 }
 
 // NewVM creates a new virtual machine
@@ -35,22 +28,44 @@ func NewVM() *VM {
 	vm := &VM{
 		Globals:      make(map[string]*core.Object),
 		ObjectMemory: core.NewObjectMemory(),
+		Classes:      NewClassRegistry(),
 	}
 
-	// Initialize special objects
-	vm.ObjectClass = vm.NewObjectClass()
-	vm.NilClass = classes.NewClass("UndefinedObject", vm.ObjectClass)
+	// Initialize special immediate objects
 	vm.NilObject = core.MakeNilImmediate()
-	vm.TrueClass = vm.NewTrueClass()
 	vm.TrueObject = core.MakeTrueImmediate()
-	vm.FalseClass = vm.NewFalseClass()
 	vm.FalseObject = core.MakeFalseImmediate()
-	vm.IntegerClass = vm.NewIntegerClass()
-	vm.FloatClass = vm.NewFloatClass()
-	vm.StringClass = vm.NewStringClass()
-	vm.BlockClass = vm.NewBlockClass()
-	vm.ArrayClass = vm.NewArrayClass()
-	vm.ByteArrayClass = vm.NewByteArrayClass()
+
+	// Initialize core classes
+	objectClass := vm.NewObjectClass()
+	vm.Classes.Register(Object, objectClass)
+
+	nilClass := classes.NewClass("UndefinedObject", objectClass)
+	vm.Classes.Register(UndefinedObject, nilClass)
+
+	trueClass := vm.NewTrueClass()
+	vm.Classes.Register(True, trueClass)
+
+	falseClass := vm.NewFalseClass()
+	vm.Classes.Register(False, falseClass)
+
+	integerClass := vm.NewIntegerClass()
+	vm.Classes.Register(Integer, integerClass)
+
+	floatClass := vm.NewFloatClass()
+	vm.Classes.Register(Float, floatClass)
+
+	stringClass := vm.NewStringClass()
+	vm.Classes.Register(String, stringClass)
+
+	blockClass := vm.NewBlockClass()
+	vm.Classes.Register(Block, blockClass)
+
+	arrayClass := vm.NewArrayClass()
+	vm.Classes.Register(Array, arrayClass)
+
+	byteArrayClass := vm.NewByteArrayClass()
+	vm.Classes.Register(ByteArray, byteArrayClass)
 
 	// Initialize the executor
 	vm.Executor = NewExecutor(vm)
@@ -74,7 +89,7 @@ func (vm *VM) NewObjectClass() *classes.Class {
 }
 
 func (vm *VM) NewIntegerClass() *classes.Class {
-	result := classes.NewClass("Integer", vm.ObjectClass)
+	result := classes.NewClass("Integer", vm.Classes.Get(Object))
 
 	// Add primitive methods to the Integer class
 	builder := compiler.NewMethodBuilder(result)
@@ -101,7 +116,7 @@ func (vm *VM) NewIntegerClass() *classes.Class {
 }
 
 func (vm *VM) NewFloatClass() *classes.Class {
-	result := classes.NewClass("Float", vm.ObjectClass) // patch this up later. then even later when we have real images all this initialization can go away
+	result := classes.NewClass("Float", vm.Classes.Get(Object)) // patch this up later. then even later when we have real images all this initialization can go away
 
 	// Add primitive methods to the Float class
 	builder := compiler.NewMethodBuilder(result)
@@ -151,7 +166,7 @@ func (vm *VM) NewFloat(value float64) *core.Object {
 func (vm *VM) NewString(value string) *core.Object {
 	str := classes.NewString(value)
 	strObj := classes.StringToObject(str)
-	strObj.SetClass(classes.ClassToObject(vm.StringClass))
+	strObj.SetClass(classes.ClassToObject(vm.Classes.Get(String)))
 	return strObj
 }
 
@@ -159,7 +174,7 @@ func (vm *VM) NewString(value string) *core.Object {
 func (vm *VM) NewArray(size int) *core.Object {
 	array := classes.NewArray(size)
 	arrayObj := classes.ArrayToObject(array)
-	arrayObj.SetClass(classes.ClassToObject(vm.ArrayClass))
+	arrayObj.SetClass(classes.ClassToObject(vm.Classes.Get(Array)))
 	return arrayObj
 }
 
@@ -179,7 +194,7 @@ func (vm *VM) NewNil() *core.Object {
 }
 
 func (vm *VM) NewTrueClass() *classes.Class {
-	result := classes.NewClass("True", vm.ObjectClass)
+	result := classes.NewClass("True", vm.Classes.Get(Object))
 
 	// Add methods to the True class
 	builder := compiler.NewMethodBuilder(result)
@@ -197,7 +212,7 @@ func (vm *VM) NewTrueClass() *classes.Class {
 }
 
 func (vm *VM) NewFalseClass() *classes.Class {
-	result := classes.NewClass("False", vm.ObjectClass)
+	result := classes.NewClass("False", vm.Classes.Get(Object))
 
 	// Add methods to the False class
 	builder := compiler.NewMethodBuilder(result)
@@ -215,7 +230,7 @@ func (vm *VM) NewFalseClass() *classes.Class {
 }
 
 func (vm *VM) NewStringClass() *classes.Class {
-	result := classes.NewClass("String", vm.ObjectClass)
+	result := classes.NewClass("String", vm.Classes.Get(Object))
 
 	// Add primitive methods to the String class
 	builder := compiler.NewMethodBuilder(result)
@@ -227,7 +242,7 @@ func (vm *VM) NewStringClass() *classes.Class {
 }
 
 func (vm *VM) NewArrayClass() *classes.Class {
-	result := classes.NewClass("Array", vm.ObjectClass)
+	result := classes.NewClass("Array", vm.Classes.Get(Object))
 
 	// Add primitive methods to the Array class
 	builder := compiler.NewMethodBuilder(result)
@@ -239,7 +254,7 @@ func (vm *VM) NewArrayClass() *classes.Class {
 }
 
 func (vm *VM) NewBlockClass() *classes.Class {
-	result := classes.NewClass("Block", vm.ObjectClass)
+	result := classes.NewClass("Block", vm.Classes.Get(Object))
 
 	// Add primitive methods to the Block class
 	builder := compiler.NewMethodBuilder(result)
@@ -259,7 +274,7 @@ func (vm *VM) NewBlockClass() *classes.Class {
 
 // LoadImage loads a Smalltalk image from a file
 func (vm *VM) LoadImage(path string) error {
-	vm.Globals["Object"] = classes.ClassToObject(vm.ObjectClass)
+	vm.Globals["Object"] = classes.ClassToObject(vm.Classes.Get(Object))
 
 	return nil
 }
@@ -290,23 +305,23 @@ func (vm *VM) GetClass(obj *core.Object) *classes.Class {
 	if core.IsImmediate(obj) {
 		// Handle immediate nil
 		if core.IsNilImmediate(obj) {
-			return vm.NilClass
+			return vm.Classes.Get(UndefinedObject)
 		}
 		// Handle immediate true
 		if core.IsTrueImmediate(obj) {
-			return vm.TrueClass
+			return vm.Classes.Get(True)
 		}
 		// Handle immediate false
 		if core.IsFalseImmediate(obj) {
-			return vm.FalseClass
+			return vm.Classes.Get(False)
 		}
 		// Handle immediate integer
 		if core.IsIntegerImmediate(obj) {
-			return vm.IntegerClass
+			return vm.Classes.Get(Integer)
 		}
 		// Handle immediate float
 		if core.IsFloatImmediate(obj) {
-			return vm.FloatClass
+			return vm.Classes.Get(Float)
 		}
 		// Other immediate types will be added later
 		panic("GetClass: unknown immediate type")
@@ -577,10 +592,10 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 			return core.NewBoolean(result).(*core.Object)
 		}
 	case 20: // Block new - create a new block instance
-		if receiver.Type() == core.OBJ_CLASS && receiver == classes.ClassToObject(vm.BlockClass) {
+		if receiver.Type() == core.OBJ_CLASS && receiver == classes.ClassToObject(vm.Classes.Get(Block)) {
 			// Create a new block instance
 			blockInstance := classes.NewBlock(vm.Executor.CurrentContext)
-			blockInstance.SetClass(classes.ClassToObject(vm.BlockClass))
+			blockInstance.SetClass(classes.ClassToObject(vm.Classes.Get(Block)))
 			return blockInstance
 		}
 	case 21: // Block value - execute a block with no arguments
@@ -720,7 +735,3 @@ func (vm *VM) GetGlobals() []*core.Object {
 	return globals
 }
 
-// GetObjectClass returns the object class
-func (vm *VM) GetObjectClass() *classes.Class {
-	return vm.ObjectClass
-}
