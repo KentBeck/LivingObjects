@@ -2,6 +2,7 @@ package parser
 
 import (
 	"testing"
+	"unsafe"
 
 	"smalltalklsp/interpreter/ast"
 	"smalltalklsp/interpreter/classes"
@@ -12,8 +13,8 @@ import (
 // TestParseExpression tests parsing various Smalltalk expressions
 func TestParseExpression(t *testing.T) {
 	// Create a class for context
-	objectClass := classes.NewClass("Object", nil)
-	classObj := classes.ClassToObject(objectClass)
+	objectClass := core.NewClass("Object", nil)
+	classObj := (*core.Object)(unsafe.Pointer(objectClass))
 
 	// Test cases
 	tests := []struct {
@@ -491,8 +492,8 @@ func TestParseExpression(t *testing.T) {
 // TestParseArrayLiteral tests parsing array literals
 func TestParseArrayLiteral(t *testing.T) {
 	// Create a class for context
-	objectClass := classes.NewClass("Object", nil)
-	classObj := classes.ClassToObject(objectClass)
+	objectClass := core.NewClass("Object", nil)
+	classObj := (*core.Object)(unsafe.Pointer(objectClass))
 
 	// Create a real VM for testing
 	vmInstance := vm.NewVM()
@@ -578,8 +579,8 @@ func TestParseArrayLiteral(t *testing.T) {
 // TestArrayLiteralWithKeywordMessage tests parsing array literals with keyword messages
 func TestArrayLiteralWithKeywordMessage(t *testing.T) {
 	// Create a class for context
-	objectClass := classes.NewClass("Object", nil)
-	classObj := classes.ClassToObject(objectClass)
+	objectClass := core.NewClass("Object", nil)
+	classObj := (*core.Object)(unsafe.Pointer(objectClass))
 
 	// Create a real VM for testing
 	vmInstance := vm.NewVM()

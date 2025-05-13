@@ -7,9 +7,6 @@ import (
 	"smalltalklsp/interpreter/core"
 )
 
-// Don't define a Class type in the classes package anymore
-// Use core.Class directly
-
 const METHOD_DICTIONARY_IV = 0
 
 // NewClass creates a new class object
@@ -21,7 +18,7 @@ func NewClass(name string, superClass *core.Class) *core.Class {
 
 	// Create a core.Class
 	result := core.NewClass(name, superClass)
-	
+
 	// Set the dictionary
 	result.InstanceVarsField = instVars
 
