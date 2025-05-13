@@ -2,22 +2,25 @@ package parser
 
 import (
 	"testing"
+	"unsafe"
 
 	"smalltalklsp/interpreter/ast"
-	"smalltalklsp/interpreter/classes"
+	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/vm"
 )
 
 // TestParseYourself tests parsing the method "yourself ^self"
 func TestParseYourself(t *testing.T) {
 	// Create a class
-	objectClass := classes.NewClass("Object", nil)
+	objectClass := core.NewClass("Object", nil)
+	objectClass.ClassField = objectClass // Set class's class to itself for proper checks
+	classObj := (*core.Object)(unsafe.Pointer(objectClass))
 
 	// Create a real VM for testing
 	vmInstance := vm.NewVM()
 
 	// Create a parser
-	p := NewParser("yourself ^self", classes.ClassToObject(objectClass), vmInstance)
+	p := NewParser("yourself ^self", classObj, vmInstance)
 
 	// Parse the method
 	node, err := p.Parse()
@@ -59,22 +62,25 @@ func TestParseYourself(t *testing.T) {
 	}
 
 	// Check the method class
-	if methodNode.Class != classes.ClassToObject(objectClass) {
-		t.Errorf("Expected method class to be %v, got %v", classes.ClassToObject(objectClass), methodNode.Class)
+	if methodNode.Class != classObj {
+		t.Errorf("Expected method class to be %v, got %v", classObj, methodNode.Class)
 	}
 }
 
 // TestParseAdd tests parsing the method "+ aNumber ^self + aNumber"
 func TestParseAdd(t *testing.T) {
 	// Create a class
-	objectClass := classes.NewClass("Object", nil)
-	integerClass := classes.NewClass("Integer", objectClass)
+	objectClass := core.NewClass("Object", nil)
+	objectClass.ClassField = objectClass // Set class's class to itself for proper checks
+	integerClass := core.NewClass("Integer", objectClass)
+	integerClass.ClassField = objectClass // Set class's class for proper checks
+	integerClassObj := (*core.Object)(unsafe.Pointer(integerClass))
 
 	// Create a real VM for testing
 	vmInstance := vm.NewVM()
 
 	// Create a parser
-	p := NewParser("+ aNumber ^self + aNumber", classes.ClassToObject(integerClass), vmInstance)
+	p := NewParser("+ aNumber ^self + aNumber", integerClassObj, vmInstance)
 
 	// Parse the method
 	node, err := p.Parse()
@@ -144,21 +150,23 @@ func TestParseAdd(t *testing.T) {
 	}
 
 	// Check the method class
-	if methodNode.Class != classes.ClassToObject(integerClass) {
-		t.Errorf("Expected method class to be %v, got %v", classes.ClassToObject(integerClass), methodNode.Class)
+	if methodNode.Class != integerClassObj {
+		t.Errorf("Expected method class to be %v, got %v", integerClassObj, methodNode.Class)
 	}
 }
 
 // TestParseWithTemporaries tests parsing a method with temporary variables
 func TestParseWithTemporaries(t *testing.T) {
 	// Create a class
-	objectClass := classes.NewClass("Object", nil)
+	objectClass := core.NewClass("Object", nil)
+	objectClass.ClassField = objectClass // Set class's class to itself for proper checks
+	classObj := (*core.Object)(unsafe.Pointer(objectClass))
 
 	// Create a real VM for testing
 	vmInstance := vm.NewVM()
 
 	// Create a parser
-	p := NewParser("factorial | temp | ^temp", classes.ClassToObject(objectClass), vmInstance)
+	p := NewParser("factorial | temp | ^temp", classObj, vmInstance)
 
 	// Parse the method
 	node, err := p.Parse()
@@ -190,21 +198,23 @@ func TestParseWithTemporaries(t *testing.T) {
 	}
 
 	// Check the method class
-	if methodNode.Class != classes.ClassToObject(objectClass) {
-		t.Errorf("Expected method class to be %v, got %v", classes.ClassToObject(objectClass), methodNode.Class)
+	if methodNode.Class != classObj {
+		t.Errorf("Expected method class to be %v, got %v", classObj, methodNode.Class)
 	}
 }
 
 // TestParseWithBlock tests parsing a method with a block
 func TestParseWithBlock(t *testing.T) {
 	// Create a class
-	objectClass := classes.NewClass("Object", nil)
+	objectClass := core.NewClass("Object", nil)
+	objectClass.ClassField = objectClass // Set class's class to itself for proper checks
+	classObj := (*core.Object)(unsafe.Pointer(objectClass))
 
 	// Create a real VM for testing
 	vmInstance := vm.NewVM()
 
 	// Create a parser
-	p := NewParser("do: aBlock ^aBlock value", classes.ClassToObject(objectClass), vmInstance)
+	p := NewParser("do: aBlock ^aBlock value", classObj, vmInstance)
 
 	// Parse the method
 	node, err := p.Parse()
@@ -268,7 +278,7 @@ func TestParseWithBlock(t *testing.T) {
 	}
 
 	// Check the method class
-	if methodNode.Class != classes.ClassToObject(objectClass) {
-		t.Errorf("Expected method class to be %v, got %v", classes.ClassToObject(objectClass), methodNode.Class)
+	if methodNode.Class != classObj {
+		t.Errorf("Expected method class to be %v, got %v", classObj, methodNode.Class)
 	}
 }

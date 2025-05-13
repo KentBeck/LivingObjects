@@ -7,6 +7,7 @@ import (
 
 // TestExpressions runs all the expression tests from string_tests.txt
 func TestExpressions(t *testing.T) {
+	// Run these tests with careful handling of boolean expressions
 	// Get the path to the test file
 	testFile := filepath.Join(".", "string_tests.txt")
 

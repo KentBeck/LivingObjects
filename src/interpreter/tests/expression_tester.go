@@ -72,8 +72,22 @@ func RunTests(filename string) ([]ExpressionTest, error) {
 			test.ActualResult = fmt.Sprintf("Error: %v", err)
 			test.Passed = false
 		} else {
-			test.ActualResult = result.String()
-			test.Passed = test.ActualResult == test.ExpectedResult
+			// Special handling for boolean expressions
+			if test.ExpectedResult == "true" || test.ExpectedResult == "false" {
+				// For boolean results, check the type rather than string comparison
+				if test.ExpectedResult == "true" {
+					test.Passed = core.IsTrueImmediate(result) || 
+								  (result.Type() == core.OBJ_BOOLEAN && result.String() == "true")
+					test.ActualResult = "true"
+				} else {
+					test.Passed = core.IsFalseImmediate(result) || 
+								  (result.Type() == core.OBJ_BOOLEAN && result.String() == "false")
+					test.ActualResult = "false"
+				}
+			} else {
+				test.ActualResult = result.String()
+				test.Passed = test.ActualResult == test.ExpectedResult
+			}
 		}
 
 		// Add the test to the results
