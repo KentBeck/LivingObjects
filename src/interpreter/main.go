@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"smalltalklsp/interpreter/demo"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -13,7 +14,7 @@ func main() {
 	if len(os.Args) > 1 {
 		if os.Args[1] == "demo" {
 			// Run the factorial demo
-			DemoFactorial()
+			demo.RunFactorialDemo()
 		} else {
 			imagePath := os.Args[1]
 			fmt.Printf("Loading image from: %s\n", imagePath)
