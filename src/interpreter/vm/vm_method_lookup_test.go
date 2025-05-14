@@ -75,7 +75,7 @@ func TestLookupMethod(t *testing.T) {
 	}
 
 	// 6. Test with nil class
-	// nilClassInstance := &core.Object{Type: OBJ_INSTANCE, Class: nil}
+	// nilClassInstance := &pile.Object{TypeField: pile.OBJ_INSTANCE, ClassField: nil}
 	// method = virtualMachine.LookupMethod(nilClassInstance, sizeSelector)
 	// if method != nil {
 	// 	t.Errorf("Expected nil when receiver has nil class, got %v", method)
