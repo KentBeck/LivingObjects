@@ -4,10 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/parser"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 	"strings"
 )
@@ -77,11 +77,11 @@ func RunTests(filename string) ([]ExpressionTest, error) {
 				// For boolean results, check the type rather than string comparison
 				if test.ExpectedResult == "true" {
 					test.Passed = core.IsTrueImmediate(result) || 
-								  (result.Type() == core.OBJ_BOOLEAN && result.String() == "true")
+								  (result.Type() == pile.OBJ_BOOLEAN && result.String() == "true")
 					test.ActualResult = "true"
 				} else {
 					test.Passed = core.IsFalseImmediate(result) || 
-								  (result.Type() == core.OBJ_BOOLEAN && result.String() == "false")
+								  (result.Type() == pile.OBJ_BOOLEAN && result.String() == "false")
 					test.ActualResult = "false"
 				}
 			} else {
@@ -104,7 +104,7 @@ func RunTests(filename string) ([]ExpressionTest, error) {
 
 func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, error) {
 	// Parse the expression
-	parsed, err := parser.NewParser(expression, classes.ClassToObject(vmInstance.Classes.Get(vm.Object)), vmInstance).ParseExpression()
+	parsed, err := parser.NewParser(expression, core.ClassToObject(vmInstance.Classes.Get(vm.Object)), vmInstance).ParseExpression()
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse expression: %s - %v", expression, err)
 	}
@@ -113,11 +113,11 @@ func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, err
 	}
 
 	// Compile the parsed expression
-	method := compiler.NewBytecodeCompiler(classes.ClassToObject(vmInstance.Classes.Get(vm.Object))).Compile(parsed)
-	methodObj := classes.MethodToObject(method)
+	method := compiler.NewBytecodeCompiler(core.ClassToObject(vmInstance.Classes.Get(vm.Object))).Compile(parsed)
+	methodObj := core.MethodToObject(method)
 
 	// Create a context for execution
-	context := vm.NewContext(methodObj, classes.ClassToObject(vmInstance.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, core.ClassToObject(vmInstance.Classes.Get(vm.Object)), []*core.Object{}, nil)
 
 	// Execute through VM.Execute()
 	result, err := vmInstance.ExecuteContext(context)

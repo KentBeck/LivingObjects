@@ -16,6 +16,9 @@ type (
 	
 	// ObjectInterface is now in the pile package
 	ObjectInterface = pile.ObjectInterface
+	
+	// ObjectMemory is now in the pile package
+	ObjectMemory = pile.ObjectMemory
 )
 
 // Object type constants
@@ -91,4 +94,22 @@ var (
 	
 	// NewBoolean is now in the pile package
 	NewBoolean = pile.NewBoolean
+	
+	// NewSymbol is now in the pile package
+	NewSymbol = pile.NewSymbol
+	
+	// NewInstance is now in the pile package
+	NewInstance = pile.NewInstance
+	
+	// ObjectToArray is now in the pile package
+	ObjectToArray = pile.ObjectToArray
+	
+	// ClassToObject is now in the pile package
+	ClassToObject = pile.ClassToObject
+	
+	// MethodToObject is now in the pile package
+	MethodToObject = pile.MethodToObject
+	
+	// NewObjectMemory is now in the pile package
+	NewObjectMemory = pile.NewObjectMemory
 )

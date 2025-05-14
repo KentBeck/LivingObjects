@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"smalltalklsp/interpreter/ast"
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
 )
 
@@ -609,7 +608,7 @@ func (p *Parser) parseArrayLiteral() (ast.Node, error) {
 
 	// Create an actual Array object using the VM
 	arrayObj := p.VM.NewArray(len(elements))
-	array := classes.ObjectToArray(arrayObj)
+	array := core.ObjectToArray(arrayObj)
 
 	// Fill the array with the parsed elements
 	for i, element := range elements {

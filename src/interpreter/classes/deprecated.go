@@ -131,4 +131,13 @@ var (
 	
 	// GetClassSuperClass is now in the pile package
 	GetClassSuperClass = pile.GetClassSuperClass
+	
+	// AddClassMethod is now in the pile package
+	AddClassMethod = pile.AddClassMethod
+	
+	// AddClassInstanceVarName is now in the pile package
+	AddClassInstanceVarName = pile.AddClassInstanceVarName
+	
+	// ObjectToDictionary is now in the pile package
+	ObjectToDictionary = pile.ObjectToDictionary
 )
