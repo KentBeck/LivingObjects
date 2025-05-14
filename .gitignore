@@ -13,3 +13,4 @@ src/interpreter/core_coverage.out
 src/interpreter/cmd/expression_tester/expression_tester
 
 **/.claude/settings.local.json
+src/interpreter/smalltalk-vm
