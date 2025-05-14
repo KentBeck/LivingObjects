@@ -1,13 +1,13 @@
 package types
 
 import (
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // ObjectFactory defines an interface for creating Smalltalk objects
 type ObjectFactory interface {
 	// NewBlock creates a block object with proper class field
-	NewBlock(outerContext interface{}) *core.Object
+	NewBlock(outerContext interface{}) *pile.Object
 }
 
 // DefaultFactory is a singleton instance of the ObjectFactory

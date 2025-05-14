@@ -1,13 +1,13 @@
 package runtime
 
 import (
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // BlockExecutor is an interface for executing blocks
 type BlockExecutor interface {
 	// ExecuteBlock executes a block with the given arguments and returns the result
-	ExecuteBlock(block *core.Object, args []*core.Object) *core.Object
+	ExecuteBlock(block *pile.Object, args []*pile.Object) *pile.Object
 }
 
 // RegisterBlockExecutor registers a block executor
@@ -25,11 +25,11 @@ func GetCurrentBlockExecutor() BlockExecutor {
 }
 
 // ExecuteBlock executes a block with the given arguments and returns the result
-func ExecuteBlock(block *core.Object, args []*core.Object) *core.Object {
+func ExecuteBlock(block *pile.Object, args []*pile.Object) *pile.Object {
 	if currentBlockExecutor == nil {
 		// If no block executor is registered, return nil
 		// This is a temporary solution for testing
-		return core.MakeNilImmediate()
+		return pile.MakeNilImmediate()
 	}
 	return currentBlockExecutor.ExecuteBlock(block, args)
 }

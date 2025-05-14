@@ -1,13 +1,14 @@
 package core
 
 import (
+	"smalltalklsp/interpreter/pile"
 	"unsafe"
 )
 
 // ObjectMemory manages the Smalltalk object memory with stop & copy garbage collection
 type ObjectMemory struct {
-	FromSpace   []*Object
-	ToSpace     []*Object
+	FromSpace   []*pile.Object
+	ToSpace     []*pile.Object
 	AllocPtr    int
 	SpaceSize   int
 	GCThreshold int
@@ -16,18 +17,18 @@ type ObjectMemory struct {
 
 // VM is a forward declaration to avoid circular imports
 type VM interface {
-	GetGlobals() []*Object
+	GetGlobals() []*pile.Object
 	GetCurrentContext() interface{}
-	GetObjectClass() *Class
+	GetObjectClass() *pile.Class
 }
 
 // ExecutionContext is a forward declaration to avoid circular imports and name conflicts
 type ExecutionContext interface {
-	GetMethod() *Object
-	GetReceiver() *Object
-	GetArguments() []*Object
-	GetTempVars() []*Object
-	GetStack() []*Object
+	GetMethod() *pile.Object
+	GetReceiver() *pile.Object
+	GetArguments() []*pile.Object
+	GetTempVars() []*pile.Object
+	GetStack() []*pile.Object
 	GetStackPointer() int
 	GetSender() interface{}
 }
@@ -36,8 +37,8 @@ type ExecutionContext interface {
 func NewObjectMemory() *ObjectMemory {
 	spaceSize := 10000 // Initial space size
 	return &ObjectMemory{
-		FromSpace:   make([]*Object, spaceSize),
-		ToSpace:     make([]*Object, spaceSize),
+		FromSpace:   make([]*pile.Object, spaceSize),
+		ToSpace:     make([]*pile.Object, spaceSize),
 		AllocPtr:    0,
 		SpaceSize:   spaceSize,
 		GCThreshold: spaceSize * 80 / 100, // 80% threshold
@@ -46,7 +47,7 @@ func NewObjectMemory() *ObjectMemory {
 }
 
 // Allocate allocates a new object
-func (om *ObjectMemory) Allocate(obj *Object) *Object {
+func (om *ObjectMemory) Allocate(obj *pile.Object) *pile.Object {
 	// Check if we need to collect garbage
 	if om.ShouldCollect() {
 		// We'll let the VM handle collection
@@ -142,7 +143,7 @@ func (om *ObjectMemory) Collect(vm VM) {
 	// Note: NilObject, TrueObject, and FalseObject are now immediate values, so we don't need to copy them
 	if vm.GetObjectClass() != nil {
 		// In a real implementation, this would update the object class reference in the VM
-		_ = om.copyObject((*Object)(unsafe.Pointer(vm.GetObjectClass())), &toPtr)
+		_ = om.copyObject((*pile.Object)(unsafe.Pointer(vm.GetObjectClass())), &toPtr)
 	}
 
 	// Scan the to-space for references
@@ -167,11 +168,11 @@ func (om *ObjectMemory) Collect(vm VM) {
 }
 
 // copyObject copies an object to the to-space
-func (om *ObjectMemory) copyObject(obj ObjectInterface, toPtr *int) *Object {
+func (om *ObjectMemory) copyObject(obj pile.ObjectInterface, toPtr *int) *pile.Object {
 	// Check if it's an immediate value
-	if IsImmediate(obj) {
+	if pile.IsImmediate(obj) {
 		// Immediate values don't need to be copied
-		return obj.(*Object)
+		return obj.(*pile.Object)
 	}
 
 	// Check if the object has already been moved
@@ -180,7 +181,7 @@ func (om *ObjectMemory) copyObject(obj ObjectInterface, toPtr *int) *Object {
 	}
 
 	// Copy the object to the to-space
-	om.ToSpace[*toPtr] = obj.(*Object)
+	om.ToSpace[*toPtr] = obj.(*pile.Object)
 	obj.SetMoved(true)
 	obj.SetForwardingPtr(om.ToSpace[*toPtr])
 	*toPtr++
@@ -189,34 +190,34 @@ func (om *ObjectMemory) copyObject(obj ObjectInterface, toPtr *int) *Object {
 }
 
 // updateReferences updates references in an object
-func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
+func (om *ObjectMemory) updateReferences(obj *pile.Object, toPtr *int) {
 	// Check if it's an immediate value
-	if IsImmediate(obj) {
+	if pile.IsImmediate(obj) {
 		// Immediate values don't have references
 		return
 	}
 
 	switch obj.Type() {
-	case OBJ_STRING:
+	case pile.OBJ_STRING:
 		// String objects don't have references to update
 		return
 
-	case OBJ_SYMBOL:
+	case pile.OBJ_SYMBOL:
 		// Symbol objects don't have references to update
 		return
 
-	case OBJ_ARRAY:
+	case pile.OBJ_ARRAY:
 		// Update array elements
-		array := (*Array)(unsafe.Pointer(obj))
+		array := (*pile.Array)(unsafe.Pointer(obj))
 		for i, elem := range array.Elements {
 			if elem != nil {
 				array.Elements[i] = om.copyObject(elem, toPtr)
 			}
 		}
 
-	case OBJ_DICTIONARY:
+	case pile.OBJ_DICTIONARY:
 		// Update dictionary entries
-		dict := (*Dictionary)(unsafe.Pointer(obj))
+		dict := (*pile.Dictionary)(unsafe.Pointer(obj))
 		entries := dict.GetEntries()
 		for key, value := range entries {
 			if value != nil {
@@ -224,7 +225,7 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 			}
 		}
 
-	case OBJ_INSTANCE:
+	case pile.OBJ_INSTANCE:
 		// Update instance variables
 		instanceVars := obj.InstanceVars()
 		for i, value := range instanceVars {
@@ -238,7 +239,7 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 			obj.SetClass(om.copyObject(obj.Class(), toPtr))
 		}
 
-	case OBJ_CLASS:
+	case pile.OBJ_CLASS:
 		// Update instance variables (which includes the method dictionary)
 		instanceVars := obj.InstanceVars()
 		for i, value := range instanceVars {
@@ -248,14 +249,14 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 		}
 
 		// Update superclass reference
-		class := (*Class)(unsafe.Pointer(obj))
+		class := (*pile.Class)(unsafe.Pointer(obj))
 		if class.SuperClass != nil {
 			class.SuperClass = om.copyObject(class.SuperClass, toPtr)
 		}
 
-	case OBJ_METHOD:
+	case pile.OBJ_METHOD:
 		// Update method literals
-		method := (*Method)(unsafe.Pointer(obj))
+		method := (*pile.Method)(unsafe.Pointer(obj))
 		for i, lit := range method.Literals {
 			if lit != nil {
 				method.Literals[i] = om.copyObject(lit, toPtr)
@@ -269,12 +270,12 @@ func (om *ObjectMemory) updateReferences(obj *Object, toPtr *int) {
 
 		// Update method class
 		if method.MethodClass != nil {
-			method.MethodClass = (*Class)(unsafe.Pointer(om.copyObject((*Object)(unsafe.Pointer(method.MethodClass)), toPtr)))
+			method.MethodClass = (*pile.Class)(unsafe.Pointer(om.copyObject((*pile.Object)(unsafe.Pointer(method.MethodClass)), toPtr)))
 		}
 
-	case OBJ_BLOCK:
+	case pile.OBJ_BLOCK:
 		// Update block literals
-		block := (*Block)(unsafe.Pointer(obj))
+		block := (*pile.Block)(unsafe.Pointer(obj))
 		for i, lit := range block.Literals {
 			if lit != nil {
 				block.Literals[i] = om.copyObject(lit, toPtr)
@@ -288,8 +289,8 @@ func (om *ObjectMemory) growSpaces() {
 	newSize := om.SpaceSize * 2
 
 	// Create new spaces
-	newFromSpace := make([]*Object, newSize)
-	newToSpace := make([]*Object, newSize)
+	newFromSpace := make([]*pile.Object, newSize)
+	newToSpace := make([]*pile.Object, newSize)
 
 	// Copy objects to the new from-space
 	copy(newFromSpace, om.FromSpace)

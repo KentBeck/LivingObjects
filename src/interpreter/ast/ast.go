@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // Node is the interface for all AST nodes
@@ -52,7 +52,7 @@ type MethodNode struct {
 	Body Node
 
 	// Class is the method class
-	Class *core.Object
+	Class *pile.Object
 }
 
 // Accept implements the Node interface
@@ -85,7 +85,7 @@ func (n *SelfNode) Accept(visitor Visitor) interface{} {
 // LiteralNode represents a literal value
 type LiteralNode struct {
 	// Value is the literal value
-	Value *core.Object
+	Value *pile.Object
 }
 
 // Accept implements the Node interface
@@ -155,4 +155,3 @@ type BlockNode struct {
 func (n *BlockNode) Accept(visitor Visitor) interface{} {
 	return visitor.VisitBlockNode(n)
 }
-
