@@ -167,7 +167,7 @@ func (vm *VM) NewFloat(value float64) *pile.Object {
 
 // NewString creates a new string object
 func (vm *VM) NewString(value string) *pile.Object {
-	str := pile.NewStringInternal(value)
+	str := &pile.String{Object: pile.Object{TypeField: pile.OBJ_STRING}, Value: value}
 	strObj := pile.StringToObject(str)
 	strObj.SetClass(pile.ClassToObject(vm.Classes.Get(String)))
 	return strObj

@@ -11,20 +11,9 @@ type String struct {
 	Value string
 }
 
-// newString creates a new string object without setting its class field
-// This is a private helper function used by vm.NewString
-func NewStringInternal(value string) *String {
-	return &String{
-		Object: Object{
-			TypeField: OBJ_STRING,
-		},
-		Value: value,
-	}
-}
-
 // NewString creates a new string object (deprecated - use vm.NewString instead)
 func NewString(value string) *String {
-	return NewStringInternal(value)
+	return &String{Object: Object{TypeField: OBJ_STRING}, Value: value}
 }
 
 // StringToObject converts a String to an Object
