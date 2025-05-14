@@ -1,44 +1,674 @@
-# Living Objects Manifesto
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Living Objects Manifesto</title>
+    <style>
+        :root {
+            --primary-color: #34A853;
+            --secondary-color: #4285F4;
+            --accent-color: #FBBC05;
+            --highlight-color: #EA4335;
+            --dark-color: #232323;
+            --light-color: #FAFFF9;
+            --transition-timing: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.7;
+            color: var(--dark-color);
+            background-color: var(--light-color);
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(52, 168, 83, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 60%, rgba(66, 133, 244, 0.05) 0%, transparent 40%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .logo {
+            max-width: 200px;
+            height: auto;
+        }
+        
+        header {
+            margin-bottom: 4rem;
+            position: relative;
+        }
+        
+        .title-container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.03em;
+            position: relative;
+            display: inline-block;
+        }
+        
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-top: 4rem;
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        h2::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: -30px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(52, 168, 83, 0.2);
+            transform: translateY(-50%);
+        }
+        
+        h3 {
+            font-size: 1.8rem;
+            color: var(--dark-color);
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            position: relative;
+            transition: all 0.3s var(--transition-timing);
+        }
+        
+        .cold-open {
+            font-size: 1.15rem;
+            padding: 2.5rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6));
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 
+                        0 1px 3px rgba(0, 0, 0, 0.03),
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            margin: 2rem 0 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cold-open::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(52, 168, 83, 0.1), transparent 30%),
+                radial-gradient(circle at 80% 80%, rgba(66, 133, 244, 0.1), transparent 30%);
+            z-index: -1;
+        }
+        
+        .cold-open p {
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cold-open p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .principle {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 
+                        0 1px 3px rgba(0, 0, 0, 0.03);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s var(--transition-timing);
+            border-left: 4px solid transparent;
+        }
+        
+        .principle:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08), 
+                        0 5px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .principle:nth-of-type(1) { border-left-color: var(--primary-color); }
+        .principle:nth-of-type(2) { border-left-color: var(--secondary-color); }
+        .principle:nth-of-type(3) { border-left-color: var(--accent-color); }
+        .principle:nth-of-type(4) { border-left-color: var(--highlight-color); }
+        .principle:nth-of-type(5) { border-left-color: var(--primary-color); }
+        .principle:nth-of-type(6) { border-left-color: var(--secondary-color); }
+        .principle:nth-of-type(7) { border-left-color: var(--accent-color); }
+        
+        .principle::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(52, 168, 83, 0.03), transparent 70%);
+            border-radius: 50%;
+            opacity: 0.8;
+            z-index: 0;
+        }
+        
+        .principle h3 {
+            margin-top: 0;
+            display: inline-block;
+            background: linear-gradient(90deg, 
+                var(--dark-color), 
+                var(--dark-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+        }
+        
+        .principle:nth-of-type(1) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--primary-color)); }
+        .principle:nth-of-type(2) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--secondary-color)); }
+        .principle:nth-of-type(3) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--accent-color)); }
+        .principle:nth-of-type(4) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--highlight-color)); }
+        .principle:nth-of-type(5) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--primary-color)); }
+        .principle:nth-of-type(6) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--secondary-color)); }
+        .principle:nth-of-type(7) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--accent-color)); }
+        
+        .principle p {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .final-note {
+            padding: 3rem;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.9), 
+                rgba(255, 255, 255, 0.75));
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06), 
+                        0 1px 3px rgba(0, 0, 0, 0.03),
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+            margin: 4rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .final-note::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(251, 188, 5, 0.1), transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+        }
+        
+        .final-note h2 {
+            margin-top: 0;
+        }
+        
+        .final-note p {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 1.5rem;
+        }
+        
+        .final-note p:last-child {
+            margin-bottom: 0;
+            font-weight: 500;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            color: var(--dark-color);
+            font-weight: 500;
+            position: relative;
+        }
+        
+        footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 3px;
+        }
 
-An object's true potential lies not in its static definition, but in its living presence.
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            animation: float 20s infinite linear;
+            opacity: 0.2;
+        }
+        
+        .particle:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            background-color: var(--primary-color);
+            top: 15%;
+            left: 5%;
+            animation-duration: 45s;
+            animation-delay: -5s;
+        }
+        
+        .particle:nth-child(2) {
+            width: 60px;
+            height: 60px;
+            background-color: var(--secondary-color);
+            top: 40%;
+            right: 8%;
+            animation-duration: 60s;
+            animation-delay: -15s;
+        }
+        
+        .particle:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-color);
+            bottom: 30%;
+            left: 10%;
+            animation-duration: 55s;
+            animation-delay: -10s;
+        }
+        
+        .particle:nth-child(4) {
+            width: 50px;
+            height: 50px;
+            background-color: var(--highlight-color);
+            bottom: 20%;
+            right: 12%;
+            animation-duration: 50s;
+            animation-delay: -20s;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+            25% {
+                transform: translate(50px, 20px) rotate(90deg) scale(1.05);
+            }
+            50% {
+                transform: translate(10px, -30px) rotate(180deg) scale(1);
+            }
+            75% {
+                transform: translate(-40px, 15px) rotate(270deg) scale(0.95);
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg) scale(1);
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.8rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            h3 {
+                font-size: 1.5rem;
+            }
+            
+            .cold-open,
+            .principle,
+            .final-note {
+                padding: 1.5rem;
+            }
+            
+            .particle {
+                opacity: 0.1;
+            }
+        }
 
-When alive, an object becomes transformative. It can be a financial opportunity, evolving with market conditions. It can embody a customer relationship, deepening with each interaction. It can represent a critical supply chain component, adapting to ensure timely delivery.
-
-But objects can only fulfill this potential when they truly live in systems designed for vitality—not when they're trapped as frozen records in lifeless databases.
-
-Information confined to rigid structures is merely historical. Information embodied in living objects is dynamic—constantly generating new value through meaningful interactions and evolution.
-
-This is what Living Objects makes possible: digital ecosystems where objects thrive, where value compounds through connection, where software mirrors the organic complexity and adaptability of the natural world.
-
-At its heart lies our enduring mission: to nurture the creative spirit in everyone.
-
-## Principles
-
-### Objects Remember Their Story
-Living objects retain their history and context naturally. They don't struggle to recall what happened yesterday—their memory is intrinsic to their existence. This continuous memory allows for richer interactions, smarter decisions, and the ability to learn from experience.
-
-### Objects Survive Disruption
-In the Living Objects ecosystem, persistence isn't an afterthought—it's the natural state. Objects endure through system changes, updates, and even failures. This resilience creates software that grows more valuable over time rather than requiring constant rebuilding.
-
-### Objects Change with Purpose
-When objects evolve, they do so with intention and coherence. Changes aren't random or fragmented but purposeful transformations that maintain the object's integrity. This orderly evolution creates systems that can adapt without breaking, grow without confusion.
-
-### Objects Work Together Harmoniously
-Living objects collaborate without conflict. They communicate through clear messages rather than fighting over shared resources. This natural cooperation scales effortlessly, creating systems that grow more capable instead of more complicated.
-
-### Objects Evolve Where They Live
-There's no separation between an object's definition and its reality. Living objects grow and change in their native environment, allowing for continuous improvement without disruption. The code isn't distant from the living system—it's an integral part of it.
-
-### Objects Remain Accessible
-Living objects are never beyond reach. They can be observed, understood, and guided at any moment. When problems arise, you're not left guessing—you can see exactly what's happening and make adjustments in real-time, while the system continues to operate.
-
-### Objects Connect with the World
-Living objects don't exist in isolation. They naturally communicate with external systems, respond to events, and integrate with the broader digital ecosystem. This connectivity makes them powerful contributors to complex business processes and customer experiences.
-
-## Final Note
-
-Living Objects isn't just a technical approach. It's a fundamental shift in how we create digital value. It enables systems that truly live—that remain responsive, adaptable, and kind to everyone who interacts with them. It closes the gap between vision and reality.
-
-Most importantly, it nurtures the creative spirit in everyone who touches the system—whether developer, operator, or end user.
-
-Join us in building systems that live.
+        /* Add subtle life to the page with animations */
+        @keyframes gentle-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        .living-animation {
+            animation: gentle-pulse 8s infinite alternate var(--transition-timing);
+        }
+        
+        /* Make links look organic */
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            position: relative;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        a::after {
+            content: "";
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s var(--transition-timing);
+        }
+        
+        a:hover {
+            color: var(--secondary-color);
+        }
+        
+        a:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        
+        /* Add SVG logo */
+        .living-objects-logo {
+            max-width: 260px;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Floating background particles -->
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        
+        <header>
+            <div class="logo-container">
+                <svg class="living-objects-logo" viewBox="0 0 500 300" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Background Glow -->
+                    <defs>
+                        <radialGradient id="glow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                            <stop offset="0%" stop-color="#34A853" stop-opacity="0.2"/>
+                            <stop offset="100%" stop-color="#34A853" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+                    
+                    <!-- Background Glow Circle -->
+                    <circle cx="250" cy="150" r="120" fill="url(#glow)"/>
+                    
+                    <!-- Main Object Shapes -->
+                    <g id="objects">
+                        <!-- Central Object - Hexagon representing life/growth -->
+                        <polygon 
+                            points="250,85 290,115 290,175 250,205 210,175 210,115" 
+                            fill="#34A853" 
+                            stroke="#34A853" 
+                            stroke-width="2"
+                            opacity="0.9">
+                            <animate 
+                                attributeName="opacity" 
+                                values="0.9;1;0.9" 
+                                dur="3s" 
+                                repeatCount="indefinite"/>
+                        </polygon>
+                        
+                        <!-- Connected Object 1 - Circle for continuity/memory -->
+                        <circle 
+                            cx="185" 
+                            cy="150" 
+                            r="25" 
+                            fill="#4285F4" 
+                            stroke="#4285F4" 
+                            stroke-width="2"
+                            opacity="0.85">
+                            <animate 
+                                attributeName="r" 
+                                values="25;28;25" 
+                                dur="4s" 
+                                repeatCount="indefinite"/>
+                        </circle>
+                        
+                        <!-- Connected Object 2 - Square for stability/persistence -->
+                        <rect 
+                            x="295" 
+                            y="125" 
+                            width="50" 
+                            height="50" 
+                            fill="#FBBC05" 
+                            stroke="#FBBC05" 
+                            stroke-width="2"
+                            opacity="0.85">
+                            <animate 
+                                attributeName="width" 
+                                values="50;53;50" 
+                                dur="5s" 
+                                repeatCount="indefinite"/>
+                            <animate 
+                                attributeName="height" 
+                                values="50;53;50" 
+                                dur="5s" 
+                                repeatCount="indefinite"/>
+                        </rect>
+                        
+                        <!-- Connected Object 3 - Triangle for change/evolution -->
+                        <polygon 
+                            points="250,235 275,270 225,270" 
+                            fill="#EA4335" 
+                            stroke="#EA4335" 
+                            stroke-width="2"
+                            opacity="0.85">
+                            <animate 
+                                attributeName="points" 
+                                values="250,235 275,270 225,270;250,230 280,270 220,270;250,235 275,270 225,270" 
+                                dur="4.5s" 
+                                repeatCount="indefinite"/>
+                        </polygon>
+                    </g>
+                    
+                    <!-- Connection Lines showing interaction -->
+                    <g id="connections" stroke-dasharray="5,3" stroke-width="2.5">
+                        <!-- Connection to Circle -->
+                        <line x1="210" y1="150" x2="185" y2="150" stroke="#4285F4" opacity="0.7">
+                            <animate 
+                                attributeName="stroke-dashoffset" 
+                                values="8;0;8" 
+                                dur="2s" 
+                                repeatCount="indefinite"/>
+                        </line>
+                        
+                        <!-- Connection to Square -->
+                        <line x1="290" y1="150" x2="295" y2="150" stroke="#FBBC05" opacity="0.7">
+                            <animate 
+                                attributeName="stroke-dashoffset" 
+                                values="8;0;8" 
+                                dur="2.5s" 
+                                repeatCount="indefinite"/>
+                        </line>
+                        
+                        <!-- Connection to Triangle -->
+                        <line x1="250" y1="205" x2="250" y2="235" stroke="#EA4335" opacity="0.7">
+                            <animate 
+                                attributeName="stroke-dashoffset" 
+                                values="8;0;8" 
+                                dur="3s" 
+                                repeatCount="indefinite"/>
+                        </line>
+                    </g>
+                    
+                    <!-- Small Orbiting Particles representing dynamic activity -->
+                    <g id="particles">
+                        <circle cx="0" cy="0" r="3" fill="#34A853">
+                            <animateMotion
+                                path="M250,150 a50,25 0 1,0 1,0 z"
+                                dur="8s"
+                                repeatCount="indefinite"
+                                rotate="auto"/>
+                        </circle>
+                        
+                        <circle cx="0" cy="0" r="2" fill="#4285F4">
+                            <animateMotion
+                                path="M250,150 a60,40 0 1,1 1,0 z"
+                                dur="6s"
+                                repeatCount="indefinite"
+                                rotate="auto"/>
+                        </circle>
+                        
+                        <circle cx="0" cy="0" r="2.5" fill="#FBBC05">
+                            <animateMotion
+                                path="M250,150 a70,30 0 1,0 1,0 z"
+                                dur="9s"
+                                repeatCount="indefinite"
+                                rotate="auto"/>
+                        </circle>
+                    </g>
+                </svg>
+            </div>
+            
+            <div class="title-container">
+                <h1>Living Objects Manifesto</h1>
+            </div>
+        </header>
+        
+        <section class="cold-open living-animation">
+            <p>An object's true potential lies not in its static definition, but in its living presence.</p>
+            
+            <p>When alive, an object becomes transformative. It can be a financial opportunity, evolving with market conditions. It can embody a customer relationship, deepening with each interaction. It can represent a critical supply chain component, adapting to ensure timely delivery.</p>
+            
+            <p>But objects can only fulfill this potential when they truly live in systems designed for vitality—not when they're trapped as frozen records in lifeless databases.</p>
+            
+            <p>Information confined to rigid structures is merely historical. Information embodied in living objects is dynamic—constantly generating new value through meaningful interactions and evolution.</p>
+            
+            <p>This is what Living Objects makes possible: digital ecosystems where objects thrive, where value compounds through connection, where software mirrors the organic complexity and adaptability of the natural world.</p>
+            
+            <p>At its heart lies our enduring mission: to nurture the creative spirit in everyone.</p>
+        </section>
+        
+        <h2>Principles</h2>
+        
+        <div class="principle">
+            <h3>Objects Remember Their Story</h3>
+            <p>Living objects retain their history and context naturally. They don't struggle to recall what happened yesterday—their memory is intrinsic to their existence. This continuous memory allows for richer interactions, smarter decisions, and the ability to learn from experience.</p>
+        </div>
+        
+        <div class="principle">
+            <h3>Objects Survive Disruption</h3>
+            <p>In the Living Objects ecosystem, persistence isn't an afterthought—it's the natural state. Objects endure through system changes, updates, and even failures. This resilience creates software that grows more valuable over time rather than requiring constant rebuilding.</p>
+        </div>
+        
+        <div class="principle">
+            <h3>Objects Change with Purpose</h3>
+            <p>When objects evolve, they do so with intention and coherence. Changes aren't random or fragmented but purposeful transformations that maintain the object's integrity. This orderly evolution creates systems that can adapt without breaking, grow without confusion.</p>
+        </div>
+        
+        <div class="principle">
+            <h3>Objects Work Together Harmoniously</h3>
+            <p>Living objects collaborate without conflict. They communicate through clear messages rather than fighting over shared resources. This natural cooperation scales effortlessly, creating systems that grow more capable instead of more complicated.</p>
+        </div>
+        
+        <div class="principle">
+            <h3>Objects Evolve Where They Live</h3>
+            <p>There's no separation between an object's definition and its reality. Living objects grow and change in their native environment, allowing for continuous improvement without disruption. The code isn't distant from the living system—it's an integral part of it.</p>
+        </div>
+        
+        <div class="principle">
+            <h3>Objects Remain Accessible</h3>
+            <p>Living objects are never beyond reach. They can be observed, understood, and guided at any moment. When problems arise, you're not left guessing—you can see exactly what's happening and make adjustments in real-time, while the system continues to operate.</p>
+        </div>
+        
+        <div class="principle">
+            <h3>Objects Connect with the World</h3>
+            <p>Living objects don't exist in isolation. They naturally communicate with external systems, respond to events, and integrate with the broader digital ecosystem. This connectivity makes them powerful contributors to complex business processes and customer experiences.</p>
+        </div>
+        
+        <section class="final-note">
+            <h2>Final Note</h2>
+            <p>Living Objects isn't just a technical approach. It's a fundamental shift in how we create digital value. It enables systems that truly live—that remain responsive, adaptable, and kind to everyone who interacts with them. It closes the gap between vision and reality.</p>
+            
+            <p>Most importantly, it nurtures the creative spirit in everyone who touches the system—whether developer, operator, or end user.</p>
+            
+            <p>Join us in building systems that live.</p>
+        </section>
+        
+        <footer>
+            <p>© 2025 Living Objects — Empowering digital life</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Add subtle parallax effect to particles
+        document.addEventListener("mousemove", function(e) {
+            const particles = document.querySelectorAll(".particle");
+            const moveX = (e.clientX - window.innerWidth / 2) / 50;
+            const moveY = (e.clientY - window.innerHeight / 2) / 50;
+            
+            particles.forEach((particle) => {
+                const speed = parseFloat(particle.getAttribute("data-speed") || "1");
+                const x = moveX * speed;
+                const y = moveY * speed;
+                particle.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+        
+        // Add a subtle hover effect to the principles
+        const principles = document.querySelectorAll(".principle");
+        principles.forEach((principle) => {
+            principle.addEventListener("mouseenter", function() {
+                const siblings = Array.from(principles).filter(p => p !== principle);
+                siblings.forEach(s => {
+                    s.style.opacity = "0.7";
+                    s.style.transform = "scale(0.98)";
+                });
+            });
+            
+            principle.addEventListener("mouseleave", function() {
+                principles.forEach(p => {
+                    p.style.opacity = "1";
+                    p.style.transform = "";
+                });
+            });
+        });
+    </script>
+</body>
+</html>
