@@ -13,33 +13,12 @@ import (
 	"smalltalklsp/interpreter/vm"
 )
 
-// SimplifiedVM implements the minimal VM interface needed for parsing
-type SimplifiedVM struct {
-	vm *vm.VM
-}
-
-func NewSimplifiedVM() *SimplifiedVM {
-	return &SimplifiedVM{
-		vm: vm.NewVM(),
-	}
-}
-
-func (s *SimplifiedVM) NewInteger(value int64) *pile.Object {
-	return s.vm.NewInteger(value)
-}
-
-func (s *SimplifiedVM) NewString(value string) *pile.Object {
-	return s.vm.NewString(value)
-}
-
-func (s *SimplifiedVM) NewArray(size int) *pile.Object {
-	return s.vm.NewArray(size)
-}
+// The VM already satisfies the interface required by the parser
 
 // parseCode parses a string as either a method or an expression
 func parseCode(input string, methodMode bool) (ast.Node, error) {
 	// Create a VM for the parser
-	virtualMachine := NewSimplifiedVM()
+	virtualMachine := vm.NewVM()
 
 	// Create a dummy class for the method
 	objectClass := pile.NewClass("Object", nil)
