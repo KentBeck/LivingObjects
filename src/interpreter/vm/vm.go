@@ -6,6 +6,7 @@ import (
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/types"
 )
 
@@ -370,17 +371,17 @@ func (vm *VM) LookupMethod(receiver *core.Object, selector core.ObjectInterface)
 	// Look up the method in the class hierarchy
 	for class != nil {
 		// Check if the class has a method dictionary
-		methodDict := classes.GetClassMethodDictionary(class)
+		methodDict := pile.ObjectToDictionary(class.MethodDictionary)
 		if methodDict != nil && methodDict.GetEntryCount() > 0 {
 			// Check if the method dictionary has the selector
-			selectorSymbol := classes.ObjectToSymbol(selector.(*core.Object))
+			selectorSymbol := pile.ObjectToSymbol(selector.(*core.Object))
 			if method := methodDict.GetEntry(selectorSymbol.GetValue()); method != nil {
 				return method
 			}
 		}
 
 		// Move up the class hierarchy
-		class = classes.ObjectToClass(classes.GetClassSuperClass(class))
+		class = pile.ObjectToClass(class.SuperClass)
 	}
 
 	// Method not found
@@ -401,7 +402,7 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 	if method.Type() != core.OBJ_METHOD {
 		return nil
 	}
-	methodObj := classes.ObjectToMethod(method)
+	methodObj := pile.ObjectToMethod(method)
 	if !methodObj.IsPrimitiveMethod() {
 		return nil
 	}

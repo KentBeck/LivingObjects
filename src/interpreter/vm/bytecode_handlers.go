@@ -7,21 +7,22 @@ import (
 	"smalltalklsp/interpreter/bytecode"
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // ExecutePushLiteral executes the PUSH_LITERAL bytecode
 func (vm *VM) ExecutePushLiteral(context *Context) error {
 	// Get the method
-	method := classes.ObjectToMethod(context.Method)
+	method := pile.ObjectToMethod(context.Method)
 
 	// Get the literal index (4 bytes)
-	index := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
-	if index < 0 || index >= len(method.GetLiterals()) {
+	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
+	if index < 0 || index >= len(method.Literals) {
 		return fmt.Errorf("literal index out of bounds: %d", index)
 	}
 
 	// Push the literal onto the stack
-	literal := method.GetLiterals()[index]
+	literal := method.Literals[index]
 	context.Push(literal)
 	return nil
 }
@@ -29,12 +30,12 @@ func (vm *VM) ExecutePushLiteral(context *Context) error {
 // ExecutePushInstanceVariable executes the PUSH_INSTANCE_VARIABLE bytecode
 func (vm *VM) ExecutePushInstanceVariable(context *Context) error {
 	// Get the method
-	method := classes.ObjectToMethod(context.Method)
+	method := pile.ObjectToMethod(context.Method)
 
 	// Get the instance variable index (4 bytes)
-	index := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
+	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 	class := vm.GetClass(context.Receiver.(*core.Object))
-	if index < 0 || index >= len(classes.GetClassInstanceVarNames(class)) {
+	if index < 0 || index >= len(class.InstanceVarNames) {
 		return fmt.Errorf("instance variable index out of bounds: %d", index)
 	}
 
@@ -47,10 +48,10 @@ func (vm *VM) ExecutePushInstanceVariable(context *Context) error {
 // ExecutePushTemporaryVariable executes the PUSH_TEMPORARY_VARIABLE bytecode
 func (vm *VM) ExecutePushTemporaryVariable(context *Context) error {
 	// Get the method
-	method := classes.ObjectToMethod(context.Method)
+	method := pile.ObjectToMethod(context.Method)
 
 	// Get the temporary variable index (4 bytes)
-	index := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
+	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 
 	// First try to get the variable from the current context
 	if index < len(context.TempVars) {
@@ -77,13 +78,13 @@ func (vm *VM) ExecutePushSelf(context *Context) error {
 // ExecuteStoreInstanceVariable executes the STORE_INSTANCE_VARIABLE bytecode
 func (vm *VM) ExecuteStoreInstanceVariable(context *Context) error {
 	// Get the method
-	method := classes.ObjectToMethod(context.Method)
+	method := pile.ObjectToMethod(context.Method)
 
 	// Get the instance variable index (4 bytes)
-	index := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
+	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 	class := vm.GetClass(context.Receiver.(*core.Object))
 
-	if index < 0 || index >= len(classes.GetClassInstanceVarNames(class)) {
+	if index < 0 || index >= len(class.InstanceVarNames) {
 		return fmt.Errorf("instance variable index out of bounds: %d", index)
 	}
 
@@ -101,10 +102,10 @@ func (vm *VM) ExecuteStoreInstanceVariable(context *Context) error {
 // ExecuteStoreTemporaryVariable executes the STORE_TEMPORARY_VARIABLE bytecode
 func (vm *VM) ExecuteStoreTemporaryVariable(context *Context) error {
 	// Get the method
-	method := classes.ObjectToMethod(context.Method)
+	method := pile.ObjectToMethod(context.Method)
 
 	// Get the temporary variable index (4 bytes)
-	index := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
+	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 
 	// Pop the value from the stack
 	value := context.Pop()
@@ -131,19 +132,19 @@ func (vm *VM) ExecuteStoreTemporaryVariable(context *Context) error {
 // ExecuteSendMessage executes the SEND_MESSAGE bytecode
 func (vm *VM) ExecuteSendMessage(context *Context) (*core.Object, error) {
 	// Get the method
-	method := classes.ObjectToMethod(context.Method)
+	method := pile.ObjectToMethod(context.Method)
 
 	// Get the selector index (4 bytes)
-	selectorIndex := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
-	if selectorIndex < 0 || selectorIndex >= len(method.GetLiterals()) {
+	selectorIndex := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
+	if selectorIndex < 0 || selectorIndex >= len(method.Literals) {
 		return nil, fmt.Errorf("selector index out of bounds: %d", selectorIndex)
 	}
 
 	// Get the argument count (4 bytes)
-	argCount := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+5:]))
+	argCount := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+5:]))
 
 	// Get the selector
-	selector := method.GetLiterals()[selectorIndex]
+	selector := method.Literals[selectorIndex]
 	if selector.Type() != core.OBJ_SYMBOL {
 		return nil, fmt.Errorf("selector is not a symbol: %s", selector)
 	}
@@ -159,12 +160,12 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*core.Object, error) {
 
 	// Check for nil receiver
 	if receiver == nil {
-		return nil, fmt.Errorf("nil receiver for message: %s", classes.GetSymbolValue(selector))
+		return nil, fmt.Errorf("nil receiver for message: %s", pile.ObjectToSymbol(selector).GetValue())
 	}
 
 	methodObj := vm.LookupMethod(receiver, selector)
 	if methodObj == nil {
-		return nil, fmt.Errorf("method not found: %s", classes.GetSymbolValue(selector))
+		return nil, fmt.Errorf("method not found: %s", pile.ObjectToSymbol(selector).GetValue())
 	}
 
 	// Handle primitive methods
@@ -214,20 +215,20 @@ func (vm *VM) ExecuteReturnStackTop(context *Context) (*core.Object, error) {
 // ExecuteJump executes the JUMP bytecode
 func (vm *VM) ExecuteJump(context *Context) (bool, error) {
 	// Get the method
-	method := classes.ObjectToMethod(context.Method)
+	method := pile.ObjectToMethod(context.Method)
 
 	// Get the jump offset (4 bytes)
-	if context.PC+1 >= len(method.GetBytecodes()) {
+	if context.PC+1 >= len(method.Bytecodes) {
 		return false, fmt.Errorf("jump offset out of bounds")
 	}
-	offset := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
+	offset := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 
 	// The offset is relative to the current instruction
 	// We need to add the size of the instruction to get past this instruction
 	newPC := context.PC + bytecode.InstructionSize(bytecode.JUMP) + offset
 
 	// Check if the new PC is valid
-	if newPC < 0 || newPC >= len(method.GetBytecodes()) {
+	if newPC < 0 || newPC >= len(method.Bytecodes) {
 		return false, fmt.Errorf("jump target out of bounds: %d", newPC)
 	}
 
@@ -241,13 +242,13 @@ func (vm *VM) ExecuteJump(context *Context) (bool, error) {
 // ExecuteJumpIfTrue executes the JUMP_IF_TRUE bytecode
 func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
 	// Get the method
-	method := classes.ObjectToMethod(context.Method)
+	method := pile.ObjectToMethod(context.Method)
 
 	// Get the jump offset (4 bytes)
-	if context.PC+1 >= len(method.GetBytecodes()) {
+	if context.PC+1 >= len(method.Bytecodes) {
 		return false, fmt.Errorf("jump offset out of bounds")
 	}
-	offset := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
+	offset := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 
 	// Pop the condition from the stack
 	condition := context.Pop()
@@ -259,7 +260,7 @@ func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
 		// We need to add the size of the instruction to get past this instruction
 		newPC := context.PC + bytecode.InstructionSize(bytecode.JUMP_IF_TRUE) + offset
 		// Check if the new PC is valid
-		if newPC < 0 || newPC >= len(method.GetBytecodes()) {
+		if newPC < 0 || newPC >= len(method.Bytecodes) {
 			return false, fmt.Errorf("jump target out of bounds: %d", newPC)
 		}
 
@@ -274,13 +275,13 @@ func (vm *VM) ExecuteJumpIfTrue(context *Context) (bool, error) {
 // ExecuteJumpIfFalse executes the JUMP_IF_FALSE bytecode
 func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
 	// Get the method
-	method := classes.ObjectToMethod(context.Method)
+	method := pile.ObjectToMethod(context.Method)
 
 	// Get the jump offset (4 bytes)
-	if context.PC+1 >= len(method.GetBytecodes()) {
+	if context.PC+1 >= len(method.Bytecodes) {
 		return false, fmt.Errorf("jump offset out of bounds")
 	}
-	offset := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
+	offset := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
 
 	// Pop the condition from the stack
 	condition := context.Pop()
@@ -292,7 +293,7 @@ func (vm *VM) ExecuteJumpIfFalse(context *Context) (bool, error) {
 		// We need to add the size of the instruction to get past this instruction
 		newPC := context.PC + bytecode.InstructionSize(bytecode.JUMP_IF_FALSE) + offset
 		// Check if the new PC is valid
-		if newPC < 0 || newPC >= len(method.GetBytecodes()) {
+		if newPC < 0 || newPC >= len(method.Bytecodes) {
 			return false, fmt.Errorf("jump target out of bounds: %d", newPC)
 		}
 
