@@ -1,0 +1,54 @@
+# Smalltalk parser tests
+# Format: <name>!<expression>!<type>!<expected_json>
+# <type> can be either 'expression' or 'method'
+
+# Simple integer literal
+IntegerLiteral!42!expression!{"type":"LiteralNode","value":{"type":"Integer","value":42}}
+
+# Simple binary message
+BinaryAddition!2 + 3!expression!{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Integer","value":2}},"selector":"+","arguments":[{"type":"LiteralNode","value":{"type":"Integer","value":3}}]}
+
+# Multiplication
+Multiplication!3 * 4!expression!{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Integer","value":3}},"selector":"*","arguments":[{"type":"LiteralNode","value":{"type":"Integer","value":4}}]}
+
+# Multiple binary messages (left associative)
+ChainedBinaryMessages!2 + 2 * 3!expression!{"type":"MessageSendNode","receiver":{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Integer","value":2}},"selector":"+","arguments":[{"type":"LiteralNode","value":{"type":"Integer","value":2}}]},"selector":"*","arguments":[{"type":"LiteralNode","value":{"type":"Integer","value":3}}]}
+
+# Parenthesized expression
+ParenthesizedExpression!(2 + 2) * 3!expression!{"type":"MessageSendNode","receiver":{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Integer","value":2}},"selector":"+","arguments":[{"type":"LiteralNode","value":{"type":"Integer","value":2}}]},"selector":"*","arguments":[{"type":"LiteralNode","value":{"type":"Integer","value":3}}]}
+
+# Chained binary messages
+ChainedAddition!1 + 2 + 3!expression!{"type":"MessageSendNode","receiver":{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Integer","value":1}},"selector":"+","arguments":[{"type":"LiteralNode","value":{"type":"Integer","value":2}}]},"selector":"+","arguments":[{"type":"LiteralNode","value":{"type":"Integer","value":3}}]}
+
+# String concatenation
+StringConcatenation!'hello' , ' world'!expression!{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"String","value":"hello"}},"selector":",","arguments":[{"type":"LiteralNode","value":{"type":"String","value":" world"}}]}
+
+# Unary message
+UnaryMessage!'hello' size!expression!{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"String","value":"hello"}},"selector":"size","arguments":[]}
+
+# Boolean unary message with true
+BooleanTrueNot!true not!expression!{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Boolean","value":true}},"selector":"not","arguments":[]}
+
+# Boolean unary message with false
+BooleanFalseNot!false not!expression!{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Boolean","value":false}},"selector":"not","arguments":[]}
+
+# Self reference
+SelfReference!self!expression!{"type":"SelfNode"}
+
+# Self message
+SelfMessage!self factorial!expression!{"type":"MessageSendNode","receiver":{"type":"SelfNode"},"selector":"factorial","arguments":[]}
+
+# Return statement
+ReturnStatement!^ 42!expression!{"type":"ReturnNode","expression":{"type":"LiteralNode","value":{"type":"Integer","value":42}}}
+
+# Return message
+ReturnMessage!^ self factorial!expression!{"type":"ReturnNode","expression":{"type":"MessageSendNode","receiver":{"type":"SelfNode"},"selector":"factorial","arguments":[]}}
+
+# Variable reference
+VariableReference!x!expression!{"type":"VariableNode","name":"x"}
+
+# Array literal
+ArrayLiteral!#(1 2 3)!expression!{"type":"LiteralNode","value":{"type":"Array","elements":[{"type":"Integer","value":1},{"type":"Integer","value":2},{"type":"Integer","value":3}]}}
+
+# Method definition
+SimpleMethod!factorial ^self * n - 1 factorial!method!{"type":"MethodNode","selector":"factorial","parameters":[],"temporaries":[],"body":{"type":"ReturnNode","expression":{"type":"MessageSendNode","receiver":{"type":"MessageSendNode","receiver":{"type":"SelfNode"},"selector":"*","arguments":[{"type":"VariableNode","name":"n"}]},"selector":"-","arguments":[{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Integer","value":1}},"selector":"factorial","arguments":[]}]}}}

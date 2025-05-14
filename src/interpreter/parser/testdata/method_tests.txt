@@ -1,0 +1,15 @@
+# Smalltalk method parser tests
+# Format: <name>!<method>!<type>!<expected_json>
+# <type> is always 'method' for this file
+
+# Simple method with no parameters or temporaries
+SimpleMethod!yourself ^self!method!{"type":"MethodNode","selector":"yourself","parameters":[],"temporaries":[],"body":{"type":"ReturnNode","expression":{"type":"SelfNode"}}}
+
+# Method with a parameter
+MethodWithParameter!+ aNumber ^self + aNumber!method!{"type":"MethodNode","selector":"+","parameters":["aNumber"],"temporaries":[],"body":{"type":"ReturnNode","expression":{"type":"MessageSendNode","receiver":{"type":"SelfNode"},"selector":"+","arguments":[{"type":"VariableNode","name":"aNumber"}]}}}
+
+# Method with a temporaries
+MethodWithTemporaries!factorial | result | ^self * n - 1 factorial!method!{"type":"MethodNode","selector":"factorial","parameters":[],"temporaries":["result"],"body":{"type":"ReturnNode","expression":{"type":"MessageSendNode","receiver":{"type":"MessageSendNode","receiver":{"type":"SelfNode"},"selector":"*","arguments":[{"type":"VariableNode","name":"n"}]},"selector":"-","arguments":[{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Integer","value":1}},"selector":"factorial","arguments":[]}]}}}
+
+# Method with parameter and temporaries
+MethodWithParameterAndTemporaries!factorial: n | result | ^n * n - 1 factorial!method!{"type":"MethodNode","selector":"factorial:","parameters":["n"],"temporaries":["result"],"body":{"type":"ReturnNode","expression":{"type":"MessageSendNode","receiver":{"type":"MessageSendNode","receiver":{"type":"VariableNode","name":"n"},"selector":"*","arguments":[{"type":"VariableNode","name":"n"}]},"selector":"-","arguments":[{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Integer","value":1}},"selector":"factorial","arguments":[]}]}}}
