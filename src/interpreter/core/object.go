@@ -189,10 +189,11 @@ func (o *Object) String() string {
 
 // GetMethodDict gets the method dictionary for a class
 func (o *Object) GetMethodDict() *Object {
-	if o.Type() != OBJ_CLASS || len(o.InstanceVars()) == 0 {
-		panic("object is not a class or has no instance variables")
+	if o.Type() != OBJ_CLASS {
+		panic("object is not a class")
 	}
-	return o.InstanceVars()[METHOD_DICTIONARY_IV]
+	class := (*Class)(unsafe.Pointer(o))
+	return class.MethodDictionary
 }
 
 // Class represents a Smalltalk class object
@@ -201,6 +202,7 @@ type Class struct {
 	Name             string
 	SuperClass       *Object
 	InstanceVarNames []string
+	MethodDictionary *Object  // Direct reference to the method dictionary
 }
 
 // String represents a Smalltalk string object
@@ -268,7 +270,6 @@ func (d *Dictionary) GetEntryCount() int {
 	return len(d.Entries)
 }
 
-const METHOD_DICTIONARY_IV = 0
 
 // NewInstance creates a new instance of a class
 func NewInstance(class *Class) *Object {
@@ -337,19 +338,18 @@ func NewDictionary() *Object {
 
 // NewClass creates a new class object
 func NewClass(name string, superClass *Class) *Class {
-	// For classes, we need a special instance variable for the method dictionary
-	// We'll store it at index 0
-	instVars := make([]*Object, 1)
-	instVars[0] = NewDictionary() // methodDict at index 0
+	// Create a method dictionary
+	methodDict := NewDictionary()
 
 	result := &Class{
 		Object: Object{
 			TypeField:         OBJ_CLASS,
-			InstanceVarsField: instVars,
+			InstanceVarsField: make([]*Object, 0), // No need for instance variables to store method dictionary
 		},
 		SuperClass:       (*Object)(unsafe.Pointer(superClass)),
 		InstanceVarNames: make([]string, 0),
 		Name:             name,
+		MethodDictionary: methodDict,
 	}
 
 	return result

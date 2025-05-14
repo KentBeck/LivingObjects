@@ -100,8 +100,7 @@ func BadLookupMethodHelper() {
 	virtualMachine := vm.NewVM()
 
 	badClass := classes.NewClass("BadClass", nil)
-	instanceVars := badClass.InstanceVars()
-	instanceVars[classes.METHOD_DICTIONARY_IV] = nil // Set method dictionary to nil
+	badClass.MethodDictionary = nil // Set method dictionary to nil
 	badClassInstance := core.NewInstance((*core.Class)(unsafe.Pointer(badClass)))
 	sizeSelector := classes.NewSymbol("size")
 

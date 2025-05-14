@@ -7,21 +7,13 @@ import (
 	"smalltalklsp/interpreter/core"
 )
 
-const METHOD_DICTIONARY_IV = 0
 
 // NewClass creates a new class object
 func NewClass(name string, superClass *core.Class) *core.Class {
-	// For classes, we need a special instance variable for the method dictionary
-	// We'll store it at index 0
-	instVars := make([]*core.Object, 1)
-	instVars[0] = NewDictionary() // methodDict at index 0
-
 	// Create a core.Class
 	result := core.NewClass(name, superClass)
-
-	// Set the dictionary
-	result.InstanceVarsField = instVars
-
+	
+	// The MethodDictionary is now directly set in core.NewClass
 	return result
 }
 
@@ -72,8 +64,7 @@ func AddClassInstanceVarName(c *core.Class, name string) {
 
 // GetClassMethodDictionary returns the method dictionary of the class
 func GetClassMethodDictionary(c *core.Class) *Dictionary {
-	methodDict := c.InstanceVars()[METHOD_DICTIONARY_IV]
-	return ObjectToDictionary(methodDict)
+	return ObjectToDictionary(c.MethodDictionary)
 }
 
 // AddClassMethod adds a method to the class
