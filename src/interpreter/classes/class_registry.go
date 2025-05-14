@@ -1,7 +1,6 @@
 package classes
 
 import (
-	"unsafe"
 	"smalltalklsp/interpreter/core"
 )
 
@@ -44,15 +43,3 @@ func (r *Registry) Initialize(
 	r.initialized = true
 }
 
-// IsInitialized returns true if the registry has been initialized
-func (r *Registry) IsInitialized() bool {
-	return r.initialized
-}
-
-// SetClassField sets the class field of an object
-// If the registry is not initialized, it does nothing
-func (r *Registry) SetClassField(obj *core.Object, class *core.Class) {
-	if r.initialized {
-		obj.SetClass((*core.Object)(unsafe.Pointer(class)))
-	}
-}

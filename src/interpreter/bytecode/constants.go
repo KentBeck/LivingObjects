@@ -78,18 +78,3 @@ func BytecodeName(bytecode byte) string {
 	}
 }
 
-// ReadUint32 reads a 4-byte unsigned integer from the bytecode array
-func ReadUint32(bytecode []byte, pc int) uint32 {
-	return uint32(bytecode[pc]) |
-		uint32(bytecode[pc+1])<<8 |
-		uint32(bytecode[pc+2])<<16 |
-		uint32(bytecode[pc+3])<<24
-}
-
-// WriteUint32 writes a 4-byte unsigned integer to the bytecode array
-func WriteUint32(bytecode []byte, pc int, value uint32) {
-	bytecode[pc] = byte(value)
-	bytecode[pc+1] = byte(value >> 8)
-	bytecode[pc+2] = byte(value >> 16)
-	bytecode[pc+3] = byte(value >> 24)
-}

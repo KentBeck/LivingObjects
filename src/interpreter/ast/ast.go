@@ -60,6 +60,7 @@ func (n *MethodNode) Accept(visitor Visitor) interface{} {
 	return visitor.VisitMethodNode(n)
 }
 
+
 // ReturnNode represents a return statement
 type ReturnNode struct {
 	// Expression is the expression to return
@@ -71,6 +72,7 @@ func (n *ReturnNode) Accept(visitor Visitor) interface{} {
 	return visitor.VisitReturnNode(n)
 }
 
+
 // SelfNode represents the self reference
 type SelfNode struct{}
 
@@ -78,6 +80,7 @@ type SelfNode struct{}
 func (n *SelfNode) Accept(visitor Visitor) interface{} {
 	return visitor.VisitSelfNode(n)
 }
+
 
 // LiteralNode represents a literal value
 type LiteralNode struct {
@@ -90,6 +93,7 @@ func (n *LiteralNode) Accept(visitor Visitor) interface{} {
 	return visitor.VisitLiteralNode(n)
 }
 
+
 // VariableNode represents a variable reference
 type VariableNode struct {
 	// Name is the variable name
@@ -100,6 +104,7 @@ type VariableNode struct {
 func (n *VariableNode) Accept(visitor Visitor) interface{} {
 	return visitor.VisitVariableNode(n)
 }
+
 
 // AssignmentNode represents an assignment
 type AssignmentNode struct {
@@ -114,6 +119,7 @@ type AssignmentNode struct {
 func (n *AssignmentNode) Accept(visitor Visitor) interface{} {
 	return visitor.VisitAssignmentNode(n)
 }
+
 
 // MessageSendNode represents a message send
 type MessageSendNode struct {
@@ -132,6 +138,7 @@ func (n *MessageSendNode) Accept(visitor Visitor) interface{} {
 	return visitor.VisitMessageSendNode(n)
 }
 
+
 // BlockNode represents a block
 type BlockNode struct {
 	// Parameters are the block parameters
@@ -148,3 +155,4 @@ type BlockNode struct {
 func (n *BlockNode) Accept(visitor Visitor) interface{} {
 	return visitor.VisitBlockNode(n)
 }
+

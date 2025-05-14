@@ -56,14 +56,6 @@ func (r *ClassRegistry) Register(classType ClassType, class *core.Class) {
 	r.classesByName[classes.GetClassName(class)] = class
 }
 
-// RegisterNamed adds a class to the registry by name only (for non-standard classes)
-func (r *ClassRegistry) RegisterNamed(name string, class *core.Class) {
-	if class == nil {
-		return
-	}
-	
-	r.classesByName[name] = class
-}
 
 // Get retrieves a class by type
 func (r *ClassRegistry) Get(classType ClassType) *core.Class {
@@ -75,37 +67,3 @@ func (r *ClassRegistry) GetByName(name string) *core.Class {
 	return r.classesByName[name]
 }
 
-// All returns all registered classes
-func (r *ClassRegistry) All() []*core.Class {
-	// Combine both maps (avoiding duplicates)
-	uniqueClasses := make(map[*core.Class]bool)
-	
-	for _, class := range r.classesByType {
-		uniqueClasses[class] = true
-	}
-	
-	for _, class := range r.classesByName {
-		uniqueClasses[class] = true
-	}
-	
-	// Convert to slice
-	result := make([]*core.Class, 0, len(uniqueClasses))
-	for class := range uniqueClasses {
-		result = append(result, class)
-	}
-	
-	return result
-}
-
-// AllAsObjects returns all registered classes as core.Objects
-func (r *ClassRegistry) AllAsObjects() []*core.Object {
-	// Fix ambiguous reference by using a different variable name
-	allClasses := r.All()
-	classObjs := make([]*core.Object, len(allClasses))
-	
-	for i, class := range allClasses {
-		classObjs[i] = classes.ClassToObject(class)
-	}
-	
-	return classObjs
-}
