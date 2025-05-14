@@ -1,10 +1,9 @@
 package vm_test
 
 import (
+	"smalltalklsp/interpreter/pile"
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -14,8 +13,8 @@ func TestGetClass(t *testing.T) {
 	// Test cases
 	tests := []struct {
 		name     string
-		obj      core.ObjectInterface
-		expected core.ObjectInterface
+		obj      pile.ObjectInterface
+		expected pile.ObjectInterface
 	}{
 		{
 			name:     "Integer",
@@ -39,14 +38,14 @@ func TestGetClass(t *testing.T) {
 		},
 		{
 			name:     "Class",
-			obj:      classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)),
+			obj:      pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)),
 			expected: virtualMachine.Classes.Get(vm.Object), // A class is its own class
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			result := virtualMachine.GetClass(test.obj.(*core.Object))
+			result := virtualMachine.GetClass(test.obj.(*pile.Object))
 			if result != test.expected {
 				t.Errorf("Expected %v, got %v", test.expected, result)
 			}

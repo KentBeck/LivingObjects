@@ -1,10 +1,9 @@
 package vm_test
 
 import (
+	"smalltalklsp/interpreter/pile"
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -22,12 +21,12 @@ func TestByteArrayCreation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			virtualMachine := vm.NewVM()
-			byteArray := classes.ObjectToByteArray(virtualMachine.NewByteArray(tt.size))
+			byteArray := pile.ObjectToByteArray(virtualMachine.NewByteArray(tt.size))
 			if byteArray.Size() != tt.want {
 				t.Errorf("ByteArray.Size() = %d, want %d", byteArray.Size(), tt.want)
 			}
-			if byteArray.Type() != core.OBJ_BYTE_ARRAY {
-				t.Errorf("ByteArray.Type() = %d, want %d", byteArray.Type(), core.OBJ_BYTE_ARRAY)
+			if byteArray.Type() != pile.OBJ_BYTE_ARRAY {
+				t.Errorf("ByteArray.Type() = %d, want %d", byteArray.Type(), pile.OBJ_BYTE_ARRAY)
 			}
 			if len(byteArray.Bytes) != tt.size {
 				t.Errorf("len(ByteArray.Bytes) = %d, want %d", len(byteArray.Bytes), tt.size)
@@ -38,7 +37,7 @@ func TestByteArrayCreation(t *testing.T) {
 
 func TestByteArrayAtAndAtPut(t *testing.T) {
 	virtualMachine := vm.NewVM()
-	byteArray := classes.ObjectToByteArray(virtualMachine.NewByteArray(5))
+	byteArray := pile.ObjectToByteArray(virtualMachine.NewByteArray(5))
 
 	// Test initial values (should be 0)
 	for i := 0; i < byteArray.Size(); i++ {

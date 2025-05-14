@@ -4,14 +4,13 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // ExecuteCreateBlock executes the CREATE_BLOCK bytecode
 func (vm *VM) ExecuteCreateBlock(context *Context) error {
 	// Get the method
-	method := classes.ObjectToMethod(context.Method)
+	method := pile.ObjectToMethod(context.Method)
 
 	// Get the bytecode size (4 bytes)
 	bytecodeSize := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
@@ -23,7 +22,7 @@ func (vm *VM) ExecuteCreateBlock(context *Context) error {
 	tempVarCount := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+9:]))
 
 	// Create a new block
-	block := classes.ObjectToBlock(vm.NewBlock(context))
+	block := pile.ObjectToBlock(vm.NewBlock(context))
 
 	// Set the bytecodes
 	// In a real implementation, we would extract the bytecodes from the method
@@ -34,7 +33,7 @@ func (vm *VM) ExecuteCreateBlock(context *Context) error {
 	// In a real implementation, we would extract the literals from the method
 	// For now, we'll just create an empty literal array
 	for i := 0; i < literalCount; i++ {
-		block.AddLiteral(core.MakeNilImmediate())
+		block.AddLiteral(pile.MakeNilImmediate())
 	}
 
 	// Set the temporary variable names
@@ -45,21 +44,21 @@ func (vm *VM) ExecuteCreateBlock(context *Context) error {
 	}
 
 	// Push the block onto the stack
-	context.Push(classes.BlockToObject(block))
+	context.Push(pile.BlockToObject(block))
 
 	return nil
 }
 
 // ExecuteExecuteBlock executes the EXECUTE_BLOCK bytecode
-func (vm *VM) ExecuteExecuteBlock(context *Context) (*core.Object, error) {
+func (vm *VM) ExecuteExecuteBlock(context *Context) (*pile.Object, error) {
 	// Get the method
-	method := classes.ObjectToMethod(context.Method)
+	method := pile.ObjectToMethod(context.Method)
 
 	// Get the argument count (4 bytes)
 	argCount := int(binary.BigEndian.Uint32(method.GetBytecodes()[context.PC+1:]))
 
 	// Pop the arguments from the stack
-	args := make([]*core.Object, argCount)
+	args := make([]*pile.Object, argCount)
 	for i := argCount - 1; i >= 0; i-- {
 		args[i] = context.Pop()
 	}
@@ -71,12 +70,12 @@ func (vm *VM) ExecuteExecuteBlock(context *Context) (*core.Object, error) {
 	}
 
 	// Check if it's a block
-	if blockObj.Type() != core.OBJ_BLOCK {
+	if blockObj.Type() != pile.OBJ_BLOCK {
 		return nil, fmt.Errorf("not a block: %v", blockObj)
 	}
 
 	// Convert to a Block
-	block := classes.ObjectToBlock(blockObj)
+	block := pile.ObjectToBlock(blockObj)
 
 	// Execute the block
 	result := block.ValueWithArguments(args)

@@ -1,11 +1,10 @@
 package vm_test
 
 import (
+	"smalltalklsp/interpreter/pile"
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -17,7 +16,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	integerClass := virtualMachine.Classes.Get(vm.Integer)
 
 	// Create literals
-	returnValueSelector := classes.NewSymbol("returnValue")
+	returnValueSelector := pile.NewSymbol("returnValue")
 	valueObj := virtualMachine.NewInteger(42)
 	receiverObj := virtualMachine.NewInteger(10)
 
@@ -69,7 +68,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	receiver := virtualMachine.NewInteger(5)
 
 	// Create a context for the caller method
-	context := vm.NewContext(callerMethod, receiver, []*core.Object{}, nil)
+	context := vm.NewContext(callerMethod, receiver, []*pile.Object{}, nil)
 
 	// Execute the context
 	result, err := virtualMachine.ExecuteContext(context)
@@ -79,8 +78,8 @@ func TestSendMessageStackManagement(t *testing.T) {
 	}
 
 	// Check that the result is 42 (the value returned by the returnValue method)
-	if core.IsIntegerImmediate(result) {
-		intValue := core.GetIntegerImmediate(result)
+	if pile.IsIntegerImmediate(result) {
+		intValue := pile.GetIntegerImmediate(result)
 		if intValue != 42 {
 			t.Errorf("Expected result to be 42, got %d", intValue)
 		}
@@ -97,9 +96,9 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	integerClass := virtualMachine.Classes.Get(vm.Integer)
 
 	// Create literals
-	returnValueSelector := classes.NewSymbol("returnValue")
+	returnValueSelector := pile.NewSymbol("returnValue")
 	valueObj := virtualMachine.NewInteger(42)
-	timesSelector := classes.NewSymbol("*")
+	timesSelector := pile.NewSymbol("*")
 
 	// Create a simple method that returns a value using AddLiteral
 	returnValueBuilder := compiler.NewMethodBuilder(integerClass).Selector("returnValue")
@@ -122,7 +121,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 
 	// Make sure the method is in the method dictionary
 	methodDict := integerClass.GetMethodDict()
-	dict := classes.ObjectToDictionary(methodDict)
+	dict := pile.ObjectToDictionary(methodDict)
 	dict.Entries["*"] = timesMethod
 
 	// Create a method that will call returnValue and then use the result for multiplication using AddLiteral
@@ -159,7 +158,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	multiplyReceiver := virtualMachine.NewInteger(5)
 
 	// Create a context for the multiply method
-	multiplyContext := vm.NewContext(multiplyMethod, multiplyReceiver, []*core.Object{}, nil)
+	multiplyContext := vm.NewContext(multiplyMethod, multiplyReceiver, []*pile.Object{}, nil)
 
 	// Execute the context
 	multiplyResult, err := virtualMachine.ExecuteContext(multiplyContext)
@@ -169,8 +168,8 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	}
 
 	// Check that the result is 5 * 42 = 210
-	if core.IsIntegerImmediate(multiplyResult) {
-		intValue := core.GetIntegerImmediate(multiplyResult)
+	if pile.IsIntegerImmediate(multiplyResult) {
+		intValue := pile.GetIntegerImmediate(multiplyResult)
 		if intValue != 210 {
 			t.Errorf("Expected result to be 210 (5 * 42), got %d", intValue)
 		}

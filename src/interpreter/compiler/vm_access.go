@@ -1,13 +1,13 @@
 package compiler
 
 import (
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // VMAccess provides an interface for accessing VM factory methods
 type VMAccess interface {
-	NewSymbol(value string) *core.Object
-	NewMethod(selector *core.Object, class *core.Class) *core.Object
+	NewSymbol(value string) *pile.Object
+	NewMethod(selector *pile.Object, class *pile.Class) *pile.Object
 }
 
 // DefaultVMAccess is the global VM access instance

@@ -3,8 +3,7 @@ package vm_test
 import (
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -34,8 +33,8 @@ func TestVMNewString(t *testing.T) {
 			}
 
 			// Check that the object has the correct type
-			if strObj.Type() != core.OBJ_STRING {
-				t.Errorf("NewString(%q).Type() = %d, want %d", tt.value, strObj.Type(), core.OBJ_STRING)
+			if strObj.Type() != pile.OBJ_STRING {
+				t.Errorf("NewString(%q).Type() = %d, want %d", tt.value, strObj.Type(), pile.OBJ_STRING)
 			}
 
 			// Check that the object has the correct class
@@ -45,7 +44,7 @@ func TestVMNewString(t *testing.T) {
 			}
 
 			// Check that the object has the correct value
-			str := classes.ObjectToString(strObj)
+			str := pile.ObjectToString(strObj)
 			if str.GetValue() != tt.value {
 				t.Errorf("NewString(%q).GetValue() = %q, want %q", tt.value, str.GetValue(), tt.value)
 			}

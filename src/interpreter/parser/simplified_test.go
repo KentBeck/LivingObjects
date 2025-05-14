@@ -5,16 +5,16 @@ import (
 	"unsafe"
 
 	"smalltalklsp/interpreter/ast"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 )
 
 // TestImmediateHandling tests the handling of immediate values in minimal context
 func TestImmediateHandling(t *testing.T) {
 	// Create a class for context
-	objectClass := core.NewClass("Object", nil)
+	objectClass := pile.NewClass("Object", nil)
 	objectClass.ClassField = objectClass // Set class's class to itself
-	classObj := (*core.Object)(unsafe.Pointer(objectClass))
+	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
 	
 	// Create a VM for testing
 	vmInstance := vm.NewVM()
@@ -26,7 +26,7 @@ func TestImmediateHandling(t *testing.T) {
 	testFalseImmediate(t, classObj, vmInstance)
 }
 
-func testTrueImmediate(t *testing.T, classObj *core.Object, vmInstance *vm.VM) {
+func testTrueImmediate(t *testing.T, classObj *pile.Object, vmInstance *vm.VM) {
 	// Create a parser for the expression
 	p := NewParser("true", classObj, vmInstance)
 	
@@ -53,12 +53,12 @@ func testTrueImmediate(t *testing.T, classObj *core.Object, vmInstance *vm.VM) {
 	}
 	
 	// Check for true immediate
-	if !core.IsTrueImmediate(literalNode.Value) {
+	if !pile.IsTrueImmediate(literalNode.Value) {
 		t.Fatalf("Expected true immediate value, got %v", literalNode.Value)
 	}
 }
 
-func testFalseImmediate(t *testing.T, classObj *core.Object, vmInstance *vm.VM) {
+func testFalseImmediate(t *testing.T, classObj *pile.Object, vmInstance *vm.VM) {
 	// Create a parser for the expression
 	p := NewParser("false", classObj, vmInstance)
 	
@@ -85,7 +85,7 @@ func testFalseImmediate(t *testing.T, classObj *core.Object, vmInstance *vm.VM) 
 	}
 	
 	// Check for false immediate
-	if !core.IsFalseImmediate(literalNode.Value) {
+	if !pile.IsFalseImmediate(literalNode.Value) {
 		t.Fatalf("Expected false immediate value, got %v", literalNode.Value)
 	}
 }

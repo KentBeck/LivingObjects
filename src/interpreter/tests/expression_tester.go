@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/parser"
 	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
@@ -76,11 +75,11 @@ func RunTests(filename string) ([]ExpressionTest, error) {
 			if test.ExpectedResult == "true" || test.ExpectedResult == "false" {
 				// For boolean results, check the type rather than string comparison
 				if test.ExpectedResult == "true" {
-					test.Passed = core.IsTrueImmediate(result) || 
+					test.Passed = pile.IsTrueImmediate(result) || 
 								  (result.Type() == pile.OBJ_BOOLEAN && result.String() == "true")
 					test.ActualResult = "true"
 				} else {
-					test.Passed = core.IsFalseImmediate(result) || 
+					test.Passed = pile.IsFalseImmediate(result) || 
 								  (result.Type() == pile.OBJ_BOOLEAN && result.String() == "false")
 					test.ActualResult = "false"
 				}
@@ -102,9 +101,9 @@ func RunTests(filename string) ([]ExpressionTest, error) {
 	return results, nil
 }
 
-func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, error) {
+func evaluateExpression(vmInstance *vm.VM, expression string) (*pile.Object, error) {
 	// Parse the expression
-	parsed, err := parser.NewParser(expression, core.ClassToObject(vmInstance.Classes.Get(vm.Object)), vmInstance).ParseExpression()
+	parsed, err := parser.NewParser(expression, pile.ClassToObject(vmInstance.Classes.Get(vm.Object)), vmInstance).ParseExpression()
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse expression: %s - %v", expression, err)
 	}
@@ -113,11 +112,11 @@ func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, err
 	}
 
 	// Compile the parsed expression
-	method := compiler.NewBytecodeCompiler(core.ClassToObject(vmInstance.Classes.Get(vm.Object))).Compile(parsed)
-	methodObj := core.MethodToObject(method)
+	method := compiler.NewBytecodeCompiler(pile.ClassToObject(vmInstance.Classes.Get(vm.Object))).Compile(parsed)
+	methodObj := pile.MethodToObject(method)
 
 	// Create a context for execution
-	context := vm.NewContext(methodObj, core.ClassToObject(vmInstance.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(vmInstance.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	// Execute through VM.Execute()
 	result, err := vmInstance.ExecuteContext(context)
@@ -125,5 +124,5 @@ func evaluateExpression(vmInstance *vm.VM, expression string) (*core.Object, err
 		return nil, err
 	}
 
-	return result.(*core.Object), nil
+	return result.(*pile.Object), nil
 }

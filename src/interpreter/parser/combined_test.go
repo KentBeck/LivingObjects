@@ -5,16 +5,16 @@ import (
 	"unsafe"
 
 	"smalltalklsp/interpreter/ast"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 )
 
 // TestCombined runs multiple parser tests in a controlled sequence
 func TestCombined(t *testing.T) {
 	// Create a class for context
-	objectClass := core.NewClass("Object", nil)
+	objectClass := pile.NewClass("Object", nil)
 	objectClass.ClassField = objectClass // Set class's class to itself
-	classObj := (*core.Object)(unsafe.Pointer(objectClass))
+	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
 	
 	// Create a VM for testing
 	vmInstance := vm.NewVM()
@@ -54,13 +54,13 @@ func TestCombined(t *testing.T) {
 			t.Fatalf("Expected LiteralNode, got %T", node)
 		}
 		
-		if literalNode.Value.Type() != core.OBJ_ARRAY {
+		if literalNode.Value.Type() != pile.OBJ_ARRAY {
 			t.Fatalf("Expected array type, got %v", literalNode.Value.Type())
 		}
 	})
 }
 
-func runBooleanTest(t *testing.T, input string, expectedValue bool, classObj *core.Object, vmInstance *vm.VM) {
+func runBooleanTest(t *testing.T, input string, expectedValue bool, classObj *pile.Object, vmInstance *vm.VM) {
 	// Create a parser for the expression
 	p := NewParser(input, classObj, vmInstance)
 	
@@ -88,17 +88,17 @@ func runBooleanTest(t *testing.T, input string, expectedValue bool, classObj *co
 	
 	// Check for expected immediate value
 	if expectedValue {
-		if !core.IsTrueImmediate(literalNode.Value) {
+		if !pile.IsTrueImmediate(literalNode.Value) {
 			t.Fatalf("Expected true immediate value, got %v", literalNode.Value)
 		}
 	} else {
-		if !core.IsFalseImmediate(literalNode.Value) {
+		if !pile.IsFalseImmediate(literalNode.Value) {
 			t.Fatalf("Expected false immediate value, got %v", literalNode.Value)
 		}
 	}
 }
 
-func runIntegerTest(t *testing.T, input string, expectedValue int, classObj *core.Object, vmInstance *vm.VM) {
+func runIntegerTest(t *testing.T, input string, expectedValue int, classObj *pile.Object, vmInstance *vm.VM) {
 	// Create a parser for the expression
 	p := NewParser(input, classObj, vmInstance)
 	
@@ -124,11 +124,11 @@ func runIntegerTest(t *testing.T, input string, expectedValue int, classObj *cor
 		t.Fatalf("Expected LiteralNode, got %T", node)
 	}
 	
-	if !core.IsIntegerImmediate(literalNode.Value) {
+	if !pile.IsIntegerImmediate(literalNode.Value) {
 		t.Fatalf("Expected integer immediate, got %v", literalNode.Value)
 	}
 	
-	value := core.GetIntegerImmediate(literalNode.Value)
+	value := pile.GetIntegerImmediate(literalNode.Value)
 	if int(value) != expectedValue {
 		t.Fatalf("Expected value %d, got %d", expectedValue, value)
 	}

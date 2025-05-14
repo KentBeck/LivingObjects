@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"smalltalklsp/interpreter/ast"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // Parser parses Smalltalk code into an AST
@@ -14,13 +14,13 @@ type Parser struct {
 	Input string
 
 	// Class is the class the method belongs to
-	Class *core.Object
+	Class *pile.Object
 
 	// VM is the virtual machine used for creating literals
 	VM interface {
-		NewInteger(value int64) *core.Object
-		NewString(value string) *core.Object
-		NewArray(size int) *core.Object
+		NewInteger(value int64) *pile.Object
+		NewString(value string) *pile.Object
+		NewArray(size int) *pile.Object
 	}
 
 	// Position is the current position in the input
@@ -63,10 +63,10 @@ type Token struct {
 }
 
 // NewParser creates a new parser
-func NewParser(input string, class *core.Object, vm interface {
-	NewInteger(value int64) *core.Object
-	NewString(value string) *core.Object
-	NewArray(size int) *core.Object
+func NewParser(input string, class *pile.Object, vm interface {
+	NewInteger(value int64) *pile.Object
+	NewString(value string) *pile.Object
+	NewArray(size int) *pile.Object
 }) *Parser {
 	p := &Parser{
 		Input:             input,
@@ -468,7 +468,7 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 		// For parser tests, we'll use immediate values since they're safer for test comparison
 		// and we're not keeping them across GC cycles in tests
 		return &ast.LiteralNode{
-			Value: core.MakeTrueImmediate(),
+			Value: pile.MakeTrueImmediate(),
 		}, nil
 	}
 
@@ -478,7 +478,7 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 		// For parser tests, we'll use immediate values since they're safer for test comparison
 		// and we're not keeping them across GC cycles in tests
 		return &ast.LiteralNode{
-			Value: core.MakeFalseImmediate(),
+			Value: pile.MakeFalseImmediate(),
 		}, nil
 	}
 
@@ -579,11 +579,11 @@ func (p *Parser) parseArrayLiteral() (ast.Node, error) {
 		} else if p.CurrentToken.Type == TOKEN_IDENTIFIER &&
 			(p.CurrentToken.Value == "true" || p.CurrentToken.Value == "false") {
 			// Parse boolean literal
-			var value *core.Object
+			var value *pile.Object
 			if p.CurrentToken.Value == "true" {
-				value = core.MakeTrueImmediate()
+				value = pile.MakeTrueImmediate()
 			} else {
-				value = core.MakeFalseImmediate()
+				value = pile.MakeFalseImmediate()
 			}
 			element := &ast.LiteralNode{
 				Value: value,
@@ -608,7 +608,7 @@ func (p *Parser) parseArrayLiteral() (ast.Node, error) {
 
 	// Create an actual Array object using the VM
 	arrayObj := p.VM.NewArray(len(elements))
-	array := core.ObjectToArray(arrayObj)
+	array := pile.ObjectToArray(arrayObj)
 
 	// Fill the array with the parsed elements
 	for i, element := range elements {

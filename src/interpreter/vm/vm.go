@@ -3,40 +3,38 @@ package vm
 import (
 	"fmt"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/types"
 )
 
 // VM represents the Smalltalk virtual machine
 type VM struct {
-	Globals      map[string]*core.Object
-	ObjectMemory *core.ObjectMemory
+	Globals      map[string]*pile.Object
+	ObjectMemory *pile.ObjectMemory
 	Executor     *Executor
 
 	// Class registry for all Smalltalk classes
 	Classes *ClassRegistry
 
 	// Special objects
-	NilObject   core.ObjectInterface
-	TrueObject  core.ObjectInterface
-	FalseObject core.ObjectInterface
+	NilObject   pile.ObjectInterface
+	TrueObject  pile.ObjectInterface
+	FalseObject pile.ObjectInterface
 }
 
 // NewVM creates a new virtual machine
 func NewVM() *VM {
 	vm := &VM{
-		Globals:      make(map[string]*core.Object),
-		ObjectMemory: core.NewObjectMemory(),
+		Globals:      make(map[string]*pile.Object),
+		ObjectMemory: pile.NewObjectMemory(),
 		Classes:      NewClassRegistry(),
 	}
 
 	// Initialize special immediate objects
-	vm.NilObject = core.MakeNilImmediate()
-	vm.TrueObject = core.MakeTrueImmediate()
-	vm.FalseObject = core.MakeFalseImmediate()
+	vm.NilObject = pile.MakeNilImmediate()
+	vm.TrueObject = pile.MakeTrueImmediate()
+	vm.FalseObject = pile.MakeFalseImmediate()
 
 	// Register the VM as the default object factory
 	types.RegisterFactory(vm)
@@ -45,7 +43,7 @@ func NewVM() *VM {
 	objectClass := vm.NewObjectClass()
 	vm.Classes.Register(Object, objectClass)
 
-	nilClass := classes.NewClass("UndefinedObject", objectClass)
+	nilClass := pile.NewClass("UndefinedObject", objectClass)
 	vm.Classes.Register(UndefinedObject, nilClass)
 
 	trueClass := vm.NewTrueClass()
@@ -81,8 +79,8 @@ func NewVM() *VM {
 	return vm
 }
 
-func (vm *VM) NewObjectClass() *core.Class {
-	result := classes.NewClass("Object", nil) // patch this up later. then even later when we have real images all this initialization can go away
+func (vm *VM) NewObjectClass() *pile.Class {
+	result := pile.NewClass("Object", nil) // patch this up later. then even later when we have real images all this initialization can go away
 
 	// Add basicClass method to Object class
 	compiler.NewMethodBuilder(result).
@@ -93,8 +91,8 @@ func (vm *VM) NewObjectClass() *core.Class {
 	return result
 }
 
-func (vm *VM) NewIntegerClass() *core.Class {
-	result := classes.NewClass("Integer", vm.Classes.Get(Object))
+func (vm *VM) NewIntegerClass() *pile.Class {
+	result := pile.NewClass("Integer", vm.Classes.Get(Object))
 
 	// Add primitive methods to the Integer class
 	builder := compiler.NewMethodBuilder(result)
@@ -120,8 +118,8 @@ func (vm *VM) NewIntegerClass() *core.Class {
 	return result
 }
 
-func (vm *VM) NewFloatClass() *core.Class {
-	result := classes.NewClass("Float", vm.Classes.Get(Object)) // patch this up later. then even later when we have real images all this initialization can go away
+func (vm *VM) NewFloatClass() *pile.Class {
+	result := pile.NewClass("Float", vm.Classes.Get(Object)) // patch this up later. then even later when we have real images all this initialization can go away
 
 	// Add primitive methods to the Float class
 	builder := compiler.NewMethodBuilder(result)
@@ -152,60 +150,60 @@ func (vm *VM) NewFloatClass() *core.Class {
 
 // NewInteger creates a new integer object
 // This returns an immediate value for integers
-func (vm *VM) NewInteger(value int64) *core.Object {
+func (vm *VM) NewInteger(value int64) *pile.Object {
 	// Check if the value fits in 62 bits
 	if value <= 0x1FFFFFFFFFFFFFFF && value >= -0x2000000000000000 {
 		// Use immediate integer
-		return core.MakeIntegerImmediate(value)
+		return pile.MakeIntegerImmediate(value)
 	}
 
 	// Panic for large values that don't fit in 62 bits
 	panic("Integer value too large for immediate representation")
 }
 
-func (vm *VM) NewFloat(value float64) *core.Object {
-	return core.MakeFloatImmediate(value)
+func (vm *VM) NewFloat(value float64) *pile.Object {
+	return pile.MakeFloatImmediate(value)
 }
 
 // NewString creates a new string object
-func (vm *VM) NewString(value string) *core.Object {
-	str := classes.NewStringInternal(value)
-	strObj := classes.StringToObject(str)
-	strObj.SetClass(classes.ClassToObject(vm.Classes.Get(String)))
+func (vm *VM) NewString(value string) *pile.Object {
+	str := pile.NewStringInternal(value)
+	strObj := pile.StringToObject(str)
+	strObj.SetClass(pile.ClassToObject(vm.Classes.Get(String)))
 	return strObj
 }
 
 // NewArray creates a new array object
-func (vm *VM) NewArray(size int) *core.Object {
-	array := &classes.Array{Object: core.Object{TypeField: core.OBJ_ARRAY}, Elements: make([]*core.Object, size)}
-	arrayObj := classes.ArrayToObject(array)
-	arrayObj.SetClass(classes.ClassToObject(vm.Classes.Get(Array)))
+func (vm *VM) NewArray(size int) *pile.Object {
+	array := &pile.Array{Object: pile.Object{TypeField: pile.OBJ_ARRAY}, Elements: make([]*pile.Object, size)}
+	arrayObj := pile.ArrayToObject(array)
+	arrayObj.SetClass(pile.ClassToObject(vm.Classes.Get(Array)))
 	return arrayObj
 }
 
 // NewTrue returns the true object
-func (vm *VM) NewTrue() *core.Object {
-	return core.MakeTrueImmediate()
+func (vm *VM) NewTrue() *pile.Object {
+	return pile.MakeTrueImmediate()
 }
 
 // NewFalse returns the false object
-func (vm *VM) NewFalse() *core.Object {
-	return core.MakeFalseImmediate()
+func (vm *VM) NewFalse() *pile.Object {
+	return pile.MakeFalseImmediate()
 }
 
 // NewNil returns the nil object
-func (vm *VM) NewNil() *core.Object {
-	return core.MakeNilImmediate()
+func (vm *VM) NewNil() *pile.Object {
+	return pile.MakeNilImmediate()
 }
 
-func (vm *VM) NewTrueClass() *core.Class {
-	result := classes.NewClass("True", vm.Classes.Get(Object))
+func (vm *VM) NewTrueClass() *pile.Class {
+	result := pile.NewClass("True", vm.Classes.Get(Object))
 
 	// Add methods to the True class
 	builder := compiler.NewMethodBuilder(result)
 
 	// Create a literal for false
-	falseIndex, builder := builder.AddLiteral(core.MakeFalseImmediate())
+	falseIndex, builder := builder.AddLiteral(pile.MakeFalseImmediate())
 
 	// not method (returns false)
 	builder.Selector("not").
@@ -216,14 +214,14 @@ func (vm *VM) NewTrueClass() *core.Class {
 	return result
 }
 
-func (vm *VM) NewFalseClass() *core.Class {
-	result := classes.NewClass("False", vm.Classes.Get(Object))
+func (vm *VM) NewFalseClass() *pile.Class {
+	result := pile.NewClass("False", vm.Classes.Get(Object))
 
 	// Add methods to the False class
 	builder := compiler.NewMethodBuilder(result)
 
 	// Create a literal for true
-	trueIndex, builder := builder.AddLiteral(core.MakeTrueImmediate())
+	trueIndex, builder := builder.AddLiteral(pile.MakeTrueImmediate())
 
 	// not method (returns true)
 	builder.Selector("not").
@@ -234,8 +232,8 @@ func (vm *VM) NewFalseClass() *core.Class {
 	return result
 }
 
-func (vm *VM) NewStringClass() *core.Class {
-	result := classes.NewClass("String", vm.Classes.Get(Object))
+func (vm *VM) NewStringClass() *pile.Class {
+	result := pile.NewClass("String", vm.Classes.Get(Object))
 
 	// Add primitive methods to the String class
 	builder := compiler.NewMethodBuilder(result)
@@ -246,8 +244,8 @@ func (vm *VM) NewStringClass() *core.Class {
 	return result
 }
 
-func (vm *VM) NewArrayClass() *core.Class {
-	result := classes.NewClass("Array", vm.Classes.Get(Object))
+func (vm *VM) NewArrayClass() *pile.Class {
+	result := pile.NewClass("Array", vm.Classes.Get(Object))
 
 	// Add primitive methods to the Array class
 	builder := compiler.NewMethodBuilder(result)
@@ -258,8 +256,8 @@ func (vm *VM) NewArrayClass() *core.Class {
 	return result
 }
 
-func (vm *VM) NewBlockClass() *core.Class {
-	result := classes.NewClass("Block", vm.Classes.Get(Object))
+func (vm *VM) NewBlockClass() *pile.Class {
+	result := pile.NewClass("Block", vm.Classes.Get(Object))
 
 	// Add primitive methods to the Block class
 	builder := compiler.NewMethodBuilder(result)
@@ -279,19 +277,19 @@ func (vm *VM) NewBlockClass() *core.Class {
 
 // LoadImage loads a Smalltalk image from a file
 func (vm *VM) LoadImage(path string) error {
-	vm.Globals["Object"] = classes.ClassToObject(vm.Classes.Get(Object))
+	vm.Globals["Object"] = pile.ClassToObject(vm.Classes.Get(Object))
 
 	return nil
 }
 
 // Execute executes the current context
-func (vm *VM) Execute() (core.ObjectInterface, error) {
+func (vm *VM) Execute() (pile.ObjectInterface, error) {
 	// Execute using the executor
 	return vm.Executor.Execute()
 }
 
 // ExecuteContext executes a single context until it returns
-func (vm *VM) ExecuteContext(context *Context) (core.ObjectInterface, error) {
+func (vm *VM) ExecuteContext(context *Context) (pile.ObjectInterface, error) {
 	// Set the context in the Executor
 	vm.Executor.CurrentContext = context
 
@@ -301,31 +299,31 @@ func (vm *VM) ExecuteContext(context *Context) (core.ObjectInterface, error) {
 
 // GetClass returns the class of an object
 // This is the single function that should be used to get the class of an object
-func (vm *VM) GetClass(obj *core.Object) *core.Class {
+func (vm *VM) GetClass(obj *pile.Object) *pile.Class {
 	if obj == nil {
 		panic("GetClass: nil object")
 	}
 
 	// Check if it's an immediate value
-	if core.IsImmediate(obj) {
+	if pile.IsImmediate(obj) {
 		// Handle immediate nil
-		if core.IsNilImmediate(obj) {
+		if pile.IsNilImmediate(obj) {
 			return vm.Classes.Get(UndefinedObject)
 		}
 		// Handle immediate true
-		if core.IsTrueImmediate(obj) {
+		if pile.IsTrueImmediate(obj) {
 			return vm.Classes.Get(True)
 		}
 		// Handle immediate false
-		if core.IsFalseImmediate(obj) {
+		if pile.IsFalseImmediate(obj) {
 			return vm.Classes.Get(False)
 		}
 		// Handle immediate integer
-		if core.IsIntegerImmediate(obj) {
+		if pile.IsIntegerImmediate(obj) {
 			return vm.Classes.Get(Integer)
 		}
 		// Handle immediate float
-		if core.IsFloatImmediate(obj) {
+		if pile.IsFloatImmediate(obj) {
 			return vm.Classes.Get(Float)
 		}
 		// Other immediate types will be added later
@@ -335,12 +333,12 @@ func (vm *VM) GetClass(obj *core.Object) *core.Class {
 	// If it's a regular object, proceed as before
 
 	// If the object is a class, return itself
-	if obj.Type() == core.OBJ_CLASS {
-		return classes.ObjectToClass(obj) // Later Metaclass
+	if obj.Type() == pile.OBJ_CLASS {
+		return pile.ObjectToClass(obj) // Later Metaclass
 	}
 
 	// Special case for nil object (legacy non-immediate nil)
-	if obj.Type() == core.OBJ_NIL {
+	if obj.Type() == pile.OBJ_NIL {
 		return nil
 	}
 
@@ -349,11 +347,11 @@ func (vm *VM) GetClass(obj *core.Object) *core.Class {
 		panic(fmt.Sprintf("GetClass: object has nil class %s\n", obj.String()))
 	}
 
-	return classes.ObjectToClass(obj.Class())
+	return pile.ObjectToClass(obj.Class())
 }
 
 // LookupMethod looks up a method in a class hierarchy
-func (vm *VM) LookupMethod(receiver *core.Object, selector core.ObjectInterface) *core.Object {
+func (vm *VM) LookupMethod(receiver *pile.Object, selector pile.ObjectInterface) *pile.Object {
 	// Check for nil receiver or selector
 	if receiver == nil {
 		panic("lookupMethod: nil receiver\n")
@@ -374,7 +372,7 @@ func (vm *VM) LookupMethod(receiver *core.Object, selector core.ObjectInterface)
 		methodDict := pile.ObjectToDictionary(class.MethodDictionary)
 		if methodDict != nil && methodDict.GetEntryCount() > 0 {
 			// Check if the method dictionary has the selector
-			selectorSymbol := pile.ObjectToSymbol(selector.(*core.Object))
+			selectorSymbol := pile.ObjectToSymbol(selector.(*pile.Object))
 			if method := methodDict.GetEntry(selectorSymbol.GetValue()); method != nil {
 				return method
 			}
@@ -389,7 +387,7 @@ func (vm *VM) LookupMethod(receiver *core.Object, selector core.ObjectInterface)
 }
 
 // ExecutePrimitive executes a primitive method
-func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, args []*core.Object, method *core.Object) *core.Object {
+func (vm *VM) ExecutePrimitive(receiver *pile.Object, selector *pile.Object, args []*pile.Object, method *pile.Object) *pile.Object {
 	if receiver == nil {
 		panic("executePrimitive: nil receiver\n")
 	}
@@ -399,7 +397,7 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 	if method == nil {
 		panic("executePrimitive: nil method\n")
 	}
-	if method.Type() != core.OBJ_METHOD {
+	if method.Type() != pile.OBJ_METHOD {
 		return nil
 	}
 	methodObj := pile.ObjectToMethod(method)
@@ -411,236 +409,236 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 	switch methodObj.GetPrimitiveIndex() {
 	case 1: // Addition
 		// Handle immediate integers
-		if core.IsIntegerImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetIntegerImmediate(receiver)
-			val2 := core.GetIntegerImmediate(args[0])
+		if pile.IsIntegerImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetIntegerImmediate(receiver)
+			val2 := pile.GetIntegerImmediate(args[0])
 			result := val1 + val2
 			return vm.NewInteger(result)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type() == core.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == core.OBJ_INTEGER) {
+		if receiver.Type() == pile.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == pile.OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 		// Handle integer + float
-		if core.IsIntegerImmediate(receiver) && len(args) == 1 && core.IsFloatImmediate(args[0]) {
-			val1 := float64(core.GetIntegerImmediate(receiver))
-			val2 := core.GetFloatImmediate(args[0])
+		if pile.IsIntegerImmediate(receiver) && len(args) == 1 && pile.IsFloatImmediate(args[0]) {
+			val1 := float64(pile.GetIntegerImmediate(receiver))
+			val2 := pile.GetFloatImmediate(args[0])
 			result := val1 + val2
 			return vm.NewFloat(result)
 		}
 	case 2: // Multiplication
 		// Handle immediate integers
-		if core.IsIntegerImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetIntegerImmediate(receiver)
-			val2 := core.GetIntegerImmediate(args[0])
+		if pile.IsIntegerImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetIntegerImmediate(receiver)
+			val2 := pile.GetIntegerImmediate(args[0])
 			result := val1 * val2
 			return vm.NewInteger(result)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type() == core.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == core.OBJ_INTEGER) {
+		if receiver.Type() == pile.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == pile.OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 	case 3: // Equality
 		// Handle immediate integers
-		if core.IsIntegerImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetIntegerImmediate(receiver)
-			val2 := core.GetIntegerImmediate(args[0])
+		if pile.IsIntegerImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetIntegerImmediate(receiver)
+			val2 := pile.GetIntegerImmediate(args[0])
 			result := val1 == val2
-			return core.NewBoolean(result).(*core.Object)
+			return pile.NewBoolean(result).(*pile.Object)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type() == core.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == core.OBJ_INTEGER) {
+		if receiver.Type() == pile.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == pile.OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 	case 4: // Subtraction
 		// Handle immediate integers
-		if core.IsIntegerImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetIntegerImmediate(receiver)
-			val2 := core.GetIntegerImmediate(args[0])
+		if pile.IsIntegerImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetIntegerImmediate(receiver)
+			val2 := pile.GetIntegerImmediate(args[0])
 			result := val1 - val2
 			return vm.NewInteger(result)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type() == core.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == core.OBJ_INTEGER) {
+		if receiver.Type() == pile.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == pile.OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 	case 5: // basicClass - return the class of the receiver
 		class := vm.GetClass(receiver)
-		return classes.ClassToObject(class)
+		return pile.ClassToObject(class)
 	case 6: // Less than
 		// Handle immediate integers
-		if core.IsIntegerImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetIntegerImmediate(receiver)
-			val2 := core.GetIntegerImmediate(args[0])
+		if pile.IsIntegerImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetIntegerImmediate(receiver)
+			val2 := pile.GetIntegerImmediate(args[0])
 			result := val1 < val2
-			return core.NewBoolean(result).(*core.Object)
+			return pile.NewBoolean(result).(*pile.Object)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type() == core.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == core.OBJ_INTEGER) {
+		if receiver.Type() == pile.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == pile.OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 	case 7: // Greater than
 		// Handle immediate integers
-		if core.IsIntegerImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetIntegerImmediate(receiver)
-			val2 := core.GetIntegerImmediate(args[0])
+		if pile.IsIntegerImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetIntegerImmediate(receiver)
+			val2 := pile.GetIntegerImmediate(args[0])
 			result := val1 > val2
-			return core.NewBoolean(result).(*core.Object)
+			return pile.NewBoolean(result).(*pile.Object)
 		}
 		// Handle non-immediate integers - should panic
-		if receiver.Type() == core.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == core.OBJ_INTEGER) {
+		if receiver.Type() == pile.OBJ_INTEGER || (len(args) > 0 && args[0].Type() == pile.OBJ_INTEGER) {
 			panic("Non-immediate integer encountered")
 		}
 	case 10: // Float addition
 		// Handle float + float
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsFloatImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := core.GetFloatImmediate(args[0])
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsFloatImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := pile.GetFloatImmediate(args[0])
 			result := val1 + val2
 			return vm.NewFloat(result)
 		}
 		// Handle float + integer
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := float64(core.GetIntegerImmediate(args[0]))
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := float64(pile.GetIntegerImmediate(args[0]))
 			result := val1 + val2
 			return vm.NewFloat(result)
 		}
 	case 11: // Float subtraction
 		// Handle float - float
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsFloatImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := core.GetFloatImmediate(args[0])
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsFloatImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := pile.GetFloatImmediate(args[0])
 			result := val1 - val2
 			return vm.NewFloat(result)
 		}
 		// Handle float - integer
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := float64(core.GetIntegerImmediate(args[0]))
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := float64(pile.GetIntegerImmediate(args[0]))
 			result := val1 - val2
 			return vm.NewFloat(result)
 		}
 	case 12: // Float multiplication
 		// Handle float * float
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsFloatImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := core.GetFloatImmediate(args[0])
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsFloatImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := pile.GetFloatImmediate(args[0])
 			result := val1 * val2
 			return vm.NewFloat(result)
 		}
 		// Handle float * integer
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := float64(core.GetIntegerImmediate(args[0]))
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := float64(pile.GetIntegerImmediate(args[0]))
 			result := val1 * val2
 			return vm.NewFloat(result)
 		}
 	case 13: // Float division
 		// Handle float / float
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsFloatImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := core.GetFloatImmediate(args[0])
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsFloatImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := pile.GetFloatImmediate(args[0])
 			result := val1 / val2
 			return vm.NewFloat(result)
 		}
 		// Handle float / integer
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := float64(core.GetIntegerImmediate(args[0]))
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := float64(pile.GetIntegerImmediate(args[0]))
 			result := val1 / val2
 			return vm.NewFloat(result)
 		}
 	case 14: // Float equality
 		// Handle float = float
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsFloatImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := core.GetFloatImmediate(args[0])
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsFloatImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := pile.GetFloatImmediate(args[0])
 			result := val1 == val2
-			return core.NewBoolean(result).(*core.Object)
+			return pile.NewBoolean(result).(*pile.Object)
 		}
 		// Handle float = integer
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := float64(core.GetIntegerImmediate(args[0]))
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := float64(pile.GetIntegerImmediate(args[0]))
 			result := val1 == val2
-			return core.NewBoolean(result).(*core.Object)
+			return pile.NewBoolean(result).(*pile.Object)
 		}
 	case 15: // Float less than
 		// Handle float < float
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsFloatImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := core.GetFloatImmediate(args[0])
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsFloatImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := pile.GetFloatImmediate(args[0])
 			result := val1 < val2
-			return core.NewBoolean(result).(*core.Object)
+			return pile.NewBoolean(result).(*pile.Object)
 		}
 		// Handle float < integer
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := float64(core.GetIntegerImmediate(args[0]))
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := float64(pile.GetIntegerImmediate(args[0]))
 			result := val1 < val2
-			return core.NewBoolean(result).(*core.Object)
+			return pile.NewBoolean(result).(*pile.Object)
 		}
 	case 16: // Float greater than
 		// Handle float > float
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsFloatImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := core.GetFloatImmediate(args[0])
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsFloatImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := pile.GetFloatImmediate(args[0])
 			result := val1 > val2
-			return core.NewBoolean(result).(*core.Object)
+			return pile.NewBoolean(result).(*pile.Object)
 		}
 		// Handle float > integer
-		if core.IsFloatImmediate(receiver) && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
-			val1 := core.GetFloatImmediate(receiver)
-			val2 := float64(core.GetIntegerImmediate(args[0]))
+		if pile.IsFloatImmediate(receiver) && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
+			val1 := pile.GetFloatImmediate(receiver)
+			val2 := float64(pile.GetIntegerImmediate(args[0]))
 			result := val1 > val2
-			return core.NewBoolean(result).(*core.Object)
+			return pile.NewBoolean(result).(*pile.Object)
 		}
 	case 20: // Block new - create a new block instance
-		if receiver.Type() == core.OBJ_CLASS && receiver == classes.ClassToObject(vm.Classes.Get(Block)) {
+		if receiver.Type() == pile.OBJ_CLASS && receiver == pile.ClassToObject(vm.Classes.Get(Block)) {
 			// Create a new block instance with proper class field
 			blockInstance := vm.NewBlock(vm.Executor.CurrentContext)
 			return blockInstance
 		}
 	case 21: // Block value - execute a block with no arguments
-		if receiver.Type() == core.OBJ_BLOCK {
+		if receiver.Type() == pile.OBJ_BLOCK {
 			// Get the block
-			block := classes.ObjectToBlock(receiver)
+			block := pile.ObjectToBlock(receiver)
 
 			// Create a method object for the block's bytecodes
-			method := &classes.Method{
-				Object: core.Object{
-					TypeField: core.OBJ_METHOD,
+			method := &pile.Method{
+				Object: pile.Object{
+					TypeField: pile.OBJ_METHOD,
 				},
 				Bytecodes: block.GetBytecodes(),
 				Literals:  block.GetLiterals(),
 			}
-			methodObj := classes.MethodToObject(method)
+			methodObj := pile.MethodToObject(method)
 
 			// Create a new context for the block execution
-			blockContext := NewContext(methodObj, receiver, []*core.Object{}, block.GetOuterContext().(*Context))
+			blockContext := NewContext(methodObj, receiver, []*pile.Object{}, block.GetOuterContext().(*Context))
 
 			// Execute the block's bytecodes
 			result, err := vm.ExecuteContext(blockContext)
 			if err != nil {
 				panic(fmt.Sprintf("Error executing block: %v", err))
 			}
-			return result.(*core.Object)
+			return result.(*pile.Object)
 		}
 	case 22: // Block value: - execute a block with one argument
-		if receiver.Type() == core.OBJ_BLOCK && len(args) == 1 {
+		if receiver.Type() == pile.OBJ_BLOCK && len(args) == 1 {
 			// Get the block
-			block := classes.ObjectToBlock(receiver)
+			block := pile.ObjectToBlock(receiver)
 
 			// Create a method object for the block's bytecodes
-			method := &classes.Method{
-				Object: core.Object{
-					TypeField: core.OBJ_METHOD,
+			method := &pile.Method{
+				Object: pile.Object{
+					TypeField: pile.OBJ_METHOD,
 				},
 				Bytecodes: block.GetBytecodes(),
 				Literals:  block.GetLiterals(),
 			}
-			methodObj := classes.MethodToObject(method)
+			methodObj := pile.MethodToObject(method)
 
 			// Create a new context for the block execution
 			blockContext := NewContext(methodObj, receiver, args, block.GetOuterContext().(*Context))
@@ -650,12 +648,12 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 			if err != nil {
 				panic(fmt.Sprintf("Error executing block: %v", err))
 			}
-			return result.(*core.Object)
+			return result.(*pile.Object)
 		}
 	case 30: // String size - return the length of the string
-		if receiver.Type() == core.OBJ_STRING {
+		if receiver.Type() == pile.OBJ_STRING {
 			// Get the string
-			str := classes.ObjectToString(receiver)
+			str := pile.ObjectToString(receiver)
 
 			// Get the length of the string
 			length := str.Length()
@@ -664,12 +662,12 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 			return vm.NewInteger(int64(length))
 		}
 	case 40: // Array at: - return the element at the given index
-		if receiver.Type() == core.OBJ_ARRAY && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
+		if receiver.Type() == pile.OBJ_ARRAY && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
 			// Get the array
-			array := classes.ObjectToArray(receiver)
+			array := pile.ObjectToArray(receiver)
 
 			// Get the index (1-based in Smalltalk, 0-based in Go)
-			index := core.GetIntegerImmediate(args[0]) - 1
+			index := pile.GetIntegerImmediate(args[0]) - 1
 
 			// Check bounds
 			if index < 0 || int(index) >= array.Size() {
@@ -680,12 +678,12 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 			return array.At(int(index))
 		}
 	case 50: // ByteArray at: - return the byte at the given index
-		if receiver.Type() == core.OBJ_BYTE_ARRAY && len(args) == 1 && core.IsIntegerImmediate(args[0]) {
+		if receiver.Type() == pile.OBJ_BYTE_ARRAY && len(args) == 1 && pile.IsIntegerImmediate(args[0]) {
 			// Get the byte array
-			byteArray := classes.ObjectToByteArray(receiver)
+			byteArray := pile.ObjectToByteArray(receiver)
 
 			// Get the index (1-based in Smalltalk, 0-based in Go)
-			index := core.GetIntegerImmediate(args[0]) - 1
+			index := pile.GetIntegerImmediate(args[0]) - 1
 
 			// Check bounds
 			if index < 0 || int(index) >= byteArray.Size() {
@@ -696,16 +694,16 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 			return vm.NewInteger(int64(byteArray.At(int(index))))
 		}
 	case 51: // ByteArray at:put: - set the byte at the given index
-		if receiver.Type() == core.OBJ_BYTE_ARRAY && len(args) == 2 &&
-			core.IsIntegerImmediate(args[0]) && core.IsIntegerImmediate(args[1]) {
+		if receiver.Type() == pile.OBJ_BYTE_ARRAY && len(args) == 2 &&
+			pile.IsIntegerImmediate(args[0]) && pile.IsIntegerImmediate(args[1]) {
 			// Get the byte array
-			byteArray := classes.ObjectToByteArray(receiver)
+			byteArray := pile.ObjectToByteArray(receiver)
 
 			// Get the index (1-based in Smalltalk, 0-based in Go)
-			index := core.GetIntegerImmediate(args[0]) - 1
+			index := pile.GetIntegerImmediate(args[0]) - 1
 
 			// Get the value
-			value := core.GetIntegerImmediate(args[1])
+			value := pile.GetIntegerImmediate(args[1])
 
 			// Check bounds
 			if index < 0 || int(index) >= byteArray.Size() {
@@ -730,9 +728,9 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 }
 
 // GetGlobals returns the globals map
-func (vm *VM) GetGlobals() []*core.Object {
+func (vm *VM) GetGlobals() []*pile.Object {
 	// Convert map to slice for memory management
-	globals := make([]*core.Object, 0, len(vm.Globals))
+	globals := make([]*pile.Object, 0, len(vm.Globals))
 	for _, obj := range vm.Globals {
 		globals = append(globals, obj)
 	}

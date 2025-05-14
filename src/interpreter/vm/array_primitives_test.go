@@ -1,11 +1,10 @@
 package vm_test
 
 import (
+	"smalltalklsp/interpreter/pile"
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -15,7 +14,7 @@ func TestArrayAtPrimitive(t *testing.T) {
 
 	// Add primitive methods to the Array class
 	arrayClass := virtualMachine.Classes.Get(vm.Array)
-	atSelector := core.NewSymbol("at:")
+	atSelector := pile.NewSymbol("at:")
 	atMethod := compiler.NewMethodBuilder(arrayClass).
 		Selector("at:").
 		Primitive(40). // Array at: primitive
@@ -23,7 +22,7 @@ func TestArrayAtPrimitive(t *testing.T) {
 
 	// Create a test array with 3 elements
 	array := virtualMachine.NewArray(3)
-	arrayObj := classes.ObjectToArray(array)
+	arrayObj := pile.ObjectToArray(array)
 	
 	// Fill the array with values
 	arrayObj.AtPut(0, virtualMachine.NewInteger(1))
@@ -34,7 +33,7 @@ func TestArrayAtPrimitive(t *testing.T) {
 	indexArg := virtualMachine.NewInteger(2)
 	
 	// Execute the primitive
-	result := virtualMachine.ExecutePrimitive(array, atSelector, []*core.Object{indexArg}, atMethod)
+	result := virtualMachine.ExecutePrimitive(array, atSelector, []*pile.Object{indexArg}, atMethod)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -43,13 +42,13 @@ func TestArrayAtPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is an integer
-	if !core.IsIntegerImmediate(result) {
+	if !pile.IsIntegerImmediate(result) {
 		t.Errorf("Expected integer result, got %v", result.Type())
 		return
 	}
 
 	// Check that the result is 2 (the value at index 1, which is the second element)
-	value := core.GetIntegerImmediate(result)
+	value := pile.GetIntegerImmediate(result)
 	if value != 2 {
 		t.Errorf("Expected value 2, got %d", value)
 	}
@@ -65,5 +64,5 @@ func TestArrayAtPrimitive(t *testing.T) {
 	}()
 	
 	// This should panic
-	virtualMachine.ExecutePrimitive(array, atSelector, []*core.Object{outOfBoundsArg}, atMethod)
+	virtualMachine.ExecutePrimitive(array, atSelector, []*pile.Object{outOfBoundsArg}, atMethod)
 }

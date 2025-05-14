@@ -1,37 +1,36 @@
 package vm
 
 import (
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // Context represents a method activation context
 type Context struct {
-	Method       *core.Object
-	Receiver     core.ObjectInterface
-	Arguments    []*core.Object
-	TempVars     []core.ObjectInterface // Temporary variables stored by index
+	Method       *pile.Object
+	Receiver     pile.ObjectInterface
+	Arguments    []*pile.Object
+	TempVars     []pile.ObjectInterface // Temporary variables stored by index
 	Sender       *Context
 	PC           int
-	Stack        []*core.Object
+	Stack        []*pile.Object
 	StackPointer int
 }
 
 // NewContext creates a new method activation context
-func NewContext(method *core.Object, receiver core.ObjectInterface, arguments []*core.Object, sender *Context) *Context {
+func NewContext(method *pile.Object, receiver pile.ObjectInterface, arguments []*pile.Object, sender *Context) *Context {
 	if method == nil {
 		panic("NewContext: nil method")
 	}
-	methodObj := classes.ObjectToMethod(method)
+	methodObj := pile.ObjectToMethod(method)
 	if methodObj == nil { // temporary
 		panic("NewContext: nil method")
 	}
 
 	// Initialize temporary variables array with nil values
 	tempVarsSize := len(methodObj.GetTempVarNames())
-	tempVars := make([]core.ObjectInterface, tempVarsSize)
+	tempVars := make([]pile.ObjectInterface, tempVarsSize)
 	for i := range tempVars {
-		tempVars[i] = core.NewNil()
+		tempVars[i] = pile.NewNil()
 	}
 
 	return &Context{
@@ -41,16 +40,16 @@ func NewContext(method *core.Object, receiver core.ObjectInterface, arguments []
 		TempVars:     tempVars,
 		Sender:       sender,
 		PC:           0,
-		Stack:        make([]*core.Object, 100), // Initial stack size
+		Stack:        make([]*pile.Object, 100), // Initial stack size
 		StackPointer: 0,
 	}
 }
 
 // Push pushes an object onto the stack
-func (c *Context) Push(obj core.ObjectInterface) {
+func (c *Context) Push(obj pile.ObjectInterface) {
 	// Grow stack if needed
 	if c.StackPointer >= len(c.Stack) {
-		newStack := make([]*core.Object, len(c.Stack)*2)
+		newStack := make([]*pile.Object, len(c.Stack)*2)
 		copy(newStack, c.Stack)
 		c.Stack = newStack
 	}
@@ -59,13 +58,13 @@ func (c *Context) Push(obj core.ObjectInterface) {
 	if obj == nil {
 		c.Stack[c.StackPointer] = nil
 	} else {
-		c.Stack[c.StackPointer] = obj.(*core.Object)
+		c.Stack[c.StackPointer] = obj.(*pile.Object)
 	}
 	c.StackPointer++
 }
 
 // Pop pops an object from the stack
-func (c *Context) Pop() *core.Object {
+func (c *Context) Pop() *pile.Object {
 	if c.StackPointer <= 0 {
 		panic("stack underflow")
 	}
@@ -76,7 +75,7 @@ func (c *Context) Pop() *core.Object {
 }
 
 // Top returns the top object on the stack without popping it
-func (c *Context) Top() *core.Object {
+func (c *Context) Top() *pile.Object {
 	if c.StackPointer <= 0 {
 		panic("stack underflow")
 	}
@@ -85,7 +84,7 @@ func (c *Context) Top() *core.Object {
 }
 
 // GetTempVarByIndex gets a temporary variable by index
-func (c *Context) GetTempVarByIndex(index int) core.ObjectInterface {
+func (c *Context) GetTempVarByIndex(index int) pile.ObjectInterface {
 	if index < 0 || index >= len(c.TempVars) {
 		panic("index out of bounds")
 	}
@@ -94,7 +93,7 @@ func (c *Context) GetTempVarByIndex(index int) core.ObjectInterface {
 }
 
 // SetTempVarByIndex sets a temporary variable by index
-func (c *Context) SetTempVarByIndex(index int, value core.ObjectInterface) {
+func (c *Context) SetTempVarByIndex(index int, value pile.ObjectInterface) {
 	if index < 0 || index >= len(c.TempVars) {
 		return
 	}
@@ -102,38 +101,38 @@ func (c *Context) SetTempVarByIndex(index int, value core.ObjectInterface) {
 	if value == nil {
 		c.TempVars[index] = nil
 	} else {
-		c.TempVars[index] = value.(*core.Object)
+		c.TempVars[index] = value.(*pile.Object)
 	}
 }
 
 // GetMethod returns the method of the context
-func (c *Context) GetMethod() *core.Object {
+func (c *Context) GetMethod() *pile.Object {
 	return c.Method
 }
 
 // GetReceiver returns the receiver of the context
-func (c *Context) GetReceiver() *core.Object {
-	return c.Receiver.(*core.Object)
+func (c *Context) GetReceiver() *pile.Object {
+	return c.Receiver.(*pile.Object)
 }
 
 // GetArguments returns the arguments of the context
-func (c *Context) GetArguments() []*core.Object {
+func (c *Context) GetArguments() []*pile.Object {
 	return c.Arguments
 }
 
 // GetTempVars returns the temporary variables of the context
-func (c *Context) GetTempVars() []*core.Object {
-	result := make([]*core.Object, len(c.TempVars))
+func (c *Context) GetTempVars() []*pile.Object {
+	result := make([]*pile.Object, len(c.TempVars))
 	for i, tempVar := range c.TempVars {
 		if tempVar != nil {
-			result[i] = tempVar.(*core.Object)
+			result[i] = tempVar.(*pile.Object)
 		}
 	}
 	return result
 }
 
 // GetStack returns the stack of the context
-func (c *Context) GetStack() []*core.Object {
+func (c *Context) GetStack() []*pile.Object {
 	return c.Stack
 }
 

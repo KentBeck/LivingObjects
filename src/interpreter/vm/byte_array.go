@@ -1,14 +1,13 @@
 package vm
 
 import (
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // NewByteArrayClass creates a new ByteArray class
-func (vm *VM) NewByteArrayClass() *core.Class {
-	result := classes.NewClass("ByteArray", vm.Classes.Get(Object))
+func (vm *VM) NewByteArrayClass() *pile.Class {
+	result := pile.NewClass("ByteArray", vm.Classes.Get(Object))
 
 	// Add primitive methods to the ByteArray class
 	builder := compiler.NewMethodBuilder(result)
@@ -24,19 +23,19 @@ func (vm *VM) NewByteArrayClass() *core.Class {
 
 // newByteArrayInternal creates a new byte array object without setting its class
 // This is a private helper function used by NewByteArray
-func (vm *VM) newByteArrayInternal(size int) *classes.ByteArray {
-	return &classes.ByteArray{
-		Object: core.Object{
-			TypeField: core.OBJ_BYTE_ARRAY,
+func (vm *VM) newByteArrayInternal(size int) *pile.ByteArray {
+	return &pile.ByteArray{
+		Object: pile.Object{
+			TypeField: pile.OBJ_BYTE_ARRAY,
 		},
 		Bytes: make([]byte, size),
 	}
 }
 
 // NewByteArray creates a new byte array object
-func (vm *VM) NewByteArray(size int) *core.Object {
+func (vm *VM) NewByteArray(size int) *pile.Object {
 	byteArray := vm.newByteArrayInternal(size)
-	byteArrayObj := classes.ByteArrayToObject(byteArray)
-	byteArrayObj.SetClass(classes.ClassToObject(vm.Classes.Get(ByteArray)))
+	byteArrayObj := pile.ByteArrayToObject(byteArray)
+	byteArrayObj.SetClass(pile.ClassToObject(vm.Classes.Get(ByteArray)))
 	return byteArrayObj
 }

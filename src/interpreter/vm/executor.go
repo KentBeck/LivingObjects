@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	"smalltalklsp/interpreter/bytecode"
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // Executor handles the execution of bytecode in contexts
@@ -25,8 +24,8 @@ func NewExecutor(vm *VM) *Executor {
 }
 
 // Execute executes the current context
-func (e *Executor) Execute() (core.ObjectInterface, error) {
-	var finalResult core.ObjectInterface
+func (e *Executor) Execute() (pile.ObjectInterface, error) {
+	var finalResult pile.ObjectInterface
 
 	for e.CurrentContext != nil {
 		// Execute the current context
@@ -53,11 +52,11 @@ func (e *Executor) Execute() (core.ObjectInterface, error) {
 }
 
 // ExecuteContext executes a single context until it returns
-func (e *Executor) ExecuteContext(context *Context) (core.ObjectInterface, error) {
+func (e *Executor) ExecuteContext(context *Context) (pile.ObjectInterface, error) {
 	// Execute the context
 	for {
 		// Get the method
-		method := classes.ObjectToMethod(context.Method)
+		method := pile.ObjectToMethod(context.Method)
 
 		// Check if we've reached the end of the method
 		if context.PC >= len(method.GetBytecodes()) {

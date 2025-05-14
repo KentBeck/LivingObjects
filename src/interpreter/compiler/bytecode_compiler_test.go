@@ -5,14 +5,13 @@ import (
 
 	"smalltalklsp/interpreter/ast"
 	"smalltalklsp/interpreter/bytecode"
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // TestCompileYourself tests compiling the method Object>>yourself ^self
 func TestCompileYourself(t *testing.T) {
 	// Create a class
-	objectClass := classes.NewClass("Object", nil)
+	objectClass := pile.NewClass("Object", nil)
 
 	// Create the AST for Object>>yourself ^self
 	methodNode := &ast.MethodNode{
@@ -22,11 +21,11 @@ func TestCompileYourself(t *testing.T) {
 		Body: &ast.ReturnNode{
 			Expression: &ast.SelfNode{},
 		},
-		Class: classes.ClassToObject(objectClass),
+		Class: pile.ClassToObject(objectClass),
 	}
 
 	// Create a bytecode compiler
-	compiler := NewBytecodeCompiler(classes.ClassToObject(objectClass))
+	compiler := NewBytecodeCompiler(pile.ClassToObject(objectClass))
 
 	// Compile the method
 	method := compiler.Compile(methodNode)
@@ -35,7 +34,7 @@ func TestCompileYourself(t *testing.T) {
 	if method.GetSelector() == nil {
 		t.Errorf("Method selector is nil")
 	} else {
-		selectorSymbol := classes.ObjectToSymbol(method.GetSelector())
+		selectorSymbol := pile.ObjectToSymbol(method.GetSelector())
 		if selectorSymbol.GetValue() != "yourself" {
 			t.Errorf("Expected method selector to be 'yourself', got '%s'", selectorSymbol.GetValue())
 		}
@@ -76,8 +75,8 @@ func TestCompileYourself(t *testing.T) {
 // TestCompileAdd tests compiling the method Integer>>+ aNumber ^self + aNumber
 func TestCompileAdd(t *testing.T) {
 	// Create a class
-	objectClass := classes.NewClass("Object", nil)
-	integerClass := classes.NewClass("Integer", objectClass)
+	objectClass := pile.NewClass("Object", nil)
+	integerClass := pile.NewClass("Integer", objectClass)
 
 	// Create the AST for Integer>>+ aNumber ^self + aNumber
 	methodNode := &ast.MethodNode{
@@ -95,11 +94,11 @@ func TestCompileAdd(t *testing.T) {
 				},
 			},
 		},
-		Class: classes.ClassToObject(integerClass),
+		Class: pile.ClassToObject(integerClass),
 	}
 
 	// Create a bytecode compiler
-	compiler := NewBytecodeCompiler(classes.ClassToObject(integerClass))
+	compiler := NewBytecodeCompiler(pile.ClassToObject(integerClass))
 
 	// Compile the method
 	method := compiler.Compile(methodNode)
@@ -108,7 +107,7 @@ func TestCompileAdd(t *testing.T) {
 	if method.GetSelector() == nil {
 		t.Errorf("Method selector is nil")
 	} else {
-		selectorSymbol := classes.ObjectToSymbol(method.GetSelector())
+		selectorSymbol := pile.ObjectToSymbol(method.GetSelector())
 		if selectorSymbol.GetValue() != "+" {
 			t.Errorf("Expected method selector to be '+', got '%s'", selectorSymbol.GetValue())
 		}
@@ -141,10 +140,10 @@ func TestCompileAdd(t *testing.T) {
 	} else {
 		// Check that the literal is the + symbol
 		literal := method.Literals[0]
-		if literal.Type() != core.OBJ_SYMBOL {
+		if literal.Type() != pile.OBJ_SYMBOL {
 			t.Errorf("Expected literal to be a symbol, got %v", literal.Type())
 		} else {
-			symbol := classes.ObjectToSymbol(literal)
+			symbol := pile.ObjectToSymbol(literal)
 			if symbol.GetValue() != "+" {
 				t.Errorf("Expected literal to be '+', got '%s'", symbol.GetValue())
 			}

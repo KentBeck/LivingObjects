@@ -1,11 +1,10 @@
 package vm
 
 import (
+	"smalltalklsp/interpreter/pile"
 	"testing"
 
 	"smalltalklsp/interpreter/bytecode"
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/runtime"
 )
 
@@ -16,9 +15,9 @@ func TestSimpleBlockLiteral(t *testing.T) {
 	runtime.RegisterBlockExecutor(vm)
 
 	// Create a method that will return a block
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	method := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
 			// Create a block and push it onto the stack
@@ -30,17 +29,17 @@ func TestSimpleBlockLiteral(t *testing.T) {
 			// Return the block
 			bytecode.RETURN_STACK_TOP,
 		},
-		Literals: []*core.Object{
-			core.MakeIntegerImmediate(5), // The literal 5
+		Literals: []*pile.Object{
+			pile.MakeIntegerImmediate(5), // The literal 5
 		},
 		TempVarNames: []string{},
 	}
 
 	// Create a context for the method
 	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
+		pile.MethodToObject(method),
+		pile.MakeNilImmediate(),
+		[]*pile.Object{},
 		nil,
 	)
 
@@ -51,12 +50,12 @@ func TestSimpleBlockLiteral(t *testing.T) {
 	}
 
 	// Verify that we got a block
-	if blockObj.Type() != core.OBJ_BLOCK {
+	if blockObj.Type() != pile.OBJ_BLOCK {
 		t.Fatalf("Expected a block, got %v", blockObj)
 	}
 
 	// Execute the block
-	block := classes.ObjectToBlock(blockObj.(*core.Object))
+	block := pile.ObjectToBlock(blockObj.(*pile.Object))
 
 	// Set the block's bytecodes (this would normally be done by the VM)
 	blockBytecodes := []byte{
@@ -67,18 +66,18 @@ func TestSimpleBlockLiteral(t *testing.T) {
 	block.SetBytecodes(blockBytecodes)
 
 	// Set the block's literals
-	block.Literals = []*core.Object{
-		core.MakeIntegerImmediate(5), // The literal 5
+	block.Literals = []*pile.Object{
+		pile.MakeIntegerImmediate(5), // The literal 5
 	}
 
 	result := block.Value()
 
 	// Verify the result is 5
-	if !core.IsIntegerImmediate(result) {
+	if !pile.IsIntegerImmediate(result) {
 		t.Fatalf("Expected an integer, got %v", result)
 	}
 
-	value := core.GetIntegerImmediate(result)
+	value := pile.GetIntegerImmediate(result)
 	if value != 5 {
 		t.Errorf("Expected 5, got %d", value)
 	}
@@ -92,22 +91,22 @@ func TestBlockWithMethodVariables(t *testing.T) {
 
 	// Add primitive methods to Integer class
 	integerClass := vm.Classes.Get(Integer)
-	addMethod := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	addMethod := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes:      []byte{},
-		Literals:       []*core.Object{},
+		Literals:       []*pile.Object{},
 		TempVarNames:   []string{},
 		IsPrimitive:    true,
 		PrimitiveIndex: 1, // Primitive index for +
 	}
-	classes.AddClassMethod(integerClass, classes.NewSymbol("+"), classes.MethodToObject(addMethod))
+	pile.AddClassMethod(integerClass, pile.NewSymbol("+"), pile.MethodToObject(addMethod))
 
 	// Create a method that will store a value in a temporary variable and then return a block that accesses it
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	method := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
 			// Push 7 onto the stack as the temp value
@@ -128,20 +127,20 @@ func TestBlockWithMethodVariables(t *testing.T) {
 			// Return the block
 			bytecode.RETURN_STACK_TOP,
 		},
-		Literals: []*core.Object{
-			core.MakeIntegerImmediate(2), // The literal 2
-			classes.NewSymbol("+"),       // The + selector
-			core.MakeIntegerImmediate(7), // The literal 7 (for temp)
-			core.MakeIntegerImmediate(3), // The literal 3
+		Literals: []*pile.Object{
+			pile.MakeIntegerImmediate(2), // The literal 2
+			pile.NewSymbol("+"),       // The + selector
+			pile.MakeIntegerImmediate(7), // The literal 7 (for temp)
+			pile.MakeIntegerImmediate(3), // The literal 3
 		},
 		TempVarNames: []string{"arg", "temp"},
 	}
 
 	// Create a context for the method with argument 5
 	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{core.MakeIntegerImmediate(5)}, // Pass 5 as the argument
+		pile.MethodToObject(method),
+		pile.MakeNilImmediate(),
+		[]*pile.Object{pile.MakeIntegerImmediate(5)}, // Pass 5 as the argument
 		nil,
 	)
 
@@ -152,12 +151,12 @@ func TestBlockWithMethodVariables(t *testing.T) {
 	}
 
 	// Verify that we got a block
-	if blockObj.Type() != core.OBJ_BLOCK {
+	if blockObj.Type() != pile.OBJ_BLOCK {
 		t.Fatalf("Expected a block, got %v", blockObj)
 	}
 
 	// Execute the block
-	block := classes.ObjectToBlock(blockObj.(*core.Object))
+	block := pile.ObjectToBlock(blockObj.(*pile.Object))
 
 	// Set the block's bytecodes (this would normally be done by the VM)
 	blockBytecodes := []byte{
@@ -173,9 +172,9 @@ func TestBlockWithMethodVariables(t *testing.T) {
 	block.SetBytecodes(blockBytecodes)
 
 	// Set the block's literals
-	block.Literals = []*core.Object{
-		core.MakeIntegerImmediate(3), // The literal 3
-		classes.NewSymbol("+"),       // The + selector
+	block.Literals = []*pile.Object{
+		pile.MakeIntegerImmediate(3), // The literal 3
+		pile.NewSymbol("+"),       // The + selector
 	}
 
 	// Set the block's outer context to the method context
@@ -184,11 +183,11 @@ func TestBlockWithMethodVariables(t *testing.T) {
 	result := block.Value()
 
 	// Verify the result is 7 + 3 = 10
-	if !core.IsIntegerImmediate(result) {
+	if !pile.IsIntegerImmediate(result) {
 		t.Fatalf("Expected an integer, got %v", result)
 	}
 
-	value := core.GetIntegerImmediate(result)
+	value := pile.GetIntegerImmediate(result)
 	if value != 10 {
 		t.Errorf("Expected 10, got %d", value)
 	}
@@ -201,9 +200,9 @@ func TestBlockWithNestedBlocks(t *testing.T) {
 	runtime.RegisterBlockExecutor(vm)
 
 	// Create a method that will return a block that creates and executes another block
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	method := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
 			// Create a block and push it onto the stack
@@ -215,18 +214,18 @@ func TestBlockWithNestedBlocks(t *testing.T) {
 			// Return the block
 			bytecode.RETURN_STACK_TOP,
 		},
-		Literals: []*core.Object{
-			core.MakeIntegerImmediate(42), // The literal 42
-			classes.NewSymbol("value"),    // The value selector
+		Literals: []*pile.Object{
+			pile.MakeIntegerImmediate(42), // The literal 42
+			pile.NewSymbol("value"),    // The value selector
 		},
 		TempVarNames: []string{},
 	}
 
 	// Create a context for the method
 	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
+		pile.MethodToObject(method),
+		pile.MakeNilImmediate(),
+		[]*pile.Object{},
 		nil,
 	)
 
@@ -237,12 +236,12 @@ func TestBlockWithNestedBlocks(t *testing.T) {
 	}
 
 	// Verify that we got a block
-	if outerBlockObj.Type() != core.OBJ_BLOCK {
+	if outerBlockObj.Type() != pile.OBJ_BLOCK {
 		t.Fatalf("Expected a block, got %v", outerBlockObj)
 	}
 
 	// Execute the outer block, which should create and execute the inner block
-	outerBlock := classes.ObjectToBlock(outerBlockObj.(*core.Object))
+	outerBlock := pile.ObjectToBlock(outerBlockObj.(*pile.Object))
 
 	// Set the outer block's bytecodes (this would normally be done by the VM)
 	outerBlockBytecodes := []byte{
@@ -258,9 +257,9 @@ func TestBlockWithNestedBlocks(t *testing.T) {
 	outerBlock.SetBytecodes(outerBlockBytecodes)
 
 	// Set the outer block's literals
-	outerBlock.Literals = []*core.Object{
-		core.MakeIntegerImmediate(42), // The literal 42
-		classes.NewSymbol("value"),    // The value selector
+	outerBlock.Literals = []*pile.Object{
+		pile.MakeIntegerImmediate(42), // The literal 42
+		pile.NewSymbol("value"),    // The value selector
 	}
 
 	// Set the outer block's outer context to the method context
@@ -273,14 +272,14 @@ func TestBlockWithNestedBlocks(t *testing.T) {
 	// let's just verify that the block has the correct structure
 
 	// Create a mock result
-	result := core.MakeIntegerImmediate(42)
+	result := pile.MakeIntegerImmediate(42)
 
 	// Verify the result is 42 (from the inner block)
-	if !core.IsIntegerImmediate(result) {
+	if !pile.IsIntegerImmediate(result) {
 		t.Fatalf("Expected an integer, got %v", result)
 	}
 
-	value := core.GetIntegerImmediate(result)
+	value := pile.GetIntegerImmediate(result)
 	if value != 42 {
 		t.Errorf("Expected 42, got %d", value)
 	}
@@ -294,9 +293,9 @@ func TestMethodBlockWithNonLocalReturn(t *testing.T) {
 
 	// For simplicity, we'll just create a method that returns 99 directly
 	// In a real implementation, we would test non-local returns from blocks
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	method := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
 			// Push 99 and return
@@ -304,17 +303,17 @@ func TestMethodBlockWithNonLocalReturn(t *testing.T) {
 			0, 0, 0, 0, // literal index 0 (the value 99)
 			bytecode.RETURN_STACK_TOP,
 		},
-		Literals: []*core.Object{
-			core.MakeIntegerImmediate(99), // The literal 99
+		Literals: []*pile.Object{
+			pile.MakeIntegerImmediate(99), // The literal 99
 		},
 		TempVarNames: []string{},
 	}
 
 	// Create a context for the method
 	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
+		pile.MethodToObject(method),
+		pile.MakeNilImmediate(),
+		[]*pile.Object{},
 		nil,
 	)
 
@@ -325,11 +324,11 @@ func TestMethodBlockWithNonLocalReturn(t *testing.T) {
 	}
 
 	// Verify the result is 99 (from the non-local return in the block)
-	if !core.IsIntegerImmediate(result) {
+	if !pile.IsIntegerImmediate(result) {
 		t.Fatalf("Expected an integer, got %v", result)
 	}
 
-	value := core.GetIntegerImmediate(result)
+	value := pile.GetIntegerImmediate(result)
 	if value != 99 {
 		t.Errorf("Expected 99 (from non-local return), got %d", value)
 	}
@@ -346,9 +345,9 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 	// In a real implementation, we would test conditional block creation
 
 	// Method that returns a block that returns 10
-	methodTrue := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	methodTrue := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
 			// Create a block and push it onto the stack
@@ -360,16 +359,16 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 			// Return the block
 			bytecode.RETURN_STACK_TOP,
 		},
-		Literals: []*core.Object{
-			core.MakeIntegerImmediate(10), // The literal 10
+		Literals: []*pile.Object{
+			pile.MakeIntegerImmediate(10), // The literal 10
 		},
 		TempVarNames: []string{},
 	}
 
 	// Method that returns a block that returns 20
-	methodFalse := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	methodFalse := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
 			// Create a block and push it onto the stack
@@ -381,8 +380,8 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 			// Return the block
 			bytecode.RETURN_STACK_TOP,
 		},
-		Literals: []*core.Object{
-			core.MakeIntegerImmediate(20), // The literal 20
+		Literals: []*pile.Object{
+			pile.MakeIntegerImmediate(20), // The literal 20
 		},
 		TempVarNames: []string{},
 	}
@@ -394,9 +393,9 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 	t.Run("Condition True", func(t *testing.T) {
 		// Create a context for the method
 		context := NewContext(
-			classes.MethodToObject(methodTrue),
-			core.MakeNilImmediate(),
-			[]*core.Object{}, // No arguments needed
+			pile.MethodToObject(methodTrue),
+			pile.MakeNilImmediate(),
+			[]*pile.Object{}, // No arguments needed
 			nil,
 		)
 
@@ -412,12 +411,12 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 		}
 
 		// Verify that it's a block
-		if blockObj.Type() != core.OBJ_BLOCK {
+		if blockObj.Type() != pile.OBJ_BLOCK {
 			t.Fatalf("Expected a block, got %v", blockObj)
 		}
 
 		// Execute the block
-		block := classes.ObjectToBlock(blockObj.(*core.Object))
+		block := pile.ObjectToBlock(blockObj.(*pile.Object))
 
 		// Set the block's bytecodes (this would normally be done by the VM)
 		blockBytecodes := []byte{
@@ -428,18 +427,18 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 		block.SetBytecodes(blockBytecodes)
 
 		// Set the block's literals
-		block.Literals = []*core.Object{
-			core.MakeIntegerImmediate(10), // The literal 10
+		block.Literals = []*pile.Object{
+			pile.MakeIntegerImmediate(10), // The literal 10
 		}
 
 		result := block.Value()
 
 		// Verify the result is 10
-		if !core.IsIntegerImmediate(result) {
+		if !pile.IsIntegerImmediate(result) {
 			t.Fatalf("Expected an integer, got %v", result)
 		}
 
-		value := core.GetIntegerImmediate(result)
+		value := pile.GetIntegerImmediate(result)
 		if value != 10 {
 			t.Errorf("Expected 10, got %d", value)
 		}
@@ -449,9 +448,9 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 	t.Run("Condition False", func(t *testing.T) {
 		// Create a context for the method
 		context := NewContext(
-			classes.MethodToObject(methodFalse),
-			core.MakeNilImmediate(),
-			[]*core.Object{}, // No arguments needed
+			pile.MethodToObject(methodFalse),
+			pile.MakeNilImmediate(),
+			[]*pile.Object{}, // No arguments needed
 			nil,
 		)
 
@@ -467,12 +466,12 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 		}
 
 		// Verify that it's a block
-		if blockObj.Type() != core.OBJ_BLOCK {
+		if blockObj.Type() != pile.OBJ_BLOCK {
 			t.Fatalf("Expected a block, got %v", blockObj)
 		}
 
 		// Execute the block
-		block := classes.ObjectToBlock(blockObj.(*core.Object))
+		block := pile.ObjectToBlock(blockObj.(*pile.Object))
 
 		// Set the block's bytecodes (this would normally be done by the VM)
 		blockBytecodes := []byte{
@@ -483,18 +482,18 @@ func TestMethodReturningDifferentBlocks(t *testing.T) {
 		block.SetBytecodes(blockBytecodes)
 
 		// Set the block's literals
-		block.Literals = []*core.Object{
-			core.MakeIntegerImmediate(20), // The literal 20
+		block.Literals = []*pile.Object{
+			pile.MakeIntegerImmediate(20), // The literal 20
 		}
 
 		result := block.Value()
 
 		// Verify the result is 20
-		if !core.IsIntegerImmediate(result) {
+		if !pile.IsIntegerImmediate(result) {
 			t.Fatalf("Expected an integer, got %v", result)
 		}
 
-		value := core.GetIntegerImmediate(result)
+		value := pile.GetIntegerImmediate(result)
 		if value != 20 {
 			t.Errorf("Expected 20, got %d", value)
 		}

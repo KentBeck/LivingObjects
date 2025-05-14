@@ -1,13 +1,12 @@
 package vm_test
 
 import (
+	"smalltalklsp/interpreter/pile"
 	"fmt"
 	"testing"
 	"unsafe"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -16,15 +15,15 @@ func TestLookupMethod(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Create a class hierarchy
-	objectClass := classes.NewClass("Object", nil)
-	collectionClass := classes.NewClass("Collection", objectClass)
-	sequenceableCollectionClass := classes.NewClass("SequenceableCollection", collectionClass)
-	arrayClass := classes.NewClass("Array", sequenceableCollectionClass)
+	objectClass := pile.NewClass("Object", nil)
+	collectionClass := pile.NewClass("Collection", objectClass)
+	sequenceableCollectionClass := pile.NewClass("SequenceableCollection", collectionClass)
+	arrayClass := pile.NewClass("Array", sequenceableCollectionClass)
 
 	// Create method selectors
-	sizeSelector := classes.NewSymbol("size")
-	atSelector := classes.NewSymbol("at:")
-	atPutSelector := classes.NewSymbol("at:put:")
+	sizeSelector := pile.NewSymbol("size")
+	atSelector := pile.NewSymbol("at:")
+	atPutSelector := pile.NewSymbol("at:put:")
 
 	// Create methods using MethodBuilder
 	sizeMethod := compiler.NewMethodBuilder(objectClass).
@@ -40,7 +39,7 @@ func TestLookupMethod(t *testing.T) {
 		Go()
 
 	// Create an instance of Array
-	arrayInstance := core.NewInstance((*core.Class)(unsafe.Pointer(arrayClass)))
+	arrayInstance := pile.NewInstance((*pile.Class)(unsafe.Pointer(arrayClass)))
 
 	// Test cases
 
@@ -63,14 +62,14 @@ func TestLookupMethod(t *testing.T) {
 	}
 
 	// 4. Look up a method that doesn't exist
-	notFoundSelector := classes.NewSymbol("notFound")
+	notFoundSelector := pile.NewSymbol("notFound")
 	method = virtualMachine.LookupMethod(arrayInstance, notFoundSelector)
 	if method != nil {
 		t.Errorf("Expected nil for non-existent method, got %v", method)
 	}
 
 	// 5. Look up a method on a class object directly
-	method = virtualMachine.LookupMethod(classes.ClassToObject(arrayClass), sizeSelector)
+	method = virtualMachine.LookupMethod(pile.ClassToObject(arrayClass), sizeSelector)
 	if method != sizeMethod {
 		t.Errorf("Expected to find size method from Object class when looking up on class, got %v", method)
 	}
@@ -99,10 +98,10 @@ func TestBadLookupMethod(t *testing.T) {
 func BadLookupMethodHelper() {
 	virtualMachine := vm.NewVM()
 
-	badClass := classes.NewClass("BadClass", nil)
+	badClass := pile.NewClass("BadClass", nil)
 	badClass.MethodDictionary = nil // Set method dictionary to nil
-	badClassInstance := core.NewInstance((*core.Class)(unsafe.Pointer(badClass)))
-	sizeSelector := classes.NewSymbol("size")
+	badClassInstance := pile.NewInstance((*pile.Class)(unsafe.Pointer(badClass)))
+	sizeSelector := pile.NewSymbol("size")
 
 	// Add a panic handler to make sure we actually panic
 	defer func() {
@@ -119,15 +118,15 @@ func TestLookupMethodWithInheritance(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Create a deeper class hierarchy
-	objectClass := classes.NewClass("Object", nil)
-	collectionClass := classes.NewClass("Collection", objectClass)
-	sequenceableCollectionClass := classes.NewClass("SequenceableCollection", collectionClass)
-	arrayClass := classes.NewClass("Array", sequenceableCollectionClass)
+	objectClass := pile.NewClass("Object", nil)
+	collectionClass := pile.NewClass("Collection", objectClass)
+	sequenceableCollectionClass := pile.NewClass("SequenceableCollection", collectionClass)
+	arrayClass := pile.NewClass("Array", sequenceableCollectionClass)
 
 	// Create method selectors
-	sizeSelector := classes.NewSymbol("size")
-	atSelector := classes.NewSymbol("at:")
-	atPutSelector := classes.NewSymbol("at:put:")
+	sizeSelector := pile.NewSymbol("size")
+	atSelector := pile.NewSymbol("at:")
+	atPutSelector := pile.NewSymbol("at:put:")
 
 	// Create methods for each class using MethodBuilder
 	// We don't need to store the method objects since they're already in the method dictionaries
@@ -148,7 +147,7 @@ func TestLookupMethodWithInheritance(t *testing.T) {
 		Go()
 
 	// Create an instance of Array
-	arrayInstance := core.NewInstance((*core.Class)(unsafe.Pointer(arrayClass)))
+	arrayInstance := pile.NewInstance((*pile.Class)(unsafe.Pointer(arrayClass)))
 
 	// Test cases
 
@@ -171,7 +170,7 @@ func TestLookupMethodWithInheritance(t *testing.T) {
 	}
 
 	// 4. Method lookup should work with class objects too
-	method = virtualMachine.LookupMethod(classes.ClassToObject(arrayClass), sizeSelector)
+	method = virtualMachine.LookupMethod(pile.ClassToObject(arrayClass), sizeSelector)
 	if method != collectionSizeMethod {
 		t.Errorf("Expected to find size method in Collection class when looking up on class, got %v", method)
 	}
@@ -180,19 +179,19 @@ func TestLookupMethodWithInheritance(t *testing.T) {
 // TestGetMethodDict tests the GetMethodDict method
 func TestGetMethodDict(t *testing.T) {
 	// Create a class
-	class := classes.NewClass("TestClass", nil)
+	class := pile.NewClass("TestClass", nil)
 
 	// Get the method dictionary
 	methodDict := class.GetMethodDict()
 
 	// Check that it's a dictionary
-	if methodDict.Type() != core.OBJ_DICTIONARY {
+	if methodDict.Type() != pile.OBJ_DICTIONARY {
 		t.Errorf("Expected method dictionary to be a dictionary, got %v", methodDict.Type())
 	}
 
 	// Check that it's empty
 	// Convert to Dictionary to access entries
-	dict := classes.ObjectToDictionary(methodDict)
+	dict := pile.ObjectToDictionary(methodDict)
 	if len(dict.Entries) != 0 {
 		t.Errorf("Expected method dictionary to be empty, got %d entries", len(dict.Entries))
 	}
@@ -213,7 +212,7 @@ func TestGetMethodDict(t *testing.T) {
 
 	// Check that the method is in the dictionary
 	// Convert to Dictionary to access entries
-	dict2 := classes.ObjectToDictionary(methodDict2)
+	dict2 := pile.ObjectToDictionary(methodDict2)
 	if dict2.Entries[selectorName] != method {
 		t.Errorf("Expected to find method in dictionary")
 	}

@@ -5,16 +5,16 @@ import (
 	"unsafe"
 
 	"smalltalklsp/interpreter/ast"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 )
 
 // TestParseYourself tests parsing the method "yourself ^self"
 func TestParseYourself(t *testing.T) {
 	// Create a class
-	objectClass := core.NewClass("Object", nil)
+	objectClass := pile.NewClass("Object", nil)
 	objectClass.ClassField = objectClass // Set class's class to itself for proper checks
-	classObj := (*core.Object)(unsafe.Pointer(objectClass))
+	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
 
 	// Create a real VM for testing
 	vmInstance := vm.NewVM()
@@ -70,11 +70,11 @@ func TestParseYourself(t *testing.T) {
 // TestParseAdd tests parsing the method "+ aNumber ^self + aNumber"
 func TestParseAdd(t *testing.T) {
 	// Create a class
-	objectClass := core.NewClass("Object", nil)
+	objectClass := pile.NewClass("Object", nil)
 	objectClass.ClassField = objectClass // Set class's class to itself for proper checks
-	integerClass := core.NewClass("Integer", objectClass)
+	integerClass := pile.NewClass("Integer", objectClass)
 	integerClass.ClassField = objectClass // Set class's class for proper checks
-	integerClassObj := (*core.Object)(unsafe.Pointer(integerClass))
+	integerClassObj := (*pile.Object)(unsafe.Pointer(integerClass))
 
 	// Create a real VM for testing
 	vmInstance := vm.NewVM()
@@ -158,9 +158,9 @@ func TestParseAdd(t *testing.T) {
 // TestParseWithTemporaries tests parsing a method with temporary variables
 func TestParseWithTemporaries(t *testing.T) {
 	// Create a class
-	objectClass := core.NewClass("Object", nil)
+	objectClass := pile.NewClass("Object", nil)
 	objectClass.ClassField = objectClass // Set class's class to itself for proper checks
-	classObj := (*core.Object)(unsafe.Pointer(objectClass))
+	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
 
 	// Create a real VM for testing
 	vmInstance := vm.NewVM()
@@ -206,9 +206,9 @@ func TestParseWithTemporaries(t *testing.T) {
 // TestParseWithBlock tests parsing a method with a block
 func TestParseWithBlock(t *testing.T) {
 	// Create a class
-	objectClass := core.NewClass("Object", nil)
+	objectClass := pile.NewClass("Object", nil)
 	objectClass.ClassField = objectClass // Set class's class to itself for proper checks
-	classObj := (*core.Object)(unsafe.Pointer(objectClass))
+	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
 
 	// Create a real VM for testing
 	vmInstance := vm.NewVM()

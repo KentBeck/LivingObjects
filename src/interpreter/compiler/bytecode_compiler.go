@@ -6,17 +6,16 @@ import (
 
 	"smalltalklsp/interpreter/ast"
 	"smalltalklsp/interpreter/bytecode"
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // BytecodeCompiler compiles AST to bytecode
 type BytecodeCompiler struct {
 	// Method is the method being compiled
-	Method *classes.Method
+	Method *pile.Method
 
 	// Literals are the literals used in the method
-	Literals []*core.Object
+	Literals []*pile.Object
 
 	// Bytecodes are the bytecodes generated
 	Bytecodes []byte
@@ -25,14 +24,14 @@ type BytecodeCompiler struct {
 	TempVarNames []string
 
 	// Class is the class the method belongs to
-	Class *core.Object
+	Class *pile.Object
 }
 
 // NewBytecodeCompiler creates a new bytecode compiler
-func NewBytecodeCompiler(class *core.Object) *BytecodeCompiler {
+func NewBytecodeCompiler(class *pile.Object) *BytecodeCompiler {
 	return &BytecodeCompiler{
 		Method:       nil,
-		Literals:     []*core.Object{},
+		Literals:     []*pile.Object{},
 		Bytecodes:    []byte{},
 		TempVarNames: []string{},
 		Class:        class,
@@ -40,14 +39,14 @@ func NewBytecodeCompiler(class *core.Object) *BytecodeCompiler {
 }
 
 // Compile compiles an AST node to bytecode
-func (c *BytecodeCompiler) Compile(node ast.Node) *classes.Method {
+func (c *BytecodeCompiler) Compile(node ast.Node) *pile.Method {
 	// Create a new method
-	c.Method = &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	c.Method = &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes:    []byte{},
-		Literals:     []*core.Object{},
+		Literals:     []*pile.Object{},
 		TempVarNames: []string{},
 	}
 
@@ -60,7 +59,7 @@ func (c *BytecodeCompiler) Compile(node ast.Node) *classes.Method {
 	c.Method.TempVarNames = c.TempVarNames
 
 	// Set the method class
-	c.Method.SetMethodClass(classes.ObjectToClass(c.Class))
+	c.Method.SetMethodClass(pile.ObjectToClass(c.Class))
 
 	return c.Method
 }
@@ -68,7 +67,7 @@ func (c *BytecodeCompiler) Compile(node ast.Node) *classes.Method {
 // VisitMethodNode visits a method node
 func (c *BytecodeCompiler) VisitMethodNode(node *ast.MethodNode) interface{} {
 	// Set the method selector
-	c.Method.SetSelector(classes.NewSymbol(node.Selector))
+	c.Method.SetSelector(pile.NewSymbol(node.Selector))
 
 	// Set the temporary variable names
 	c.TempVarNames = append(c.TempVarNames, node.Parameters...)
@@ -178,7 +177,7 @@ func (c *BytecodeCompiler) VisitMessageSendNode(node *ast.MessageSendNode) inter
 	}
 
 	// Create a symbol and add it to the literals array
-	symbol := classes.NewSymbol(node.Selector)
+	symbol := pile.NewSymbol(node.Selector)
 	selectorIndex := c.addLiteral(symbol)
 
 	// Add the send message bytecode
@@ -242,7 +241,7 @@ func (c *BytecodeCompiler) VisitBlockNode(node *ast.BlockNode) interface{} {
 }
 
 // addLiteral adds a literal to the literals array and returns its index
-func (c *BytecodeCompiler) addLiteral(literal *core.Object) int {
+func (c *BytecodeCompiler) addLiteral(literal *pile.Object) int {
 	// Check if the literal already exists
 	for i, l := range c.Literals {
 		if l == literal {

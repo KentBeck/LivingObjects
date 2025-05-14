@@ -1,9 +1,9 @@
 package vm_test
 
 import (
+	"smalltalklsp/interpreter/pile"
 	"testing"
 
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -14,10 +14,10 @@ func TestBooleanNotMethods(t *testing.T) {
 	// Test True not method
 	t.Run("True not", func(t *testing.T) {
 		// Get the true object
-		trueObj := core.MakeTrueImmediate()
+		trueObj := pile.MakeTrueImmediate()
 
 		// Get the not selector
-		notSelector := core.NewSymbol("not")
+		notSelector := pile.NewSymbol("not")
 
 		// Look up the method
 		method := virtualMachine.LookupMethod(trueObj, notSelector)
@@ -26,7 +26,7 @@ func TestBooleanNotMethods(t *testing.T) {
 		}
 
 		// Create a context for executing the method
-		context := vm.NewContext(method, trueObj, []*core.Object{}, nil)
+		context := vm.NewContext(method, trueObj, []*pile.Object{}, nil)
 
 		// Execute the method
 		result, err := virtualMachine.ExecuteContext(context)
@@ -41,8 +41,8 @@ func TestBooleanNotMethods(t *testing.T) {
 		}
 
 		// Check that the result is false
-		if !core.IsFalseImmediate(result.(*core.Object)) {
-			t.Errorf("Expected false result, got %v", result.(*core.Object).Type())
+		if !pile.IsFalseImmediate(result.(*pile.Object)) {
+			t.Errorf("Expected false result, got %v", result.(*pile.Object).Type())
 			return
 		}
 	})
@@ -50,10 +50,10 @@ func TestBooleanNotMethods(t *testing.T) {
 	// Test False not method
 	t.Run("False not", func(t *testing.T) {
 		// Get the false object
-		falseObj := core.MakeFalseImmediate()
+		falseObj := pile.MakeFalseImmediate()
 
 		// Get the not selector
-		notSelector := core.NewSymbol("not")
+		notSelector := pile.NewSymbol("not")
 
 		// Look up the method
 		method := virtualMachine.LookupMethod(falseObj, notSelector)
@@ -62,7 +62,7 @@ func TestBooleanNotMethods(t *testing.T) {
 		}
 
 		// Create a context for executing the method
-		context := vm.NewContext(method, falseObj, []*core.Object{}, nil)
+		context := vm.NewContext(method, falseObj, []*pile.Object{}, nil)
 
 		// Execute the method
 		result, err := virtualMachine.ExecuteContext(context)
@@ -77,8 +77,8 @@ func TestBooleanNotMethods(t *testing.T) {
 		}
 
 		// Check that the result is true
-		if !core.IsTrueImmediate(result.(*core.Object)) {
-			t.Errorf("Expected true result, got %v", result.(*core.Object).Type())
+		if !pile.IsTrueImmediate(result.(*pile.Object)) {
+			t.Errorf("Expected true result, got %v", result.(*pile.Object).Type())
 			return
 		}
 	})

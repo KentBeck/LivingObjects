@@ -1,14 +1,13 @@
 package vm
 
 import (
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // NewMethod creates a method object with proper class field
-func (vm *VM) NewMethod(selector *core.Object, class *core.Class) *core.Object {
-	method := classes.NewMethod(selector, class)
+func (vm *VM) NewMethod(selector *pile.Object, class *pile.Class) *pile.Object {
+	method := pile.NewMethod(selector, class)
 	methodObj := method // Already an Object
-	methodObj.SetClass(classes.ClassToObject(vm.Classes.Get(Object))) // Methods are instances of the Object class for now
+	methodObj.SetClass(pile.ClassToObject(vm.Classes.Get(Method))) // Methods are instances of the Method class
 	return methodObj
 }

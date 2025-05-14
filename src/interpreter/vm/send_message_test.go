@@ -4,9 +4,8 @@ import (
 	"testing"
 
 	"smalltalklsp/interpreter/bytecode"
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -19,7 +18,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 	t.Run("primitive method", func(t *testing.T) {
 		// Add primitive methods to the Integer class
 		integerClass := virtualMachine.Classes.Get(vm.Integer)
-		plusSymbol := classes.NewSymbol("+")
+		plusSymbol := pile.NewSymbol("+")
 		compiler.NewMethodBuilder(integerClass).
 			Selector("+").
 			Primitive(1). // Addition primitive
@@ -46,7 +45,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		method := builder.Go()
 
 		// Create a context
-		context := vm.NewContext(method, virtualMachine.Classes.Get(vm.Object), []*core.Object{}, nil)
+		context := vm.NewContext(method, virtualMachine.Classes.Get(vm.Object), []*pile.Object{}, nil)
 
 		// Execute the PUSH_LITERAL bytecodes to set up the stack
 		context.PC = 0
@@ -69,8 +68,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		}
 
 		// Check the result
-		if core.IsIntegerImmediate(result) {
-			intValue := core.GetIntegerImmediate(result)
+		if pile.IsIntegerImmediate(result) {
+			intValue := pile.GetIntegerImmediate(result)
 			if intValue != 5 {
 				t.Errorf("Expected 5, got %d", intValue)
 			}
@@ -85,8 +84,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 		// Check the stack top
 		stackTop := context.Stack[0]
-		if core.IsIntegerImmediate(stackTop) {
-			intValue := core.GetIntegerImmediate(stackTop)
+		if pile.IsIntegerImmediate(stackTop) {
+			intValue := pile.GetIntegerImmediate(stackTop)
 			if intValue != 5 {
 				t.Errorf("Expected stack top to be 5, got %d", intValue)
 			}
@@ -101,7 +100,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		integerClass := virtualMachine.Classes.Get(vm.Integer)
 
 		// Create literals
-		factorialSelector := classes.NewSymbol("factorial")
+		factorialSelector := pile.NewSymbol("factorial")
 		oneObj := virtualMachine.NewInteger(1)
 		fiveObj := virtualMachine.NewInteger(5)
 
@@ -134,12 +133,12 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		testMethod := testBuilder.Go()
 
 		// Create a context
-		context := vm.NewContext(testMethod, objectClass, []*core.Object{}, nil)
+		context := vm.NewContext(testMethod, objectClass, []*pile.Object{}, nil)
 
 		// Set the VM's object class
 		virtualMachine.Classes.Register(vm.Object, objectClass)
-		virtualMachine.Globals["Object"] = classes.ClassToObject(objectClass)
-		virtualMachine.Globals["Integer"] = classes.ClassToObject(integerClass)
+		virtualMachine.Globals["Object"] = pile.ClassToObject(objectClass)
+		virtualMachine.Globals["Integer"] = pile.ClassToObject(integerClass)
 
 		// Execute the PUSH_LITERAL bytecode to set up the stack
 		context.PC = 0
@@ -156,8 +155,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		}
 
 		// Check the result
-		if core.IsIntegerImmediate(result) {
-			intValue := core.GetIntegerImmediate(result)
+		if pile.IsIntegerImmediate(result) {
+			intValue := pile.GetIntegerImmediate(result)
 			if intValue != 1 {
 				t.Errorf("Expected 1, got %d", intValue)
 			}
@@ -172,8 +171,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 		// Check the stack top
 		stackTop := context.Stack[0]
-		if core.IsIntegerImmediate(stackTop) {
-			intValue := core.GetIntegerImmediate(stackTop)
+		if pile.IsIntegerImmediate(stackTop) {
+			intValue := pile.GetIntegerImmediate(stackTop)
 			if intValue != 1 {
 				t.Errorf("Expected stack top to be 1, got %d", intValue)
 			}
@@ -187,7 +186,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 		// Create literals
 		receiver := virtualMachine.NewInteger(2)
-		unknownSelector := classes.NewSymbol("unknown")
+		unknownSelector := pile.NewSymbol("unknown")
 
 		// Create a method with a SEND_MESSAGE bytecode for an unknown method using AddLiteral
 		builder := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).Selector("test")
@@ -204,7 +203,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		method := builder.Go()
 
 		// Create a context
-		context := vm.NewContext(method, virtualMachine.Classes.Get(vm.Object), []*core.Object{}, nil)
+		context := vm.NewContext(method, virtualMachine.Classes.Get(vm.Object), []*pile.Object{}, nil)
 
 		// Execute the PUSH_LITERAL bytecode to set up the stack
 		context.PC = 0
@@ -233,7 +232,7 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 	t.Run("direct primitive call with multiple arguments", func(t *testing.T) {
 		// Add primitive methods to the Integer class
 		integerClass := virtualMachine.Classes.Get(vm.Integer)
-		plusSymbol := classes.NewSymbol("+")
+		plusSymbol := pile.NewSymbol("+")
 		compiler.NewMethodBuilder(integerClass).
 			Selector("+").
 			Primitive(1). // Addition primitive
@@ -264,7 +263,7 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		method := builder.Go()
 
 		// Create a context
-		context := vm.NewContext(method, virtualMachine.Classes.Get(vm.Object), []*core.Object{}, nil)
+		context := vm.NewContext(method, virtualMachine.Classes.Get(vm.Object), []*pile.Object{}, nil)
 
 		// Execute the first PUSH_LITERAL bytecode
 		context.PC = 0
@@ -287,8 +286,8 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		context.PC += bytecode.InstructionSize(bytecode.SEND_MESSAGE)
 
 		// Check the intermediate result
-		if core.IsIntegerImmediate(result) {
-			intValue := core.GetIntegerImmediate(result)
+		if pile.IsIntegerImmediate(result) {
+			intValue := pile.GetIntegerImmediate(result)
 			if intValue != 5 {
 				t.Errorf("Expected 5, got %d", intValue)
 			}
@@ -309,8 +308,8 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		}
 
 		// Check the final result
-		if core.IsIntegerImmediate(result) {
-			intValue := core.GetIntegerImmediate(result)
+		if pile.IsIntegerImmediate(result) {
+			intValue := pile.GetIntegerImmediate(result)
 			if intValue != 9 {
 				t.Errorf("Expected 9, got %d", intValue)
 			}
@@ -325,8 +324,8 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 
 		// Check the stack top
 		stackTop := context.Stack[0]
-		if core.IsIntegerImmediate(stackTop) {
-			intValue := core.GetIntegerImmediate(stackTop)
+		if pile.IsIntegerImmediate(stackTop) {
+			intValue := pile.GetIntegerImmediate(stackTop)
 			if intValue != 9 {
 				t.Errorf("Expected stack top to be 9, got %d", intValue)
 			}

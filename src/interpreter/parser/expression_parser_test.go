@@ -5,8 +5,7 @@ import (
 	"unsafe"
 
 	"smalltalklsp/interpreter/ast"
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -14,10 +13,10 @@ import (
 // TestParseExpression tests parsing various Smalltalk expressions
 func TestParseExpression(t *testing.T) {
 	// Create a class for context
-	objectClass := core.NewClass("Object", nil)
-	classObj := (*core.Object)(unsafe.Pointer(objectClass))
+	objectClass := pile.NewClass("Object", nil)
+	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
 	
-	// We need to set up the class properly for core.IsTrueImmediate and core.IsFalseImmediate checks
+	// We need to set up the class properly for pile.IsTrueImmediate and pile.IsFalseImmediate checks
 	objectClass.ClassField = objectClass
 
 	// Test cases
@@ -36,11 +35,11 @@ func TestParseExpression(t *testing.T) {
 					t.Fatalf("Expected LiteralNode, got %T", node)
 				}
 
-				if !core.IsIntegerImmediate(literalNode.Value) {
+				if !pile.IsIntegerImmediate(literalNode.Value) {
 					t.Fatalf("Expected integer immediate, got %v", literalNode.Value)
 				}
 
-				value := core.GetIntegerImmediate(literalNode.Value)
+				value := pile.GetIntegerImmediate(literalNode.Value)
 				if value != 42 {
 					t.Errorf("Expected value 42, got %d", value)
 				}
@@ -68,11 +67,11 @@ func TestParseExpression(t *testing.T) {
 				}
 
 				receiverNode, _ := messageSendNode.Receiver.(*ast.LiteralNode)
-				if !core.IsIntegerImmediate(receiverNode.Value) {
+				if !pile.IsIntegerImmediate(receiverNode.Value) {
 					t.Fatalf("Expected receiver to be integer immediate, got %v", receiverNode.Value)
 				}
 
-				receiverValue := core.GetIntegerImmediate(receiverNode.Value)
+				receiverValue := pile.GetIntegerImmediate(receiverNode.Value)
 				if receiverValue != 2 {
 					t.Errorf("Expected receiver value 2, got %d", receiverValue)
 				}
@@ -87,11 +86,11 @@ func TestParseExpression(t *testing.T) {
 					t.Fatalf("Expected argument to be LiteralNode, got %T", messageSendNode.Arguments[0])
 				}
 
-				if !core.IsIntegerImmediate(argNode.Value) {
+				if !pile.IsIntegerImmediate(argNode.Value) {
 					t.Fatalf("Expected argument to be integer immediate, got %v", argNode.Value)
 				}
 
-				argValue := core.GetIntegerImmediate(argNode.Value)
+				argValue := pile.GetIntegerImmediate(argNode.Value)
 				if argValue != 3 {
 					t.Errorf("Expected argument value 3, got %d", argValue)
 				}
@@ -119,11 +118,11 @@ func TestParseExpression(t *testing.T) {
 				}
 
 				receiverNode, _ := messageSendNode.Receiver.(*ast.LiteralNode)
-				if !core.IsIntegerImmediate(receiverNode.Value) {
+				if !pile.IsIntegerImmediate(receiverNode.Value) {
 					t.Fatalf("Expected receiver to be integer immediate, got %v", receiverNode.Value)
 				}
 
-				receiverValue := core.GetIntegerImmediate(receiverNode.Value)
+				receiverValue := pile.GetIntegerImmediate(receiverNode.Value)
 				if receiverValue != 3 {
 					t.Errorf("Expected receiver value 3, got %d", receiverValue)
 				}
@@ -138,11 +137,11 @@ func TestParseExpression(t *testing.T) {
 					t.Fatalf("Expected argument to be LiteralNode, got %T", messageSendNode.Arguments[0])
 				}
 
-				if !core.IsIntegerImmediate(argNode.Value) {
+				if !pile.IsIntegerImmediate(argNode.Value) {
 					t.Fatalf("Expected argument to be integer immediate, got %v", argNode.Value)
 				}
 
-				argValue := core.GetIntegerImmediate(argNode.Value)
+				argValue := pile.GetIntegerImmediate(argNode.Value)
 				if argValue != 4 {
 					t.Errorf("Expected argument value 4, got %d", argValue)
 				}
@@ -184,11 +183,11 @@ func TestParseExpression(t *testing.T) {
 					t.Fatalf("Expected argument to be LiteralNode, got %T", messageSendNode.Arguments[0])
 				}
 
-				if !core.IsIntegerImmediate(argNode.Value) {
+				if !pile.IsIntegerImmediate(argNode.Value) {
 					t.Fatalf("Expected argument to be integer immediate, got %v", argNode.Value)
 				}
 
-				argValue := core.GetIntegerImmediate(argNode.Value)
+				argValue := pile.GetIntegerImmediate(argNode.Value)
 				if argValue != 3 {
 					t.Errorf("Expected argument value 3, got %d", argValue)
 				}
@@ -230,11 +229,11 @@ func TestParseExpression(t *testing.T) {
 					t.Fatalf("Expected argument to be LiteralNode, got %T", messageSendNode.Arguments[0])
 				}
 
-				if !core.IsIntegerImmediate(argNode.Value) {
+				if !pile.IsIntegerImmediate(argNode.Value) {
 					t.Fatalf("Expected argument to be integer immediate, got %v", argNode.Value)
 				}
 
-				argValue := core.GetIntegerImmediate(argNode.Value)
+				argValue := pile.GetIntegerImmediate(argNode.Value)
 				if argValue != 3 {
 					t.Errorf("Expected argument value 3, got %d", argValue)
 				}
@@ -276,11 +275,11 @@ func TestParseExpression(t *testing.T) {
 					t.Fatalf("Expected argument to be LiteralNode, got %T", messageSendNode.Arguments[0])
 				}
 
-				if !core.IsIntegerImmediate(argNode.Value) {
+				if !pile.IsIntegerImmediate(argNode.Value) {
 					t.Fatalf("Expected argument to be integer immediate, got %v", argNode.Value)
 				}
 
-				argValue := core.GetIntegerImmediate(argNode.Value)
+				argValue := pile.GetIntegerImmediate(argNode.Value)
 				if argValue != 3 {
 					t.Errorf("Expected argument value 3, got %d", argValue)
 				}
@@ -308,11 +307,11 @@ func TestParseExpression(t *testing.T) {
 				}
 
 				receiverNode, _ := messageSendNode.Receiver.(*ast.LiteralNode)
-				if !core.IsIntegerImmediate(receiverNode.Value) {
+				if !pile.IsIntegerImmediate(receiverNode.Value) {
 					t.Fatalf("Expected receiver to be integer immediate, got %v", receiverNode.Value)
 				}
 
-				receiverValue := core.GetIntegerImmediate(receiverNode.Value)
+				receiverValue := pile.GetIntegerImmediate(receiverNode.Value)
 				if receiverValue != 1 {
 					t.Errorf("Expected receiver value 1, got %d", receiverValue)
 				}
@@ -327,11 +326,11 @@ func TestParseExpression(t *testing.T) {
 					t.Fatalf("Expected argument to be LiteralNode, got %T", messageSendNode.Arguments[0])
 				}
 
-				if !core.IsIntegerImmediate(argNode.Value) {
+				if !pile.IsIntegerImmediate(argNode.Value) {
 					t.Fatalf("Expected argument to be integer immediate, got %v", argNode.Value)
 				}
 
-				argValue := core.GetIntegerImmediate(argNode.Value)
+				argValue := pile.GetIntegerImmediate(argNode.Value)
 				if argValue != 3 {
 					t.Errorf("Expected argument value 3, got %d", argValue)
 				}
@@ -418,7 +417,7 @@ func TestParseExpression(t *testing.T) {
 				}
 
 				// Check that it's a true immediate value
-				if !core.IsTrueImmediate(receiverNode.Value) {
+				if !pile.IsTrueImmediate(receiverNode.Value) {
 					t.Fatalf("Expected true immediate, got %v", receiverNode.Value)
 				}
 				
@@ -451,7 +450,7 @@ func TestParseExpression(t *testing.T) {
 				}
 
 				// Check that it's a false immediate value
-				if !core.IsFalseImmediate(receiverNode.Value) {
+				if !pile.IsFalseImmediate(receiverNode.Value) {
 					t.Fatalf("Expected false immediate, got %v", receiverNode.Value)
 				}
 
@@ -505,10 +504,10 @@ func TestParseExpression(t *testing.T) {
 // TestParseArrayLiteral tests parsing array literals
 func TestParseArrayLiteral(t *testing.T) {
 	// Create a class for context
-	objectClass := core.NewClass("Object", nil)
-	classObj := (*core.Object)(unsafe.Pointer(objectClass))
+	objectClass := pile.NewClass("Object", nil)
+	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
 	
-	// We need to set up the class properly for core.IsImmediate checks
+	// We need to set up the class properly for pile.IsImmediate checks
 	objectClass.ClassField = objectClass
 
 	// Create a real VM for testing
@@ -546,12 +545,12 @@ func TestParseArrayLiteral(t *testing.T) {
 	}
 
 	// Check that the value is an Array object
-	if literalNode.Value.Type() != core.OBJ_ARRAY {
+	if literalNode.Value.Type() != pile.OBJ_ARRAY {
 		t.Fatalf("Expected Array object, got %v", literalNode.Value.Type())
 	}
 
 	// Convert to Array and check its properties
-	array := classes.ObjectToArray(literalNode.Value)
+	array := pile.ObjectToArray(literalNode.Value)
 
 	// Check array size
 	if array.Size() != 3 {
@@ -560,33 +559,33 @@ func TestParseArrayLiteral(t *testing.T) {
 
 	// Check first element (should be 1)
 	elem1 := array.At(0)
-	if !core.IsIntegerImmediate(elem1) {
+	if !pile.IsIntegerImmediate(elem1) {
 		t.Fatalf("Expected element 1 to be integer immediate, got %v", elem1)
 	}
 
-	elem1Value := core.GetIntegerImmediate(elem1)
+	elem1Value := pile.GetIntegerImmediate(elem1)
 	if elem1Value != 1 {
 		t.Errorf("Expected element 1 value 1, got %d", elem1Value)
 	}
 
 	// Check second element (should be 2)
 	elem2 := array.At(1)
-	if !core.IsIntegerImmediate(elem2) {
+	if !pile.IsIntegerImmediate(elem2) {
 		t.Fatalf("Expected element 2 to be integer immediate, got %v", elem2)
 	}
 
-	elem2Value := core.GetIntegerImmediate(elem2)
+	elem2Value := pile.GetIntegerImmediate(elem2)
 	if elem2Value != 2 {
 		t.Errorf("Expected element 2 value 2, got %d", elem2Value)
 	}
 
 	// Check third element (should be 3)
 	elem3 := array.At(2)
-	if !core.IsIntegerImmediate(elem3) {
+	if !pile.IsIntegerImmediate(elem3) {
 		t.Fatalf("Expected element 3 to be integer immediate, got %v", elem3)
 	}
 
-	elem3Value := core.GetIntegerImmediate(elem3)
+	elem3Value := pile.GetIntegerImmediate(elem3)
 	if elem3Value != 3 {
 		t.Errorf("Expected element 3 value 3, got %d", elem3Value)
 	}
@@ -595,10 +594,10 @@ func TestParseArrayLiteral(t *testing.T) {
 // TestArrayLiteralWithKeywordMessage tests parsing array literals with keyword messages
 func TestArrayLiteralWithKeywordMessage(t *testing.T) {
 	// Create a class for context
-	objectClass := core.NewClass("Object", nil)
-	classObj := (*core.Object)(unsafe.Pointer(objectClass))
+	objectClass := pile.NewClass("Object", nil)
+	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
 	
-	// We need to set up the class properly for core.IsImmediate checks
+	// We need to set up the class properly for pile.IsImmediate checks
 	objectClass.ClassField = objectClass
 
 	// Create a real VM for testing
@@ -647,7 +646,7 @@ func TestArrayLiteralWithKeywordMessage(t *testing.T) {
 	t.Logf("Array value: %v, type: %T", receiverNode.Value, receiverNode.Value)
 
 	// Convert to Array and check its properties
-	array := classes.ObjectToArray(receiverNode.Value)
+	array := pile.ObjectToArray(receiverNode.Value)
 
 	// Check array size
 	if array.Size() != 3 {
@@ -664,11 +663,11 @@ func TestArrayLiteralWithKeywordMessage(t *testing.T) {
 		t.Fatalf("Expected argument to be LiteralNode, got %T", messageSendNode.Arguments[0])
 	}
 
-	if !core.IsIntegerImmediate(argNode.Value) {
+	if !pile.IsIntegerImmediate(argNode.Value) {
 		t.Fatalf("Expected argument to be integer immediate, got %v", argNode.Value)
 	}
 
-	argValue := core.GetIntegerImmediate(argNode.Value)
+	argValue := pile.GetIntegerImmediate(argNode.Value)
 	if argValue != 2 {
 		t.Errorf("Expected argument value 2, got %d", argValue)
 	}

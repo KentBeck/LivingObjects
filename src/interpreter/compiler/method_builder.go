@@ -4,28 +4,27 @@ import (
 	"encoding/binary"
 
 	"smalltalklsp/interpreter/bytecode"
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // MethodBuilder provides a fluent interface for creating methods
 type MethodBuilder struct {
-	class          *core.Class
+	class          *pile.Class
 	selectorName   string
-	selectorObj    *core.Object
+	selectorObj    *pile.Object
 	bytecodes      []byte
-	literals       []*core.Object
+	literals       []*pile.Object
 	tempVarNames   []string
 	isPrimitive    bool
 	primitiveIndex int
 }
 
 // NewMethodBuilder creates a new MethodBuilder for the given class
-func NewMethodBuilder(class *core.Class) *MethodBuilder {
+func NewMethodBuilder(class *pile.Class) *MethodBuilder {
 	return &MethodBuilder{
 		class:          class,
 		bytecodes:      make([]byte, 0),
-		literals:       make([]*core.Object, 0),
+		literals:       make([]*pile.Object, 0),
 		tempVarNames:   make([]string, 0),
 		isPrimitive:    false,
 		primitiveIndex: 0,
@@ -35,7 +34,7 @@ func NewMethodBuilder(class *core.Class) *MethodBuilder {
 // Selector sets the selector for the method
 func (mb *MethodBuilder) Selector(name string) *MethodBuilder {
 	mb.selectorName = name
-	mb.selectorObj = classes.NewSymbol(name)
+	mb.selectorObj = pile.NewSymbol(name)
 	return mb
 }
 
@@ -47,13 +46,13 @@ func (mb *MethodBuilder) Primitive(index int) *MethodBuilder {
 }
 
 // AddLiterals adds multiple literals to the method
-func (mb *MethodBuilder) AddLiterals(literals []*core.Object) *MethodBuilder {
+func (mb *MethodBuilder) AddLiterals(literals []*pile.Object) *MethodBuilder {
 	mb.literals = append(mb.literals, literals...)
 	return mb
 }
 
 // AddLiteral adds a single literal to the method and returns its index
-func (mb *MethodBuilder) AddLiteral(literal *core.Object) (int, *MethodBuilder) {
+func (mb *MethodBuilder) AddLiteral(literal *pile.Object) (int, *MethodBuilder) {
 	index := len(mb.literals)
 	mb.literals = append(mb.literals, literal)
 	return index, mb
@@ -153,16 +152,16 @@ func (mb *MethodBuilder) Duplicate() *MethodBuilder {
 }
 
 // Go finalizes the method creation and adds it to the class's method dictionary
-func (mb *MethodBuilder) Go() *core.Object {
+func (mb *MethodBuilder) Go() *pile.Object {
 	if mb.selectorObj == nil {
 		panic("Selector not set. Call Selector() first.")
 	}
 
 	// Create the method object
-	method := classes.NewMethod(mb.selectorObj, mb.class)
+	method := pile.NewMethod(mb.selectorObj, mb.class)
 
 	// Set the method properties
-	methodObj := classes.ObjectToMethod(method)
+	methodObj := pile.ObjectToMethod(method)
 	methodObj.SetBytecodes(mb.bytecodes)
 	methodObj.Literals = mb.literals
 	methodObj.TempVarNames = mb.tempVarNames
@@ -170,13 +169,13 @@ func (mb *MethodBuilder) Go() *core.Object {
 	methodObj.SetPrimitiveIndex(mb.primitiveIndex)
 
 	// Add the method to the class's method dictionary
-	symbolValue := classes.GetSymbolValue(mb.selectorObj)
-	methodDict := classes.GetClassMethodDictionary(mb.class)
+	symbolValue := pile.ObjectToSymbol(mb.selectorObj).GetValue()
+	methodDict := pile.GetClassMethodDictionary(mb.class)
 	methodDict.SetEntry(symbolValue, method)
 
 	// Reset the builder state for reuse
 	mb.bytecodes = make([]byte, 0)
-	mb.literals = make([]*core.Object, 0)
+	mb.literals = make([]*pile.Object, 0)
 	mb.tempVarNames = make([]string, 0)
 	mb.isPrimitive = false
 	mb.primitiveIndex = 0

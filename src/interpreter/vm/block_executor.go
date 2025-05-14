@@ -1,8 +1,7 @@
 package vm
 
 import (
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/runtime"
 )
 
@@ -12,14 +11,14 @@ func init() {
 }
 
 // ExecuteBlock implements the runtime.BlockExecutor interface
-func (vm *VM) ExecuteBlock(block *core.Object, args []*core.Object) *core.Object {
+func (vm *VM) ExecuteBlock(block *pile.Object, args []*pile.Object) *pile.Object {
 	// Check if the block is valid
 	if block == nil {
 		panic("ExecuteBlock: nil block")
 	}
 
 	// Convert the block to a Block
-	blockObj := classes.ObjectToBlock(block)
+	blockObj := pile.ObjectToBlock(block)
 	if blockObj == nil {
 		panic("ExecuteBlock: invalid block")
 	}
@@ -31,9 +30,9 @@ func (vm *VM) ExecuteBlock(block *core.Object, args []*core.Object) *core.Object
 	}
 
 	// Create a method object for the block
-	methodObj := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	methodObj := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes:    blockObj.GetBytecodes(),
 		Literals:     blockObj.GetLiterals(),
@@ -42,7 +41,7 @@ func (vm *VM) ExecuteBlock(block *core.Object, args []*core.Object) *core.Object
 
 	// Create a new context for the block execution
 	blockContext := NewContext(
-		classes.MethodToObject(methodObj),
+		pile.MethodToObject(methodObj),
 		outerContext.GetReceiver(),
 		args,
 		outerContext,
@@ -73,7 +72,7 @@ func (vm *VM) ExecuteBlock(block *core.Object, args []*core.Object) *core.Object
 	vm.Executor.CurrentContext = savedContext
 
 	// Return the result
-	return result.(*core.Object)
+	return result.(*pile.Object)
 }
 
 // RegisterAsBlockExecutor registers the VM as a block executor

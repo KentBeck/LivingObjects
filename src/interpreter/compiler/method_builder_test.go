@@ -3,14 +3,13 @@ package compiler_test
 import (
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 func TestMethodBuilderBasic(t *testing.T) {
 	// Create a class for testing
-	testClass := classes.NewClass("TestClass", nil)
+	testClass := pile.NewClass("TestClass", nil)
 
 	// Create a simple method
 	method := compiler.NewMethodBuilder(testClass).
@@ -23,23 +22,23 @@ func TestMethodBuilderBasic(t *testing.T) {
 	}
 
 	// Check that the method has the correct selector
-	methodObj := classes.ObjectToMethod(method)
+	methodObj := pile.ObjectToMethod(method)
 	if methodObj.Selector == nil {
 		t.Fatal("Method selector should not be nil")
 	}
 
-	symbol := classes.ObjectToSymbol(methodObj.Selector)
-	if symbol.Value != "testMethod" {
-		t.Errorf("Expected method selector to be 'testMethod', got '%s'", symbol.Value)
+	symbol := pile.ObjectToSymbol(methodObj.Selector)
+	if symbol.GetValue() != "testMethod" {
+		t.Errorf("Expected method selector to be 'testMethod', got '%s'", symbol.GetValue())
 	}
 }
 
 func TestMethodBuilderWithLiterals(t *testing.T) {
 	// Create a class for testing
-	testClass := classes.NewClass("TestClass", nil)
+	testClass := pile.NewClass("TestClass", nil)
 
 	// Create a method with literals
-	literal := core.MakeIntegerImmediate(42)
+	literal := pile.MakeIntegerImmediate(42)
 	builder := compiler.NewMethodBuilder(testClass).Selector("testWithLiterals")
 	literalIndex, builder := builder.AddLiteral(literal)
 	method := builder.Go()
@@ -50,7 +49,7 @@ func TestMethodBuilderWithLiterals(t *testing.T) {
 	}
 
 	// Check that the method has the correct literal
-	methodObj := classes.ObjectToMethod(method)
+	methodObj := pile.ObjectToMethod(method)
 	if len(methodObj.Literals) != 1 {
 		t.Errorf("Expected 1 literal, got %d", len(methodObj.Literals))
 	}
@@ -62,7 +61,7 @@ func TestMethodBuilderWithLiterals(t *testing.T) {
 
 func TestMethodBuilderWithTempVars(t *testing.T) {
 	// Create a class for testing
-	testClass := classes.NewClass("TestClass", nil)
+	testClass := pile.NewClass("TestClass", nil)
 
 	// Create a method with temporary variables
 	method := compiler.NewMethodBuilder(testClass).
@@ -76,7 +75,7 @@ func TestMethodBuilderWithTempVars(t *testing.T) {
 	}
 
 	// Check that the method has the correct temporary variable names
-	methodObj := classes.ObjectToMethod(method)
+	methodObj := pile.ObjectToMethod(method)
 	if len(methodObj.TempVarNames) != 2 {
 		t.Errorf("Expected 2 temporary variable names, got %d", len(methodObj.TempVarNames))
 	}

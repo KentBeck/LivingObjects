@@ -1,11 +1,10 @@
 package vm_test
 
 import (
+	"smalltalklsp/interpreter/pile"
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -15,7 +14,7 @@ func TestByteArrayAtPrimitive(t *testing.T) {
 
 	// Add primitive methods to the ByteArray class
 	byteArrayClass := virtualMachine.Classes.Get(vm.ByteArray)
-	atSelector := core.NewSymbol("at:")
+	atSelector := pile.NewSymbol("at:")
 	atMethod := compiler.NewMethodBuilder(byteArrayClass).
 		Selector("at:").
 		Primitive(50). // ByteArray at: primitive
@@ -23,7 +22,7 @@ func TestByteArrayAtPrimitive(t *testing.T) {
 
 	// Create a test byte array with 3 elements
 	byteArray := virtualMachine.NewByteArray(3)
-	byteArrayObj := classes.ObjectToByteArray(byteArray)
+	byteArrayObj := pile.ObjectToByteArray(byteArray)
 	
 	// Fill the byte array with values
 	byteArrayObj.AtPut(0, 10)
@@ -34,7 +33,7 @@ func TestByteArrayAtPrimitive(t *testing.T) {
 	indexArg := virtualMachine.NewInteger(2)
 	
 	// Execute the primitive
-	result := virtualMachine.ExecutePrimitive(byteArray, atSelector, []*core.Object{indexArg}, atMethod)
+	result := virtualMachine.ExecutePrimitive(byteArray, atSelector, []*pile.Object{indexArg}, atMethod)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -43,13 +42,13 @@ func TestByteArrayAtPrimitive(t *testing.T) {
 	}
 
 	// Check that the result is an integer
-	if !core.IsIntegerImmediate(result) {
+	if !pile.IsIntegerImmediate(result) {
 		t.Errorf("Expected integer result, got %v", result.Type())
 		return
 	}
 
 	// Check that the result is the expected value
-	value := core.GetIntegerImmediate(result)
+	value := pile.GetIntegerImmediate(result)
 	if value != 20 {
 		t.Errorf("Expected 20, got %d", value)
 	}
@@ -64,7 +63,7 @@ func TestByteArrayAtPrimitive(t *testing.T) {
 				t.Errorf("Expected panic for index out of bounds, but got none")
 			}
 		}()
-		virtualMachine.ExecutePrimitive(byteArray, atSelector, []*core.Object{indexOutOfBounds}, atMethod)
+		virtualMachine.ExecutePrimitive(byteArray, atSelector, []*pile.Object{indexOutOfBounds}, atMethod)
 	}()
 }
 
@@ -74,7 +73,7 @@ func TestByteArrayAtPutPrimitive(t *testing.T) {
 
 	// Add primitive methods to the ByteArray class
 	byteArrayClass := virtualMachine.Classes.Get(vm.ByteArray)
-	atPutSelector := core.NewSymbol("at:put:")
+	atPutSelector := pile.NewSymbol("at:put:")
 	atPutMethod := compiler.NewMethodBuilder(byteArrayClass).
 		Selector("at:put:").
 		Primitive(51). // ByteArray at:put: primitive
@@ -90,7 +89,7 @@ func TestByteArrayAtPutPrimitive(t *testing.T) {
 	valueArg := virtualMachine.NewInteger(42)
 	
 	// Execute the primitive
-	result := virtualMachine.ExecutePrimitive(byteArray, atPutSelector, []*core.Object{indexArg, valueArg}, atPutMethod)
+	result := virtualMachine.ExecutePrimitive(byteArray, atPutSelector, []*pile.Object{indexArg, valueArg}, atPutMethod)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -104,7 +103,7 @@ func TestByteArrayAtPutPrimitive(t *testing.T) {
 	}
 
 	// Check that the byte array was updated
-	byteArrayObj := classes.ObjectToByteArray(byteArray)
+	byteArrayObj := pile.ObjectToByteArray(byteArray)
 	value := byteArrayObj.At(1) // 0-based in Go
 	if value != 42 {
 		t.Errorf("Expected byte array value at index 1 to be 42, got %d", value)
@@ -120,7 +119,7 @@ func TestByteArrayAtPutPrimitive(t *testing.T) {
 				t.Errorf("Expected panic for index out of bounds, but got none")
 			}
 		}()
-		virtualMachine.ExecutePrimitive(byteArray, atPutSelector, []*core.Object{indexOutOfBounds, valueArg}, atPutMethod)
+		virtualMachine.ExecutePrimitive(byteArray, atPutSelector, []*pile.Object{indexOutOfBounds, valueArg}, atPutMethod)
 	}()
 
 	// Test value out of range
@@ -133,6 +132,6 @@ func TestByteArrayAtPutPrimitive(t *testing.T) {
 				t.Errorf("Expected panic for value out of range, but got none")
 			}
 		}()
-		virtualMachine.ExecutePrimitive(byteArray, atPutSelector, []*core.Object{indexArg, valueOutOfRange}, atPutMethod)
+		virtualMachine.ExecutePrimitive(byteArray, atPutSelector, []*pile.Object{indexArg, valueOutOfRange}, atPutMethod)
 	}()
 }

@@ -1,11 +1,10 @@
 package vm_test
 
 import (
+	"smalltalklsp/interpreter/pile"
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -18,7 +17,7 @@ func TestContextPush(t *testing.T) {
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	// Test pushing an object
 	obj := virtualMachine.NewInteger(42)
@@ -68,7 +67,7 @@ func TestContextPop(t *testing.T) {
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	// Test popping from an empty stack
 	defer func() {
@@ -103,7 +102,7 @@ func TestContextTop(t *testing.T) {
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	// Test top on an empty stack
 	defer func() {
@@ -141,10 +140,10 @@ func TestContextTempVars(t *testing.T) {
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	// Set up temporary variables
-	context.TempVars = make([]core.ObjectInterface, 2)
+	context.TempVars = make([]pile.ObjectInterface, 2)
 
 	// Test setting and getting temporary variables
 	obj := virtualMachine.NewInteger(42)

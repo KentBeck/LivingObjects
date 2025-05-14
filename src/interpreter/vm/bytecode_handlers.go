@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"smalltalklsp/interpreter/bytecode"
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/pile"
 )
 
@@ -34,7 +32,7 @@ func (vm *VM) ExecutePushInstanceVariable(context *Context) error {
 
 	// Get the instance variable index (4 bytes)
 	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
-	class := vm.GetClass(context.Receiver.(*core.Object))
+	class := vm.GetClass(context.Receiver.(*pile.Object))
 	if index < 0 || index >= len(class.InstanceVarNames) {
 		return fmt.Errorf("instance variable index out of bounds: %d", index)
 	}
@@ -82,7 +80,7 @@ func (vm *VM) ExecuteStoreInstanceVariable(context *Context) error {
 
 	// Get the instance variable index (4 bytes)
 	index := int(binary.BigEndian.Uint32(method.Bytecodes[context.PC+1:]))
-	class := vm.GetClass(context.Receiver.(*core.Object))
+	class := vm.GetClass(context.Receiver.(*pile.Object))
 
 	if index < 0 || index >= len(class.InstanceVarNames) {
 		return fmt.Errorf("instance variable index out of bounds: %d", index)
@@ -130,7 +128,7 @@ func (vm *VM) ExecuteStoreTemporaryVariable(context *Context) error {
 }
 
 // ExecuteSendMessage executes the SEND_MESSAGE bytecode
-func (vm *VM) ExecuteSendMessage(context *Context) (*core.Object, error) {
+func (vm *VM) ExecuteSendMessage(context *Context) (*pile.Object, error) {
 	// Get the method
 	method := pile.ObjectToMethod(context.Method)
 
@@ -145,12 +143,12 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*core.Object, error) {
 
 	// Get the selector
 	selector := method.Literals[selectorIndex]
-	if selector.Type() != core.OBJ_SYMBOL {
+	if selector.Type() != pile.OBJ_SYMBOL {
 		return nil, fmt.Errorf("selector is not a symbol: %s", selector)
 	}
 
 	// Pop the arguments from the stack
-	args := make([]*core.Object, argCount)
+	args := make([]*pile.Object, argCount)
 	for i := argCount - 1; i >= 0; i-- {
 		args[i] = context.Pop()
 	}
@@ -189,7 +187,7 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*core.Object, error) {
 
 	// Check for nil result
 	if result == nil {
-		return nil, fmt.Errorf("method not found: %s", classes.GetSymbolValue(selector))
+		return nil, fmt.Errorf("method not found: %s", pile.ObjectToSymbol(selector).GetValue())
 	}
 
 	// Move back to the sender context in the executor
@@ -199,14 +197,14 @@ func (vm *VM) ExecuteSendMessage(context *Context) (*core.Object, error) {
 	context.Push(result)
 
 	// Return the result
-	return result.(*core.Object), nil
+	return result.(*pile.Object), nil
 }
 
 // ExecuteReturnStackTop executes the RETURN_STACK_TOP bytecode
-func (vm *VM) ExecuteReturnStackTop(context *Context) (*core.Object, error) {
+func (vm *VM) ExecuteReturnStackTop(context *Context) (*pile.Object, error) {
 	if context.StackPointer <= 0 {
 		// If the stack is empty, return nil
-		return vm.NilObject.(*core.Object), nil
+		return vm.NilObject.(*pile.Object), nil
 	}
 	returnValue := context.Pop()
 	return returnValue, nil

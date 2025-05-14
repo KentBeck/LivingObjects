@@ -1,12 +1,11 @@
 package vm_test
 
 import (
+	"smalltalklsp/interpreter/pile"
 	"testing"
 	"time"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -24,15 +23,15 @@ var factorialTestCases = []struct {
 
 // setupFactorialMethod creates a factorial method for benchmarking
 // This implementation is taken directly from the working factorial_test.go
-func setupFactorialMethod(virtualMachine *vm.VM) *core.Object {
+func setupFactorialMethod(virtualMachine *vm.VM) *pile.Object {
 	// We'll use the VM's Integer class
 	integerClass := virtualMachine.Classes.Get(vm.Integer)
 
 	// Create selectors for use in literals
-	minusSelector := classes.NewSymbol("-")
-	timesSelector := classes.NewSymbol("*")
-	equalsSelector := classes.NewSymbol("=")
-	factorialSelector := classes.NewSymbol("factorial")
+	minusSelector := pile.NewSymbol("-")
+	timesSelector := pile.NewSymbol("*")
+	equalsSelector := pile.NewSymbol("=")
+	factorialSelector := pile.NewSymbol("factorial")
 
 	// Create literals for the factorial method
 	oneObj := virtualMachine.NewInteger(1)
@@ -131,7 +130,7 @@ func BenchmarkFactorial(b *testing.B) {
 			// Run the benchmark
 			for i := 0; i < b.N; i++ {
 				// Create a context for the factorial method
-				context := vm.NewContext(factorialMethod, argObj, []*core.Object{}, nil)
+				context := vm.NewContext(factorialMethod, argObj, []*pile.Object{}, nil)
 
 				// Execute the factorial method
 				result, err := virtualMachine.ExecuteContext(context)
@@ -140,8 +139,8 @@ func BenchmarkFactorial(b *testing.B) {
 				}
 
 				// Verify the result
-				if core.IsIntegerImmediate(result) {
-					intValue := core.GetIntegerImmediate(result)
+				if pile.IsIntegerImmediate(result) {
+					intValue := pile.GetIntegerImmediate(result)
 					if intValue != tc.expected {
 						b.Fatalf("Expected factorial of %d to be %d, got %d", tc.input, tc.expected, intValue)
 					}
@@ -172,12 +171,12 @@ func BenchmarkFactorial(b *testing.B) {
 // messageSendTestCases defines the test cases for message send benchmarks
 var messageSendTestCases = []struct {
 	name     string
-	setup    func(*vm.VM) (*core.Object, *core.Object)
+	setup    func(*vm.VM) (*pile.Object, *pile.Object)
 	expected int64
 }{
 	{
 		name: "SimpleReturn",
-		setup: func(virtualMachine *vm.VM) (*core.Object, *core.Object) {
+		setup: func(virtualMachine *vm.VM) (*pile.Object, *pile.Object) {
 			// We'll use the VM's Integer class
 			integerClass := virtualMachine.Classes.Get(vm.Integer)
 
@@ -204,7 +203,7 @@ var messageSendTestCases = []struct {
 	},
 	{
 		name: "Addition",
-		setup: func(virtualMachine *vm.VM) (*core.Object, *core.Object) {
+		setup: func(virtualMachine *vm.VM) (*pile.Object, *pile.Object) {
 			// We'll use the VM's Integer class
 			integerClass := virtualMachine.Classes.Get(vm.Integer)
 
@@ -217,7 +216,7 @@ var messageSendTestCases = []struct {
 			// Create literals for the test method
 			fiveObj := virtualMachine.NewInteger(5)
 			tenObj := virtualMachine.NewInteger(10)
-			plusSymbol := classes.NewSymbol("+")
+			plusSymbol := pile.NewSymbol("+")
 
 			// Create a method that calls the addition method using AddLiteral
 			builder := compiler.NewMethodBuilder(integerClass).Selector("test")
@@ -245,7 +244,7 @@ var messageSendTestCases = []struct {
 	},
 	{
 		name: "MultipleAdditions",
-		setup: func(virtualMachine *vm.VM) (*core.Object, *core.Object) {
+		setup: func(virtualMachine *vm.VM) (*pile.Object, *pile.Object) {
 			// We'll use the VM's Integer class
 			integerClass := virtualMachine.Classes.Get(vm.Integer)
 
@@ -261,7 +260,7 @@ var messageSendTestCases = []struct {
 			threeObj := virtualMachine.NewInteger(3)
 			fourObj := virtualMachine.NewInteger(4)
 			fiveObj := virtualMachine.NewInteger(5)
-			plusSymbol := classes.NewSymbol("+")
+			plusSymbol := pile.NewSymbol("+")
 
 			// Create a method that adds multiple numbers using AddLiteral
 			builder := compiler.NewMethodBuilder(integerClass).Selector("test")
@@ -318,7 +317,7 @@ func BenchmarkMessageSend(b *testing.B) {
 			// Run the benchmark
 			for i := 0; i < b.N; i++ {
 				// Create a context for the test method
-				context := vm.NewContext(testMethod, receiver, []*core.Object{}, nil)
+				context := vm.NewContext(testMethod, receiver, []*pile.Object{}, nil)
 
 				// Execute the test method
 				result, err := virtualMachine.ExecuteContext(context)
@@ -327,8 +326,8 @@ func BenchmarkMessageSend(b *testing.B) {
 				}
 
 				// Verify the result
-				if core.IsIntegerImmediate(result) {
-					intValue := core.GetIntegerImmediate(result)
+				if pile.IsIntegerImmediate(result) {
+					intValue := pile.GetIntegerImmediate(result)
 					if intValue != tc.expected {
 						b.Fatalf("Expected %d, got %d", tc.expected, intValue)
 					}

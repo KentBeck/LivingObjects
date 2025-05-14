@@ -1,14 +1,13 @@
 package compiler
 
 import (
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // MethodFactory defines an interface for creating Method objects
 type MethodFactory interface {
-	NewMethod(selector *core.Object, class *core.Class) *core.Object
-	NewSymbol(name string) *core.Object
+	NewMethod(selector *pile.Object, class *pile.Class) *pile.Object
+	NewSymbol(name string) *pile.Object
 }
 
 // RegisteredMethodFactory is the global factory for creating method objects
@@ -22,23 +21,23 @@ func RegisterMethodFactory(factory MethodFactory) {
 }
 
 // CreateMethod creates a method with the registered factory
-// If no factory is registered, it falls back to using classes.NewMethod
-func CreateMethod(selector *core.Object, class *core.Class) *core.Object {
+// If no factory is registered, it falls back to using pile.NewMethod
+func CreateMethod(selector *pile.Object, class *pile.Class) *pile.Object {
 	if RegisteredMethodFactory != nil {
 		return RegisteredMethodFactory.NewMethod(selector, class)
 	}
 	
 	// Fallback to direct creation (will not have class field set)
-	return classes.NewMethod(selector, class)
+	return pile.NewMethod(selector, class)
 }
 
 // CreateSymbol creates a symbol with the registered factory
-// If no factory is registered, it falls back to using classes.NewSymbol
-func CreateSymbol(name string) *core.Object {
+// If no factory is registered, it falls back to using pile.NewSymbol
+func CreateSymbol(name string) *pile.Object {
 	if RegisteredMethodFactory != nil {
 		return RegisteredMethodFactory.NewSymbol(name)
 	}
 	
 	// Fallback to direct creation (will not have class field set)
-	return classes.NewSymbol(name)
+	return pile.NewSymbol(name)
 }

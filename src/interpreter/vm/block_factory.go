@@ -1,22 +1,21 @@
 package vm
 
 import (
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 )
 
 // NewBlock creates a block object with proper class field
-func (vm *VM) NewBlock(outerContext interface{}) *core.Object {
-	block := &classes.Block{
-		Object: core.Object{
-			TypeField: core.OBJ_BLOCK,
+func (vm *VM) NewBlock(outerContext interface{}) *pile.Object {
+	block := &pile.Block{
+		Object: pile.Object{
+			TypeField: pile.OBJ_BLOCK,
 		},
 		Bytecodes:    make([]byte, 0),
-		Literals:     make([]*core.Object, 0),
+		Literals:     make([]*pile.Object, 0),
 		TempVarNames: make([]string, 0),
 		OuterContext: outerContext,
 	}
-	blockObj := classes.BlockToObject(block)
-	blockObj.SetClass(classes.ClassToObject(vm.Classes.Get(Block)))
+	blockObj := pile.BlockToObject(block)
+	blockObj.SetClass(pile.ClassToObject(vm.Classes.Get(Block)))
 	return blockObj
 }
