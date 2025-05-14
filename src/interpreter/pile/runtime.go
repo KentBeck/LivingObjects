@@ -48,6 +48,12 @@ var ExecuteBlock = func(block *Object, args []*Object) *Object {
 	return currentBlockExecutor.ExecuteBlock(block, args)
 }
 
+// SetBlockExecutor sets the block executor function
+// This allows external packages to provide a block executor without circular imports
+func SetBlockExecutor(executor func(block *Object, args []*Object) *Object) {
+	ExecuteBlock = executor
+}
+
 // SignalException signals an exception
 // If there's a handler for the exception, it will be executed
 // Otherwise, it will panic with the exception

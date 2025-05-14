@@ -37,7 +37,26 @@ func NewBlock(outerContext interface{}) *Object {
 	
 	// Fall back to simple block creation without class field
 	// This is mainly for tests that don't need the VM
-	return BlockToObject(NewBlockInternal(outerContext))
+	block := NewBlockInternal(outerContext)
+	blockObj := BlockToObject(block)
+	
+	// Register with types package's factory if available
+	// This is done through the types package's exported functions
+	// to avoid import cycles
+	if factoryRegisterFn != nil {
+		factoryRegisterFn(blockObj, outerContext)
+	}
+	
+	return blockObj
+}
+
+// Used for delegating to types.DefaultFactory without import cycles
+var factoryRegisterFn func(block *Object, outerContext interface{}) *Object
+
+// SetFactoryRegisterHook sets the hook for registering blocks with the factory
+// This is used by the types package to connect pile.NewBlock with types.DefaultFactory
+func SetFactoryRegisterHook(fn func(block *Object, outerContext interface{}) *Object) {
+	factoryRegisterFn = fn
 }
 
 // BlockToObject converts a Block to an Object

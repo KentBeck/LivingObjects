@@ -16,6 +16,14 @@ var DefaultFactory ObjectFactory
 // RegisterFactory registers the default object factory
 func RegisterFactory(factory ObjectFactory) {
 	DefaultFactory = factory
+	
+	// Set up the hook for pile.NewBlock to use DefaultFactory
+	pile.SetFactoryRegisterHook(func(block *pile.Object, outerContext interface{}) *pile.Object {
+		if DefaultFactory != nil {
+			return DefaultFactory.NewBlock(outerContext)
+		}
+		return block
+	})
 }
 
 // GetFactory returns the default object factory

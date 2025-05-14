@@ -17,6 +17,11 @@ var currentBlockExecutor BlockExecutor
 // RegisterBlockExecutor registers a block executor
 func RegisterBlockExecutor(executor BlockExecutor) {
 	currentBlockExecutor = executor
+	
+	// Also set the pile.ExecuteBlock function to use our executor
+	pile.SetBlockExecutor(func(block *pile.Object, args []*pile.Object) *pile.Object {
+		return executor.ExecuteBlock(block, args)
+	})
 }
 
 // GetCurrentBlockExecutor returns the current block executor
