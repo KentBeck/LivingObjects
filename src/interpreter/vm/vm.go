@@ -6,6 +6,7 @@ import (
 	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/types"
 )
 
 // VM represents the Smalltalk virtual machine
@@ -35,6 +36,9 @@ func NewVM() *VM {
 	vm.NilObject = core.MakeNilImmediate()
 	vm.TrueObject = core.MakeTrueImmediate()
 	vm.FalseObject = core.MakeFalseImmediate()
+
+	// Register the VM as the default object factory
+	types.RegisterFactory(vm)
 
 	// Initialize core classes
 	objectClass := vm.NewObjectClass()
@@ -593,9 +597,8 @@ func (vm *VM) ExecutePrimitive(receiver *core.Object, selector *core.Object, arg
 		}
 	case 20: // Block new - create a new block instance
 		if receiver.Type() == core.OBJ_CLASS && receiver == classes.ClassToObject(vm.Classes.Get(Block)) {
-			// Create a new block instance
-			blockInstance := classes.NewBlock(vm.Executor.CurrentContext)
-			blockInstance.SetClass(classes.ClassToObject(vm.Classes.Get(Block)))
+			// Create a new block instance with proper class field
+			blockInstance := vm.NewBlock(vm.Executor.CurrentContext)
 			return blockInstance
 		}
 	case 21: // Block value - execute a block with no arguments

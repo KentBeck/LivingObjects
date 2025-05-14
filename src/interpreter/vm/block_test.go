@@ -1,23 +1,20 @@
-package vm_test
+package vm
 
 import (
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/core"
-	"smalltalklsp/interpreter/vm"
 )
 
 func TestBasicBlock(t *testing.T) {
-	virtualMachine := vm.NewVM()
+	virtualMachine := NewVM()
 
-	// Create a block
-	block := classes.NewBlock(nil)
-	block.SetClass(classes.ClassToObject(virtualMachine.Classes.Get(vm.Block)))
+	// Create a block with proper class field
+	block := virtualMachine.NewBlock(nil)
 
 	// Check that the block is of the correct class
 	blockClass := virtualMachine.GetClass(block)
-	if blockClass != virtualMachine.Classes.Get(vm.Block) {
+	if blockClass != virtualMachine.Classes.Get(Block) {
 		t.Errorf("Expected block class to be Block class, got %v", blockClass)
 	}
 

@@ -5,6 +5,7 @@ import (
 
 	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/runtime"
+	"smalltalklsp/interpreter/types"
 )
 
 // Block represents a Smalltalk block
@@ -30,8 +31,16 @@ func NewBlockInternal(outerContext interface{}) *Block {
 	}
 }
 
-// NewBlock creates a new block object (deprecated - use vm.NewBlock instead)
+// NewBlock creates a new block object with proper class field
 func NewBlock(outerContext interface{}) *core.Object {
+	// If a factory is registered, use it to create blocks with proper class field
+	factory := types.GetFactory()
+	if factory != nil {
+		return factory.NewBlock(outerContext)
+	}
+	
+	// Fall back to simple block creation without class field
+	// This is mainly for tests that don't need the VM
 	return BlockToObject(NewBlockInternal(outerContext))
 }
 

@@ -65,3 +65,4 @@ func NewByteArray(t *testing.T, size int) *core.Object {
 	vm := GetTestVM(t)
 	return vm.NewByteArray(size)
 }
+

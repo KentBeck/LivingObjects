@@ -103,8 +103,8 @@ func TestExecuteExecuteBlock(t *testing.T) {
 		nil,
 	)
 
-	// Create a block
-	block := classes.ObjectToBlock(classes.NewBlock(context))
+	// Create a block with proper class field
+	block := classes.ObjectToBlock(vm.NewBlock(context))
 
 	// Push the block onto the stack
 	context.Push(classes.BlockToObject(block))
