@@ -1,11 +1,10 @@
-package main
+package demo
 
 import (
 	"fmt"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -17,13 +16,13 @@ func DemoFactorial() {
 	integerClass := virtualMachine.Classes.Get(vm.Integer)
 	objectClass := virtualMachine.Classes.Get(vm.Object)
 
-	factorialSelector := classes.NewSymbol("factorial")
+	factorialSelector := pile.NewSymbol("factorial")
 
 	// Create literals for the factorial method
 	oneObj := virtualMachine.NewInteger(1)
-	equalsSymbol := classes.NewSymbol("=")
-	minusSymbol := classes.NewSymbol("-")
-	timesSymbol := classes.NewSymbol("*")
+	equalsSymbol := pile.NewSymbol("=")
+	minusSymbol := pile.NewSymbol("-")
+	timesSymbol := pile.NewSymbol("*")
 
 	// Create the method using MethodBuilder with AddLiteral
 	builder := compiler.NewMethodBuilder(integerClass).Selector("factorial")
@@ -93,7 +92,7 @@ func DemoFactorial() {
 
 	// Create literals for the main method
 	fourObj := virtualMachine.NewInteger(4)
-	factorialSelectorObj := classes.NewSymbol("factorial") // Create the selector for use in literals
+	factorialSelectorObj := pile.NewSymbol("factorial") // Create the selector for use in literals
 
 	// Create a method to compute factorial of 4 using AddLiteral
 	mainBuilder := compiler.NewMethodBuilder(objectClass).Selector("main")
@@ -112,15 +111,15 @@ func DemoFactorial() {
 
 	// Print the bytecodes for debugging
 	fmt.Println("\nFactorial method bytecodes:")
-	method := classes.ObjectToMethod(factorialMethod)
-	for i := 0; i < len(method.GetBytecodes()); i++ {
+	method := pile.ObjectToMethod(factorialMethod)
+	for i := 0; i < len(method.Bytecodes); i++ {
 		if i%5 == 0 {
 			fmt.Printf("\n%3d: ", i)
 		}
-		fmt.Printf("%3d ", method.GetBytecodes()[i])
+		fmt.Printf("%3d ", method.Bytecodes[i])
 	}
 
-	context := vm.NewContext(mainMethod, fourObj, []*core.Object{}, nil)
+	context := vm.NewContext(mainMethod, fourObj, []*pile.Object{}, nil)
 
 	result, err := virtualMachine.ExecuteContext(context)
 	if err != nil {

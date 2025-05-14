@@ -1,12 +1,12 @@
-package vm
+package vm_test
 
 import (
 	"testing"
 
 	"smalltalklsp/interpreter/bytecode"
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/runtime"
+	"smalltalklsp/interpreter/vm"
 )
 
 // TestBlockModifiesLocalVariable tests a method that:
@@ -18,8 +18,8 @@ import (
 // The expected result is 2, showing that blocks can modify variables in their outer context.
 func TestBlockModifiesLocalVariable(t *testing.T) {
 	// Create a VM and register it as a block executor
-	vm := NewVM()
-	runtime.RegisterBlockExecutor(vm)
+	virtualMachine := vm.NewVM()
+	runtime.RegisterBlockExecutor(virtualMachine)
 
 	// The block bytecodes ([a := 2])
 	blockBytecodes := []byte{
@@ -64,59 +64,59 @@ func TestBlockModifiesLocalVariable(t *testing.T) {
 	}
 
 	// Create a method with the bytecodes
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	method := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: methodBytecodes,
-		Literals: []*core.Object{
-			core.MakeIntegerImmediate(1), // The literal 1
-			core.MakeIntegerImmediate(2), // The literal 2
+		Literals: []*pile.Object{
+			pile.MakeIntegerImmediate(1), // The literal 1
+			pile.MakeIntegerImmediate(2), // The literal 2
 		},
 		TempVarNames: []string{"a"}, // One temporary variable 'a'
 	}
 
 	// Create a context
-	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
+	context := vm.NewContext(
+		pile.MethodToObject(method),
+		pile.MakeNilImmediate(),
+		[]*pile.Object{},
 		nil,
 	)
 
 	// Set the VM's current context
-	vm.Executor.CurrentContext = context
+	virtualMachine.Executor.CurrentContext = context
 
 	// Execute the PUSH_LITERAL and STORE_TEMPORARY_VARIABLE bytecodes
 	// This sets a := 1
-	err := vm.ExecutePushLiteral(context)
+	err := virtualMachine.ExecutePushLiteral(context)
 	if err != nil {
 		t.Fatalf("ExecutePushLiteral returned an error: %v", err)
 	}
 	context.PC += bytecode.InstructionSize(bytecode.PUSH_LITERAL)
 
-	err = vm.ExecuteStoreTemporaryVariable(context)
+	err = virtualMachine.ExecuteStoreTemporaryVariable(context)
 	if err != nil {
 		t.Fatalf("ExecuteStoreTemporaryVariable returned an error: %v", err)
 	}
 	context.PC += bytecode.InstructionSize(bytecode.STORE_TEMPORARY_VARIABLE)
 
 	// Execute the CREATE_BLOCK bytecode
-	err = vm.ExecuteCreateBlock(context)
+	err = virtualMachine.ExecuteCreateBlock(context)
 	if err != nil {
 		t.Fatalf("ExecuteCreateBlock returned an error: %v", err)
 	}
 
 	// Get the block from the stack
 	block := context.Pop()
-	blockObj := classes.ObjectToBlock(block)
+	blockObj := pile.ObjectToBlock(block)
 
 	// Set the block's bytecodes
 	blockObj.SetBytecodes(blockBytecodes)
 
 	// Set the block's literals
-	blockObj.Literals = []*core.Object{
-		core.MakeIntegerImmediate(2), // The literal 2
+	blockObj.Literals = []*pile.Object{
+		pile.MakeIntegerImmediate(2), // The literal 2
 	}
 
 	// Push the block back onto the stack
@@ -126,7 +126,7 @@ func TestBlockModifiesLocalVariable(t *testing.T) {
 	context.PC += bytecode.InstructionSize(bytecode.CREATE_BLOCK)
 
 	// Execute the EXECUTE_BLOCK bytecode
-	_, err = vm.ExecuteExecuteBlock(context)
+	_, err = virtualMachine.ExecuteExecuteBlock(context)
 	if err != nil {
 		t.Fatalf("ExecuteExecuteBlock returned an error: %v", err)
 	}
@@ -135,7 +135,7 @@ func TestBlockModifiesLocalVariable(t *testing.T) {
 	context.PC += bytecode.InstructionSize(bytecode.EXECUTE_BLOCK)
 
 	// Execute the PUSH_TEMPORARY_VARIABLE bytecode
-	err = vm.ExecutePushTemporaryVariable(context)
+	err = virtualMachine.ExecutePushTemporaryVariable(context)
 	if err != nil {
 		t.Fatalf("ExecutePushTemporaryVariable returned an error: %v", err)
 	}
@@ -144,17 +144,17 @@ func TestBlockModifiesLocalVariable(t *testing.T) {
 	context.PC += bytecode.InstructionSize(bytecode.PUSH_TEMPORARY_VARIABLE)
 
 	// Execute the RETURN_STACK_TOP bytecode
-	result, err := vm.ExecuteReturnStackTop(context)
+	result, err := virtualMachine.ExecuteReturnStackTop(context)
 	if err != nil {
 		t.Fatalf("ExecuteReturnStackTop returned an error: %v", err)
 	}
 
 	// Check that the result is 2
-	if !core.IsIntegerImmediate(result) {
+	if !pile.IsIntegerImmediate(result) {
 		t.Errorf("Result is not an integer: %v", result)
 	}
 
-	value := core.GetIntegerImmediate(result)
+	value := pile.GetIntegerImmediate(result)
 	if value != 2 {
 		t.Errorf("Result = %d, want 2", value)
 	}

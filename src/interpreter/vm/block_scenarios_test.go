@@ -1,38 +1,38 @@
-package vm
+package vm_test
 
 import (
 	"testing"
 
 	"smalltalklsp/interpreter/bytecode"
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/runtime"
+	"smalltalklsp/interpreter/vm"
 )
 
 // TestBlockWithLiteral tests a block that returns a literal value: [5]
 func TestBlockWithLiteral(t *testing.T) {
 	// Create a VM and register it as a block executor
-	vm := NewVM()
-	runtime.RegisterBlockExecutor(vm)
+	virtualMachine := vm.NewVM()
+	runtime.RegisterBlockExecutor(virtualMachine)
 
 	// Create a context to serve as the outer context
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	method := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes:    []byte{},
-		Literals:     []*core.Object{},
+		Literals:     []*pile.Object{},
 		TempVarNames: []string{},
 	}
-	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
+	context := vm.NewContext(
+		pile.MethodToObject(method),
+		pile.MakeNilImmediate(),
+		[]*pile.Object{},
 		nil,
 	)
 
 	// Create a block with the context
-	block := classes.ObjectToBlock(vm.NewBlock(context))
+	block := pile.ObjectToBlock(virtualMachine.NewBlock(context))
 
 	// Set the block's bytecodes
 	blockBytecodes := []byte{
@@ -43,19 +43,19 @@ func TestBlockWithLiteral(t *testing.T) {
 	block.SetBytecodes(blockBytecodes)
 
 	// Set the block's literals
-	block.Literals = []*core.Object{
-		core.MakeIntegerImmediate(5), // The literal 5
+	block.Literals = []*pile.Object{
+		pile.MakeIntegerImmediate(5), // The literal 5
 	}
 
 	// Execute the block
 	result := block.Value()
 
 	// Check that the result is 5
-	if !core.IsIntegerImmediate(result) {
+	if !pile.IsIntegerImmediate(result) {
 		t.Errorf("Result is not an integer: %v", result)
 	}
 
-	value := core.GetIntegerImmediate(result)
+	value := pile.GetIntegerImmediate(result)
 	if value != 5 {
 		t.Errorf("Result = %d, want 5", value)
 	}
@@ -64,43 +64,43 @@ func TestBlockWithLiteral(t *testing.T) {
 // TestBlockWithExpression tests a block with an expression: [5 + 4]
 func TestBlockWithExpression(t *testing.T) {
 	// Create a VM and register it as a block executor
-	vm := NewVM()
-	runtime.RegisterBlockExecutor(vm)
+	virtualMachine := vm.NewVM()
+	runtime.RegisterBlockExecutor(virtualMachine)
 
 	// Add the + method to the Integer class
-	integerClass := vm.Classes.Get(Integer)
-	addMethod := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	addMethod := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
 			// This is a primitive method, so it doesn't have bytecodes
 		},
-		Literals:       []*core.Object{},
+		Literals:       []*pile.Object{},
 		TempVarNames:   []string{},
 		IsPrimitive:    true,
 		PrimitiveIndex: 1, // Primitive index for +
 	}
-	classes.AddClassMethod(integerClass, classes.NewSymbol("+"), classes.MethodToObject(addMethod))
+	pile.AddClassMethod(integerClass, pile.NewSymbol("+"), pile.MethodToObject(addMethod))
 
 	// Create a context to serve as the outer context
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	method := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes:    []byte{},
-		Literals:     []*core.Object{},
+		Literals:     []*pile.Object{},
 		TempVarNames: []string{},
 	}
-	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
+	context := vm.NewContext(
+		pile.MethodToObject(method),
+		pile.MakeNilImmediate(),
+		[]*pile.Object{},
 		nil,
 	)
 
 	// Create a block with the context
-	block := classes.ObjectToBlock(vm.NewBlock(context))
+	block := pile.ObjectToBlock(virtualMachine.NewBlock(context))
 
 	// Set up the block's bytecodes (normally this would be done by the compiler)
 	blockBytecodes := []byte{
@@ -116,21 +116,21 @@ func TestBlockWithExpression(t *testing.T) {
 	block.SetBytecodes(blockBytecodes)
 
 	// Set the block's literals
-	block.Literals = []*core.Object{
-		core.MakeIntegerImmediate(5), // The literal 5
-		core.MakeIntegerImmediate(4), // The literal 4
-		classes.NewSymbol("+"),       // The + selector
+	block.Literals = []*pile.Object{
+		pile.MakeIntegerImmediate(5), // The literal 5
+		pile.MakeIntegerImmediate(4), // The literal 4
+		pile.NewSymbol("+"),          // The + selector
 	}
 
 	// Execute the block
 	result := block.Value()
 
 	// Check that the result is 9
-	if !core.IsIntegerImmediate(result) {
+	if !pile.IsIntegerImmediate(result) {
 		t.Errorf("Result is not an integer: %v", result)
 	}
 
-	value := core.GetIntegerImmediate(result)
+	value := pile.GetIntegerImmediate(result)
 	if value != 9 {
 		t.Errorf("Result = %d, want 9", value)
 	}
@@ -139,43 +139,43 @@ func TestBlockWithExpression(t *testing.T) {
 // TestBlockWithParameter tests a block with a parameter: [:x | x + 2]
 func TestBlockWithParameter(t *testing.T) {
 	// Create a VM and register it as a block executor
-	vm := NewVM()
-	runtime.RegisterBlockExecutor(vm)
+	virtualMachine := vm.NewVM()
+	runtime.RegisterBlockExecutor(virtualMachine)
 
 	// Add the + method to the Integer class
-	integerClass := vm.Classes.Get(Integer)
-	addMethod := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	addMethod := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
 			// This is a primitive method, so it doesn't have bytecodes
 		},
-		Literals:       []*core.Object{},
+		Literals:       []*pile.Object{},
 		TempVarNames:   []string{},
 		IsPrimitive:    true,
 		PrimitiveIndex: 1, // Primitive index for +
 	}
-	classes.AddClassMethod(integerClass, classes.NewSymbol("+"), classes.MethodToObject(addMethod))
+	pile.AddClassMethod(integerClass, pile.NewSymbol("+"), pile.MethodToObject(addMethod))
 
 	// Create a context to serve as the outer context
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	method := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes:    []byte{},
-		Literals:     []*core.Object{},
+		Literals:     []*pile.Object{},
 		TempVarNames: []string{},
 	}
-	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
+	context := vm.NewContext(
+		pile.MethodToObject(method),
+		pile.MakeNilImmediate(),
+		[]*pile.Object{},
 		nil,
 	)
 
 	// Create a block with the context
-	block := classes.ObjectToBlock(vm.NewBlock(context))
+	block := pile.ObjectToBlock(virtualMachine.NewBlock(context))
 
 	// Set up the block's bytecodes (normally this would be done by the compiler)
 	// This implements [:x | x + 2]
@@ -199,25 +199,25 @@ func TestBlockWithParameter(t *testing.T) {
 	block.SetBytecodes(blockBytecodes)
 
 	// Set the block's literals
-	block.Literals = []*core.Object{
-		core.MakeIntegerImmediate(2), // The literal 2
-		classes.NewSymbol("+"),       // The + selector
+	block.Literals = []*pile.Object{
+		pile.MakeIntegerImmediate(2), // The literal 2
+		pile.NewSymbol("+"),          // The + selector
 	}
 
 	// Set the block's temp var names
 	block.TempVarNames = []string{"x"}
 
 	// Execute the block with an argument
-	result := block.ValueWithArguments([]*core.Object{
-		core.MakeIntegerImmediate(5), // The argument 5
+	result := block.ValueWithArguments([]*pile.Object{
+		pile.MakeIntegerImmediate(5), // The argument 5
 	})
 
 	// Check that the result is 7 (5 + 2)
-	if !core.IsIntegerImmediate(result) {
+	if !pile.IsIntegerImmediate(result) {
 		t.Errorf("Result is not an integer: %v", result)
 	}
 
-	value := core.GetIntegerImmediate(result)
+	value := pile.GetIntegerImmediate(result)
 	if value != 7 {
 		t.Errorf("Result = %d, want 7", value)
 	}
@@ -226,32 +226,32 @@ func TestBlockWithParameter(t *testing.T) {
 // TestBlockWithNonLocalReturn tests a block with a non-local return: [^7]
 func TestBlockWithNonLocalReturn(t *testing.T) {
 	// Create a VM and register it as a block executor
-	vm := NewVM()
-	runtime.RegisterBlockExecutor(vm)
+	virtualMachine := vm.NewVM()
+	runtime.RegisterBlockExecutor(virtualMachine)
 
 	// Create a method that executes a block with a non-local return
-	outerMethod := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	outerMethod := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: []byte{},
-		Literals: []*core.Object{
-			core.MakeIntegerImmediate(7),  // The return value 7
-			core.MakeIntegerImmediate(42), // The value that should not be returned
+		Literals: []*pile.Object{
+			pile.MakeIntegerImmediate(7),  // The return value 7
+			pile.MakeIntegerImmediate(42), // The value that should not be returned
 		},
 		TempVarNames: []string{},
 	}
 
 	// Create a context for the outer method
-	outerContext := NewContext(
-		classes.MethodToObject(outerMethod),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
+	outerContext := vm.NewContext(
+		pile.MethodToObject(outerMethod),
+		pile.MakeNilImmediate(),
+		[]*pile.Object{},
 		nil,
 	)
 
 	// Create a block with the outer context
-	block := classes.ObjectToBlock(vm.NewBlock(outerContext))
+	block := pile.ObjectToBlock(virtualMachine.NewBlock(outerContext))
 
 	// Set up the block's bytecodes (normally this would be done by the compiler)
 	blockBytecodes := []byte{
@@ -268,11 +268,11 @@ func TestBlockWithNonLocalReturn(t *testing.T) {
 	result := block.Value()
 
 	// Check that the result is 7 (from the block's non-local return)
-	if !core.IsIntegerImmediate(result) {
+	if !pile.IsIntegerImmediate(result) {
 		t.Errorf("Result is not an integer: %v", result)
 	}
 
-	value := core.GetIntegerImmediate(result)
+	value := pile.GetIntegerImmediate(result)
 	if value != 7 {
 		t.Errorf("Result = %d, want 7", value)
 	}

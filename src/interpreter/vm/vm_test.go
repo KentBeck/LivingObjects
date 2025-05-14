@@ -3,9 +3,8 @@ package vm_test
 import (
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -18,7 +17,7 @@ func TestExecuteContextEmptyMethod(t *testing.T) {
 		Selector("emptyMethod").
 		Go()
 
-	context := vm.NewContext(methodObj, virtualMachine.Classes.Get(vm.Object), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, virtualMachine.Classes.Get(vm.Object), []*pile.Object{}, nil)
 
 	result, err := virtualMachine.ExecuteContext(context)
 	if err != nil {
@@ -40,7 +39,7 @@ func TestExecuteContextWithStackValue(t *testing.T) {
 	literalIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(42))
 	methodObj := builder.PushLiteral(literalIndex).Go()
 
-	context := vm.NewContext(methodObj, virtualMachine.Classes.Get(vm.Object), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, virtualMachine.Classes.Get(vm.Object), []*pile.Object{}, nil)
 
 	result, err := virtualMachine.ExecuteContext(context)
 	if err != nil {
@@ -48,8 +47,8 @@ func TestExecuteContextWithStackValue(t *testing.T) {
 	}
 
 	// Method should return the value on the stack
-	if core.IsIntegerImmediate(result) {
-		intValue := core.GetIntegerImmediate(result)
+	if pile.IsIntegerImmediate(result) {
+		intValue := pile.GetIntegerImmediate(result)
 		if intValue != 42 {
 			t.Errorf("Expected 42, got %d", intValue)
 		}
@@ -70,10 +69,10 @@ func TestExecuteContextWithError(t *testing.T) {
 		Go()
 
 	// Set invalid bytecode manually
-	method := classes.ObjectToMethod(methodObj)
+	method := pile.ObjectToMethod(methodObj)
 	method.Bytecodes = []byte{255} // Invalid bytecode
 
-	context := vm.NewContext(methodObj, virtualMachine.Classes.Get(vm.Object), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, virtualMachine.Classes.Get(vm.Object), []*pile.Object{}, nil)
 
 	_, err := virtualMachine.ExecuteContext(context)
 	if err == nil {
@@ -90,7 +89,7 @@ func TestNewArray(t *testing.T) {
 	arrayObj := virtualMachine.NewArray(3)
 
 	// Check that the array is of the correct type
-	if arrayObj.Type() != core.OBJ_ARRAY {
+	if arrayObj.Type() != pile.OBJ_ARRAY {
 		t.Errorf("Expected array type to be OBJ_ARRAY, got %v", arrayObj.Type())
 	}
 
@@ -100,14 +99,14 @@ func TestNewArray(t *testing.T) {
 	}
 
 	// Get the class of the array
-	arrayClass := classes.ObjectToClass(arrayObj.Class())
+	arrayClass := pile.ObjectToClass(arrayObj.Class())
 	if arrayClass == nil {
 		t.Errorf("Expected array class to be a valid class, got nil")
 	}
 
 	// Check that the class name is "Array"
-	if classes.GetClassName(arrayClass) != "Array" {
-		t.Errorf("Expected array class name to be 'Array', got '%s'", classes.GetClassName(arrayClass))
+	if pile.GetClassName(arrayClass) != "Array" {
+		t.Errorf("Expected array class name to be 'Array', got '%s'", pile.GetClassName(arrayClass))
 	}
 
 	// Check that the class is the same as the Array class in the registry
@@ -116,7 +115,7 @@ func TestNewArray(t *testing.T) {
 	}
 
 	// Check that the array has the correct size
-	array := classes.ObjectToArray(arrayObj)
+	array := pile.ObjectToArray(arrayObj)
 	if array.Size() != 3 {
 		t.Errorf("Expected array size to be 3, got %d", array.Size())
 	}

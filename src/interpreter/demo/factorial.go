@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
 	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 )
@@ -120,7 +119,7 @@ func runDemo() {
 		fmt.Printf("%3d ", method.Bytecodes[i])
 	}
 
-	context := vm.NewContext(mainMethod, fourObj, []*core.Object{}, nil)
+	context := vm.NewContext(mainMethod, fourObj, []*pile.Object{}, nil)
 
 	result, err := virtualMachine.ExecuteContext(context)
 	if err != nil {

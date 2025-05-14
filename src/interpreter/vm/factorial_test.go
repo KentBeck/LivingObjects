@@ -3,9 +3,8 @@ package vm_test
 import (
 	"testing"
 
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -17,10 +16,10 @@ func TestFactorial(t *testing.T) {
 	integerClass := virtualMachine.Classes.Get(vm.Integer)
 
 	// Create selectors for use in literals
-	minusSelector := classes.NewSymbol("-")
-	timesSelector := classes.NewSymbol("*")
-	equalsSelector := classes.NewSymbol("=")
-	factorialSelector := classes.NewSymbol("factorial")
+	minusSelector := pile.NewSymbol("-")
+	timesSelector := pile.NewSymbol("*")
+	equalsSelector := pile.NewSymbol("=")
+	factorialSelector := pile.NewSymbol("factorial")
 
 	// Create literals for the factorial method
 	oneObj := virtualMachine.NewInteger(1)
@@ -116,7 +115,7 @@ func TestFactorial(t *testing.T) {
 	t.Run("Factorial of 1", func(t *testing.T) {
 		// Create a context for the factorial method
 		oneObj := virtualMachine.NewInteger(1)
-		context := vm.NewContext(factorialMethod, oneObj, []*core.Object{}, nil)
+		context := vm.NewContext(factorialMethod, oneObj, []*pile.Object{}, nil)
 
 		// Execute the context
 		result, err := virtualMachine.ExecuteContext(context)
@@ -126,8 +125,8 @@ func TestFactorial(t *testing.T) {
 		}
 
 		// Check the result
-		if core.IsIntegerImmediate(result) {
-			intValue := core.GetIntegerImmediate(result)
+		if pile.IsIntegerImmediate(result) {
+			intValue := pile.GetIntegerImmediate(result)
 			if intValue != 1 {
 				t.Errorf("Expected result to be 1, got %d", intValue)
 			}
@@ -140,7 +139,7 @@ func TestFactorial(t *testing.T) {
 	t.Run("Factorial of 4", func(t *testing.T) {
 		// Create a context for the factorial method
 		fourObj := virtualMachine.NewInteger(4)
-		context := vm.NewContext(factorialMethod, fourObj, []*core.Object{}, nil)
+		context := vm.NewContext(factorialMethod, fourObj, []*pile.Object{}, nil)
 
 		// Execute the context
 		result, err := virtualMachine.ExecuteContext(context)
@@ -150,8 +149,8 @@ func TestFactorial(t *testing.T) {
 		}
 
 		// Check the result
-		if core.IsIntegerImmediate(result) {
-			intValue := core.GetIntegerImmediate(result)
+		if pile.IsIntegerImmediate(result) {
+			intValue := pile.GetIntegerImmediate(result)
 			if intValue != 24 {
 				t.Errorf("Expected result to be 24, got %d", intValue)
 			}

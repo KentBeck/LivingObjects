@@ -1,21 +1,21 @@
-package vm
+package vm_test
 
 import (
 	"testing"
 
 	"smalltalklsp/interpreter/bytecode"
-	"smalltalklsp/interpreter/classes"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
+	"smalltalklsp/interpreter/vm"
 )
 
 func TestExecuteCreateBlock(t *testing.T) {
 	// Create a VM
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	// Create a method with a CREATE_BLOCK bytecode
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	method := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
 			bytecode.CREATE_BLOCK,
@@ -23,20 +23,20 @@ func TestExecuteCreateBlock(t *testing.T) {
 			0, 0, 0, 2, // literal count
 			0, 0, 0, 3, // temp var count
 		},
-		Literals:     []*core.Object{},
+		Literals:     []*pile.Object{},
 		TempVarNames: []string{},
 	}
 
 	// Create a context
-	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
+	context := vm.NewContext(
+		pile.MethodToObject(method),
+		pile.MakeNilImmediate(),
+		[]*pile.Object{},
 		nil,
 	)
 
 	// Execute the CREATE_BLOCK bytecode
-	err := vm.ExecuteCreateBlock(context)
+	err := virtualMachine.ExecuteCreateBlock(context)
 	if err != nil {
 		t.Errorf("ExecuteCreateBlock returned an error: %v", err)
 	}
@@ -52,12 +52,12 @@ func TestExecuteCreateBlock(t *testing.T) {
 		t.Errorf("Block is nil")
 	}
 
-	if block.Type() != core.OBJ_BLOCK {
-		t.Errorf("Block type = %d, want %d", block.Type(), core.OBJ_BLOCK)
+	if block.Type() != pile.OBJ_BLOCK {
+		t.Errorf("Block type = %d, want %d", block.Type(), pile.OBJ_BLOCK)
 	}
 
 	// Convert to a Block
-	blockObj := classes.ObjectToBlock(block)
+	blockObj := pile.ObjectToBlock(block)
 	if blockObj == nil {
 		t.Errorf("Failed to convert to Block")
 	}
@@ -80,47 +80,47 @@ func TestExecuteCreateBlock(t *testing.T) {
 
 func TestExecuteExecuteBlock(t *testing.T) {
 	// Create a VM
-	vm := NewVM()
+	virtualMachine := vm.NewVM()
 
 	// Create a method with an EXECUTE_BLOCK bytecode
-	method := &classes.Method{
-		Object: core.Object{
-			TypeField: core.OBJ_METHOD,
+	method := &pile.Method{
+		Object: pile.Object{
+			TypeField: pile.OBJ_METHOD,
 		},
 		Bytecodes: []byte{
 			bytecode.EXECUTE_BLOCK,
 			0, 0, 0, 2, // arg count
 		},
-		Literals:     []*core.Object{},
+		Literals:     []*pile.Object{},
 		TempVarNames: []string{},
 	}
 
 	// Create a context
-	context := NewContext(
-		classes.MethodToObject(method),
-		core.MakeNilImmediate(),
-		[]*core.Object{},
+	context := vm.NewContext(
+		pile.MethodToObject(method),
+		pile.MakeNilImmediate(),
+		[]*pile.Object{},
 		nil,
 	)
 
 	// Create a block with proper class field
-	block := classes.ObjectToBlock(vm.NewBlock(context))
+	block := pile.ObjectToBlock(virtualMachine.NewBlock(context))
 
 	// Push the block onto the stack
-	context.Push(classes.BlockToObject(block))
+	context.Push(pile.BlockToObject(block))
 
 	// Push some arguments onto the stack
-	context.Push(core.MakeIntegerImmediate(1))
-	context.Push(core.MakeIntegerImmediate(2))
+	context.Push(pile.MakeIntegerImmediate(1))
+	context.Push(pile.MakeIntegerImmediate(2))
 
 	// Execute the EXECUTE_BLOCK bytecode
-	result, err := vm.ExecuteExecuteBlock(context)
+	result, err := virtualMachine.ExecuteExecuteBlock(context)
 	if err != nil {
 		t.Errorf("ExecuteExecuteBlock returned an error: %v", err)
 	}
 
 	// Check that the result is nil (since the block doesn't do anything)
-	if !core.IsNilImmediate(result) {
+	if !pile.IsNilImmediate(result) {
 		t.Errorf("Result = %v, want nil", result)
 	}
 
@@ -131,7 +131,7 @@ func TestExecuteExecuteBlock(t *testing.T) {
 
 	// Check that the result on the stack is nil
 	stackResult := context.Pop()
-	if !core.IsNilImmediate(stackResult) {
+	if !pile.IsNilImmediate(stackResult) {
 		t.Errorf("Stack result = %v, want nil", stackResult)
 	}
 }

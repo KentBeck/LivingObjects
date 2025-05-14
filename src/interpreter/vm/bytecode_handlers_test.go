@@ -5,9 +5,8 @@ import (
 	"unsafe"
 
 	"smalltalklsp/interpreter/bytecode"
-	"smalltalklsp/interpreter/classes"
 	"smalltalklsp/interpreter/compiler"
-	"smalltalklsp/interpreter/core"
+	"smalltalklsp/interpreter/pile"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -18,7 +17,7 @@ func TestExecutePushLiteral(t *testing.T) {
 	literalIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(42))
 	methodObj := builder.PushLiteral(literalIndex).Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	err := virtualMachine.ExecutePushLiteral(context)
 	if err != nil {
@@ -31,8 +30,8 @@ func TestExecutePushLiteral(t *testing.T) {
 
 	value := context.Pop()
 	// Check for immediate integer
-	if core.IsIntegerImmediate(value) {
-		intValue := core.GetIntegerImmediate(value)
+	if pile.IsIntegerImmediate(value) {
+		intValue := pile.GetIntegerImmediate(value)
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
@@ -48,11 +47,11 @@ func TestExecutePushSelf(t *testing.T) {
 		Selector("test").
 		Go()
 
-	// Convert classes.Class to core.Class using unsafe.Pointer
-	coreClass := (*core.Class)(unsafe.Pointer(virtualMachine.Classes.Get(vm.Object)))
-	receiver := core.NewInstance(coreClass)
+	// Convert to pile.Class
+	pileClass := (*pile.Class)(unsafe.Pointer(virtualMachine.Classes.Get(vm.Object)))
+	receiver := pile.NewInstance(pileClass)
 
-	context := vm.NewContext(methodObj, receiver, []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, receiver, []*pile.Object{}, nil)
 
 	err := virtualMachine.ExecutePushSelf(context)
 	if err != nil {
@@ -76,7 +75,7 @@ func TestExecutePop(t *testing.T) {
 		Selector("test").
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	context.Push(virtualMachine.NewInteger(42))
 
@@ -97,7 +96,7 @@ func TestExecuteDuplicate(t *testing.T) {
 		Selector("test").
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	context.Push(virtualMachine.NewInteger(42))
 
@@ -114,8 +113,8 @@ func TestExecuteDuplicate(t *testing.T) {
 	value2 := context.Pop()
 
 	// Check for immediate integer
-	if core.IsIntegerImmediate(value1) {
-		intValue := core.GetIntegerImmediate(value1)
+	if pile.IsIntegerImmediate(value1) {
+		intValue := pile.GetIntegerImmediate(value1)
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
@@ -124,8 +123,8 @@ func TestExecuteDuplicate(t *testing.T) {
 	}
 
 	// Check for immediate integer
-	if core.IsIntegerImmediate(value2) {
-		intValue := core.GetIntegerImmediate(value2)
+	if pile.IsIntegerImmediate(value2) {
+		intValue := pile.GetIntegerImmediate(value2)
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
@@ -146,7 +145,7 @@ func TestExecuteSendMessage(t *testing.T) {
 	builder := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).Selector("test")
 	twoIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(2))
 	threeIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(3))
-	plusIndex, builder := builder.AddLiteral(classes.NewSymbol("+"))
+	plusIndex, builder := builder.AddLiteral(pile.NewSymbol("+"))
 
 	methodObj := builder.
 		PushLiteral(twoIndex).
@@ -154,7 +153,7 @@ func TestExecuteSendMessage(t *testing.T) {
 		SendMessage(plusIndex, 1).
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	context.PC = 10 // After the two PUSH_LITERAL instructions
 
@@ -168,8 +167,8 @@ func TestExecuteSendMessage(t *testing.T) {
 
 	if result == nil {
 		t.Errorf("Expected a result, got nil")
-	} else if core.IsIntegerImmediate(result) {
-		intValue := core.GetIntegerImmediate(result)
+	} else if pile.IsIntegerImmediate(result) {
+		intValue := pile.GetIntegerImmediate(result)
 		if intValue != 5 {
 			t.Errorf("Expected result to be 5, got %d", intValue)
 		}
@@ -181,12 +180,10 @@ func TestExecuteSendMessage(t *testing.T) {
 func TestExecutePushInstanceVariable(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	class := classes.NewClass("TestClass", nil)
-	classes.AddClassInstanceVarName(class, "testVar")
+	class := pile.NewClass("TestClass", nil)
+	pile.AddClassInstanceVarName(class, "testVar")
 
-	// Convert classes.Class to core.Class using unsafe.Pointer
-	coreClass := (*core.Class)(unsafe.Pointer(class))
-	instance := core.NewInstance(coreClass)
+	instance := pile.NewInstance(class)
 	instance.SetInstanceVarByIndex(0, virtualMachine.NewInteger(42))
 
 	methodObj := compiler.NewMethodBuilder(class).
@@ -194,7 +191,7 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 		PushInstanceVariable(0).
 		Go()
 
-	context := vm.NewContext(methodObj, instance, []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, instance, []*pile.Object{}, nil)
 
 	err := virtualMachine.ExecutePushInstanceVariable(context)
 	if err != nil {
@@ -207,8 +204,8 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 
 	value := context.Pop()
 	// Check for immediate integer
-	if core.IsIntegerImmediate(value) {
-		intValue := core.GetIntegerImmediate(value)
+	if pile.IsIntegerImmediate(value) {
+		intValue := pile.GetIntegerImmediate(value)
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
@@ -226,7 +223,7 @@ func TestExecutePushTemporaryVariable(t *testing.T) {
 		PushTemporaryVariable(0).
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	context.SetTempVarByIndex(0, virtualMachine.NewInteger(42))
 
@@ -241,8 +238,8 @@ func TestExecutePushTemporaryVariable(t *testing.T) {
 
 	value := context.Pop()
 	// Check for immediate integer
-	if core.IsIntegerImmediate(value) {
-		intValue := core.GetIntegerImmediate(value)
+	if pile.IsIntegerImmediate(value) {
+		intValue := pile.GetIntegerImmediate(value)
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
@@ -254,19 +251,17 @@ func TestExecutePushTemporaryVariable(t *testing.T) {
 func TestExecuteStoreInstanceVariable(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	class := classes.NewClass("TestClass", nil)
-	classes.AddClassInstanceVarName(class, "testVar")
+	class := pile.NewClass("TestClass", nil)
+	pile.AddClassInstanceVarName(class, "testVar")
 
-	// Convert classes.Class to core.Class using unsafe.Pointer
-	coreClass := (*core.Class)(unsafe.Pointer(class))
-	instance := core.NewInstance(coreClass)
+	instance := pile.NewInstance(class)
 
 	methodObj := compiler.NewMethodBuilder(class).
 		Selector("test").
 		StoreInstanceVariable(0).
 		Go()
 
-	context := vm.NewContext(methodObj, instance, []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, instance, []*pile.Object{}, nil)
 
 	context.Push(virtualMachine.NewInteger(42))
 
@@ -277,8 +272,8 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 
 	value := instance.GetInstanceVarByIndex(0)
 	// Check for immediate integer
-	if core.IsIntegerImmediate(value) {
-		intValue := core.GetIntegerImmediate(value)
+	if pile.IsIntegerImmediate(value) {
+		intValue := pile.GetIntegerImmediate(value)
 		if intValue != 42 {
 			t.Errorf("Expected instance variable to be 42, got %d", intValue)
 		}
@@ -292,8 +287,8 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 
 	stackValue := context.Pop()
 	// Check for immediate integer
-	if core.IsIntegerImmediate(stackValue) {
-		intValue := core.GetIntegerImmediate(stackValue)
+	if pile.IsIntegerImmediate(stackValue) {
+		intValue := pile.GetIntegerImmediate(stackValue)
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
@@ -311,7 +306,7 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 		StoreTemporaryVariable(0).
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	context.Push(virtualMachine.NewInteger(42))
 
@@ -322,8 +317,8 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 
 	value := context.GetTempVarByIndex(0)
 	// Check for immediate integer
-	if core.IsIntegerImmediate(value) {
-		intValue := core.GetIntegerImmediate(value)
+	if pile.IsIntegerImmediate(value) {
+		intValue := pile.GetIntegerImmediate(value)
 		if intValue != 42 {
 			t.Errorf("Expected temporary variable to be 42, got %d", intValue)
 		}
@@ -337,8 +332,8 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 
 	stackValue := context.Pop()
 	// Check for immediate integer
-	if core.IsIntegerImmediate(stackValue) {
-		intValue := core.GetIntegerImmediate(stackValue)
+	if pile.IsIntegerImmediate(stackValue) {
+		intValue := pile.GetIntegerImmediate(stackValue)
 		if intValue != 42 {
 			t.Errorf("Expected 42 on the stack, got %d", intValue)
 		}
@@ -354,7 +349,7 @@ func TestExecuteReturnStackTop(t *testing.T) {
 		Selector("test").
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	context.Push(virtualMachine.NewInteger(42))
 
@@ -364,8 +359,8 @@ func TestExecuteReturnStackTop(t *testing.T) {
 	}
 
 	// Check for immediate integer
-	if core.IsIntegerImmediate(result) {
-		intValue := core.GetIntegerImmediate(result)
+	if pile.IsIntegerImmediate(result) {
+		intValue := pile.GetIntegerImmediate(result)
 		if intValue != 42 {
 			t.Errorf("Expected result to be 42, got %d", intValue)
 		}
@@ -390,7 +385,7 @@ func TestExecuteJump(t *testing.T) {
 		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
 		Go()
 
-	context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 	skipIncrement, err := virtualMachine.ExecuteJump(context)
 	if err != nil {
@@ -421,7 +416,7 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 
 	// Test with true condition
 	{
-		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+		context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
 		context.Push(virtualMachine.TrueObject)
 
@@ -442,9 +437,9 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 
 	// Test with false condition
 	{
-		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+		context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
-		context.Push(core.NewBoolean(false))
+		context.Push(pile.NewBoolean(false))
 
 		skipIncrement, err := virtualMachine.ExecuteJumpIfTrue(context)
 		if err != nil {
@@ -475,9 +470,9 @@ func TestExecuteJumpIfFalse(t *testing.T) {
 
 	// Test with false condition
 	{
-		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+		context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
-		context.Push(core.NewBoolean(false))
+		context.Push(pile.NewBoolean(false))
 
 		skipIncrement, err := virtualMachine.ExecuteJumpIfFalse(context)
 		if err != nil {
@@ -496,9 +491,9 @@ func TestExecuteJumpIfFalse(t *testing.T) {
 
 	// Test with true condition
 	{
-		context := vm.NewContext(methodObj, classes.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*core.Object{}, nil)
+		context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
 
-		context.Push(core.NewBoolean(true))
+		context.Push(pile.NewBoolean(true))
 
 		skipIncrement, err := virtualMachine.ExecuteJumpIfFalse(context)
 		if err != nil {
