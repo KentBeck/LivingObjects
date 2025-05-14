@@ -5,7 +5,6 @@ import (
 
 	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/pile"
-	"smalltalklsp/interpreter/types"
 )
 
 // VM represents the Smalltalk virtual machine
@@ -36,8 +35,8 @@ func NewVM() *VM {
 	vm.TrueObject = pile.MakeTrueImmediate()
 	vm.FalseObject = pile.MakeFalseImmediate()
 
-	// Register the VM as the default object factory
-	types.RegisterFactory(vm)
+	// Register the VM as the default factory for creating objects
+	pile.RegisterFactory(vm)
 
 	// Initialize core classes
 	objectClass := vm.NewObjectClass()
