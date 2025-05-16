@@ -12,3 +12,4 @@ false not ! true
 5 = 5 ! true
 Object ! Class Object
 Object new ! a Object
+Object new basicClass ! Class Object
