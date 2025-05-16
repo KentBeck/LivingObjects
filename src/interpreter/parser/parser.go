@@ -16,11 +16,12 @@ type Parser struct {
 	// Class is the class the method belongs to
 	Class *pile.Object
 
-	// VM is the virtual machine used for creating literals
+	// VM is the virtual machine used for creating literals and accessing globals
 	VM interface {
 		NewInteger(value int64) *pile.Object
 		NewString(value string) *pile.Object
 		NewArray(size int) *pile.Object
+		GetGlobal(name string) *pile.Object
 	}
 
 	// Position is the current position in the input
@@ -67,6 +68,7 @@ func NewParser(input string, class *pile.Object, vm interface {
 	NewInteger(value int64) *pile.Object
 	NewString(value string) *pile.Object
 	NewArray(size int) *pile.Object
+	GetGlobal(name string) *pile.Object
 }) *Parser {
 	p := &Parser{
 		Input:             input,
@@ -464,7 +466,7 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 	// Handle true and false
 	if p.CurrentToken.Type == TOKEN_IDENTIFIER && p.CurrentToken.Value == "true" {
 		p.advanceToken()
-		
+
 		// For parser tests, we'll use immediate values since they're safer for test comparison
 		// and we're not keeping them across GC cycles in tests
 		return &ast.LiteralNode{
@@ -474,7 +476,7 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 
 	if p.CurrentToken.Type == TOKEN_IDENTIFIER && p.CurrentToken.Value == "false" {
 		p.advanceToken()
-		
+
 		// For parser tests, we'll use immediate values since they're safer for test comparison
 		// and we're not keeping them across GC cycles in tests
 		return &ast.LiteralNode{
