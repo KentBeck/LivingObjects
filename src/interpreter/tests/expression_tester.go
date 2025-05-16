@@ -102,6 +102,7 @@ func RunTests(filename string) ([]ExpressionTest, error) {
 }
 
 func evaluateExpression(vmInstance *vm.VM, expression string) (*pile.Object, error) {
+
 	// Parse the expression
 	objectClass := pile.ObjectToClass(vmInstance.Globals["Object"])
 	parsed, err := parser.NewParser(expression, pile.ClassToObject(objectClass), vmInstance).ParseExpression()
@@ -124,6 +125,7 @@ func evaluateExpression(vmInstance *vm.VM, expression string) (*pile.Object, err
 	if err != nil {
 		return nil, err
 	}
+
 
 	return result.(*pile.Object), nil
 }

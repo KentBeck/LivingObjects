@@ -39,6 +39,9 @@ func NewVM() *VM {
 	objectClass := vm.NewObjectClass()
 	vm.Globals["Object"] = pile.ClassToObject(objectClass)
 
+	classClass := vm.NewClassClass()
+	vm.Globals["Class"] = pile.ClassToObject(classClass)
+
 	nilClass := pile.NewClass("UndefinedObject", objectClass)
 	vm.Globals["UndefinedObject"] = pile.ClassToObject(nilClass)
 
@@ -78,10 +81,17 @@ func NewVM() *VM {
 func (vm *VM) NewObjectClass() *pile.Class {
 	result := pile.NewClass("Object", nil) // patch this up later. then even later when we have real images all this initialization can go away
 
-	// Add basicClass method to Object class
-	compiler.NewMethodBuilder(result).
-		Selector("basicClass").
+	// Add methods to Object class
+	builder := compiler.NewMethodBuilder(result)
+	
+	// basicClass method
+	builder.Selector("basicClass").
 		Primitive(5). // basicClass primitive
+		Go()
+		
+	// new method (creates a new instance of the class)
+	builder.Selector("new").
+		Primitive(60). // new primitive
 		Go()
 
 	return result
@@ -274,6 +284,19 @@ func (vm *VM) NewBlockClass() *pile.Class {
 
 	// value: method (executes the block with one argument)
 	builder.Selector("value:").Primitive(22).Go()
+
+	return result
+}
+
+func (vm *VM) NewClassClass() *pile.Class {
+	objectClass := pile.ObjectToClass(vm.Globals["Object"])
+	result := pile.NewClass("Class", objectClass)
+
+	// Add primitive methods to the Class class
+	builder := compiler.NewMethodBuilder(result)
+
+	// new method (creates a new instance of the class)
+	builder.Selector("new").Primitive(60).Go()
 
 	return result
 }
@@ -737,6 +760,19 @@ func (vm *VM) ExecutePrimitive(receiver *pile.Object, selector *pile.Object, arg
 
 			// Return the value
 			return args[1]
+		}
+	case 60: // Class new - create a new instance of a class
+		if receiver.Type() == pile.OBJ_CLASS {
+			// Get the class
+			class := pile.ObjectToClass(receiver)
+			
+			// Create a new instance of the class
+			instance := pile.NewInstance(class)
+			
+			// We need to explicitly set the class of the instance
+			instance.SetClass(receiver)
+			
+			return instance
 		}
 	default:
 		panic("executePrimitive: unknown primitive index\n")
