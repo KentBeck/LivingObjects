@@ -532,10 +532,21 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 		return expr, nil
 	}
 
-	// Handle variables
+	// Handle variables and globals
 	if p.CurrentToken.Type == TOKEN_IDENTIFIER {
 		name := p.CurrentToken.Value
 		p.advanceToken()
+		
+		// Check if this is a global variable (starting with uppercase)
+		if len(name) > 0 && name[0] >= 'A' && name[0] <= 'Z' {
+			// Look up the global in the VM
+			globalObj := p.VM.GetGlobal(name)
+			
+			// If it's a class or other global, return it as a literal node
+			return &ast.LiteralNode{Value: globalObj}, nil
+		}
+		
+		// Otherwise, treat it as a regular variable
 		return &ast.VariableNode{Name: name}, nil
 	}
 

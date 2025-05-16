@@ -1,0 +1,11 @@
+# Tests for accessing global variables
+# Format: <name>!<expression>!<type>!<expected_json>
+
+# Access to global class Object
+GlobalClass!Object!expression!{"type":"LiteralNode","value":{"type":"Object","objectType":8}}
+
+# Using a global class in a message send
+GlobalClassMessage!Object new!expression!{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Object","objectType":8}},"selector":"new","arguments":[]}
+
+# Using a global class in a binary message
+GlobalClassBinary!Object = Object!expression!{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Object","objectType":8}},"selector":"=","arguments":[{"type":"LiteralNode","value":{"type":"Object","objectType":8}}]}

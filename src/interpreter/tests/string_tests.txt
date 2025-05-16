@@ -10,3 +10,4 @@ false not ! true
 3 < 5 ! true
 5 > 3 ! true
 5 = 5 ! true
+Object ! Class Object

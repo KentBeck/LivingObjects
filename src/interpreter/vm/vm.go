@@ -41,33 +41,43 @@ func NewVM() *VM {
 	// Initialize core classes
 	objectClass := vm.NewObjectClass()
 	vm.Classes.Register(Object, objectClass)
+	vm.Globals["Object"] = pile.ClassToObject(objectClass)
 
 	nilClass := pile.NewClass("UndefinedObject", objectClass)
 	vm.Classes.Register(UndefinedObject, nilClass)
+	vm.Globals["UndefinedObject"] = pile.ClassToObject(nilClass)
 
 	trueClass := vm.NewTrueClass()
 	vm.Classes.Register(True, trueClass)
+	vm.Globals["True"] = pile.ClassToObject(trueClass)
 
 	falseClass := vm.NewFalseClass()
 	vm.Classes.Register(False, falseClass)
+	vm.Globals["False"] = pile.ClassToObject(falseClass)
 
 	integerClass := vm.NewIntegerClass()
 	vm.Classes.Register(Integer, integerClass)
+	vm.Globals["Integer"] = pile.ClassToObject(integerClass)
 
 	floatClass := vm.NewFloatClass()
 	vm.Classes.Register(Float, floatClass)
+	vm.Globals["Float"] = pile.ClassToObject(floatClass)
 
 	stringClass := vm.NewStringClass()
 	vm.Classes.Register(String, stringClass)
+	vm.Globals["String"] = pile.ClassToObject(stringClass)
 
 	blockClass := vm.NewBlockClass()
 	vm.Classes.Register(Block, blockClass)
+	vm.Globals["Block"] = pile.ClassToObject(blockClass)
 
 	arrayClass := vm.NewArrayClass()
 	vm.Classes.Register(Array, arrayClass)
+	vm.Globals["Array"] = pile.ClassToObject(arrayClass)
 
 	byteArrayClass := vm.NewByteArrayClass()
 	vm.Classes.Register(ByteArray, byteArrayClass)
+	vm.Globals["ByteArray"] = pile.ClassToObject(byteArrayClass)
 
 	// Initialize the executor
 	vm.Executor = NewExecutor(vm)
@@ -276,8 +286,7 @@ func (vm *VM) NewBlockClass() *pile.Class {
 
 // LoadImage loads a Smalltalk image from a file
 func (vm *VM) LoadImage(path string) error {
-	vm.Globals["Object"] = pile.ClassToObject(vm.Classes.Get(Object))
-
+	// Currently just returns nil as globals are already set up during initialization
 	return nil
 }
 
@@ -307,23 +316,38 @@ func (vm *VM) GetClass(obj *pile.Object) *pile.Class {
 	if pile.IsImmediate(obj) {
 		// Handle immediate nil
 		if pile.IsNilImmediate(obj) {
-			return vm.Classes.Get(UndefinedObject)
+			if classObj, ok := vm.Globals["UndefinedObject"]; ok {
+				return pile.ObjectToClass(classObj)
+			}
+			return vm.Classes.Get(UndefinedObject) // Fallback
 		}
 		// Handle immediate true
 		if pile.IsTrueImmediate(obj) {
-			return vm.Classes.Get(True)
+			if classObj, ok := vm.Globals["True"]; ok {
+				return pile.ObjectToClass(classObj)
+			}
+			return vm.Classes.Get(True) // Fallback
 		}
 		// Handle immediate false
 		if pile.IsFalseImmediate(obj) {
-			return vm.Classes.Get(False)
+			if classObj, ok := vm.Globals["False"]; ok {
+				return pile.ObjectToClass(classObj)
+			}
+			return vm.Classes.Get(False) // Fallback
 		}
 		// Handle immediate integer
 		if pile.IsIntegerImmediate(obj) {
-			return vm.Classes.Get(Integer)
+			if classObj, ok := vm.Globals["Integer"]; ok {
+				return pile.ObjectToClass(classObj)
+			}
+			return vm.Classes.Get(Integer) // Fallback
 		}
 		// Handle immediate float
 		if pile.IsFloatImmediate(obj) {
-			return vm.Classes.Get(Float)
+			if classObj, ok := vm.Globals["Float"]; ok {
+				return pile.ObjectToClass(classObj)
+			}
+			return vm.Classes.Get(Float) // Fallback
 		}
 		// Other immediate types will be added later
 		panic("GetClass: unknown immediate type")
@@ -726,7 +750,7 @@ func (vm *VM) ExecutePrimitive(receiver *pile.Object, selector *pile.Object, arg
 	return nil // Fall through to method
 }
 
-// GetGlobals returns the globals map
+// GetGlobals returns the globals map as a slice
 func (vm *VM) GetGlobals() []*pile.Object {
 	// Convert map to slice for memory management
 	globals := make([]*pile.Object, 0, len(vm.Globals))

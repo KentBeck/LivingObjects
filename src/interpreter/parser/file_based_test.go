@@ -386,3 +386,9 @@ func TestFileBasedMethods(t *testing.T) {
 	testFilePath := filepath.Join("testdata", "method_tests.txt")
 	runFileBasedTests(t, testFilePath)
 }
+
+// TestFileBasedGlobals runs tests from the global_tests.txt file
+func TestFileBasedGlobals(t *testing.T) {
+	testFilePath := filepath.Join("testdata", "global_tests.txt")
+	runFileBasedTests(t, testFilePath)
+}
