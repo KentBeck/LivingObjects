@@ -83,24 +83,25 @@ func (vm *VM) NewObjectClass() *pile.Class {
 
 	// Add methods to Object class
 	builder := compiler.NewMethodBuilder(result)
-	
+
 	// basicClass method
 	builder.Selector("basicClass").
 		Primitive(5). // basicClass primitive
 		Go()
-		
+
+	// should not be here
 	// new method (creates a new instance of the class)
 	builder.Selector("new").
 		Primitive(60). // new primitive
 		Go()
-		
+
 	// class method - a more user-friendly name for accessing an object's class
 	// class implementation: ^self basicClass
 	classSelectorIndex, builder := builder.AddLiteral(pile.NewSymbol("basicClass"))
 	builder.Selector("class").
-		PushSelf().                           // self
-		SendMessage(classSelectorIndex, 0).   // self basicClass
-		ReturnStackTop().                     // ^ 
+		PushSelf().                         // self
+		SendMessage(classSelectorIndex, 0). // self basicClass
+		ReturnStackTop().                   // ^
 		Go()
 
 	return result
@@ -774,13 +775,13 @@ func (vm *VM) ExecutePrimitive(receiver *pile.Object, selector *pile.Object, arg
 		if receiver.Type() == pile.OBJ_CLASS {
 			// Get the class
 			class := pile.ObjectToClass(receiver)
-			
+
 			// Create a new instance of the class
 			instance := pile.NewInstance(class)
-			
+
 			// We need to explicitly set the class of the instance
 			instance.SetClass(receiver)
-			
+
 			return instance
 		}
 	default:
