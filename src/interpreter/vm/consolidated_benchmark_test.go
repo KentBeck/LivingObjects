@@ -25,7 +25,7 @@ var factorialTestCases = []struct {
 // This implementation is taken directly from the working factorial_test.go
 func setupFactorialMethod(virtualMachine *vm.VM) *pile.Object {
 	// We'll use the VM's Integer class
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 
 	// Create selectors for use in literals
 	minusSelector := pile.NewSymbol("-")
@@ -178,7 +178,7 @@ var messageSendTestCases = []struct {
 		name: "SimpleReturn",
 		setup: func(virtualMachine *vm.VM) (*pile.Object, *pile.Object) {
 			// We'll use the VM's Integer class
-			integerClass := virtualMachine.Classes.Get(vm.Integer)
+			integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 
 			// Create a literal for the method
 			valueObj := virtualMachine.NewInteger(42)
@@ -205,7 +205,7 @@ var messageSendTestCases = []struct {
 		name: "Addition",
 		setup: func(virtualMachine *vm.VM) (*pile.Object, *pile.Object) {
 			// We'll use the VM's Integer class
-			integerClass := virtualMachine.Classes.Get(vm.Integer)
+			integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 
 			// Create a simple addition method
 			compiler.NewMethodBuilder(integerClass).
@@ -246,7 +246,7 @@ var messageSendTestCases = []struct {
 		name: "MultipleAdditions",
 		setup: func(virtualMachine *vm.VM) (*pile.Object, *pile.Object) {
 			// We'll use the VM's Integer class
-			integerClass := virtualMachine.Classes.Get(vm.Integer)
+			integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 
 			// Create a simple addition method
 			compiler.NewMethodBuilder(integerClass).

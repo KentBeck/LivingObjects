@@ -19,27 +19,27 @@ func TestGetClass(t *testing.T) {
 		{
 			name:     "Integer",
 			obj:      virtualMachine.NewInteger(42),
-			expected: virtualMachine.Classes.Get(vm.Integer),
+			expected: pile.ObjectToClass(virtualMachine.Globals["Integer"]),
 		},
 		{
 			name:     "Boolean true",
 			obj:      virtualMachine.TrueObject,
-			expected: virtualMachine.Classes.Get(vm.True),
+			expected: pile.ObjectToClass(virtualMachine.Globals["True"]),
 		},
 		{
 			name:     "Boolean false",
 			obj:      virtualMachine.FalseObject,
-			expected: virtualMachine.Classes.Get(vm.False),
+			expected: pile.ObjectToClass(virtualMachine.Globals["False"]),
 		},
 		{
 			name:     "Nil",
 			obj:      virtualMachine.NilObject,
-			expected: virtualMachine.Classes.Get(vm.UndefinedObject),
+			expected: pile.ObjectToClass(virtualMachine.Globals["UndefinedObject"]),
 		},
 		{
 			name:     "Class",
-			obj:      pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)),
-			expected: virtualMachine.Classes.Get(vm.Object), // A class is its own class
+			obj:      pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])),
+			expected: pile.ObjectToClass(virtualMachine.Globals["Object"]), // A class is its own class
 		},
 	}
 

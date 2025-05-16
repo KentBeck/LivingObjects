@@ -13,11 +13,11 @@ func TestExecuteContextEmptyMethod(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Create a method with no bytecodes using MethodBuilder
-	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
+	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
 		Selector("emptyMethod").
 		Go()
 
-	context := vm.NewContext(methodObj, virtualMachine.Classes.Get(vm.Object), []*pile.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ObjectToClass(virtualMachine.Globals["Object"]), []*pile.Object{}, nil)
 
 	result, err := virtualMachine.ExecuteContext(context)
 	if err != nil {
@@ -35,11 +35,11 @@ func TestExecuteContextWithStackValue(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Create a method that pushes a value onto the stack using MethodBuilder
-	builder := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).Selector("pushMethod")
+	builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).Selector("pushMethod")
 	literalIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(42))
 	methodObj := builder.PushLiteral(literalIndex).Go()
 
-	context := vm.NewContext(methodObj, virtualMachine.Classes.Get(vm.Object), []*pile.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ObjectToClass(virtualMachine.Globals["Object"]), []*pile.Object{}, nil)
 
 	result, err := virtualMachine.ExecuteContext(context)
 	if err != nil {
@@ -64,7 +64,7 @@ func TestExecuteContextWithError(t *testing.T) {
 	// Create a method with an invalid bytecode
 	// Since we can't use the fluent API for invalid bytecodes, we'll create the method
 	// and then manually set the bytecodes
-	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
+	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
 		Selector("errorMethod").
 		Go()
 
@@ -72,7 +72,7 @@ func TestExecuteContextWithError(t *testing.T) {
 	method := pile.ObjectToMethod(methodObj)
 	method.Bytecodes = []byte{255} // Invalid bytecode
 
-	context := vm.NewContext(methodObj, virtualMachine.Classes.Get(vm.Object), []*pile.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ObjectToClass(virtualMachine.Globals["Object"]), []*pile.Object{}, nil)
 
 	_, err := virtualMachine.ExecuteContext(context)
 	if err == nil {
@@ -110,7 +110,7 @@ func TestNewArray(t *testing.T) {
 	}
 
 	// Check that the class is the same as the Array class in the registry
-	if arrayClass != virtualMachine.Classes.Get(vm.Array) {
+	if arrayClass != pile.ObjectToClass(virtualMachine.Globals["Array"]) {
 		t.Errorf("Expected array class to be the Array class in the registry")
 	}
 

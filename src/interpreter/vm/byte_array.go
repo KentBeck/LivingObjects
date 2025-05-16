@@ -7,7 +7,8 @@ import (
 
 // NewByteArrayClass creates a new ByteArray class
 func (vm *VM) NewByteArrayClass() *pile.Class {
-	result := pile.NewClass("ByteArray", vm.Classes.Get(Object))
+	objectClass := pile.ObjectToClass(vm.Globals["Object"])
+	result := pile.NewClass("ByteArray", objectClass)
 
 	// Add primitive methods to the ByteArray class
 	builder := compiler.NewMethodBuilder(result)
@@ -36,6 +37,6 @@ func (vm *VM) newByteArrayInternal(size int) *pile.ByteArray {
 func (vm *VM) NewByteArray(size int) *pile.Object {
 	byteArray := vm.newByteArrayInternal(size)
 	byteArrayObj := pile.ByteArrayToObject(byteArray)
-	byteArrayObj.SetClass(pile.ClassToObject(vm.Classes.Get(ByteArray)))
+	byteArrayObj.SetClass(vm.Globals["ByteArray"])
 	return byteArrayObj
 }

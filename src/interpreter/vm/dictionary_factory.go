@@ -8,6 +8,6 @@ import (
 func (vm *VM) NewDictionary() *pile.Object {
 	dict := pile.NewDictionaryInternal()
 	dictObj := pile.DictionaryToObject(dict)
-	dictObj.SetClass(pile.ClassToObject(vm.Classes.Get(Dictionary))) // Dictionary is an instance of Dictionary class
+	dictObj.SetClass(vm.Globals["Dictionary"]) // Dictionary is an instance of Dictionary class
 	return dictObj
 }

@@ -19,7 +19,7 @@ func (vm *VM) NewClass(name string, superClass *pile.Class) *pile.Class {
 	
 	// A class's class should be a metaclass, but for now we'll use ObjectClass
 	classObj := pile.ClassToObject(class)
-	classObj.SetClass(pile.ClassToObject(vm.Classes.Get(Object)))
+	classObj.SetClass(vm.Globals["Object"])
 	
 	return class
 }

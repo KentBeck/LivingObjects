@@ -90,7 +90,7 @@ func TestBlockWithMethodVariables(t *testing.T) {
 	runtime.RegisterBlockExecutor(vm)
 
 	// Add primitive methods to Integer class
-	integerClass := vm.Classes.Get(Integer)
+	integerClass := pile.ObjectToClass(vm.Globals["Integer"])
 	addMethod := &pile.Method{
 		Object: pile.Object{
 			TypeField: pile.OBJ_METHOD,

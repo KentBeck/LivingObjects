@@ -9,7 +9,7 @@ import (
 // the old field names while we migrate to using ClassRegistry
 
 // ObjectClass field (struct member, not a method)
-// Deprecated: Use vm.Classes.Get(Object) instead
+// Deprecated: Use pile.ObjectToClass(vm.Globals["Object"]) instead
 func (vm *VM) GetObjectClass() *pile.Class {
-	return vm.Classes.Get(Object)
+	return pile.ObjectToClass(vm.Globals["Object"])
 }

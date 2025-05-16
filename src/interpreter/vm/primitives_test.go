@@ -20,7 +20,7 @@ func testSubtractionPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Add primitive methods to the Integer class
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	minusSelector := pile.NewSymbol("-")
 	minusMethod := compiler.NewMethodBuilder(integerClass).
 		Selector("-").
@@ -51,7 +51,7 @@ func testSubtractionPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !pile.IsIntegerImmediate(result) && result.Class() != pile.ClassToObject(virtualMachine.Classes.Get(vm.Integer)) {
+	if !pile.IsIntegerImmediate(result) && result.Class() != pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Integer"])) {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
@@ -60,7 +60,7 @@ func testMultiplicationPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Add primitive methods to the Integer class
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	timesSelector := pile.NewSymbol("*")
 	timesMethod := compiler.NewMethodBuilder(integerClass).
 		Selector("*").
@@ -91,7 +91,7 @@ func testMultiplicationPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !pile.IsIntegerImmediate(result) && result.Class() != pile.ClassToObject(virtualMachine.Classes.Get(vm.Integer)) {
+	if !pile.IsIntegerImmediate(result) && result.Class() != pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Integer"])) {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
@@ -100,7 +100,7 @@ func testAdditionPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Add primitive methods to the Integer class
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	plusSelector := pile.NewSymbol("+")
 	plusMethod := compiler.NewMethodBuilder(integerClass).
 		Selector("+").
@@ -131,7 +131,7 @@ func testAdditionPrimitive(t *testing.T) {
 	}
 
 	// For immediate values, we don't check the class as it's encoded in the tag bits
-	if !pile.IsIntegerImmediate(result) && result.Class() != pile.ClassToObject(virtualMachine.Classes.Get(vm.Integer)) {
+	if !pile.IsIntegerImmediate(result) && result.Class() != pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Integer"])) {
 		t.Errorf("Expected result class to be Integer, got %v", result.Class())
 	}
 }
@@ -140,7 +140,7 @@ func testLessThanPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Add primitive methods to the Integer class
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	lessSelector := pile.NewSymbol("<")
 	lessMethod := compiler.NewMethodBuilder(integerClass).
 		Selector("<").
@@ -194,7 +194,7 @@ func testGreaterThanPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Add primitive methods to the Integer class
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	greaterSelector := pile.NewSymbol(">")
 	greaterMethod := compiler.NewMethodBuilder(integerClass).
 		Selector(">").

@@ -13,7 +13,7 @@ func TestStringSizePrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Add primitive methods to the String class
-	stringClass := virtualMachine.Classes.Get(vm.String)
+	stringClass := pile.ObjectToClass(virtualMachine.Globals["String"])
 	sizeMethod := compiler.NewMethodBuilder(stringClass).
 		Selector("size").
 		Primitive(30). // String size primitive

@@ -8,6 +8,6 @@ import (
 func (vm *VM) NewMethod(selector *pile.Object, class *pile.Class) *pile.Object {
 	method := pile.NewMethod(selector, class)
 	methodObj := method // Already an Object
-	methodObj.SetClass(pile.ClassToObject(vm.Classes.Get(Method))) // Methods are instances of the Method class
+	methodObj.SetClass(vm.Globals["Method"]) // Methods are instances of the Method class
 	return methodObj
 }

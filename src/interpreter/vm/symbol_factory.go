@@ -8,6 +8,6 @@ import (
 func (vm *VM) NewSymbol(value string) *pile.Object {
 	sym := pile.NewSymbolInternal(value)
 	symObj := pile.SymbolToObject(sym)
-	symObj.SetClass(pile.ClassToObject(vm.Classes.Get(Symbol))) // Symbols are instances of the Symbol class
+	symObj.SetClass(vm.Globals["Symbol"]) // Symbols are instances of the Symbol class
 	return symObj
 }

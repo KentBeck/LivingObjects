@@ -13,7 +13,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// We'll use the VM's Object and Integer classes
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 
 	// Create literals
 	returnValueSelector := pile.NewSymbol("returnValue")
@@ -93,7 +93,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// We'll use the VM's Object and Integer classes
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 
 	// Create literals
 	returnValueSelector := pile.NewSymbol("returnValue")

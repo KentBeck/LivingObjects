@@ -16,6 +16,6 @@ func (vm *VM) NewBlock(outerContext interface{}) *pile.Object {
 		OuterContext: outerContext,
 	}
 	blockObj := pile.BlockToObject(block)
-	blockObj.SetClass(pile.ClassToObject(vm.Classes.Get(Block)))
+	blockObj.SetClass(vm.Globals["Block"])
 	return blockObj
 }

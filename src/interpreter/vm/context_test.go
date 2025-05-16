@@ -12,12 +12,12 @@ func TestContextPush(t *testing.T) {
 	// Create a VM for testing
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
+	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
 	// Test pushing an object
 	obj := virtualMachine.NewInteger(42)
@@ -62,12 +62,12 @@ func TestContextPop(t *testing.T) {
 	// Create a VM for testing
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
+	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
 	// Test popping from an empty stack
 	defer func() {
@@ -97,12 +97,12 @@ func TestContextTop(t *testing.T) {
 	// Create a VM for testing
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
+	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
 	// Test top on an empty stack
 	defer func() {
@@ -135,12 +135,12 @@ func TestContextTempVars(t *testing.T) {
 	// Create a VM for testing
 	virtualMachine := vm.NewVM()
 
-	methodObj := compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Object)).
+	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
 		Selector("test").
 		Go()
 
 	// Create a context
-	context := vm.NewContext(methodObj, pile.ClassToObject(virtualMachine.Classes.Get(vm.Object)), []*pile.Object{}, nil)
+	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
 	// Set up temporary variables
 	context.TempVars = make([]pile.ObjectInterface, 2)

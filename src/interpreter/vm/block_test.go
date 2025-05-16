@@ -15,7 +15,7 @@ func TestBasicBlock(t *testing.T) {
 
 	// Check that the block is of the correct class
 	blockClass := virtualMachine.GetClass(block)
-	if blockClass != virtualMachine.Classes.Get(vm.Block) {
+	if blockClass != pile.ObjectToClass(virtualMachine.Globals["Block"]) {
 		t.Errorf("Expected block class to be Block class, got %v", blockClass)
 	}
 

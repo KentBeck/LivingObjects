@@ -10,11 +10,11 @@ import (
 func TestBasicClassPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	EnsureObjectIsClass(t, virtualMachine, virtualMachine.NewInteger(42), virtualMachine.Classes.Get(vm.Integer))
-	EnsureObjectIsClass(t, virtualMachine, pile.NewNil(), virtualMachine.Classes.Get(vm.UndefinedObject))
-	EnsureObjectIsClass(t, virtualMachine, virtualMachine.TrueObject, virtualMachine.Classes.Get(vm.True))
-	EnsureObjectIsClass(t, virtualMachine, virtualMachine.FalseObject, virtualMachine.Classes.Get(vm.False))
-	EnsureObjectIsClass(t, virtualMachine, virtualMachine.NewFloat(3.14), virtualMachine.Classes.Get(vm.Float))
+	EnsureObjectIsClass(t, virtualMachine, virtualMachine.NewInteger(42), pile.ObjectToClass(virtualMachine.Globals["Integer"]))
+	EnsureObjectIsClass(t, virtualMachine, pile.NewNil(), pile.ObjectToClass(virtualMachine.Globals["UndefinedObject"]))
+	EnsureObjectIsClass(t, virtualMachine, virtualMachine.TrueObject, pile.ObjectToClass(virtualMachine.Globals["True"]))
+	EnsureObjectIsClass(t, virtualMachine, virtualMachine.FalseObject, pile.ObjectToClass(virtualMachine.Globals["False"]))
+	EnsureObjectIsClass(t, virtualMachine, virtualMachine.NewFloat(3.14), pile.ObjectToClass(virtualMachine.Globals["Float"]))
 }
 
 func EnsureObjectIsClass(t *testing.T, virtualMachine *vm.VM, object pile.ObjectInterface, expected interface{}) {

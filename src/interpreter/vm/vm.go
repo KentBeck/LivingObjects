@@ -9,12 +9,10 @@ import (
 
 // VM represents the Smalltalk virtual machine
 type VM struct {
+	// Globals map holds all global variables including classes
 	Globals      map[string]*pile.Object
 	ObjectMemory *pile.ObjectMemory
 	Executor     *Executor
-
-	// Class registry for all Smalltalk classes
-	Classes *ClassRegistry
 
 	// Special objects
 	NilObject   pile.ObjectInterface
@@ -27,7 +25,6 @@ func NewVM() *VM {
 	vm := &VM{
 		Globals:      make(map[string]*pile.Object),
 		ObjectMemory: pile.NewObjectMemory(),
-		Classes:      NewClassRegistry(),
 	}
 
 	// Initialize special immediate objects
@@ -40,43 +37,33 @@ func NewVM() *VM {
 
 	// Initialize core classes
 	objectClass := vm.NewObjectClass()
-	vm.Classes.Register(Object, objectClass)
 	vm.Globals["Object"] = pile.ClassToObject(objectClass)
 
 	nilClass := pile.NewClass("UndefinedObject", objectClass)
-	vm.Classes.Register(UndefinedObject, nilClass)
 	vm.Globals["UndefinedObject"] = pile.ClassToObject(nilClass)
 
 	trueClass := vm.NewTrueClass()
-	vm.Classes.Register(True, trueClass)
 	vm.Globals["True"] = pile.ClassToObject(trueClass)
 
 	falseClass := vm.NewFalseClass()
-	vm.Classes.Register(False, falseClass)
 	vm.Globals["False"] = pile.ClassToObject(falseClass)
 
 	integerClass := vm.NewIntegerClass()
-	vm.Classes.Register(Integer, integerClass)
 	vm.Globals["Integer"] = pile.ClassToObject(integerClass)
 
 	floatClass := vm.NewFloatClass()
-	vm.Classes.Register(Float, floatClass)
 	vm.Globals["Float"] = pile.ClassToObject(floatClass)
 
 	stringClass := vm.NewStringClass()
-	vm.Classes.Register(String, stringClass)
 	vm.Globals["String"] = pile.ClassToObject(stringClass)
 
 	blockClass := vm.NewBlockClass()
-	vm.Classes.Register(Block, blockClass)
 	vm.Globals["Block"] = pile.ClassToObject(blockClass)
 
 	arrayClass := vm.NewArrayClass()
-	vm.Classes.Register(Array, arrayClass)
 	vm.Globals["Array"] = pile.ClassToObject(arrayClass)
 
 	byteArrayClass := vm.NewByteArrayClass()
-	vm.Classes.Register(ByteArray, byteArrayClass)
 	vm.Globals["ByteArray"] = pile.ClassToObject(byteArrayClass)
 
 	// Initialize the executor
@@ -101,7 +88,8 @@ func (vm *VM) NewObjectClass() *pile.Class {
 }
 
 func (vm *VM) NewIntegerClass() *pile.Class {
-	result := pile.NewClass("Integer", vm.Classes.Get(Object))
+	objectClass := pile.ObjectToClass(vm.Globals["Object"])
+	result := pile.NewClass("Integer", objectClass)
 
 	// Add primitive methods to the Integer class
 	builder := compiler.NewMethodBuilder(result)
@@ -128,7 +116,8 @@ func (vm *VM) NewIntegerClass() *pile.Class {
 }
 
 func (vm *VM) NewFloatClass() *pile.Class {
-	result := pile.NewClass("Float", vm.Classes.Get(Object)) // patch this up later. then even later when we have real images all this initialization can go away
+	objectClass := pile.ObjectToClass(vm.Globals["Object"])
+	result := pile.NewClass("Float", objectClass) // then even later when we have real images all this initialization can go away
 
 	// Add primitive methods to the Float class
 	builder := compiler.NewMethodBuilder(result)
@@ -178,7 +167,7 @@ func (vm *VM) NewFloat(value float64) *pile.Object {
 func (vm *VM) NewString(value string) *pile.Object {
 	str := &pile.String{Object: pile.Object{TypeField: pile.OBJ_STRING}, Value: value}
 	strObj := pile.StringToObject(str)
-	strObj.SetClass(pile.ClassToObject(vm.Classes.Get(String)))
+	strObj.SetClass(vm.Globals["String"])
 	return strObj
 }
 
@@ -186,7 +175,7 @@ func (vm *VM) NewString(value string) *pile.Object {
 func (vm *VM) NewArray(size int) *pile.Object {
 	array := &pile.Array{Object: pile.Object{TypeField: pile.OBJ_ARRAY}, Elements: make([]*pile.Object, size)}
 	arrayObj := pile.ArrayToObject(array)
-	arrayObj.SetClass(pile.ClassToObject(vm.Classes.Get(Array)))
+	arrayObj.SetClass(vm.Globals["Array"])
 	return arrayObj
 }
 
@@ -206,7 +195,8 @@ func (vm *VM) NewNil() *pile.Object {
 }
 
 func (vm *VM) NewTrueClass() *pile.Class {
-	result := pile.NewClass("True", vm.Classes.Get(Object))
+	objectClass := pile.ObjectToClass(vm.Globals["Object"])
+	result := pile.NewClass("True", objectClass)
 
 	// Add methods to the True class
 	builder := compiler.NewMethodBuilder(result)
@@ -224,7 +214,8 @@ func (vm *VM) NewTrueClass() *pile.Class {
 }
 
 func (vm *VM) NewFalseClass() *pile.Class {
-	result := pile.NewClass("False", vm.Classes.Get(Object))
+	objectClass := pile.ObjectToClass(vm.Globals["Object"])
+	result := pile.NewClass("False", objectClass)
 
 	// Add methods to the False class
 	builder := compiler.NewMethodBuilder(result)
@@ -242,7 +233,8 @@ func (vm *VM) NewFalseClass() *pile.Class {
 }
 
 func (vm *VM) NewStringClass() *pile.Class {
-	result := pile.NewClass("String", vm.Classes.Get(Object))
+	objectClass := pile.ObjectToClass(vm.Globals["Object"])
+	result := pile.NewClass("String", objectClass)
 
 	// Add primitive methods to the String class
 	builder := compiler.NewMethodBuilder(result)
@@ -254,7 +246,8 @@ func (vm *VM) NewStringClass() *pile.Class {
 }
 
 func (vm *VM) NewArrayClass() *pile.Class {
-	result := pile.NewClass("Array", vm.Classes.Get(Object))
+	objectClass := pile.ObjectToClass(vm.Globals["Object"])
+	result := pile.NewClass("Array", objectClass)
 
 	// Add primitive methods to the Array class
 	builder := compiler.NewMethodBuilder(result)
@@ -266,7 +259,8 @@ func (vm *VM) NewArrayClass() *pile.Class {
 }
 
 func (vm *VM) NewBlockClass() *pile.Class {
-	result := pile.NewClass("Block", vm.Classes.Get(Object))
+	objectClass := pile.ObjectToClass(vm.Globals["Object"])
+	result := pile.NewClass("Block", objectClass)
 
 	// Add primitive methods to the Block class
 	builder := compiler.NewMethodBuilder(result)
@@ -319,35 +313,35 @@ func (vm *VM) GetClass(obj *pile.Object) *pile.Class {
 			if classObj, ok := vm.Globals["UndefinedObject"]; ok {
 				return pile.ObjectToClass(classObj)
 			}
-			return vm.Classes.Get(UndefinedObject) // Fallback
+			panic("GetClass: UndefinedObject class not found in globals")
 		}
 		// Handle immediate true
 		if pile.IsTrueImmediate(obj) {
 			if classObj, ok := vm.Globals["True"]; ok {
 				return pile.ObjectToClass(classObj)
 			}
-			return vm.Classes.Get(True) // Fallback
+			panic("GetClass: True class not found in globals")
 		}
 		// Handle immediate false
 		if pile.IsFalseImmediate(obj) {
 			if classObj, ok := vm.Globals["False"]; ok {
 				return pile.ObjectToClass(classObj)
 			}
-			return vm.Classes.Get(False) // Fallback
+			panic("GetClass: False class not found in globals")
 		}
 		// Handle immediate integer
 		if pile.IsIntegerImmediate(obj) {
 			if classObj, ok := vm.Globals["Integer"]; ok {
 				return pile.ObjectToClass(classObj)
 			}
-			return vm.Classes.Get(Integer) // Fallback
+			panic("GetClass: Integer class not found in globals")
 		}
 		// Handle immediate float
 		if pile.IsFloatImmediate(obj) {
 			if classObj, ok := vm.Globals["Float"]; ok {
 				return pile.ObjectToClass(classObj)
 			}
-			return vm.Classes.Get(Float) // Fallback
+			panic("GetClass: Float class not found in globals")
 		}
 		// Other immediate types will be added later
 		panic("GetClass: unknown immediate type")
@@ -618,7 +612,7 @@ func (vm *VM) ExecutePrimitive(receiver *pile.Object, selector *pile.Object, arg
 			return pile.NewBoolean(result).(*pile.Object)
 		}
 	case 20: // Block new - create a new block instance
-		if receiver.Type() == pile.OBJ_CLASS && receiver == pile.ClassToObject(vm.Classes.Get(Block)) {
+		if receiver.Type() == pile.OBJ_CLASS && receiver == vm.Globals["Block"] {
 			// Create a new block instance with proper class field
 			blockInstance := vm.NewBlock(vm.Executor.CurrentContext)
 			return blockInstance

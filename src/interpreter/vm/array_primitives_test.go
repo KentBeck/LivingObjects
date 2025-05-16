@@ -13,7 +13,7 @@ func TestArrayAtPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Add primitive methods to the Array class
-	arrayClass := virtualMachine.Classes.Get(vm.Array)
+	arrayClass := pile.ObjectToClass(virtualMachine.Globals["Array"])
 	atSelector := pile.NewSymbol("at:")
 	atMethod := compiler.NewMethodBuilder(arrayClass).
 		Selector("at:").

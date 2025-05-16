@@ -39,8 +39,8 @@ func TestVMNewString(t *testing.T) {
 
 			// Check that the object has the correct class
 			class := virtualMachine.GetClass(strObj)
-			if class != virtualMachine.Classes.Get(vm.String) {
-				t.Errorf("NewString(%q) has class %v, want %v", tt.value, class, virtualMachine.Classes.Get(vm.String))
+			if class != pile.ObjectToClass(virtualMachine.Globals["String"]) {
+				t.Errorf("NewString(%q) has class %v, want %v", tt.value, class, pile.ObjectToClass(virtualMachine.Globals["String"]))
 			}
 
 			// Check that the object has the correct value

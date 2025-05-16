@@ -13,7 +13,7 @@ func TestByteArrayAtPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Add primitive methods to the ByteArray class
-	byteArrayClass := virtualMachine.Classes.Get(vm.ByteArray)
+	byteArrayClass := pile.ObjectToClass(virtualMachine.Globals["ByteArray"])
 	atSelector := pile.NewSymbol("at:")
 	atMethod := compiler.NewMethodBuilder(byteArrayClass).
 		Selector("at:").
@@ -72,7 +72,7 @@ func TestByteArrayAtPutPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Add primitive methods to the ByteArray class
-	byteArrayClass := virtualMachine.Classes.Get(vm.ByteArray)
+	byteArrayClass := pile.ObjectToClass(virtualMachine.Globals["ByteArray"])
 	atPutSelector := pile.NewSymbol("at:put:")
 	atPutMethod := compiler.NewMethodBuilder(byteArrayClass).
 		Selector("at:put:").

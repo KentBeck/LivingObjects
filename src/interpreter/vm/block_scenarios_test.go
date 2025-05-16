@@ -68,7 +68,7 @@ func TestBlockWithExpression(t *testing.T) {
 	runtime.RegisterBlockExecutor(virtualMachine)
 
 	// Add the + method to the Integer class
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	addMethod := &pile.Method{
 		Object: pile.Object{
 			TypeField: pile.OBJ_METHOD,
@@ -143,7 +143,7 @@ func TestBlockWithParameter(t *testing.T) {
 	runtime.RegisterBlockExecutor(virtualMachine)
 
 	// Add the + method to the Integer class
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	addMethod := &pile.Method{
 		Object: pile.Object{
 			TypeField: pile.OBJ_METHOD,

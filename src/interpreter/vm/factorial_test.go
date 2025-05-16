@@ -13,7 +13,7 @@ func TestFactorial(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// We'll use the VM's Integer class
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 
 	// Create selectors for use in literals
 	minusSelector := pile.NewSymbol("-")
@@ -91,22 +91,22 @@ func TestFactorial(t *testing.T) {
 	factorialMethod := builder.Go()
 
 	// Create primitive methods for the Integer class
-	compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Integer)).
+	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
 		Selector("+").
 		Primitive(1). // Addition
 		Go()
 
-	compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Integer)).
+	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
 		Selector("-").
 		Primitive(4). // Subtraction
 		Go()
 
-	compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Integer)).
+	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
 		Selector("*").
 		Primitive(2). // Multiplication
 		Go()
 
-	compiler.NewMethodBuilder(virtualMachine.Classes.Get(vm.Integer)).
+	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
 		Selector("=").
 		Primitive(3). // Equality
 		Go()

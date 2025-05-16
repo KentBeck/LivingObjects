@@ -13,8 +13,8 @@ func runDemo() {
 
 	virtualMachine := vm.NewVM()
 
-	integerClass := virtualMachine.Classes.Get(vm.Integer)
-	objectClass := virtualMachine.Classes.Get(vm.Object)
+	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
+	objectClass := pile.ObjectToClass(virtualMachine.Globals["Object"])
 
 	factorialSelector := pile.NewSymbol("factorial")
 
