@@ -93,6 +93,15 @@ func (vm *VM) NewObjectClass() *pile.Class {
 	builder.Selector("new").
 		Primitive(60). // new primitive
 		Go()
+		
+	// class method - a more user-friendly name for accessing an object's class
+	// class implementation: ^self basicClass
+	classSelectorIndex, builder := builder.AddLiteral(pile.NewSymbol("basicClass"))
+	builder.Selector("class").
+		PushSelf().                           // self
+		SendMessage(classSelectorIndex, 0).   // self basicClass
+		ReturnStackTop().                     // ^ 
+		Go()
 
 	return result
 }

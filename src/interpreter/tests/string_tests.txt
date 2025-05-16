@@ -13,3 +13,4 @@ false not ! true
 Object ! Class Object
 Object new ! a Object
 Object new basicClass ! Class Object
+Object new class ! Class Object
