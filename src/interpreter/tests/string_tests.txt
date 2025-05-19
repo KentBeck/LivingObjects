@@ -14,3 +14,6 @@ Object ! Class Object
 Object new ! a Object
 Object new basicClass ! Class Object
 Object new class ! Class Object
+[5] value ! 5
+[5. 6] value ! 6
+[Smalltalk at: #Foo put: 5. Transaction start. Smalltalk at: #Foo put: 6. Transaction rollback. Smalltalk at: #Foo] value ! 5

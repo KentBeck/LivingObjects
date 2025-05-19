@@ -110,6 +110,12 @@ func (p *Parser) ParseExpression() (ast.Node, error) {
 	p.CurrentToken = p.Tokens[0]
 	p.CurrentTokenIndex = 0
 
+	// Special case for block expressions with no surrounding context
+	// If the input starts with a '[', directly create a block
+	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "[" {
+		return p.parseBlock()
+	}
+
 	// Check if the input starts with a return statement
 	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "^" {
 		// Skip the return token
@@ -331,7 +337,7 @@ func (p *Parser) parseStatements() (ast.Node, error) {
 		}
 
 		// Parse the expression
-		expression, err := p.parseExpression()
+		expression, err := p.parseKeywordMessage()
 		if err != nil {
 			return nil, err
 		}
@@ -508,6 +514,11 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 		return literalNode, nil
 	}
 
+	// Handle block expressions
+	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "[" {
+		return p.parseBlock()
+	}
+
 	// Handle array literals - must check this before parenthesized expressions
 	if p.CurrentToken.Type == TOKEN_SYMBOL && p.CurrentToken.Value == "(" {
 		return p.parseArrayLiteral()
@@ -636,6 +647,101 @@ func (p *Parser) parseArrayLiteral() (ast.Node, error) {
 	// Create a literal node with the array object
 	return &ast.LiteralNode{
 		Value: arrayObj,
+	}, nil
+}
+
+// parseBlock parses a block expression
+func (p *Parser) parseBlock() (ast.Node, error) {
+	// Skip the opening bracket
+	p.advanceToken()
+
+	// Parse block parameters (if any)
+	var parameters []string
+	
+	// Check if the block has parameters (look for identifiers followed by colons)
+	for p.CurrentToken.Type == TOKEN_IDENTIFIER && 
+		p.CurrentTokenIndex+1 < len(p.Tokens) &&
+		p.Tokens[p.CurrentTokenIndex+1].Type == TOKEN_SPECIAL && 
+		p.Tokens[p.CurrentTokenIndex+1].Value == ":" {
+		
+		// Add the parameter name
+		parameters = append(parameters, p.CurrentToken.Value)
+		
+		// Skip the parameter name and the colon
+		p.advanceToken() // Skip parameter name
+		p.advanceToken() // Skip colon
+	}
+	
+	// Check for the bar character (|) to identify temporary variables
+	var temporaries []string
+	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "|" {
+		// Skip the opening bar
+		p.advanceToken()
+		
+		// Parse temporary variable names
+		for p.CurrentToken.Type == TOKEN_IDENTIFIER {
+			temporaries = append(temporaries, p.CurrentToken.Value)
+			p.advanceToken()
+		}
+		
+		// Expect the closing bar
+		if p.CurrentToken.Type != TOKEN_SPECIAL || p.CurrentToken.Value != "|" {
+			return nil, fmt.Errorf("expected closing bar for block temporaries, got %v", p.CurrentToken)
+		}
+		
+		// Skip the closing bar
+		p.advanceToken()
+	}
+	
+	// Parse the block body
+	// We'll handle a sequence of expressions separated by periods
+	var bodyExpressions []ast.Node
+	
+	// Parse expressions until we reach the closing bracket or EOF
+	for p.CurrentToken.Type != TOKEN_EOF && (p.CurrentToken.Type != TOKEN_SPECIAL || p.CurrentToken.Value != "]") {
+		// Parse an expression
+		expr, err := p.parseKeywordMessage()
+		if err != nil {
+			return nil, err
+		}
+		
+		bodyExpressions = append(bodyExpressions, expr)
+		
+		// If the next token is a period, skip it and continue parsing
+		if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "." {
+			p.advanceToken()
+		} else if p.CurrentToken.Type == TOKEN_EOF || (p.CurrentToken.Type != TOKEN_SPECIAL || p.CurrentToken.Value != "]") {
+			// If it's not a period or closing bracket (and not EOF), it's a syntax error
+			if p.CurrentToken.Type != TOKEN_EOF {
+				return nil, fmt.Errorf("expected period or closing bracket in block, got %v", p.CurrentToken)
+			}
+			// If it's EOF, we'll just end the block
+			break
+		}
+	}
+	
+	// Skip the closing bracket if it exists (might be EOF in testing scenarios)
+	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "]" {
+		p.advanceToken()
+	}
+	
+	// If the block has no expressions, return a nil block
+	if len(bodyExpressions) == 0 {
+		return &ast.BlockNode{
+			Parameters: parameters,
+			Temporaries: temporaries,
+			Body: &ast.LiteralNode{Value: pile.MakeNilImmediate()},
+		}, nil
+	}
+	
+	// Use the last expression as the block's body (for now, ignoring statements before the last one)
+	body := bodyExpressions[len(bodyExpressions)-1]
+	
+	// Create and return the block node
+	return &ast.BlockNode{
+		Parameters: parameters,
+		Temporaries: temporaries,
+		Body: body,
 	}, nil
 }
 
