@@ -78,6 +78,10 @@ func NewVM() *VM {
 	return vm
 }
 
+// DefaultVM is the shared global virtual machine instance.
+// It is initialized once and can be used by any package needing a VM.
+var DefaultVM = NewVM()
+
 func (vm *VM) NewObjectClass() *pile.Class {
 	result := pile.NewClass("Object", nil) // patch this up later. then even later when we have real images all this initialization can go away
 
