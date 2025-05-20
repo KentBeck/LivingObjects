@@ -660,3 +660,74 @@ func TestParseExpressionWithBlock(t *testing.T) {
 		}
 	}
 }
+
+// TestParseBlockValueMessage tests parsing "[5] value" as a message send with a block receiver
+func TestParseBlockValueMessage(t *testing.T) {
+	// Create a class
+	objectClass := pile.NewClass("Object", nil)
+	objectClass.ClassField = objectClass // Set class's class to itself for proper checks
+	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
+
+	// Create a real VM for testing
+	vmInstance := vm.NewVM()
+
+	// Create a parser with the expression "[5] value"
+	p := NewParser("[5] value", classObj, vmInstance)
+
+	// Parse the expression
+	node, err := p.ParseExpression()
+	if err != nil {
+		t.Fatalf("Error parsing expression: %v", err)
+	}
+
+	// Check that the node is a message send node
+	messageSendNode, ok := node.(*ast.MessageSendNode)
+	if !ok {
+		t.Fatalf("Expected message send node, got %T", node)
+	}
+
+	// Check the message selector
+	if messageSendNode.Selector != "value" {
+		t.Errorf("Expected message selector to be 'value', got '%s'", messageSendNode.Selector)
+	}
+
+	// Check the message arguments (should be empty)
+	if len(messageSendNode.Arguments) != 0 {
+		t.Errorf("Expected 0 arguments, got %d", len(messageSendNode.Arguments))
+	}
+
+	// Check the message receiver (should be a block node)
+	blockNode, ok := messageSendNode.Receiver.(*ast.BlockNode)
+	if !ok {
+		t.Fatalf("Expected block node as receiver, got %T", messageSendNode.Receiver)
+	}
+
+	// Check block structure
+	if len(blockNode.Parameters) != 0 {
+		t.Errorf("Expected 0 parameters, got %d", len(blockNode.Parameters))
+	}
+
+	if len(blockNode.Temporaries) != 0 {
+		t.Errorf("Expected 0 temporaries, got %d", len(blockNode.Temporaries))
+	}
+
+	// Check the block body
+	literalNode, ok := blockNode.Body.(*ast.LiteralNode)
+	if !ok {
+		t.Fatalf("Expected literal node, got %T", blockNode.Body)
+	}
+
+	// Check that the literal is 5
+	if !pile.IsImmediate(literalNode.Value) {
+		t.Fatalf("Expected immediate value, got %v", literalNode.Value)
+	}
+
+	if !pile.IsIntegerImmediate(literalNode.Value) {
+		t.Fatalf("Expected integer immediate, got %v", literalNode.Value)
+	}
+
+	value := pile.GetIntegerImmediate(literalNode.Value)
+	if value != 5 {
+		t.Errorf("Expected value to be 5, got %d", value)
+	}
+}

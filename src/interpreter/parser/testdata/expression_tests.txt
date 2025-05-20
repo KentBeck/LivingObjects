@@ -52,3 +52,8 @@ ArrayLiteral!#(1 2 3)!expression!{"type":"LiteralNode","value":{"type":"Array","
 
 # Method definition
 SimpleMethod!factorial ^self * n - 1 factorial!method!{"type":"MethodNode","selector":"factorial","parameters":[],"temporaries":[],"body":{"type":"ReturnNode","expression":{"type":"MessageSendNode","receiver":{"type":"MessageSendNode","receiver":{"type":"SelfNode"},"selector":"*","arguments":[{"type":"VariableNode","name":"n"}]},"selector":"-","arguments":[{"type":"MessageSendNode","receiver":{"type":"LiteralNode","value":{"type":"Integer","value":1}},"selector":"factorial","arguments":[]}]}}}
+
+# Block value
+BlockValue![5] value!expression!{"type":"MessageSendNode","receiver":{"type":"BlockNode","parameters":[],"temporaries":[],"body":{"type":"LiteralNode","value":{"type":"Integer","value":5}}},"selector":"value","arguments":[]}
+
+# Block value with argument
