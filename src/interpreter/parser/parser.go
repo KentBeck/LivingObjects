@@ -676,8 +676,14 @@ func (p *Parser) parseArrayLiteral() (ast.Node, error) {
 			var value *pile.Object
 			if p.CurrentToken.Value == "true" {
 				value = pile.MakeTrueImmediate()
+				if value == nil {
+					return nil, fmt.Errorf("failed to create true immediate value")
+				}
 			} else {
 				value = pile.MakeFalseImmediate()
+				if value == nil {
+					return nil, fmt.Errorf("failed to create false immediate value")
+				}
 			}
 			element := &ast.LiteralNode{
 				Value: value,
@@ -831,10 +837,14 @@ func (p *Parser) parseBlock() (ast.Node, error) {
 
 	// If the block has no expressions, return a nil block
 	if len(bodyExpressions) == 0 {
+		nilValue := pile.MakeNilImmediate()
+		if nilValue == nil {
+			return nil, fmt.Errorf("failed to create nil immediate value")
+		}
 		return &ast.BlockNode{
 			Parameters:  parameters,
 			Temporaries: temporaries,
-			Body:        &ast.LiteralNode{Value: pile.MakeNilImmediate()},
+			Body:        &ast.LiteralNode{Value: nilValue},
 		}, nil
 	}
 
