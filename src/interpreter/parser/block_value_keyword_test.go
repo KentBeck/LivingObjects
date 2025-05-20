@@ -9,8 +9,8 @@ import (
 	"smalltalklsp/interpreter/vm"
 )
 
-// TestDirectParseBlockValue directly tests parsing "[5] value" as a message send with a block receiver
-func TestDirectParseBlockValue(t *testing.T) {
+// TestBlockValueKeyword directly tests parsing "[:x | x] value: 5" as a keyword message send with a block receiver
+func TestBlockValueKeyword(t *testing.T) {
 	// Create a class for context
 	objectClass := pile.NewClass("Object", nil)
 	objectClass.ClassField = objectClass
@@ -20,7 +20,7 @@ func TestDirectParseBlockValue(t *testing.T) {
 	vmInstance := vm.NewVM()
 
 	// Create a parser with the test input
-	p := NewParser("[5] value", classObj, vmInstance)
+	p := NewParser("[:x | x] value: 5", classObj, vmInstance)
 
 	// Tokenize the input manually to see what's happening
 	err := p.tokenize()
@@ -29,7 +29,7 @@ func TestDirectParseBlockValue(t *testing.T) {
 	}
 
 	// Print the tokens
-	t.Logf("Tokens for [5] value:")
+	t.Logf("Tokens for [:x | x] value: 5:")
 	for i, token := range p.Tokens {
 		t.Logf("  Token %d: Type=%d, Value=%s", i, token.Type, token.Value)
 	}
@@ -55,8 +55,8 @@ func TestDirectParseBlockValue(t *testing.T) {
 	}
 
 	// Check the selector
-	if messageSend.Selector != "value" {
-		t.Errorf("Expected selector 'value', got '%s'", messageSend.Selector)
+	if messageSend.Selector != "value:" {
+		t.Errorf("Expected selector 'value:', got '%s'", messageSend.Selector)
 	}
 
 	// Check if receiver is a block
@@ -66,20 +66,31 @@ func TestDirectParseBlockValue(t *testing.T) {
 		return
 	}
 
-	// The block body can be a literal node directly or a message send node
-	// depending on how the parser is implemented
-	switch body := blockNode.Body.(type) {
-	case *ast.LiteralNode:
-		// Verify it's an integer with value 5
-		if !pile.IsIntegerImmediate(body.Value) {
-			t.Fatalf("Expected integer immediate, got %v", body.Value)
-		}
+	// Check block parameters
+	if len(blockNode.Parameters) != 1 || blockNode.Parameters[0] != "x" {
+		t.Errorf("Expected block parameter 'x', got %v", blockNode.Parameters)
+	}
 
-		value := pile.GetIntegerImmediate(body.Value)
-		if value != 5 {
-			t.Errorf("Expected value 5, got %d", value)
-		}
-	default:
-		t.Fatalf("Expected LiteralNode as block body, got %T", blockNode.Body)
+	// Check argument
+	if len(messageSend.Arguments) != 1 {
+		t.Fatalf("Expected 1 argument, got %d", len(messageSend.Arguments))
+		return
+	}
+
+	// Check if argument is a literal node with value 5
+	literalNode, ok := messageSend.Arguments[0].(*ast.LiteralNode)
+	if !ok {
+		t.Fatalf("Expected LiteralNode as argument, got %T", messageSend.Arguments[0])
+		return
+	}
+
+	// Check the value of the literal node
+	if !pile.IsIntegerImmediate(literalNode.Value) {
+		t.Fatalf("Expected integer immediate, got %v", literalNode.Value)
+	}
+
+	value := pile.GetIntegerImmediate(literalNode.Value)
+	if value != 5 {
+		t.Errorf("Expected value 5, got %d", value)
 	}
 }

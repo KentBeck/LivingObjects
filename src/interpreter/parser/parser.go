@@ -128,7 +128,7 @@ func (p *Parser) ParseExpression() (ast.Node, error) {
 	}
 
 	// Parse the expression
-	return p.parseExpression()
+	return p.parseKeywordMessage()
 }
 
 // tokenize tokenizes the input
@@ -408,7 +408,13 @@ func (p *Parser) parseBinaryMessage() (ast.Node, error) {
 	}
 
 	// Parse a chain of binary messages
-	for p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value != ")" {
+	// Binary operators are special characters like +, -, *, /, <, >, etc.
+	// But NOT ), ], or other non-binary operators
+	for p.CurrentToken.Type == TOKEN_SPECIAL && 
+		p.CurrentToken.Value != ")" && 
+		p.CurrentToken.Value != "]" && 
+		p.CurrentToken.Value != "." {
+		
 		// Get the binary selector
 		selector := p.CurrentToken.Value
 		p.advanceToken()
@@ -653,24 +659,56 @@ func (p *Parser) parseBlock() (ast.Node, error) {
 	// Parse block parameters (if any)
 	var parameters []string
 
-	// Check if the block has parameters (look for identifiers followed by colons)
-	for p.CurrentToken.Type == TOKEN_IDENTIFIER &&
-		p.CurrentTokenIndex+1 < len(p.Tokens) &&
-		p.Tokens[p.CurrentTokenIndex+1].Type == TOKEN_SPECIAL &&
-		p.Tokens[p.CurrentTokenIndex+1].Value == ":" {
+	// Check for the block parameter pattern, which starts with a colon
+	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == ":" {
+		// Skip the colon
+		p.advanceToken()
+
+		// Expect an identifier (the parameter name)
+		if p.CurrentToken.Type != TOKEN_IDENTIFIER {
+			return nil, fmt.Errorf("expected identifier after : in block parameter, got %v", p.CurrentToken)
+		}
 
 		// Add the parameter name
 		parameters = append(parameters, p.CurrentToken.Value)
+		p.advanceToken() // Skip the parameter name
 
-		// Skip the parameter name and the colon
-		p.advanceToken() // Skip parameter name
-		p.advanceToken() // Skip colon
+		// Check for additional parameters (would be another : token)
+		for p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == ":" {
+			// Skip the colon
+			p.advanceToken()
+
+			// Expect an identifier
+			if p.CurrentToken.Type != TOKEN_IDENTIFIER {
+				return nil, fmt.Errorf("expected identifier after : in block parameter, got %v", p.CurrentToken)
+			}
+
+			// Add the parameter name
+			parameters = append(parameters, p.CurrentToken.Value)
+			p.advanceToken() // Skip the parameter name
+		}
+
+		// After parameters, expect a | token
+		if p.CurrentToken.Type != TOKEN_SPECIAL || p.CurrentToken.Value != "|" {
+			return nil, fmt.Errorf("expected | after block parameters, got %v", p.CurrentToken)
+		}
+
+		// Skip the | token
+		p.advanceToken()
+	} else {
+		// No parameters, check for temporaries
+		if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "|" {
+			// Has temporaries
+			p.advanceToken() // Skip the opening |
+		}
 	}
 
-	// Check for the bar character (|) to identify temporary variables
+	// Parse temporary variables if they exist
 	var temporaries []string
-	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "|" {
-		// Skip the opening bar
+	
+	// Parse temporaries if we didn't just parse parameters (in which case we've already consumed the |)
+	if len(parameters) == 0 && p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "|" {
+		// Skip the opening bar for temporaries
 		p.advanceToken()
 
 		// Parse temporary variable names
@@ -679,13 +717,15 @@ func (p *Parser) parseBlock() (ast.Node, error) {
 			p.advanceToken()
 		}
 
-		// Expect the closing bar
+		// Expect a closing bar
 		if p.CurrentToken.Type != TOKEN_SPECIAL || p.CurrentToken.Value != "|" {
-			return nil, fmt.Errorf("expected closing bar for block temporaries, got %v", p.CurrentToken)
+			return nil, fmt.Errorf("expected closing | for block temporaries, got %v", p.CurrentToken)
 		}
 
 		// Skip the closing bar
 		p.advanceToken()
+	} else if len(parameters) == 0 {
+		// No parameters and no temporaries, do nothing
 	}
 
 	// Parse the block body
@@ -715,7 +755,7 @@ func (p *Parser) parseBlock() (ast.Node, error) {
 		}
 	}
 
-	// Skip the closing bracket if it exists (might be EOF in testing scenarios)
+	// Skip the closing bracket
 	if p.CurrentToken.Type == TOKEN_SPECIAL && p.CurrentToken.Value == "]" {
 		p.advanceToken()
 	}
@@ -732,12 +772,14 @@ func (p *Parser) parseBlock() (ast.Node, error) {
 	// Use the last expression as the block's body (for now, ignoring statements before the last one)
 	body := bodyExpressions[len(bodyExpressions)-1]
 
-	// Create and return the block node
-	return &ast.BlockNode{
+	// Create the block node
+	blockNode := &ast.BlockNode{
 		Parameters:  parameters,
 		Temporaries: temporaries,
 		Body:        body,
-	}, nil
+	}
+
+	return blockNode, nil
 }
 
 // We don't need parseMessageSend anymore as it's been replaced by the more specific

@@ -57,3 +57,4 @@ SimpleMethod!factorial ^self * n - 1 factorial!method!{"type":"MethodNode","sele
 BlockValue![5] value!expression!{"type":"MessageSendNode","receiver":{"type":"BlockNode","parameters":[],"temporaries":[],"body":{"type":"LiteralNode","value":{"type":"Integer","value":5}}},"selector":"value","arguments":[]}
 
 # Block value with argument
+BlockValueWithArgument![:x | x] value: 5!expression!{"type":"MessageSendNode","receiver":{"type":"BlockNode","parameters":["x"],"temporaries":[],"body":{"type":"VariableNode","name":"x"}},"selector":"value:","arguments":[{"type":"LiteralNode","value":{"type":"Integer","value":5}}]}
