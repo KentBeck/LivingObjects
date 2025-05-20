@@ -58,3 +58,6 @@ BlockValue![5] value!expression!{"type":"MessageSendNode","receiver":{"type":"Bl
 
 # Block value with argument
 BlockValueWithArgument![:x | x] value: 5!expression!{"type":"MessageSendNode","receiver":{"type":"BlockNode","parameters":["x"],"temporaries":[],"body":{"type":"VariableNode","name":"x"}},"selector":"value:","arguments":[{"type":"LiteralNode","value":{"type":"Integer","value":5}}]}
+
+# Assignment
+AssignmentExpression!x := 5!expression!{"type":"AssignmentNode","variable":"x","expression":{"type":"LiteralNode","value":{"type":"Integer","value":5}}}

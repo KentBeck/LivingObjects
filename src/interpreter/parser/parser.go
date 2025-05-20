@@ -51,6 +51,7 @@ const (
 	TOKEN_SYMBOL
 	TOKEN_KEYWORD
 	TOKEN_SPECIAL
+	TOKEN_ASSIGNMENT // New token type for :=
 	TOKEN_EOF
 )
 
@@ -124,6 +125,28 @@ func (p *Parser) ParseExpression() (ast.Node, error) {
 		// Create a return node
 		return &ast.ReturnNode{
 			Expression: expr,
+		}, nil
+	}
+
+	// Check for assignment directly here
+	if p.isAssignment() {
+		// Get the variable name
+		variableName := p.CurrentToken.Value
+		
+		// Skip the variable name and :=
+		p.advanceToken() // Skip variable name
+		p.advanceToken() // Skip :=
+		
+		// Parse the expression to be assigned
+		expression, err := p.parseKeywordMessage()
+		if err != nil {
+			return nil, err
+		}
+		
+		// Create and return an assignment node
+		return &ast.AssignmentNode{
+			Variable: variableName,
+			Expression: expression,
 		}, nil
 	}
 
@@ -354,8 +377,44 @@ func (p *Parser) parseExpression() (ast.Node, error) {
 	// 2. Unary messages (e.g., obj size)
 	// 3. Binary messages (e.g., a + b)
 	// 4. Keyword messages (e.g., dict at: key put: value)
+	// 5. Assignments (e.g., x := 5)
 
-	// Start with a primary expression
+	// First check if this is an assignment expression
+	return p.parseAssignment()
+}
+
+// isAssignment checks if the current tokens represent an assignment
+func (p *Parser) isAssignment() bool {
+	return p.CurrentToken.Type == TOKEN_IDENTIFIER && 
+		p.CurrentTokenIndex+1 < len(p.Tokens) &&
+		p.Tokens[p.CurrentTokenIndex+1].Value == ":="
+}
+
+// parseAssignment parses an assignment expression
+func (p *Parser) parseAssignment() (ast.Node, error) {
+	// First, check if we have a variable followed by :=
+	if p.isAssignment() {
+		// Get the variable name
+		variableName := p.CurrentToken.Value
+		
+		// Skip the variable name and :=
+		p.advanceToken() // Skip variable name
+		p.advanceToken() // Skip :=
+		
+		// Parse the expression to be assigned
+		expression, err := p.parseKeywordMessage()
+		if err != nil {
+			return nil, err
+		}
+		
+		// Create and return an assignment node
+		return &ast.AssignmentNode{
+			Variable: variableName,
+			Expression: expression,
+		}, nil
+	}
+	
+	// If it's not an assignment, continue with normal expression parsing
 	return p.parseKeywordMessage()
 }
 
@@ -475,8 +534,13 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 
 		// For parser tests, we'll use immediate values since they're safer for test comparison
 		// and we're not keeping them across GC cycles in tests
+		trueValue := pile.MakeTrueImmediate()
+		if trueValue == nil {
+			// Fallback if immediate creation fails
+			return nil, fmt.Errorf("failed to create immediate true value")
+		}
 		return &ast.LiteralNode{
-			Value: pile.MakeTrueImmediate(),
+			Value: trueValue,
 		}, nil
 	}
 
@@ -485,8 +549,13 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 
 		// For parser tests, we'll use immediate values since they're safer for test comparison
 		// and we're not keeping them across GC cycles in tests
+		falseValue := pile.MakeFalseImmediate()
+		if falseValue == nil {
+			// Fallback if immediate creation fails
+			return nil, fmt.Errorf("failed to create immediate false value")
+		}
 		return &ast.LiteralNode{
-			Value: pile.MakeFalseImmediate(),
+			Value: falseValue,
 		}, nil
 	}
 
@@ -866,8 +935,16 @@ func (p *Parser) parseNumber() Token {
 	return Token{Type: TOKEN_NUMBER, Value: value.String()}
 }
 
-// parseSpecial parses a special character
+// parseSpecial parses a special character or assignment operator
 func (p *Parser) parseSpecial() Token {
+	// Check for assignment operator :=
+	if p.CurrentChar == ':' && p.Position+1 < len(p.Input) && p.Input[p.Position+1] == '=' {
+		p.advance() // Skip :
+		p.advance() // Skip =
+		return Token{Type: TOKEN_ASSIGNMENT, Value: ":="}
+	}
+	
+	// Regular special character
 	value := string(p.CurrentChar)
 	p.advance()
 	return Token{Type: TOKEN_SPECIAL, Value: value}
