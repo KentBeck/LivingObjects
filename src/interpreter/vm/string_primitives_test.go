@@ -4,7 +4,6 @@ import (
 	"smalltalklsp/interpreter/pile"
 	"testing"
 
-	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -12,21 +11,19 @@ import (
 func TestStringSizePrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	// Add primitive methods to the String class
+	// Get the predefined primitive methods from the VM
 	stringClass := pile.ObjectToClass(virtualMachine.Globals["String"])
-	sizeMethod := compiler.NewMethodBuilder(stringClass).
-		Primitive(30). // String size primitive
-		Go("size")
+	sizeSelector := pile.NewSymbol("size")
+	sizeMethod := virtualMachine.LookupMethod(pile.ClassToObject(stringClass), sizeSelector)
 
 	// Create a test string
 	testString := virtualMachine.NewString("hello")
 	method := sizeMethod
 
-	// Create a selector object
-	selectorObj := pile.NewSymbol("size")
+	// We already have the selector object
 
 	// Execute the primitive
-	result := virtualMachine.ExecutePrimitive(testString, selectorObj, []*pile.Object{}, method)
+	result := virtualMachine.ExecutePrimitive(testString, sizeSelector, []*pile.Object{}, method)
 
 	// Check that the result is not nil
 	if result == nil {
@@ -48,7 +45,7 @@ func TestStringSizePrimitive(t *testing.T) {
 
 	// Test with an empty string
 	emptyString := virtualMachine.NewString("")
-	result = virtualMachine.ExecutePrimitive(emptyString, selectorObj, []*pile.Object{}, method)
+	result = virtualMachine.ExecutePrimitive(emptyString, sizeSelector, []*pile.Object{}, method)
 
 	// Check that the result is not nil
 	if result == nil {

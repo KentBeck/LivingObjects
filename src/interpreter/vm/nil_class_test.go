@@ -11,13 +11,8 @@ import (
 func TestNilClassPanic(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	// Create a method with the basicClass primitive using MethodBuilder
+	// Get the predefined basicClass selector and method
 	basicClassSelector := pile.NewSymbol("basicClass")
-
-	// Create the method using MethodBuilder
-	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Primitive(5). // basicClass primitive
-		Go("basicClass")
 
 	// Create an object with a nil class
 	objWithNilClass := &pile.Object{

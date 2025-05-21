@@ -113,10 +113,8 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	// Finalize the method
 	returnValueBuilder.Go("returnValue")
 
-	// Create the multiplication method
-	timesMethod := compiler.NewMethodBuilder(integerClass).
-		Primitive(2). // Multiplication
-		Go("*")
+	// Get the predefined multiplication method from the VM
+	timesMethod := virtualMachine.LookupMethod(pile.ClassToObject(integerClass), timesSelector)
 
 	// Make sure the method is in the method dictionary
 	methodDict := integerClass.GetMethodDict()

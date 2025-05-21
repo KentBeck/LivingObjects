@@ -4,7 +4,6 @@ import (
 	"smalltalklsp/interpreter/pile"
 	"testing"
 
-	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -12,12 +11,10 @@ import (
 func TestArrayAtPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	// Add primitive methods to the Array class
+	// Get the predefined primitive methods from the VM
 	arrayClass := pile.ObjectToClass(virtualMachine.Globals["Array"])
 	atSelector := pile.NewSymbol("at:")
-	atMethod := compiler.NewMethodBuilder(arrayClass).
-		Primitive(40). // Array at: primitive
-		Go("at:")
+	atMethod := virtualMachine.LookupMethod(pile.ClassToObject(arrayClass), atSelector)
 
 	// Create a test array with 3 elements
 	array := virtualMachine.NewArray(3)

@@ -16,12 +16,8 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 
 	// Test cases
 	t.Run("primitive method", func(t *testing.T) {
-		// Add primitive methods to the Integer class
-		integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
+		// Reference to the + selector
 		plusSymbol := pile.NewSymbol("+")
-		compiler.NewMethodBuilder(integerClass).
-			Primitive(1). // Addition primitive
-			Go("+")
 
 		// Create literals
 		twoObj := virtualMachine.NewInteger(2)
@@ -229,12 +225,8 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 
 	// Test case for a method with multiple arguments
 	t.Run("direct primitive call with multiple arguments", func(t *testing.T) {
-		// Add primitive methods to the Integer class
-		integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
+		// Reference to the + selector
 		plusSymbol := pile.NewSymbol("+")
-		compiler.NewMethodBuilder(integerClass).
-			Primitive(1). // Addition primitive
-			Go("+")
 
 		// Create literals
 		twoObj := virtualMachine.NewInteger(2)

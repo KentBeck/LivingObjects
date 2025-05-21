@@ -4,7 +4,6 @@ import (
 	"smalltalklsp/interpreter/pile"
 	"testing"
 
-	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -19,12 +18,10 @@ func TestIntegerPrimitives(t *testing.T) {
 func testSubtractionPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	// Add primitive methods to the Integer class
+	// Get the predefined primitive methods from the VM
 	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	minusSelector := pile.NewSymbol("-")
-	minusMethod := compiler.NewMethodBuilder(integerClass).
-		Primitive(4). // Subtraction primitive
-		Go("-")
+	minusMethod := virtualMachine.LookupMethod(pile.ClassToObject(integerClass), minusSelector)
 
 	five := virtualMachine.NewInteger(5)
 	two := virtualMachine.NewInteger(2)
@@ -58,12 +55,10 @@ func testSubtractionPrimitive(t *testing.T) {
 func testMultiplicationPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	// Add primitive methods to the Integer class
+	// Get the predefined primitive methods from the VM
 	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	timesSelector := pile.NewSymbol("*")
-	timesMethod := compiler.NewMethodBuilder(integerClass).
-		Primitive(2). // Multiplication primitive
-		Go("*")
+	timesMethod := virtualMachine.LookupMethod(pile.ClassToObject(integerClass), timesSelector)
 
 	five := virtualMachine.NewInteger(5)
 	two := virtualMachine.NewInteger(2)
@@ -97,12 +92,10 @@ func testMultiplicationPrimitive(t *testing.T) {
 func testAdditionPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	// Add primitive methods to the Integer class
+	// Get the predefined primitive methods from the VM
 	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	plusSelector := pile.NewSymbol("+")
-	plusMethod := compiler.NewMethodBuilder(integerClass).
-		Primitive(1). // Addition primitive
-		Go("+")
+	plusMethod := virtualMachine.LookupMethod(pile.ClassToObject(integerClass), plusSelector)
 
 	three := virtualMachine.NewInteger(3)
 	four := virtualMachine.NewInteger(4)
@@ -136,12 +129,10 @@ func testAdditionPrimitive(t *testing.T) {
 func testLessThanPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	// Add primitive methods to the Integer class
+	// Get the predefined primitive methods from the VM
 	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	lessSelector := pile.NewSymbol("<")
-	lessMethod := compiler.NewMethodBuilder(integerClass).
-		Primitive(6). // Less than primitive
-		Go("<")
+	lessMethod := virtualMachine.LookupMethod(pile.ClassToObject(integerClass), lessSelector)
 
 	two := virtualMachine.NewInteger(2)
 	five := virtualMachine.NewInteger(5)
@@ -189,12 +180,10 @@ func testLessThanPrimitive(t *testing.T) {
 func testGreaterThanPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	// Add primitive methods to the Integer class
+	// Get the predefined primitive methods from the VM
 	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	greaterSelector := pile.NewSymbol(">")
-	greaterMethod := compiler.NewMethodBuilder(integerClass).
-		Primitive(7). // Greater than primitive
-		Go(">")
+	greaterMethod := virtualMachine.LookupMethod(pile.ClassToObject(integerClass), greaterSelector)
 
 	five := virtualMachine.NewInteger(5)
 	two := virtualMachine.NewInteger(2)

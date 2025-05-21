@@ -90,22 +90,7 @@ func TestFactorial(t *testing.T) {
 	// Finalize the method
 	factorialMethod := builder.Go("factorial")
 
-	// Create primitive methods for the Integer class
-	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
-		Primitive(1). // Addition
-		Go("+")
-
-	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
-		Primitive(4). // Subtraction
-		Go("-")
-
-	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
-		Primitive(2). // Multiplication
-		Go("*")
-
-	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
-		Primitive(3). // Equality
-		Go("=")
+	// Integer primitives (+, -, *, =) are already defined in the VM's NewIntegerClass method
 
 	// Test factorial of 1
 	t.Run("Factorial of 1", func(t *testing.T) {

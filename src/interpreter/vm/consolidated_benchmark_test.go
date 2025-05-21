@@ -208,9 +208,7 @@ var messageSendTestCases = []struct {
 			integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 
 			// Create a simple addition method
-			compiler.NewMethodBuilder(integerClass).
-				Primitive(1). // Addition
-				Go("+")
+			// Addition primitive is already defined by the VM
 
 			// Create literals for the test method
 			fiveObj := virtualMachine.NewInteger(5)
@@ -248,9 +246,7 @@ var messageSendTestCases = []struct {
 			integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 
 			// Create a simple addition method
-			compiler.NewMethodBuilder(integerClass).
-				Primitive(1). // Addition
-				Go("+")
+			// Addition primitive is already defined by the VM
 
 			// Create literals for the test method
 			oneObj := virtualMachine.NewInteger(1)

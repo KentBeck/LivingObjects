@@ -4,7 +4,6 @@ import (
 	"smalltalklsp/interpreter/pile"
 	"testing"
 
-	"smalltalklsp/interpreter/compiler"
 	"smalltalklsp/interpreter/vm"
 )
 
@@ -12,12 +11,10 @@ import (
 func TestByteArrayAtPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	// Add primitive methods to the ByteArray class
+	// Get the predefined primitive methods from the VM
 	byteArrayClass := pile.ObjectToClass(virtualMachine.Globals["ByteArray"])
 	atSelector := pile.NewSymbol("at:")
-	atMethod := compiler.NewMethodBuilder(byteArrayClass).
-		Primitive(50). // ByteArray at: primitive
-		Go("at:")
+	atMethod := virtualMachine.LookupMethod(pile.ClassToObject(byteArrayClass), atSelector)
 
 	// Create a test byte array with 3 elements
 	byteArray := virtualMachine.NewByteArray(3)
@@ -70,12 +67,10 @@ func TestByteArrayAtPrimitive(t *testing.T) {
 func TestByteArrayAtPutPrimitive(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	// Add primitive methods to the ByteArray class
+	// Get the predefined primitive methods from the VM
 	byteArrayClass := pile.ObjectToClass(virtualMachine.Globals["ByteArray"])
 	atPutSelector := pile.NewSymbol("at:put:")
-	atPutMethod := compiler.NewMethodBuilder(byteArrayClass).
-		Primitive(51). // ByteArray at:put: primitive
-		Go("at:put:")
+	atPutMethod := virtualMachine.LookupMethod(pile.ClassToObject(byteArrayClass), atPutSelector)
 
 	// Create a test byte array with 3 elements
 	byteArray := virtualMachine.NewByteArray(3)

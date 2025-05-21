@@ -133,10 +133,7 @@ func TestExecuteDuplicate(t *testing.T) {
 func TestExecuteSendMessage(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	// Create a simple addition method for the Integer class
-	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
-		Primitive(1). // Addition primitive
-		Go("+")
+	// The Integer addition primitive is already defined by the VM
 
 	builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"]))
 	twoIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(2))
