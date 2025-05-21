@@ -25,7 +25,7 @@ func runDemo() {
 	timesSymbol := pile.NewSymbol("*")
 
 	// Create the method using MethodBuilder with AddLiteral
-	builder := compiler.NewMethodBuilder(integerClass).Selector("factorial")
+	builder := compiler.NewMethodBuilder(integerClass)
 
 	// Add literals to the method builder
 	oneIndex, builder := builder.AddLiteral(oneObj)                  // Literal 0: 1
@@ -88,14 +88,14 @@ func runDemo() {
 	builder.ReturnStackTop()
 
 	// Finalize the method
-	factorialMethod := builder.Go()
+	factorialMethod := builder.Go("factorial")
 
 	// Create literals for the main method
 	fourObj := virtualMachine.NewInteger(4)
 	factorialSelectorObj := pile.NewSymbol("factorial") // Create the selector for use in literals
 
 	// Create a method to compute factorial of 4 using AddLiteral
-	mainBuilder := compiler.NewMethodBuilder(objectClass).Selector("main")
+	mainBuilder := compiler.NewMethodBuilder(objectClass)
 
 	// Add literals to the method builder
 	fourIndex, mainBuilder := mainBuilder.AddLiteral(fourObj)                           // Literal 0: 4
@@ -107,7 +107,7 @@ func runDemo() {
 	mainBuilder.ReturnStackTop()
 
 	// Finalize the method
-	mainMethod := mainBuilder.Go()
+	mainMethod := mainBuilder.Go("main")
 
 	// Print the bytecodes for debugging
 	fmt.Println("\nFactorial method bytecodes:")
