@@ -9,7 +9,7 @@ import (
 )
 
 func TestSendMessageStackManagement(t *testing.T) {
-	t.Skip("Skipping send message stack management test while fixing pile package integration")
+	// Pile package integration has been fixed
 	virtualMachine := vm.NewVM()
 
 	// We'll use the VM's Object and Integer classes
@@ -89,7 +89,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 }
 
 func TestSendMessageWithMultiplication(t *testing.T) {
-	t.Skip("Skipping send message with multiplication test while fixing pile package integration")
+	// Pile package integration has been fixed
 	virtualMachine := vm.NewVM()
 
 	// We'll use the VM's Object and Integer classes
