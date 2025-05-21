@@ -13,9 +13,9 @@ import (
 func TestExecutePushLiteral(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
-	builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).Selector("test")
+	builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"]))
 	literalIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(42))
-	methodObj := builder.PushLiteral(literalIndex).Go()
+	methodObj := builder.PushLiteral(literalIndex).Go("test")
 
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
@@ -44,8 +44,7 @@ func TestExecutePushSelf(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
-		Go()
+		Go("test")
 
 	// Convert to pile.Class
 	pileClass := (*pile.Class)(unsafe.Pointer(pile.ObjectToClass(virtualMachine.Globals["Object"])))
@@ -72,8 +71,7 @@ func TestExecutePop(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
-		Go()
+		Go("test")
 
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
@@ -93,8 +91,7 @@ func TestExecuteDuplicate(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
-		Go()
+		Go("test")
 
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
@@ -138,11 +135,10 @@ func TestExecuteSendMessage(t *testing.T) {
 
 	// Create a simple addition method for the Integer class
 	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
-		Selector("+").
 		Primitive(1). // Addition primitive
-		Go()
+		Go("+")
 
-	builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).Selector("test")
+	builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"]))
 	twoIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(2))
 	threeIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(3))
 	plusIndex, builder := builder.AddLiteral(pile.NewSymbol("+"))
@@ -151,7 +147,7 @@ func TestExecuteSendMessage(t *testing.T) {
 		PushLiteral(twoIndex).
 		PushLiteral(threeIndex).
 		SendMessage(plusIndex, 1).
-		Go()
+		Go("test")
 
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
@@ -187,9 +183,8 @@ func TestExecutePushInstanceVariable(t *testing.T) {
 	instance.SetInstanceVarByIndex(0, virtualMachine.NewInteger(42))
 
 	methodObj := compiler.NewMethodBuilder(class).
-		Selector("test").
 		PushInstanceVariable(0).
-		Go()
+		Go("test")
 
 	context := vm.NewContext(methodObj, instance, []*pile.Object{}, nil)
 
@@ -218,10 +213,9 @@ func TestExecutePushTemporaryVariable(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
 		TempVars([]string{"temp"}).
 		PushTemporaryVariable(0).
-		Go()
+		Go("test")
 
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
@@ -257,9 +251,8 @@ func TestExecuteStoreInstanceVariable(t *testing.T) {
 	instance := pile.NewInstance(class)
 
 	methodObj := compiler.NewMethodBuilder(class).
-		Selector("test").
 		StoreInstanceVariable(0).
-		Go()
+		Go("test")
 
 	context := vm.NewContext(methodObj, instance, []*pile.Object{}, nil)
 
@@ -301,10 +294,9 @@ func TestExecuteStoreTemporaryVariable(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
 		TempVars([]string{"temp"}).
 		StoreTemporaryVariable(0).
-		Go()
+		Go("test")
 
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
@@ -346,8 +338,7 @@ func TestExecuteReturnStackTop(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
-		Go()
+		Go("test")
 
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
@@ -377,13 +368,12 @@ func TestExecuteJump(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
 		Jump(10).
 		// Add some dummy bytecodes to make the jump valid
 		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
 		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
 		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
-		Go()
+		Go("test")
 
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
 
@@ -406,13 +396,12 @@ func TestExecuteJumpIfTrue(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
 		JumpIfTrue(10).
 		// Add some dummy bytecodes to make the jump valid
 		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
 		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
 		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
-		Go()
+		Go("test")
 
 	// Test with true condition
 	{
@@ -460,13 +449,12 @@ func TestExecuteJumpIfFalse(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
 		JumpIfFalse(10).
 		// Add some dummy bytecodes to make the jump valid
 		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
 		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
 		PushSelf().PushSelf().PushSelf().PushSelf().PushSelf().
-		Go()
+		Go("test")
 
 	// Test with false condition
 	{

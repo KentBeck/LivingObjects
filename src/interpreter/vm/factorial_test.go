@@ -25,7 +25,7 @@ func TestFactorial(t *testing.T) {
 	oneObj := virtualMachine.NewInteger(1)
 
 	// Create a simple factorial method using MethodBuilder with AddLiteral
-	builder := compiler.NewMethodBuilder(integerClass).Selector("factorial")
+	builder := compiler.NewMethodBuilder(integerClass)
 
 	// Add literals to the method builder
 	oneIndex, builder := builder.AddLiteral(oneObj)                  // Literal 0: 1
@@ -88,28 +88,24 @@ func TestFactorial(t *testing.T) {
 	builder.ReturnStackTop()
 
 	// Finalize the method
-	factorialMethod := builder.Go()
+	factorialMethod := builder.Go("factorial")
 
 	// Create primitive methods for the Integer class
 	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
-		Selector("+").
 		Primitive(1). // Addition
-		Go()
+		Go("+")
 
 	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
-		Selector("-").
 		Primitive(4). // Subtraction
-		Go()
+		Go("-")
 
 	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
-		Selector("*").
 		Primitive(2). // Multiplication
-		Go()
+		Go("*")
 
 	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Integer"])).
-		Selector("=").
 		Primitive(3). // Equality
-		Go()
+		Go("=")
 
 	// Test factorial of 1
 	t.Run("Factorial of 1", func(t *testing.T) {

@@ -21,7 +21,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	receiverObj := virtualMachine.NewInteger(10)
 
 	// Create a simple method that returns a value using AddLiteral
-	returnValueBuilder := compiler.NewMethodBuilder(integerClass).Selector("returnValue")
+	returnValueBuilder := compiler.NewMethodBuilder(integerClass)
 
 	// Add literals to the method builder
 	valueIndex, returnValueBuilder := returnValueBuilder.AddLiteral(valueObj) // Literal 0: 42
@@ -31,10 +31,10 @@ func TestSendMessageStackManagement(t *testing.T) {
 	returnValueBuilder.ReturnStackTop()
 
 	// Finalize the method
-	returnValueBuilder.Go()
+	returnValueBuilder.Go("returnValue")
 
 	// Create a caller method that will call returnValue and then use the result using AddLiteral
-	callerBuilder := compiler.NewMethodBuilder(integerClass).Selector("caller")
+	callerBuilder := compiler.NewMethodBuilder(integerClass)
 
 	// Add literals to the caller method builder
 	receiverIndex, callerBuilder := callerBuilder.AddLiteral(receiverObj)                    // Literal 0: 10
@@ -62,7 +62,7 @@ func TestSendMessageStackManagement(t *testing.T) {
 	callerBuilder.ReturnStackTop()
 
 	// Finalize the method
-	callerMethod := callerBuilder.Go()
+	callerMethod := callerBuilder.Go("caller")
 
 	// Create a receiver for the caller method
 	receiver := virtualMachine.NewInteger(5)
@@ -101,7 +101,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	timesSelector := pile.NewSymbol("*")
 
 	// Create a simple method that returns a value using AddLiteral
-	returnValueBuilder := compiler.NewMethodBuilder(integerClass).Selector("returnValue")
+	returnValueBuilder := compiler.NewMethodBuilder(integerClass)
 
 	// Add literals to the method builder
 	valueIndex, returnValueBuilder := returnValueBuilder.AddLiteral(valueObj) // Literal 0: 42
@@ -111,13 +111,12 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	returnValueBuilder.ReturnStackTop()
 
 	// Finalize the method
-	returnValueBuilder.Go()
+	returnValueBuilder.Go("returnValue")
 
 	// Create the multiplication method
 	timesMethod := compiler.NewMethodBuilder(integerClass).
-		Selector("*").
 		Primitive(2). // Multiplication
-		Go()
+		Go("*")
 
 	// Make sure the method is in the method dictionary
 	methodDict := integerClass.GetMethodDict()
@@ -125,7 +124,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	dict.Entries["*"] = timesMethod
 
 	// Create a method that will call returnValue and then use the result for multiplication using AddLiteral
-	multiplyBuilder := compiler.NewMethodBuilder(integerClass).Selector("multiply")
+	multiplyBuilder := compiler.NewMethodBuilder(integerClass)
 
 	// Add literals to the multiply method builder
 	returnValueSelectorIndex, multiplyBuilder := multiplyBuilder.AddLiteral(returnValueSelector) // Literal 0: returnValue
@@ -152,7 +151,7 @@ func TestSendMessageWithMultiplication(t *testing.T) {
 	multiplyBuilder.ReturnStackTop()
 
 	// Finalize the method
-	multiplyMethod := multiplyBuilder.Go()
+	multiplyMethod := multiplyBuilder.Go("multiply")
 
 	// Create a receiver for the multiply method
 	multiplyReceiver := virtualMachine.NewInteger(5)

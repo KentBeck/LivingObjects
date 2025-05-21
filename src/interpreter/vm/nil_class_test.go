@@ -16,9 +16,8 @@ func TestNilClassPanic(t *testing.T) {
 
 	// Create the method using MethodBuilder
 	compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("basicClass").
 		Primitive(5). // basicClass primitive
-		Go()
+		Go("basicClass")
 
 	// Create an object with a nil class
 	objWithNilClass := &pile.Object{
@@ -27,7 +26,7 @@ func TestNilClassPanic(t *testing.T) {
 	}
 
 	// Create a test method that will send the basicClass message
-	builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).Selector("test")
+	builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"]))
 	selectorIndex, builder := builder.AddLiteral(basicClassSelector)
 
 	// Create bytecodes for the test method
@@ -35,7 +34,7 @@ func TestNilClassPanic(t *testing.T) {
 	builder.SendMessage(selectorIndex, 0)
 	builder.ReturnStackTop()
 
-	testMethod := builder.Go()
+	testMethod := builder.Go("test")
 
 	// Create a context for the test method
 	context := vm.NewContext(testMethod, objWithNilClass, []*pile.Object{}, nil)

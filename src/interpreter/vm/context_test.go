@@ -13,8 +13,7 @@ func TestContextPush(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
-		Go()
+		Go("test")
 
 	// Create a context
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
@@ -63,8 +62,7 @@ func TestContextPop(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
-		Go()
+		Go("test")
 
 	// Create a context
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
@@ -98,8 +96,7 @@ func TestContextTop(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
-		Go()
+		Go("test")
 
 	// Create a context
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)
@@ -136,8 +133,7 @@ func TestContextTempVars(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("test").
-		Go()
+		Go("test")
 
 	// Create a context
 	context := vm.NewContext(methodObj, pile.ClassToObject(pile.ObjectToClass(virtualMachine.Globals["Object"])), []*pile.Object{}, nil)

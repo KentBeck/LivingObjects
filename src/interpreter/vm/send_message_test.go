@@ -20,16 +20,15 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 		plusSymbol := pile.NewSymbol("+")
 		compiler.NewMethodBuilder(integerClass).
-			Selector("+").
 			Primitive(1). // Addition primitive
-			Go()
+			Go("+")
 
 		// Create literals
 		twoObj := virtualMachine.NewInteger(2)
 		threeObj := virtualMachine.NewInteger(3)
 
 		// Create a method with a SEND_MESSAGE bytecode for addition using AddLiteral
-		builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).Selector("test")
+		builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"]))
 
 		// Add literals to the method builder
 		twoIndex, builder := builder.AddLiteral(twoObj)      // Index 0
@@ -42,7 +41,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		builder.SendMessage(plusIndex, 1)
 
 		// Finalize the method
-		method := builder.Go()
+		method := builder.Go("test")
 
 		// Create a context
 		context := vm.NewContext(method, pile.ObjectToClass(virtualMachine.Globals["Object"]), []*pile.Object{}, nil)
@@ -105,7 +104,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		fiveObj := virtualMachine.NewInteger(5)
 
 		// Create a factorial method for Integer using AddLiteral
-		factorialBuilder := compiler.NewMethodBuilder(integerClass).Selector("factorial")
+		factorialBuilder := compiler.NewMethodBuilder(integerClass)
 
 		// Add literals to the factorial method builder
 		oneIndex, factorialBuilder := factorialBuilder.AddLiteral(oneObj) // Index 0
@@ -116,10 +115,10 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		factorialBuilder.ReturnStackTop()
 
 		// Finalize the factorial method
-		factorialBuilder.Go()
+		factorialBuilder.Go("factorial")
 
 		// Create a method that calls factorial using AddLiteral
-		testBuilder := compiler.NewMethodBuilder(objectClass).Selector("test")
+		testBuilder := compiler.NewMethodBuilder(objectClass)
 
 		// Add literals to the test method builder
 		fiveIndex, testBuilder := testBuilder.AddLiteral(fiveObj)                        // Index 0
@@ -130,7 +129,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		testBuilder.SendMessage(factorialSelectorIndex, 0)
 
 		// Finalize the test method
-		testMethod := testBuilder.Go()
+		testMethod := testBuilder.Go("test")
 
 		// Create a context
 		context := vm.NewContext(testMethod, objectClass, []*pile.Object{}, nil)
@@ -189,7 +188,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		unknownSelector := pile.NewSymbol("unknown")
 
 		// Create a method with a SEND_MESSAGE bytecode for an unknown method using AddLiteral
-		builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).Selector("test")
+		builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"]))
 
 		// Add literals to the method builder
 		receiverIndex, builder := builder.AddLiteral(receiver)               // Index 0
@@ -200,7 +199,7 @@ func TestExecuteSendMessageExtended(t *testing.T) {
 		builder.SendMessage(unknownSelectorIndex, 0)
 
 		// Finalize the method
-		method := builder.Go()
+		method := builder.Go("test")
 
 		// Create a context
 		context := vm.NewContext(method, pile.ObjectToClass(virtualMachine.Globals["Object"]), []*pile.Object{}, nil)
@@ -234,9 +233,8 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 		plusSymbol := pile.NewSymbol("+")
 		compiler.NewMethodBuilder(integerClass).
-			Selector("+").
 			Primitive(1). // Addition primitive
-			Go()
+			Go("+")
 
 		// Create literals
 		twoObj := virtualMachine.NewInteger(2)
@@ -244,7 +242,7 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		fourObj := virtualMachine.NewInteger(4)
 
 		// Create a method with a SEND_MESSAGE bytecode for addition using AddLiteral
-		builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).Selector("test")
+		builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"]))
 
 		// Add literals to the method builder
 		twoIndex, builder := builder.AddLiteral(twoObj)      // Index 0
@@ -260,7 +258,7 @@ func TestExecuteSendMessageWithMultipleArguments(t *testing.T) {
 		builder.SendMessage(plusIndex, 1)
 
 		// Finalize the method
-		method := builder.Go()
+		method := builder.Go("test")
 
 		// Create a context
 		context := vm.NewContext(method, pile.ObjectToClass(virtualMachine.Globals["Object"]), []*pile.Object{}, nil)

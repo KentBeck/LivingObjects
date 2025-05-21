@@ -13,8 +13,7 @@ func TestMethodBuilderBasic(t *testing.T) {
 
 	// Create a simple method
 	method := compiler.NewMethodBuilder(testClass).
-		Selector("testMethod").
-		Go()
+		Go("testMethod")
 
 	// Check that the method is not nil
 	if method == nil {
@@ -39,9 +38,9 @@ func TestMethodBuilderWithLiterals(t *testing.T) {
 
 	// Create a method with literals
 	literal := pile.MakeIntegerImmediate(42)
-	builder := compiler.NewMethodBuilder(testClass).Selector("testWithLiterals")
+	builder := compiler.NewMethodBuilder(testClass)
 	literalIndex, builder := builder.AddLiteral(literal)
-	method := builder.Go()
+	method := builder.Go("testWithLiterals")
 
 	// Check that the method is not nil
 	if method == nil {
@@ -65,9 +64,8 @@ func TestMethodBuilderWithTempVars(t *testing.T) {
 
 	// Create a method with temporary variables
 	method := compiler.NewMethodBuilder(testClass).
-		Selector("testWithTempVars").
 		TempVars([]string{"temp1", "temp2"}).
-		Go()
+		Go("testWithTempVars")
 
 	// Check that the method is not nil
 	if method == nil {

@@ -37,7 +37,7 @@ func setupFactorialMethod(virtualMachine *vm.VM) *pile.Object {
 	oneObj := virtualMachine.NewInteger(1)
 
 	// Create a simple factorial method using MethodBuilder with AddLiteral
-	builder := compiler.NewMethodBuilder(integerClass).Selector("factorial")
+	builder := compiler.NewMethodBuilder(integerClass)
 
 	// Add literals to the method builder
 	oneIndex, builder := builder.AddLiteral(oneObj)                  // Literal 0: 1
@@ -100,7 +100,7 @@ func setupFactorialMethod(virtualMachine *vm.VM) *pile.Object {
 	builder.ReturnStackTop()
 
 	// Finalize the method
-	factorialMethod := builder.Go()
+	factorialMethod := builder.Go("factorial")
 
 	return factorialMethod
 }
@@ -184,7 +184,7 @@ var messageSendTestCases = []struct {
 			valueObj := virtualMachine.NewInteger(42)
 
 			// Create a simple method that returns a value using AddLiteral
-			builder := compiler.NewMethodBuilder(integerClass).Selector("returnValue")
+			builder := compiler.NewMethodBuilder(integerClass)
 			valueIndex, builder := builder.AddLiteral(valueObj) // Literal 0: 42
 
 			// Create bytecodes for the method: just return 42
@@ -192,7 +192,7 @@ var messageSendTestCases = []struct {
 			builder.ReturnStackTop()
 
 			// Finalize the method
-			returnValueMethod := builder.Go()
+			returnValueMethod := builder.Go("returnValue")
 
 			// Create a receiver for the method
 			receiver := virtualMachine.NewInteger(5)
@@ -209,9 +209,8 @@ var messageSendTestCases = []struct {
 
 			// Create a simple addition method
 			compiler.NewMethodBuilder(integerClass).
-				Selector("+").
 				Primitive(1). // Addition
-				Go()
+				Go("+")
 
 			// Create literals for the test method
 			fiveObj := virtualMachine.NewInteger(5)
@@ -219,7 +218,7 @@ var messageSendTestCases = []struct {
 			plusSymbol := pile.NewSymbol("+")
 
 			// Create a method that calls the addition method using AddLiteral
-			builder := compiler.NewMethodBuilder(integerClass).Selector("test")
+			builder := compiler.NewMethodBuilder(integerClass)
 
 			// Add literals to the method builder
 			fiveIndex, builder := builder.AddLiteral(fiveObj)    // Literal 0: 5
@@ -233,7 +232,7 @@ var messageSendTestCases = []struct {
 			builder.ReturnStackTop()
 
 			// Finalize the method
-			testMethod := builder.Go()
+			testMethod := builder.Go("test")
 
 			// Create a receiver for the test method
 			receiver := virtualMachine.NewInteger(0)
@@ -250,9 +249,8 @@ var messageSendTestCases = []struct {
 
 			// Create a simple addition method
 			compiler.NewMethodBuilder(integerClass).
-				Selector("+").
 				Primitive(1). // Addition
-				Go()
+				Go("+")
 
 			// Create literals for the test method
 			oneObj := virtualMachine.NewInteger(1)
@@ -263,7 +261,7 @@ var messageSendTestCases = []struct {
 			plusSymbol := pile.NewSymbol("+")
 
 			// Create a method that adds multiple numbers using AddLiteral
-			builder := compiler.NewMethodBuilder(integerClass).Selector("test")
+			builder := compiler.NewMethodBuilder(integerClass)
 
 			// Add literals to the method builder
 			oneIndex, builder := builder.AddLiteral(oneObj)      // Literal 0: 1
@@ -290,7 +288,7 @@ var messageSendTestCases = []struct {
 			builder.ReturnStackTop()
 
 			// Finalize the method
-			testMethod := builder.Go()
+			testMethod := builder.Go("test")
 
 			// Create a receiver for the test method
 			receiver := virtualMachine.NewInteger(0)

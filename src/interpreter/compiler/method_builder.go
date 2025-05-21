@@ -31,12 +31,7 @@ func NewMethodBuilder(class *pile.Class) *MethodBuilder {
 	}
 }
 
-// Selector sets the selector for the method
-func (mb *MethodBuilder) Selector(name string) *MethodBuilder {
-	mb.selectorName = name
-	mb.selectorObj = pile.NewSymbol(name)
-	return mb
-}
+// Note: The Selector method has been replaced by passing the selector name directly to Go()
 
 // Primitive marks the method as a primitive with the given index
 func (mb *MethodBuilder) Primitive(index int) *MethodBuilder {
@@ -152,11 +147,12 @@ func (mb *MethodBuilder) Duplicate() *MethodBuilder {
 }
 
 // Go finalizes the method creation and adds it to the class's method dictionary
-func (mb *MethodBuilder) Go() *pile.Object {
-	if mb.selectorObj == nil {
-		panic("Selector not set. Call Selector() first.")
-	}
-
+// It takes the selector name as a parameter to eliminate the need for a separate Selector call
+func (mb *MethodBuilder) Go(selectorName string) *pile.Object {
+	// Set the selector
+	mb.selectorName = selectorName
+	mb.selectorObj = pile.NewSymbol(selectorName)
+	
 	// Create the method object
 	method := pile.NewMethod(mb.selectorObj, mb.class)
 

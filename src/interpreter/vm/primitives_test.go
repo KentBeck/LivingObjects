@@ -23,9 +23,8 @@ func testSubtractionPrimitive(t *testing.T) {
 	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	minusSelector := pile.NewSymbol("-")
 	minusMethod := compiler.NewMethodBuilder(integerClass).
-		Selector("-").
 		Primitive(4). // Subtraction primitive
-		Go()
+		Go("-")
 
 	five := virtualMachine.NewInteger(5)
 	two := virtualMachine.NewInteger(2)
@@ -63,9 +62,8 @@ func testMultiplicationPrimitive(t *testing.T) {
 	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	timesSelector := pile.NewSymbol("*")
 	timesMethod := compiler.NewMethodBuilder(integerClass).
-		Selector("*").
 		Primitive(2). // Multiplication primitive
-		Go()
+		Go("*")
 
 	five := virtualMachine.NewInteger(5)
 	two := virtualMachine.NewInteger(2)
@@ -103,9 +101,8 @@ func testAdditionPrimitive(t *testing.T) {
 	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	plusSelector := pile.NewSymbol("+")
 	plusMethod := compiler.NewMethodBuilder(integerClass).
-		Selector("+").
 		Primitive(1). // Addition primitive
-		Go()
+		Go("+")
 
 	three := virtualMachine.NewInteger(3)
 	four := virtualMachine.NewInteger(4)
@@ -143,9 +140,8 @@ func testLessThanPrimitive(t *testing.T) {
 	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	lessSelector := pile.NewSymbol("<")
 	lessMethod := compiler.NewMethodBuilder(integerClass).
-		Selector("<").
 		Primitive(6). // Less than primitive
-		Go()
+		Go("<")
 
 	two := virtualMachine.NewInteger(2)
 	five := virtualMachine.NewInteger(5)
@@ -197,9 +193,8 @@ func testGreaterThanPrimitive(t *testing.T) {
 	integerClass := pile.ObjectToClass(virtualMachine.Globals["Integer"])
 	greaterSelector := pile.NewSymbol(">")
 	greaterMethod := compiler.NewMethodBuilder(integerClass).
-		Selector(">").
 		Primitive(7). // Greater than primitive
-		Go()
+		Go(">")
 
 	five := virtualMachine.NewInteger(5)
 	two := virtualMachine.NewInteger(2)

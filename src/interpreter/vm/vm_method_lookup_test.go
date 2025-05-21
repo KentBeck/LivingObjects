@@ -27,16 +27,13 @@ func TestLookupMethod(t *testing.T) {
 
 	// Create methods using MethodBuilder
 	sizeMethod := compiler.NewMethodBuilder(objectClass).
-		Selector("size").
-		Go()
+		Go("size")
 
 	atMethod := compiler.NewMethodBuilder(sequenceableCollectionClass).
-		Selector("at:").
-		Go()
+		Go("at:")
 
 	atPutMethod := compiler.NewMethodBuilder(sequenceableCollectionClass).
-		Selector("at:put:").
-		Go()
+		Go("at:put:")
 
 	// Create an instance of Array
 	arrayInstance := pile.NewInstance((*pile.Class)(unsafe.Pointer(arrayClass)))
@@ -131,20 +128,16 @@ func TestLookupMethodWithInheritance(t *testing.T) {
 	// Create methods for each class using MethodBuilder
 	// We don't need to store the method objects since they're already in the method dictionaries
 	compiler.NewMethodBuilder(objectClass).
-		Selector("size").
-		Go()
+		Go("size")
 
 	collectionSizeMethod := compiler.NewMethodBuilder(collectionClass).
-		Selector("size").
-		Go()
+		Go("size")
 
 	seqCollAtMethod := compiler.NewMethodBuilder(sequenceableCollectionClass).
-		Selector("at:").
-		Go()
+		Go("at:")
 
 	arrayAtPutMethod := compiler.NewMethodBuilder(arrayClass).
-		Selector("at:put:").
-		Go()
+		Go("at:put:")
 
 	// Create an instance of Array
 	arrayInstance := pile.NewInstance((*pile.Class)(unsafe.Pointer(arrayClass)))
@@ -199,8 +192,7 @@ func TestGetMethodDict(t *testing.T) {
 	// Add a method to the dictionary using MethodBuilder
 	selectorName := "test"
 	method := compiler.NewMethodBuilder(class).
-		Selector(selectorName).
-		Go()
+		Go(selectorName)
 
 	// Get the method dictionary again
 	methodDict2 := class.GetMethodDict()

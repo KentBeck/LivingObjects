@@ -14,8 +14,7 @@ func TestExecuteContextEmptyMethod(t *testing.T) {
 
 	// Create a method with no bytecodes using MethodBuilder
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("emptyMethod").
-		Go()
+		Go("emptyMethod")
 
 	context := vm.NewContext(methodObj, pile.ObjectToClass(virtualMachine.Globals["Object"]), []*pile.Object{}, nil)
 
@@ -35,9 +34,9 @@ func TestExecuteContextWithStackValue(t *testing.T) {
 	virtualMachine := vm.NewVM()
 
 	// Create a method that pushes a value onto the stack using MethodBuilder
-	builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).Selector("pushMethod")
+	builder := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"]))
 	literalIndex, builder := builder.AddLiteral(virtualMachine.NewInteger(42))
-	methodObj := builder.PushLiteral(literalIndex).Go()
+	methodObj := builder.PushLiteral(literalIndex).Go("pushMethod")
 
 	context := vm.NewContext(methodObj, pile.ObjectToClass(virtualMachine.Globals["Object"]), []*pile.Object{}, nil)
 
@@ -65,8 +64,7 @@ func TestExecuteContextWithError(t *testing.T) {
 	// Since we can't use the fluent API for invalid bytecodes, we'll create the method
 	// and then manually set the bytecodes
 	methodObj := compiler.NewMethodBuilder(pile.ObjectToClass(virtualMachine.Globals["Object"])).
-		Selector("errorMethod").
-		Go()
+		Go("errorMethod")
 
 	// Set invalid bytecode manually
 	method := pile.ObjectToMethod(methodObj)

@@ -16,9 +16,8 @@ func TestArrayAtPrimitive(t *testing.T) {
 	arrayClass := pile.ObjectToClass(virtualMachine.Globals["Array"])
 	atSelector := pile.NewSymbol("at:")
 	atMethod := compiler.NewMethodBuilder(arrayClass).
-		Selector("at:").
 		Primitive(40). // Array at: primitive
-		Go()
+		Go("at:")
 
 	// Create a test array with 3 elements
 	array := virtualMachine.NewArray(3)
