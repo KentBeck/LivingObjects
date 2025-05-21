@@ -10,14 +10,13 @@ func (vm *VM) NewByteArrayClass() *pile.Class {
 	objectClass := pile.ObjectToClass(vm.Globals["Object"])
 	result := pile.NewClass("ByteArray", objectClass)
 
-	// Add primitive methods to the ByteArray class
-	builder := compiler.NewMethodBuilder(result)
-
+	// Add primitive methods to the ByteArray class - create a new builder for each method
+	
 	// at: method (returns the byte at the given index)
-	builder.Selector("at:").Primitive(50).Go()
+	compiler.NewMethodBuilder(result).Selector("at:").Primitive(50).Go()
 
 	// at:put: method (sets the byte at the given index)
-	builder.Selector("at:put:").Primitive(51).Go()
+	compiler.NewMethodBuilder(result).Selector("at:put:").Primitive(51).Go()
 
 	return result
 }

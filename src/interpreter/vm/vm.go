@@ -85,22 +85,24 @@ var DefaultVM = NewVM()
 func (vm *VM) NewObjectClass() *pile.Class {
 	result := pile.NewClass("Object", nil) // patch this up later. then even later when we have real images all this initialization can go away
 
-	// Add methods to Object class
-	builder := compiler.NewMethodBuilder(result)
-
+	// Add methods to Object class - create a new builder for each method
+	
 	// basicClass method
-	builder.Selector("basicClass").
+	compiler.NewMethodBuilder(result).
+		Selector("basicClass").
 		Primitive(5). // basicClass primitive
 		Go()
 
 	// should not be here
 	// new method (creates a new instance of the class)
-	builder.Selector("new").
+	compiler.NewMethodBuilder(result).
+		Selector("new").
 		Primitive(60). // new primitive
 		Go()
 
 	// class method - a more user-friendly name for accessing an object's class
 	// class implementation: ^self basicClass
+	builder := compiler.NewMethodBuilder(result)
 	classSelectorIndex, builder := builder.AddLiteral(pile.NewSymbol("basicClass"))
 	builder.Selector("class").
 		PushSelf().                         // self
@@ -115,26 +117,25 @@ func (vm *VM) NewIntegerClass() *pile.Class {
 	objectClass := pile.ObjectToClass(vm.Globals["Object"])
 	result := pile.NewClass("Integer", objectClass)
 
-	// Add primitive methods to the Integer class
-	builder := compiler.NewMethodBuilder(result)
-
+	// Add primitive methods to the Integer class - create a new builder for each method
+	
 	// + method (addition)
-	builder.Selector("+").Primitive(1).Go()
+	compiler.NewMethodBuilder(result).Selector("+").Primitive(1).Go()
 
 	// - method (subtraction)
-	builder.Selector("-").Primitive(4).Go()
+	compiler.NewMethodBuilder(result).Selector("-").Primitive(4).Go()
 
 	// * method (multiplication)
-	builder.Selector("*").Primitive(2).Go()
+	compiler.NewMethodBuilder(result).Selector("*").Primitive(2).Go()
 
 	// = method (equality)
-	builder.Selector("=").Primitive(3).Go()
+	compiler.NewMethodBuilder(result).Selector("=").Primitive(3).Go()
 
 	// < method (less than)
-	builder.Selector("<").Primitive(6).Go()
+	compiler.NewMethodBuilder(result).Selector("<").Primitive(6).Go()
 
 	// > method (greater than)
-	builder.Selector(">").Primitive(7).Go()
+	compiler.NewMethodBuilder(result).Selector(">").Primitive(7).Go()
 
 	return result
 }
@@ -143,29 +144,28 @@ func (vm *VM) NewFloatClass() *pile.Class {
 	objectClass := pile.ObjectToClass(vm.Globals["Object"])
 	result := pile.NewClass("Float", objectClass) // then even later when we have real images all this initialization can go away
 
-	// Add primitive methods to the Float class
-	builder := compiler.NewMethodBuilder(result)
-
+	// Add primitive methods to the Float class - create a new builder for each method
+	
 	// + method (addition)
-	builder.Selector("+").Primitive(10).Go()
+	compiler.NewMethodBuilder(result).Selector("+").Primitive(10).Go()
 
 	// - method (subtraction)
-	builder.Selector("-").Primitive(11).Go()
+	compiler.NewMethodBuilder(result).Selector("-").Primitive(11).Go()
 
 	// * method (multiplication)
-	builder.Selector("*").Primitive(12).Go()
+	compiler.NewMethodBuilder(result).Selector("*").Primitive(12).Go()
 
 	// / method (division)
-	builder.Selector("/").Primitive(13).Go()
+	compiler.NewMethodBuilder(result).Selector("/").Primitive(13).Go()
 
 	// = method (equality)
-	builder.Selector("=").Primitive(14).Go()
+	compiler.NewMethodBuilder(result).Selector("=").Primitive(14).Go()
 
 	// < method (less than)
-	builder.Selector("<").Primitive(15).Go()
+	compiler.NewMethodBuilder(result).Selector("<").Primitive(15).Go()
 
 	// > method (greater than)
-	builder.Selector(">").Primitive(16).Go()
+	compiler.NewMethodBuilder(result).Selector(">").Primitive(16).Go()
 
 	return result
 }
@@ -222,13 +222,11 @@ func (vm *VM) NewTrueClass() *pile.Class {
 	objectClass := pile.ObjectToClass(vm.Globals["Object"])
 	result := pile.NewClass("True", objectClass)
 
-	// Add methods to the True class
-	builder := compiler.NewMethodBuilder(result)
-
-	// Create a literal for false
-	falseIndex, builder := builder.AddLiteral(pile.MakeFalseImmediate())
-
+	// Add methods to the True class - create a new builder for each method
+	
 	// not method (returns false)
+	builder := compiler.NewMethodBuilder(result)
+	falseIndex, builder := builder.AddLiteral(pile.MakeFalseImmediate())
 	builder.Selector("not").
 		PushLiteral(falseIndex).
 		ReturnStackTop().
@@ -241,13 +239,11 @@ func (vm *VM) NewFalseClass() *pile.Class {
 	objectClass := pile.ObjectToClass(vm.Globals["Object"])
 	result := pile.NewClass("False", objectClass)
 
-	// Add methods to the False class
-	builder := compiler.NewMethodBuilder(result)
-
-	// Create a literal for true
-	trueIndex, builder := builder.AddLiteral(pile.MakeTrueImmediate())
-
+	// Add methods to the False class - create a new builder for each method
+	
 	// not method (returns true)
+	builder := compiler.NewMethodBuilder(result)
+	trueIndex, builder := builder.AddLiteral(pile.MakeTrueImmediate())
 	builder.Selector("not").
 		PushLiteral(trueIndex).
 		ReturnStackTop().
@@ -260,11 +256,10 @@ func (vm *VM) NewStringClass() *pile.Class {
 	objectClass := pile.ObjectToClass(vm.Globals["Object"])
 	result := pile.NewClass("String", objectClass)
 
-	// Add primitive methods to the String class
-	builder := compiler.NewMethodBuilder(result)
-
+	// Add primitive methods to the String class - create a new builder for each method
+	
 	// size method (returns the length of the string)
-	builder.Selector("size").Primitive(30).Go()
+	compiler.NewMethodBuilder(result).Selector("size").Primitive(30).Go()
 
 	return result
 }
@@ -273,11 +268,10 @@ func (vm *VM) NewArrayClass() *pile.Class {
 	objectClass := pile.ObjectToClass(vm.Globals["Object"])
 	result := pile.NewClass("Array", objectClass)
 
-	// Add primitive methods to the Array class
-	builder := compiler.NewMethodBuilder(result)
-
+	// Add primitive methods to the Array class - create a new builder for each method
+	
 	// at: method (returns the element at the given index)
-	builder.Selector("at:").Primitive(40).Go()
+	compiler.NewMethodBuilder(result).Selector("at:").Primitive(40).Go()
 
 	return result
 }
@@ -286,18 +280,17 @@ func (vm *VM) NewBlockClass() *pile.Class {
 	objectClass := pile.ObjectToClass(vm.Globals["Object"])
 	result := pile.NewClass("Block", objectClass)
 
-	// Add primitive methods to the Block class
-	builder := compiler.NewMethodBuilder(result)
-
+	// Add primitive methods to the Block class - create a new builder for each method
+	
 	// new method (creates a new block instance)
 	// fixme sketchy
-	builder.Selector("new").Primitive(20).Go()
+	compiler.NewMethodBuilder(result).Selector("new").Primitive(20).Go()
 
 	// value method (executes the block with no arguments)
-	builder.Selector("value").Primitive(21).Go()
+	compiler.NewMethodBuilder(result).Selector("value").Primitive(21).Go()
 
 	// value: method (executes the block with one argument)
-	builder.Selector("value:").Primitive(22).Go()
+	compiler.NewMethodBuilder(result).Selector("value:").Primitive(22).Go()
 
 	return result
 }
@@ -306,11 +299,10 @@ func (vm *VM) NewClassClass() *pile.Class {
 	objectClass := pile.ObjectToClass(vm.Globals["Object"])
 	result := pile.NewClass("Class", objectClass)
 
-	// Add primitive methods to the Class class
-	builder := compiler.NewMethodBuilder(result)
-
+	// Add primitive methods to the Class class - create a new builder for each method
+	
 	// new method (creates a new instance of the class)
-	builder.Selector("new").Primitive(60).Go()
+	compiler.NewMethodBuilder(result).Selector("new").Primitive(60).Go()
 
 	return result
 }

@@ -173,13 +173,7 @@ func (mb *MethodBuilder) Go() *pile.Object {
 	methodDict := pile.GetClassMethodDictionary(mb.class)
 	methodDict.SetEntry(symbolValue, method)
 
-	// Reset the builder state for reuse
-	mb.bytecodes = make([]byte, 0)
-	mb.literals = make([]*pile.Object, 0)
-	mb.tempVarNames = make([]string, 0)
-	mb.isPrimitive = false
-	mb.primitiveIndex = 0
-	// Note: We don't reset the class or selector as they might be reused
-
+	// No longer reset builder state - each builder should only be used once
+	
 	return method
 }
