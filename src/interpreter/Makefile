@@ -1,7 +1,7 @@
 all: build
 
 build:
-	go build -o smalltalk-vm
+	GOARCH=arm64 go build -o smalltalk-vm
 
 run: build
 	./smalltalk-vm
