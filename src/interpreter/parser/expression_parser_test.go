@@ -9,13 +9,12 @@ import (
 	"smalltalklsp/interpreter/vm"
 )
 
-
 // TestParseExpression tests parsing various Smalltalk expressions
 func TestParseExpression(t *testing.T) {
 	// Create a class for context
 	objectClass := pile.NewClass("Object", nil)
 	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
-	
+
 	// We need to set up the class properly for pile.IsTrueImmediate and pile.IsFalseImmediate checks
 	objectClass.ClassField = objectClass
 
@@ -420,7 +419,6 @@ func TestParseExpression(t *testing.T) {
 				if !pile.IsTrueImmediate(receiverNode.Value) {
 					t.Fatalf("Expected true immediate, got %v", receiverNode.Value)
 				}
-				
 
 				// Check arguments (should be empty)
 				if len(messageSendNode.Arguments) != 0 {
@@ -477,14 +475,6 @@ func TestParseExpression(t *testing.T) {
 				t.Fatalf("Error tokenizing input: %v", err)
 			}
 
-			// Debug: print tokens
-			if test.name == "Parenthesized expression" {
-				t.Logf("Tokens for %s:", test.input)
-				for i, token := range p.Tokens {
-					t.Logf("  Token %d: Type=%d, Value=%s", i, token.Type, token.Value)
-				}
-			}
-
 			// Initialize current token
 			p.CurrentToken = p.Tokens[0]
 			p.CurrentTokenIndex = 0
@@ -506,7 +496,7 @@ func TestParseArrayLiteral(t *testing.T) {
 	// Create a class for context
 	objectClass := pile.NewClass("Object", nil)
 	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
-	
+
 	// We need to set up the class properly for pile.IsImmediate checks
 	objectClass.ClassField = objectClass
 
@@ -596,7 +586,7 @@ func TestArrayLiteralWithKeywordMessage(t *testing.T) {
 	// Create a class for context
 	objectClass := pile.NewClass("Object", nil)
 	classObj := (*pile.Object)(unsafe.Pointer(objectClass))
-	
+
 	// We need to set up the class properly for pile.IsImmediate checks
 	objectClass.ClassField = objectClass
 
@@ -641,7 +631,7 @@ func TestArrayLiteralWithKeywordMessage(t *testing.T) {
 
 	// Check that the receiver is a literal node
 	receiverNode, _ := messageSendNode.Receiver.(*ast.LiteralNode)
-	
+
 	// Print the actual value for debugging
 	t.Logf("Array value: %v, type: %T", receiverNode.Value, receiverNode.Value)
 

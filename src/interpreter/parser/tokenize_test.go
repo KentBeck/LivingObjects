@@ -15,12 +15,6 @@ func TestTokenizeBlockValue(t *testing.T) {
 		t.Fatalf("Error tokenizing input: %v", err)
 	}
 
-	// Print the tokens
-	t.Logf("Tokens for [5] value:")
-	for i, token := range p.Tokens {
-		t.Logf("  Token %d: Type=%d, Value=%s", i, token.Type, token.Value)
-	}
-
 	// Verify token count
 	expectedTokenCount := 5 // [, 5, ], value, EOF
 	if len(p.Tokens) != expectedTokenCount {

@@ -2,7 +2,6 @@ package vm_test
 
 import (
 	"smalltalklsp/interpreter/pile"
-	"fmt"
 	"testing"
 	"unsafe"
 
@@ -89,7 +88,6 @@ func TestBadLookupMethod(t *testing.T) {
 
 	// Call the function that should panic
 	BadLookupMethodHelper()
-	fmt.Println("This line should not be reached")
 }
 
 func BadLookupMethodHelper() {

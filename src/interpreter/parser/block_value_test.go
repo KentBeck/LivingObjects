@@ -22,30 +22,11 @@ func TestDirectParseBlockValue(t *testing.T) {
 	// Create a parser with the test input
 	p := NewParser("[5] value", classObj, vmInstance)
 
-	// Tokenize the input manually to see what's happening
-	err := p.tokenize()
-	if err != nil {
-		t.Fatalf("Error tokenizing input: %v", err)
-	}
-
-	// Print the tokens
-	t.Logf("Tokens for [5] value:")
-	for i, token := range p.Tokens {
-		t.Logf("  Token %d: Type=%d, Value=%s", i, token.Type, token.Value)
-	}
-
-	// Reset the parser state
-	p.CurrentToken = p.Tokens[0]
-	p.CurrentTokenIndex = 0
-
 	// Parse the expression
 	node, err := p.ParseExpression()
 	if err != nil {
 		t.Fatalf("Error parsing expression: %v", err)
 	}
-
-	// Print node type for debugging
-	t.Logf("Node type: %T", node)
 
 	// Check if it's a message send node
 	messageSend, ok := node.(*ast.MessageSendNode)

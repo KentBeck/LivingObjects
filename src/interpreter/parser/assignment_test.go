@@ -22,45 +22,11 @@ func TestAssignmentExpression(t *testing.T) {
 	// Create a parser with the test input
 	p := NewParser("x := 5", classObj, vmInstance)
 
-	// Tokenize the input manually to see what's happening
-	err := p.tokenize()
-	if err != nil {
-		t.Fatalf("Error tokenizing input: %v", err)
-	}
-
-	// Print the tokens
-	t.Logf("Tokens for x := 5:")
-	for i, token := range p.Tokens {
-		t.Logf("  Token %d: Type=%d, Value=%s", i, token.Type, token.Value)
-		// Debug information for assignment
-		if token.Value == ":=" {
-			t.Logf("  Assignment token found: Type=%d, ASSIGNMENT=%d", token.Type, TOKEN_ASSIGNMENT)
-		}
-	}
-
-	// Reset the parser state
-	p.CurrentToken = p.Tokens[0]
-	p.CurrentTokenIndex = 0
-
-	// Add a debug print before parsing to see the current token
-	t.Logf("Before parsing - Current token: Type=%d, Value=%s", p.CurrentToken.Type, p.CurrentToken.Value)
-	
-	// Debug the isAssignment check
-	t.Logf("Is assignment check: %v", p.isAssignment())
-	
-	// Debug the next token
-	if p.CurrentTokenIndex+1 < len(p.Tokens) {
-		t.Logf("Next token: Type=%d, Value=%s", p.Tokens[p.CurrentTokenIndex+1].Type, p.Tokens[p.CurrentTokenIndex+1].Value)
-	}
-	
 	// Parse the expression
 	node, err := p.ParseExpression()
 	if err != nil {
 		t.Fatalf("Error parsing expression: %v", err)
 	}
-
-	// Print node type for debugging
-	t.Logf("Node type: %T", node)
 
 	// Check if it's an assignment node
 	assignmentNode, ok := node.(*ast.AssignmentNode)

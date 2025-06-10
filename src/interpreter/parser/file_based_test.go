@@ -320,28 +320,28 @@ func runFileBasedTests(t *testing.T, testFilePath string) {
 	// Parse the test file
 	scanner := bufio.NewScanner(file)
 	lineNumber := 0
-	
+
 	for scanner.Scan() {
 		lineNumber++
 		line := scanner.Text()
-		
+
 		// Skip empty lines and comments
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-		
+
 		// Split the line by !
 		parts := strings.Split(line, "!")
 		if len(parts) != 4 {
 			t.Errorf("Line %d: Invalid format, expected 4 parts separated by !, got %d", lineNumber, len(parts))
 			continue
 		}
-		
+
 		testName := parts[0]
 		expression := parts[1]
 		testType := parts[2] // "expression" or "method"
 		expectedJSON := parts[3]
-		
+
 		// Run the test
 		t.Run(testName, func(t *testing.T) {
 			// Parse the expression
@@ -350,25 +350,20 @@ func runFileBasedTests(t *testing.T, testFilePath string) {
 			if err != nil {
 				t.Fatalf("Error parsing expression '%s': %v", expression, err)
 			}
-			
+
 			// Compare the actual JSON with the expected JSON
 			equal, err := areJSONEqual(actualJSON, expectedJSON)
 			if err != nil {
 				t.Errorf("Error comparing JSON: %v", err)
-				t.Logf("Expected: %s", expectedJSON)
-				t.Logf("Actual: %s", actualJSON)
 				return
 			}
-			
+
 			if !equal {
-				t.Errorf("Unexpected JSON result")
-				t.Logf("Expression: %s", expression)
-				t.Logf("Expected: %s", expectedJSON)
-				t.Logf("Actual: %s", actualJSON)
+				t.Errorf("Unexpected JSON result for expression '%s'", expression)
 			}
 		})
 	}
-	
+
 	// Check for scanner errors
 	if err := scanner.Err(); err != nil {
 		t.Fatalf("Error reading test file: %v", err)
