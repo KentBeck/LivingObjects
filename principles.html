@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Living Objects - A Modern Smalltalk</title>
+    <title>Living Objects Principles</title>
     <style>
         :root {
             --primary-color: #34A853;
@@ -58,7 +58,6 @@
         .title-container {
             position: relative;
             z-index: 1;
-            text-align: center;
         }
         
         h1 {
@@ -112,233 +111,147 @@
             transition: all 0.3s var(--transition-timing);
         }
         
-        .tagline {
-            font-size: 1.4rem;
-            color: var(--dark-color);
-            margin-top: 1rem;
-            font-weight: 400;
-            text-align: center;
-        }
-        
-        .highlight {
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            color: var(--dark-color);
-            font-weight: 500;
-            text-align: center;
-            margin-bottom: 2rem;
-            font-style: italic;
-        }
-        
-        .hero {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin: 4rem 0;
-            align-items: center;
-        }
-        
-        .hero-content {
-            padding-right: 2rem;
-        }
-        
-        .hero-content p {
-            margin-bottom: 1.5rem;
-            font-size: 1.1rem;
-        }
-        
-        .hero-image {
+        .cold-open {
+            font-size: 1.15rem;
+            padding: 2.5rem;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6));
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 
+                        0 1px 3px rgba(0, 0, 0, 0.03),
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            margin: 2rem 0 4rem;
             position: relative;
             overflow: hidden;
         }
-
-        .hero-image::before {
+        
+        .cold-open::before {
             content: "";
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
+            width: 100%;
+            height: 100%;
             background: 
-                radial-gradient(circle at 30% 30%, rgba(52, 168, 83, 0.1), transparent 50%),
-                radial-gradient(circle at 70% 70%, rgba(66, 133, 244, 0.1), transparent 50%);
-            z-index: 0;
+                radial-gradient(circle at 20% 20%, rgba(52, 168, 83, 0.1), transparent 30%),
+                radial-gradient(circle at 80% 80%, rgba(66, 133, 244, 0.1), transparent 30%);
+            z-index: -1;
         }
         
-        .hero-image svg {
-            width: 100%;
-            height: auto;
+        .cold-open p {
+            margin-bottom: 1.5rem;
             position: relative;
             z-index: 1;
         }
         
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin: 4rem 0;
+        .cold-open p:last-child {
+            margin-bottom: 0;
         }
         
-        .feature {
+        .principle {
             background: white;
             border-radius: 12px;
             padding: 2rem;
+            margin-bottom: 2.5rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 
                         0 1px 3px rgba(0, 0, 0, 0.03);
+            position: relative;
+            overflow: hidden;
             transition: all 0.4s var(--transition-timing);
-            border-top: 4px solid transparent;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
+            border-left: 4px solid transparent;
         }
         
-        .feature:hover {
+        .principle:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08), 
                         0 5px 10px rgba(0, 0, 0, 0.05);
         }
         
-        .feature:nth-of-type(1) { border-top-color: var(--primary-color); }
-        .feature:nth-of-type(2) { border-top-color: var(--secondary-color); }
-        .feature:nth-of-type(3) { border-top-color: var(--accent-color); }
+        .principle:nth-of-type(1) { border-left-color: var(--primary-color); }
+        .principle:nth-of-type(2) { border-left-color: var(--secondary-color); }
+        .principle:nth-of-type(3) { border-left-color: var(--accent-color); }
+        .principle:nth-of-type(4) { border-left-color: var(--highlight-color); }
+        .principle:nth-of-type(5) { border-left-color: var(--primary-color); }
+        .principle:nth-of-type(6) { border-left-color: var(--secondary-color); }
+        .principle:nth-of-type(7) { border-left-color: var(--accent-color); }
         
-        .feature h3 {
-            margin-top: 0;
-            position: relative;
-            color: var(--dark-color);
-        }
-        
-        .feature:nth-of-type(1) h3 { color: var(--primary-color); }
-        .feature:nth-of-type(2) h3 { color: var(--secondary-color); }
-        .feature:nth-of-type(3) h3 { color: var(--accent-color); }
-        
-        .feature p {
-            flex-grow: 1;
-            margin-bottom: 1rem;
-        }
-        
-        .feature-icon {
-            display: block;
-            width: 60px;
-            height: 60px;
-            margin-bottom: 1.5rem;
-        }
-        
-        .code-sample {
-            background: #272822;
-            color: #F8F8F2;
-            border-radius: 8px;
-            padding: 1.5rem;
-            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin: 2rem 0;
-            overflow-x: auto;
-            position: relative;
-        }
-        
-        .code-sample::before {
-            content: "Smalltalk";
+        .principle::before {
+            content: "";
             position: absolute;
             top: 0;
             right: 0;
-            background: rgba(52, 168, 83, 0.8);
-            color: white;
-            padding: 0.3rem 0.8rem;
-            font-size: 0.7rem;
-            border-radius: 0 8px 0 8px;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(52, 168, 83, 0.03), transparent 70%);
+            border-radius: 50%;
+            opacity: 0.8;
+            z-index: 0;
         }
         
-        .comment { color: #75715E; }
-        .keyword { color: #F92672; }
-        .string { color: #E6DB74; }
-        .method { color: #A6E22E; }
-        .class { color: #66D9EF; }
-        .symbol { color: #FD971F; }
+        .principle h3 {
+            margin-top: 0;
+            display: inline-block;
+            background: linear-gradient(90deg, 
+                var(--dark-color), 
+                var(--dark-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+        }
         
-        .cta {
+        .principle:nth-of-type(1) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--primary-color)); }
+        .principle:nth-of-type(2) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--secondary-color)); }
+        .principle:nth-of-type(3) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--accent-color)); }
+        .principle:nth-of-type(4) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--highlight-color)); }
+        .principle:nth-of-type(5) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--primary-color)); }
+        .principle:nth-of-type(6) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--secondary-color)); }
+        .principle:nth-of-type(7) h3 { background-image: linear-gradient(90deg, var(--dark-color), var(--accent-color)); }
+        
+        .principle p {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .final-note {
+            padding: 3rem;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.9), 
                 rgba(255, 255, 255, 0.75));
             border-radius: 12px;
-            padding: 3rem;
-            text-align: center;
-            margin: 4rem 0;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06), 
-                        0 1px 3px rgba(0, 0, 0, 0.03);
+                        0 1px 3px rgba(0, 0, 0, 0.03),
+                        inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+            margin: 4rem 0;
             position: relative;
             overflow: hidden;
         }
         
-        .cta::before {
+        .final-note::after {
             content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
             bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(52, 168, 83, 0.1), transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(66, 133, 244, 0.1), transparent 50%);
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(251, 188, 5, 0.1), transparent 70%);
+            border-radius: 50%;
             z-index: 0;
         }
         
-        .cta h2 {
+        .final-note h2 {
             margin-top: 0;
+        }
+        
+        .final-note p {
             position: relative;
             z-index: 1;
+            margin-bottom: 1.5rem;
         }
         
-        .cta p {
-            margin-bottom: 2rem;
-            position: relative;
-            z-index: 1;
-            font-size: 1.1rem;
-        }
-        
-        .button {
-            display: inline-block;
-            background: var(--primary-color);
-            color: white;
-            padding: 0.8rem 2rem;
-            border-radius: 50px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            position: relative;
-            z-index: 1;
-            box-shadow: 0 4px 15px rgba(52, 168, 83, 0.3);
-        }
-        
-        .button:hover {
-            background: #2d9448;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(52, 168, 83, 0.4);
-        }
-        
-        .button-secondary {
-            background: var(--secondary-color);
-            box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
-            margin-left: 1rem;
-        }
-        
-        .button-secondary:hover {
-            background: #3b77db;
-            box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
+        .final-note p:last-child {
+            margin-bottom: 0;
+            font-weight: 500;
         }
         
         footer {
@@ -443,27 +356,10 @@
                 font-size: 1.5rem;
             }
             
-            .hero {
-                grid-template-columns: 1fr;
-            }
-            
-            .hero-content {
-                padding-right: 0;
-            }
-            
-            .feature-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .cta {
-                padding: 2rem;
-            }
-            
-            .button, .button-secondary {
-                display: block;
-                margin: 1rem auto;
-                width: 80%;
-                text-align: center;
+            .cold-open,
+            .principle,
+            .final-note {
+                padding: 1.5rem;
             }
             
             .particle {
@@ -511,10 +407,6 @@
         a:hover::after {
             transform: scaleX(1);
             transform-origin: left;
-        }
-
-        .button::after, .button-secondary::after {
-            display: none;
         }
         
         /* Add SVG logo */
@@ -695,152 +587,77 @@
             </div>
 
             <div class="nav">
-                <a href="index.html" class="active">Home</a>
-                <a href="principles.html">Principles</a>
+                <a href="index.html">Home</a>
+                <a href="principles.html" class="active">Principles</a>
             </div>
             
             <div class="title-container">
-                <h1>Living Objects</h1>
-                <p class="tagline">A <span class="highlight">Smalltalk</span> built from scratch for the modern era</p>
-                <p class="subtitle">Combining the elegance of Smalltalk with transactions, persistence, and multi-processing</p>
+                <h1>Living Objects Principles</h1>
             </div>
         </header>
         
-        <section class="hero">
-            <div class="hero-content">
-                <p>Living Objects is a reimagination of Smalltalk that preserves its elegant object model while addressing the needs of modern software development.</p>
-                
-                <p>Our mission is to create a system where <strong>objects truly live</strong> - where they remember their history, adapt to changes, and collaborate harmoniously with each other.</p>
-                
-                <p>By building on Smalltalk's powerful foundation and adding modern capabilities like transactions, persistence, and multi-processing, we're creating a development environment where software can evolve naturally alongside its users.</p>
-            </div>
+        <section class="cold-open living-animation">
+            <p>An object's true potential lies not in its static definition, but in its living presence.</p>
             
-            <div class="hero-image">
-                <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Smalltalk Window -->
-                    <rect x="50" y="30" width="300" height="240" rx="8" fill="#FFFFFF" stroke="#CCCCCC" stroke-width="2"/>
-                    
-                    <!-- Window Title Bar -->
-                    <rect x="50" y="30" width="300" height="30" rx="8" fill="#34A853" stroke="#34A853" stroke-width="2"/>
-                    <rect x="50" y="45" width="300" height="15" fill="#34A853" stroke="#34A853" stroke-width="0"/>
-                    
-                    <!-- Window Title -->
-                    <text x="70" y="50" font-family="Arial" font-size="14" fill="white">Workspace</text>
-                    
-                    <!-- Window Controls -->
-                    <circle cx="335" cy="45" r="6" fill="#EA4335"/>
-                    <circle cx="315" cy="45" r="6" fill="#FBBC05"/>
-                    <circle cx="295" cy="45" r="6" fill="#4285F4"/>
-                    
-                    <!-- Code Area -->
-                    <rect x="60" y="70" width="280" height="190" rx="4" fill="#F9F9F9" stroke="#EEEEEE" stroke-width="1"/>
-                    
-                    <!-- Smalltalk Code -->
-                    <text x="70" y="90" font-family="Courier" font-size="12" fill="#75715E">
-                        <tspan x="70" y="90" fill="#75715E">"Create a new transaction"</tspan>
-                        <tspan x="70" y="110" fill="#232323">transaction := <tspan fill="#4285F4">Transaction</tspan> new.</tspan>
-                        <tspan x="70" y="130" fill="#232323">account := <tspan fill="#4285F4">BankAccount</tspan> named: <tspan fill="#FD971F">'Savings'</tspan>.</tspan>
-                        <tspan x="70" y="150" fill="#75715E">"Start transaction"</tspan>
-                        <tspan x="70" y="170" fill="#232323">transaction begin.</tspan>
-                        <tspan x="70" y="190" fill="#232323">account deposit: 100.</tspan>
-                        <tspan x="70" y="210" fill="#232323">account withdraw: 50.</tspan>
-                        <tspan x="70" y="230" fill="#232323">transaction commit.</tspan>
-                    </text>
-                    
-                    <!-- Transaction Animation -->
-                    <g id="transaction-animation">
-                        <circle cx="320" cy="170" r="8" fill="#34A853" opacity="0.8">
-                            <animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite"/>
-                            <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
-                        </circle>
-                        
-                        <line x1="320" y1="170" x2="320" y2="210" stroke="#34A853" stroke-width="2" stroke-dasharray="4,2">
-                            <animate attributeName="stroke-dashoffset" values="6;0;6" dur="1s" repeatCount="indefinite"/>
-                        </line>
-                        
-                        <circle cx="320" cy="210" r="6" fill="#34A853" opacity="0.6">
-                            <animate attributeName="r" values="6;8;6" dur="2s" repeatCount="indefinite" begin="0.5s"/>
-                            <animate attributeName="opacity" values="0.6;0.8;0.6" dur="2s" repeatCount="indefinite" begin="0.5s"/>
-                        </circle>
-                        
-                        <line x1="320" y1="210" x2="320" y2="230" stroke="#34A853" stroke-width="2" stroke-dasharray="4,2">
-                            <animate attributeName="stroke-dashoffset" values="6;0;6" dur="1s" repeatCount="indefinite" begin="0.2s"/>
-                        </line>
-                        
-                        <circle cx="320" cy="230" r="8" fill="#34A853" opacity="0.9">
-                            <animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite" begin="1s"/>
-                            <animate attributeName="opacity" values="0.9;1;0.9" dur="2s" repeatCount="indefinite" begin="1s"/>
-                        </circle>
-                    </g>
-                </svg>
-            </div>
+            <p>When alive, an object becomes transformative. It can be a financial opportunity, evolving with market conditions. It can embody a customer relationship, deepening with each interaction. It can represent a critical supply chain component, adapting to ensure timely delivery.</p>
+            
+            <p>But objects can only fulfill this potential when they truly live in systems designed for vitality—not when they're trapped as frozen records in lifeless databases.</p>
+            
+            <p>Information confined to rigid structures is merely historical. Information embodied in living objects is dynamic—constantly generating new value through meaningful interactions and evolution.</p>
+            
+            <p>This is what Living Objects makes possible: digital ecosystems where objects thrive, where value compounds through connection, where software mirrors the organic complexity and adaptability of the natural world.</p>
+            
+            <p>At its heart lies our enduring mission: to nurture the creative spirit in everyone.</p>
         </section>
         
-        <div class="feature-grid">
-            <div class="feature">
-                <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="20" y="20" width="60" height="60" rx="10" fill="none" stroke="#34A853" stroke-width="4"/>
-                    <path d="M35 50 L45 60 L65 40" stroke="#34A853" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <h3>Transactional Objects</h3>
-                <p>Objects in Living Objects can participate in ACID transactions, ensuring that complex operations are atomic, consistent, isolated, and durable. Unlike traditional Smalltalk, Living Objects brings database-quality transactions to the object level.</p>
-            </div>
-            
-            <div class="feature">
-                <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="50" cy="50" r="30" fill="none" stroke="#4285F4" stroke-width="4"/>
-                    <circle cx="50" cy="50" r="15" fill="none" stroke="#4285F4" stroke-width="3"/>
-                    <circle cx="50" cy="50" r="5" fill="#4285F4"/>
-                </svg>
-                <h3>Persistent Memory</h3>
-                <p>Objects naturally persist across sessions without requiring separate database mappings. Every change to an object is captured in its memory, allowing for time travel debugging, historical analysis, and recovery from failures.</p>
-            </div>
-            
-            <div class="feature">
-                <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="30" cy="40" r="15" fill="none" stroke="#FBBC05" stroke-width="3"/>
-                    <circle cx="70" cy="40" r="15" fill="none" stroke="#FBBC05" stroke-width="3"/>
-                    <circle cx="50" cy="70" r="15" fill="none" stroke="#FBBC05" stroke-width="3"/>
-                    <line x1="30" y1="40" x2="70" y2="40" stroke="#FBBC05" stroke-width="2" stroke-dasharray="4,2"/>
-                    <line x1="30" y1="40" x2="50" y2="70" stroke="#FBBC05" stroke-width="2" stroke-dasharray="4,2"/>
-                    <line x1="70" y1="40" x2="50" y2="70" stroke="#FBBC05" stroke-width="2" stroke-dasharray="4,2"/>
-                </svg>
-                <h3>Multi-Processing</h3>
-                <p>Modern Smalltalk for multi-core systems. Living Objects enables true concurrent processing while preserving the simplicity of Smalltalk's message-passing model, making full use of today's hardware.</p>
-            </div>
+        <h2>Principles</h2>
+        
+        <div class="principle">
+            <h3>Objects Remember Their Story</h3>
+            <p>Living objects retain their history and context naturally. They don't struggle to recall what happened yesterday—their memory is intrinsic to their existence. This continuous memory allows for richer interactions, smarter decisions, and the ability to learn from experience.</p>
         </div>
         
-        <div class="code-sample">
-            <span class="comment">"Define a bank account with transaction support"</span><br>
-            <span class="class">Object</span> <span class="keyword">subclass:</span> <span class="symbol">#BankAccount</span><br>
-            &nbsp;&nbsp;<span class="keyword">instanceVariableNames:</span> <span class="string">'name balance transactions'</span><br>
-            &nbsp;&nbsp;<span class="keyword">classVariableNames:</span> <span class="string">''</span><br>
-            &nbsp;&nbsp;<span class="keyword">package:</span> <span class="string">'Banking'</span><br>
-            <br>
-            <span class="method">initialize</span><br>
-            &nbsp;&nbsp;balance := 0.<br>
-            &nbsp;&nbsp;transactions := OrderedCollection new.<br>
-            <br>
-            <span class="method">deposit:</span> amount <span class="keyword">in:</span> transaction<br>
-            &nbsp;&nbsp;<span class="comment">"Deposit amount with transaction tracking"</span><br>
-            &nbsp;&nbsp;transaction<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;execute: [ balance := balance + amount ]<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;with: { self. #deposit:. amount }<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;undoWith: [ balance := balance - amount ].<br>
-            &nbsp;&nbsp;transactions add: (TransactionRecord for: #deposit amount: amount).<br>
-            &nbsp;&nbsp;^balance
+        <div class="principle">
+            <h3>Objects Survive Disruption</h3>
+            <p>In the Living Objects ecosystem, persistence isn't an afterthought—it's the natural state. Objects endure through system changes, updates, and even failures. This resilience creates software that grows more valuable over time rather than requiring constant rebuilding.</p>
         </div>
         
-        <section class="cta">
-            <h2>Join the Living Objects Community</h2>
-            <p>We're building a new generation of software that breaks free from the constraints of traditional systems.</p>
+        <div class="principle">
+            <h3>Objects Change with Purpose</h3>
+            <p>When objects evolve, they do so with intention and coherence. Changes aren't random or fragmented but purposeful transformations that maintain the object's integrity. This orderly evolution creates systems that can adapt without breaking, grow without confusion.</p>
+        </div>
+        
+        <div class="principle">
+            <h3>Objects Work Together Harmoniously</h3>
+            <p>Living objects collaborate without conflict. They communicate through clear messages rather than fighting over shared resources. This natural cooperation scales effortlessly, creating systems that grow more capable instead of more complicated.</p>
+        </div>
+        
+        <div class="principle">
+            <h3>Objects Evolve Where They Live</h3>
+            <p>There's no separation between an object's definition and its reality. Living objects grow and change in their native environment, allowing for continuous improvement without disruption. The code isn't distant from the living system—it's an integral part of it.</p>
+        </div>
+        
+        <div class="principle">
+            <h3>Objects Remain Accessible</h3>
+            <p>Living objects are never beyond reach. They can be observed, understood, and guided at any moment. When problems arise, you're not left guessing—you can see exactly what's happening and make adjustments in real-time, while the system continues to operate.</p>
+        </div>
+        
+        <div class="principle">
+            <h3>Objects Connect with the World</h3>
+            <p>Living objects don't exist in isolation. They naturally communicate with external systems, respond to events, and integrate with the broader digital ecosystem. This connectivity makes them powerful contributors to complex business processes and customer experiences.</p>
+        </div>
+        
+        <section class="final-note">
+            <h2>Final Note</h2>
+            <p>Living Objects isn't just a technical approach. It's a fundamental shift in how we create digital value. It enables systems that truly live—that remain responsive, adaptable, and kind to everyone who interacts with them. It closes the gap between vision and reality.</p>
             
-            <a href="https://github.com/KentBeck/LivingObjects" class="button">GitHub Repository</a>
-            <a href="principles.html" class="button button-secondary">Read Our Principles</a>
+            <p>Most importantly, it nurtures the creative spirit in everyone who touches the system—whether developer, operator, or end user.</p>
+            
+            <p>Join us in building systems that live.</p>
         </section>
         
         <footer>
-            <p>© 2025 Living Objects — A modern Smalltalk implementation</p>
+            <p>© 2025 Living Objects — Empowering digital life</p>
         </footer>
     </div>
     
@@ -859,19 +676,19 @@
             });
         });
         
-        // Add a subtle hover effect to the features
-        const features = document.querySelectorAll(".feature");
-        features.forEach((feature) => {
-            feature.addEventListener("mouseenter", function() {
-                const siblings = Array.from(features).filter(p => p !== feature);
+        // Add a subtle hover effect to the principles
+        const principles = document.querySelectorAll(".principle");
+        principles.forEach((principle) => {
+            principle.addEventListener("mouseenter", function() {
+                const siblings = Array.from(principles).filter(p => p !== principle);
                 siblings.forEach(s => {
                     s.style.opacity = "0.7";
                     s.style.transform = "scale(0.98)";
                 });
             });
             
-            feature.addEventListener("mouseleave", function() {
-                features.forEach(p => {
+            principle.addEventListener("mouseleave", function() {
+                principles.forEach(p => {
                     p.style.opacity = "1";
                     p.style.transform = "";
                 });
