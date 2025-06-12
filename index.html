@@ -541,6 +541,54 @@
             background-color: rgba(52, 168, 83, 0.1);
             color: var(--primary-color);
         }
+
+        /* Checklist Styles */
+        .features-checklist, .goals-checklist {
+            margin: 2rem 0;
+            text-align: left;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .feature-item, .goal-item {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+
+        .checkbox {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .bullet {
+            font-size: 1.8rem;
+            margin-right: 1rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .feature-text {
+            color: var(--primary-color);
+            font-style: italic;
+            font-weight: 600;
+        }
+
+        .goal-text {
+            color: var(--dark-color);
+            font-weight: 500;
+        }
+
+        .goals-checklist {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px dotted rgba(52, 168, 83, 0.3);
+        }
     </style>
     <script src="https://cdn.usefathom.com/script.js" data-site="FHRALVOZ" defer></script>
 </head>
@@ -569,69 +617,44 @@
                     <!-- Main Object Shapes -->
                     <g id="objects">
                         <!-- Central Object - Hexagon representing life/growth -->
-                        <polygon 
-                            points="250,85 290,115 290,175 250,205 210,175 210,115" 
-                            fill="#34A853" 
-                            stroke="#34A853" 
+                        <polygon
+                            points="250,85 290,115 290,175 250,205 210,175 210,115"
+                            fill="#34A853"
+                            stroke="#34A853"
                             stroke-width="2"
                             opacity="0.9">
-                            <animate 
-                                attributeName="opacity" 
-                                values="0.9;1;0.9" 
-                                dur="3s" 
-                                repeatCount="indefinite"/>
                         </polygon>
                         
                         <!-- Connected Object 1 - Circle for continuity/memory -->
-                        <circle 
-                            cx="185" 
-                            cy="150" 
-                            r="25" 
-                            fill="#4285F4" 
-                            stroke="#4285F4" 
+                        <circle
+                            cx="185"
+                            cy="150"
+                            r="25"
+                            fill="#4285F4"
+                            stroke="#4285F4"
                             stroke-width="2"
                             opacity="0.85">
-                            <animate 
-                                attributeName="r" 
-                                values="25;28;25" 
-                                dur="4s" 
-                                repeatCount="indefinite"/>
                         </circle>
                         
                         <!-- Connected Object 2 - Square for stability/persistence -->
-                        <rect 
-                            x="295" 
-                            y="125" 
-                            width="50" 
-                            height="50" 
-                            fill="#FBBC05" 
-                            stroke="#FBBC05" 
+                        <rect
+                            x="295"
+                            y="125"
+                            width="50"
+                            height="50"
+                            fill="#FBBC05"
+                            stroke="#FBBC05"
                             stroke-width="2"
                             opacity="0.85">
-                            <animate 
-                                attributeName="width" 
-                                values="50;53;50" 
-                                dur="5s" 
-                                repeatCount="indefinite"/>
-                            <animate 
-                                attributeName="height" 
-                                values="50;53;50" 
-                                dur="5s" 
-                                repeatCount="indefinite"/>
                         </rect>
                         
                         <!-- Connected Object 3 - Triangle for change/evolution -->
-                        <polygon 
-                            points="250,235 275,270 225,270" 
-                            fill="#EA4335" 
-                            stroke="#EA4335" 
+                        <polygon
+                            points="250,235 275,270 225,270"
+                            fill="#EA4335"
+                            stroke="#EA4335"
                             stroke-width="2"
                             opacity="0.85">
-                            <animate 
-                                attributeName="points" 
-                                values="250,235 275,270 225,270;250,230 280,270 220,270;250,235 275,270 225,270" 
-                                dur="4.5s" 
-                                repeatCount="indefinite"/>
                         </polygon>
                     </g>
                     
@@ -639,56 +662,26 @@
                     <g id="connections" stroke-dasharray="5,3" stroke-width="2.5">
                         <!-- Connection to Circle -->
                         <line x1="210" y1="150" x2="185" y2="150" stroke="#4285F4" opacity="0.7">
-                            <animate 
-                                attributeName="stroke-dashoffset" 
-                                values="8;0;8" 
-                                dur="2s" 
-                                repeatCount="indefinite"/>
                         </line>
-                        
+
                         <!-- Connection to Square -->
                         <line x1="290" y1="150" x2="295" y2="150" stroke="#FBBC05" opacity="0.7">
-                            <animate 
-                                attributeName="stroke-dashoffset" 
-                                values="8;0;8" 
-                                dur="2.5s" 
-                                repeatCount="indefinite"/>
                         </line>
-                        
+
                         <!-- Connection to Triangle -->
                         <line x1="250" y1="205" x2="250" y2="235" stroke="#EA4335" opacity="0.7">
-                            <animate 
-                                attributeName="stroke-dashoffset" 
-                                values="8;0;8" 
-                                dur="3s" 
-                                repeatCount="indefinite"/>
                         </line>
                     </g>
                     
-                    <!-- Small Orbiting Particles representing dynamic activity -->
+                    <!-- Small Static Particles representing dynamic activity -->
                     <g id="particles">
-                        <circle cx="0" cy="0" r="3" fill="#34A853">
-                            <animateMotion
-                                path="M250,150 a50,25 0 1,0 1,0 z"
-                                dur="8s"
-                                repeatCount="indefinite"
-                                rotate="auto"/>
+                        <circle cx="300" cy="125" r="3" fill="#34A853">
                         </circle>
-                        
-                        <circle cx="0" cy="0" r="2" fill="#4285F4">
-                            <animateMotion
-                                path="M250,150 a60,40 0 1,1 1,0 z"
-                                dur="6s"
-                                repeatCount="indefinite"
-                                rotate="auto"/>
+
+                        <circle cx="200" cy="175" r="2" fill="#4285F4">
                         </circle>
-                        
-                        <circle cx="0" cy="0" r="2.5" fill="#FBBC05">
-                            <animateMotion
-                                path="M250,150 a70,30 0 1,0 1,0 z"
-                                dur="9s"
-                                repeatCount="indefinite"
-                                rotate="auto"/>
+
+                        <circle cx="320" cy="180" r="2.5" fill="#FBBC05">
                         </circle>
                     </g>
                 </svg>
@@ -700,9 +693,39 @@
             </div>
             
             <div class="title-container">
-                <h1>Living Objects</h1>
-                <p class="tagline">A <span class="highlight">Smalltalk</span> built from scratch for the modern era</p>
-                <p class="subtitle">Combining the elegance of Smalltalk with transactions, persistence, and multi-processing</p>
+                <h1>Smalltalk +</h1>
+                <div class="features-checklist">
+                    <div class="feature-item">
+                        <span class="bullet">•</span>
+                        <span class="feature-text">Transactions</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="bullet">•</span>
+                        <span class="feature-text">Persistence</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="bullet">•</span>
+                        <span class="feature-text">Multi-processing</span>
+                    </div>
+                </div>
+                <div class="goals-checklist">
+                    <div class="goal-item">
+                        <span class="checkbox">☑</span>
+                        <span class="goal-text">Run existing Smalltalk code & objects</span>
+                    </div>
+                    <div class="goal-item">
+                        <span class="checkbox">☑</span>
+                        <span class="goal-text">Integrate with IDEs & genies</span>
+                    </div>
+                    <div class="goal-item">
+                        <span class="checkbox">☑</span>
+                        <span class="goal-text">Operate on large memory</span>
+                    </div>
+                    <div class="goal-item">
+                        <span class="checkbox">☑</span>
+                        <span class="goal-text">One machine or many</span>
+                    </div>
+                </div>
             </div>
         </header>
         
