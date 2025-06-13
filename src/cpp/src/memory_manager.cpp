@@ -298,7 +298,9 @@ void MemoryManager::removeRoot(Object** root) {
 }
 
 size_t MemoryManager::getFreeSpace() const {
-    return static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation);
+    return static_cast<size_t>(
+        static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+    );
 }
 
 size_t MemoryManager::getTotalSpace() const {
@@ -306,7 +308,9 @@ size_t MemoryManager::getTotalSpace() const {
 }
 
 size_t MemoryManager::getUsedSpace() const {
-    return static_cast<char*>(currentAllocation) - static_cast<char*>(fromSpace);
+    return static_cast<size_t>(
+        static_cast<char*>(currentAllocation) - static_cast<char*>(fromSpace)
+    );
 }
 
 } // namespace smalltalk
