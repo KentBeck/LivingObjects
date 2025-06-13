@@ -28,12 +28,20 @@ MemoryManager::~MemoryManager() {
 Object* MemoryManager::allocateObject(ObjectType type, size_t size) {
     // Check if there's enough space
     size_t requiredBytes = sizeof(Object) + (size * sizeof(Object*));
-    if (static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation) < requiredBytes) {
+    size_t remainingSpace = static_cast<size_t>(
+        static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+    );
+    
+    if (remainingSpace < requiredBytes) {
         // Not enough space, trigger garbage collection
         collectGarbage();
         
         // Check if there's still not enough space after GC
-        if (static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation) < requiredBytes) {
+        remainingSpace = static_cast<size_t>(
+            static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+        );
+        
+        if (remainingSpace < requiredBytes) {
             throw std::runtime_error("Out of memory");
         }
     }
@@ -77,12 +85,20 @@ Object* MemoryManager::allocateArray(size_t length) {
 MethodContext* MemoryManager::allocateMethodContext(size_t size, uint32_t method, Object* self, Object* sender) {
     // Check if there's enough space
     size_t requiredBytes = sizeof(MethodContext) + (size * sizeof(Object*));
-    if (static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation) < requiredBytes) {
+    size_t remainingSpace = static_cast<size_t>(
+        static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+    );
+    
+    if (remainingSpace < requiredBytes) {
         // Not enough space, trigger garbage collection
         collectGarbage();
         
         // Check if there's still not enough space after GC
-        if (static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation) < requiredBytes) {
+        remainingSpace = static_cast<size_t>(
+            static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+        );
+        
+        if (remainingSpace < requiredBytes) {
             throw std::runtime_error("Out of memory");
         }
     }
@@ -100,12 +116,20 @@ MethodContext* MemoryManager::allocateMethodContext(size_t size, uint32_t method
 BlockContext* MemoryManager::allocateBlockContext(size_t size, uint32_t method, Object* self, Object* sender, Object* home) {
     // Check if there's enough space
     size_t requiredBytes = sizeof(BlockContext) + (size * sizeof(Object*));
-    if (static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation) < requiredBytes) {
+    size_t remainingSpace = static_cast<size_t>(
+        static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+    );
+    
+    if (remainingSpace < requiredBytes) {
         // Not enough space, trigger garbage collection
         collectGarbage();
         
         // Check if there's still not enough space after GC
-        if (static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation) < requiredBytes) {
+        remainingSpace = static_cast<size_t>(
+            static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+        );
+        
+        if (remainingSpace < requiredBytes) {
             throw std::runtime_error("Out of memory");
         }
     }
@@ -186,6 +210,7 @@ Object* MemoryManager::forwardObject(Object* obj) {
     // Check if object is already forwarded
     if (obj->header.hasFlag(ObjectFlag::FORWARDED)) {
         // Get forwarding address from size field
+        // Convert the stored uint64_t back to a pointer
         uintptr_t forwardingAddress = static_cast<uintptr_t>(obj->header.size);
         return reinterpret_cast<Object*>(forwardingAddress);
     }
@@ -195,7 +220,9 @@ Object* MemoryManager::forwardObject(Object* obj) {
     
     // Mark original as forwarded and store forwarding address
     obj->header.setFlag(ObjectFlag::FORWARDED);
-    obj->header.size = reinterpret_cast<uintptr_t>(newObj);
+    // Store forwarding pointer in the size field - this is a common technique in GC
+    // In a real implementation, we would have a separate forwarding pointer field
+    obj->header.size = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(newObj));
     
     return newObj;
 }
@@ -216,7 +243,11 @@ Object* MemoryManager::copyObject(Object* obj) {
     objSize = (objSize + 7) & ~7;
     
     // Check if there's enough space in toSpace
-    if (static_cast<char*>(toSpace) + spaceSize - static_cast<char*>(currentAllocation) < objSize) {
+    size_t remainingSpace = static_cast<size_t>(
+        static_cast<char*>(toSpace) + spaceSize - static_cast<char*>(currentAllocation)
+    );
+    
+    if (remainingSpace < objSize) {
         throw std::runtime_error("Out of memory during garbage collection");
     }
     

@@ -7,39 +7,121 @@
 
 namespace smalltalk {
 
+/**
+ * MemoryManager handles object allocation and garbage collection.
+ * 
+ * This class manages memory spaces for Smalltalk objects using a 
+ * stop-and-copy garbage collection algorithm. It provides methods
+ * for allocating objects, contexts, and other Smalltalk structures,
+ * as well as performing garbage collection when necessary.
+ */
 class MemoryManager {
 public:
-    // Constructor - initializes memory spaces
+    /**
+     * Constructor that initializes memory spaces.
+     * 
+     * @param initialSpaceSize The size of each memory space in bytes.
+     */
     MemoryManager(size_t initialSpaceSize = 1024 * 1024);
     
-    // Destructor - cleans up memory
+    /**
+     * Destructor that cleans up memory.
+     */
     ~MemoryManager();
     
     // Allocation methods
+    
+    /**
+     * Allocates a new object of the specified type and size.
+     * 
+     * @param type The type of object to allocate.
+     * @param size The size of the object in slots.
+     * @return A pointer to the allocated object.
+     */
     Object* allocateObject(ObjectType type, size_t size);
+    
+    /**
+     * Allocates a byte array of the specified size.
+     * 
+     * @param byteSize The size of the byte array in bytes.
+     * @return A pointer to the allocated byte array.
+     */
     Object* allocateBytes(size_t byteSize);
+    
+    /**
+     * Allocates an array of the specified length.
+     * 
+     * @param length The number of slots in the array.
+     * @return A pointer to the allocated array.
+     */
     Object* allocateArray(size_t length);
     
     // Context allocation
+    
+    /**
+     * Allocates a method context.
+     * 
+     * @param size The size of the context in slots.
+     * @param method The method reference.
+     * @param self The receiver object.
+     * @param sender The sender context.
+     * @return A pointer to the allocated method context.
+     */
     MethodContext* allocateMethodContext(size_t size, uint32_t method, Object* self, Object* sender);
+    
+    /**
+     * Allocates a block context.
+     * 
+     * @param size The size of the context in slots.
+     * @param method The method reference.
+     * @param self The receiver object.
+     * @param sender The sender context.
+     * @param home The home context.
+     * @return A pointer to the allocated block context.
+     */
     BlockContext* allocateBlockContext(size_t size, uint32_t method, Object* self, Object* sender, Object* home);
     
-    // Stack chunk allocation
+    /**
+     * Allocates a stack chunk.
+     * 
+     * @param size The size of the chunk in slots.
+     * @return A pointer to the allocated stack chunk.
+     */
     StackChunk* allocateStackChunk(size_t size);
     
-    // Garbage collection
+    /**
+     * Performs garbage collection.
+     */
     void collectGarbage();
     
     // Memory statistics
+    
+    /**
+     * Gets the amount of free space available.
+     * 
+     * @return The amount of free space in bytes.
+     */
     size_t getFreeSpace() const;
+    
+    /**
+     * Gets the total space available.
+     * 
+     * @return The total space in bytes.
+     */
     size_t getTotalSpace() const;
+    
+    /**
+     * Gets the amount of used space.
+     * 
+     * @return The amount of used space in bytes.
+     */
     size_t getUsedSpace() const;
     
 private:
     // Memory spaces
-    void* fromSpace;
-    void* toSpace;
-    size_t spaceSize;
+    void* fromSpace;     ///< Current allocation space
+    void* toSpace;       ///< Space for copying during GC
+    size_t spaceSize;    ///< Size of each space in bytes
     
     // Current allocation pointer
     void* currentAllocation;
@@ -47,20 +129,52 @@ private:
     // Root set for GC
     std::vector<Object**> roots;
     
-    // Register a root for GC
+    /**
+     * Registers a root for garbage collection.
+     * 
+     * @param root Pointer to the root object reference.
+     */
     void addRoot(Object** root);
+    
+    /**
+     * Unregisters a root from garbage collection.
+     * 
+     * @param root Pointer to the root object reference.
+     */
     void removeRoot(Object** root);
     
-    // Forward an object during GC
+    /**
+     * Forwards an object during garbage collection.
+     * 
+     * If the object has already been forwarded, returns the forwarding
+     * address. Otherwise, copies the object to the to-space and returns
+     * the new address.
+     * 
+     * @param obj The object to forward.
+     * @return The forwarded object address.
+     */
     Object* forwardObject(Object* obj);
     
-    // Copy an object during GC
+    /**
+     * Copies an object during garbage collection.
+     * 
+     * @param obj The object to copy.
+     * @return The copied object address.
+     */
     Object* copyObject(Object* obj);
     
-    // Scan an object during GC
+    /**
+     * Scans an object during garbage collection.
+     * 
+     * Iterates through all references in the object and forwards them.
+     * 
+     * @param obj The object to scan.
+     */
     void scanObject(Object* obj);
     
-    // Flip spaces after GC
+    /**
+     * Flips the from-space and to-space after garbage collection.
+     */
     void flipSpaces();
 };
 
