@@ -1,0 +1,47 @@
+# Simple Makefile for building and running tests without external dependencies
+
+# Compiler and flags
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra -I../include
+LDFLAGS = 
+
+# Directories
+SRC_DIR = ../src
+INCLUDE_DIR = ../include
+BUILD_DIR = build
+
+# Source files
+SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
+OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
+
+# Test source and executable
+TEST_SRC = simple_test.cpp
+TEST_EXECUTABLE = $(BUILD_DIR)/run_tests
+
+# Default target
+all: $(TEST_EXECUTABLE)
+
+# Create build directory
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+# Build test executable
+$(TEST_EXECUTABLE): $(BUILD_DIR) $(OBJECTS) $(TEST_SRC)
+	$(CXX) $(CXXFLAGS) $(TEST_SRC) $(OBJECTS) -o $@ $(LDFLAGS)
+
+# Compile source files
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Run tests
+test: $(TEST_EXECUTABLE)
+	./$(TEST_EXECUTABLE)
+
+# Clean build artifacts
+clean:
+	rm -rf $(BUILD_DIR)
+
+# Clean and rebuild
+rebuild: clean all
+
+.PHONY: all test clean rebuild
