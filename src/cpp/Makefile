@@ -26,8 +26,8 @@ else
     CXXFLAGS += $(RELEASE_FLAGS)
 endif
 
-# Source files
-SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
+# Source files (excluding main files)
+SOURCES = $(filter-out $(SRC_DIR)/main.cpp $(SRC_DIR)/smalltalk_repl.cpp, $(wildcard $(SRC_DIR)/*.cpp))
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 
 # Test files
@@ -37,11 +37,14 @@ TEST_OBJECTS = $(TEST_SOURCES:$(TEST_DIR)/%.cpp=$(BUILD_DIR)/tests/%.o)
 # Main executable
 EXECUTABLE = $(BUILD_DIR)/smalltalk-vm
 
+# REPL executable
+REPL_EXECUTABLE = $(BUILD_DIR)/smalltalk-repl
+
 # Test executable
 TEST_EXECUTABLE = $(BUILD_DIR)/run-tests
 
 # Default target
-all: create_dirs $(EXECUTABLE)
+all: create_dirs $(EXECUTABLE) $(REPL_EXECUTABLE)
 
 # Create build directories
 create_dirs:
@@ -50,6 +53,10 @@ create_dirs:
 
 # Build the main executable
 $(EXECUTABLE): $(OBJECTS) $(BUILD_DIR)/main.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
+
+# Build the REPL executable
+$(REPL_EXECUTABLE): $(BUILD_DIR)/smalltalk_repl.o $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
 # Compile source files
@@ -89,4 +96,8 @@ install_gtest:
 install_gtest_mac:
 	brew install googletest
 
-.PHONY: all create_dirs test clean rebuild install_gtest install_gtest_mac
+# Run the REPL
+repl: $(REPL_EXECUTABLE)
+	./$(REPL_EXECUTABLE)
+
+.PHONY: all create_dirs test clean rebuild install_gtest install_gtest_mac repl
