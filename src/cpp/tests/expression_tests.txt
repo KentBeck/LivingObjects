@@ -1,0 +1,60 @@
+# Smalltalk Expression Tests
+# Format: <expression> -> <expected result>
+
+# Basic arithmetic
+3 + 4 -> 7
+5 - 2 -> 3
+2 * 3 -> 6
+10 / 2 -> 5
+
+# Integer comparisons
+3 < 5 -> true
+7 > 2 -> true
+3 = 3 -> true
+4 ~= 5 -> true
+4 <= 4 -> true
+5 >= 3 -> true
+
+# Basic object creation
+Object new -> <Object>
+Array new: 3 -> <Array size: 3>
+
+# String operations
+'hello' , ' world' -> 'hello world'
+'hello' size -> 5
+
+# Variable assignment and access
+| x |
+x := 42.
+x -> 42
+
+# Simple block execution
+[3 + 4] value -> 7
+[:x | x + 1] value: 5 -> 6
+
+# Conditional expressions
+(3 < 4) ifTrue: [10] ifFalse: [20] -> 10
+(5 < 2) ifTrue: [10] ifFalse: [20] -> 20
+true ifTrue: [42] -> 42
+false ifFalse: [42] -> 42
+
+# Collections
+#(1 2 3) at: 2 -> 2
+#(1 2 3) size -> 3
+
+# Basic iteration
+| sum |
+sum := 0.
+#(1 2 3) do: [:each | sum := sum + each].
+sum -> 6
+
+# Dictionary operations
+| dict |
+dict := Dictionary new.
+dict at: #key put: 'value'.
+dict at: #key -> 'value'
+dict size -> 1
+
+# Class creation
+Object subclass: #Point instanceVariableNames: 'x y' -> <Class: Point>
+Point new -> <Point>
