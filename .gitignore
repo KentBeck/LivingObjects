@@ -29,3 +29,7 @@ src/interpreter/smalltalk-vm
 # IDE files
 **/.vscode/
 **/.clangd
+
+# Test executables
+**/run_tests
+**/tests/run_tests
