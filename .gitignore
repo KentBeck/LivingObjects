@@ -14,3 +14,18 @@ src/interpreter/cmd/expression_tester/expression_tester
 
 **/.claude/settings.local.json
 src/interpreter/smalltalk-vm
+
+# Cache directories
+.cache/
+**/.cache/
+
+# C++ build artifacts
+**/build/
+**/*.o
+**/*.exe
+**/*.plist
+**/compile_commands.json
+
+# IDE files
+**/.vscode/
+**/.clangd
