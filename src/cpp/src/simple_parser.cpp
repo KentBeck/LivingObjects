@@ -110,7 +110,7 @@ ASTNodePtr SimpleParser::parseInteger() {
 }
 
 void SimpleParser::skipWhitespace() {
-    while (!isAtEnd() && std::isspace(peek())) {
+    while (!isAtEnd() && (std::isspace(peek()) != 0)) {
         consume();
     }
 }

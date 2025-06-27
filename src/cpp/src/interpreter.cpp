@@ -56,7 +56,7 @@ Object* Interpreter::executeContext(MethodContext* context) {
 
     // Get the return value (top of stack)
     Object* result = nullptr;
-    if (activeContext) {
+    if (activeContext != nullptr) {
         result = top();
     }
 
@@ -69,7 +69,7 @@ Object* Interpreter::executeContext(MethodContext* context) {
 void Interpreter::executeLoop() {
     executing = true;
 
-    while (executing && activeContext) {
+    while (executing && (activeContext != nullptr)) {
         // For a basic implementation, we'll just pretend we're executing bytecodes
         // In a real implementation, we would fetch bytecodes from the method
 
@@ -150,7 +150,7 @@ uint32_t Interpreter::readUInt32(size_t offset) {
 }
 
 void Interpreter::push(Object* value) {
-    if (!activeContext) {
+    if (activeContext == nullptr) {
         throw std::runtime_error("No active context for push operation");
     }
     
@@ -173,7 +173,7 @@ void Interpreter::push(Object* value) {
 }
 
 Object* Interpreter::pop() {
-    if (!activeContext) {
+    if (activeContext == nullptr) {
         throw std::runtime_error("No active context for pop operation");
     }
     
@@ -197,7 +197,7 @@ Object* Interpreter::pop() {
 }
 
 Object* Interpreter::top() {
-    if (!activeContext) {
+    if (activeContext == nullptr) {
         throw std::runtime_error("No active context for top operation");
     }
     
@@ -289,7 +289,7 @@ void Interpreter::handleReturnStackTop() {
     activeContext = sender;
 
     // If there is a sender, push the result onto its stack
-    if (activeContext) {
+    if (activeContext != nullptr) {
         push(result);
     }
 }
@@ -378,7 +378,7 @@ void Interpreter::switchContext(MethodContext* newContext) {
 
 // Stack bounds checking helper methods
 Object** Interpreter::getStackStart(MethodContext* context) {
-    if (!context) {
+    if (context == nullptr) {
         throw std::runtime_error("Cannot get stack start for null context");
     }
     char* contextStart = reinterpret_cast<char*>(context) + sizeof(MethodContext);
@@ -386,7 +386,7 @@ Object** Interpreter::getStackStart(MethodContext* context) {
 }
 
 Object** Interpreter::getStackEnd(MethodContext* context) {
-    if (!context) {
+    if (context == nullptr) {
         throw std::runtime_error("Cannot get stack end for null context");
     }
     Object** stackStart = getStackStart(context);
@@ -394,7 +394,7 @@ Object** Interpreter::getStackEnd(MethodContext* context) {
 }
 
 Object** Interpreter::getCurrentStackPointer(MethodContext* context) {
-    if (!context) {
+    if (context == nullptr) {
         throw std::runtime_error("Cannot get stack pointer for null context");
     }
     
@@ -410,7 +410,7 @@ Object** Interpreter::getCurrentStackPointer(MethodContext* context) {
 }
 
 void Interpreter::validateStackBounds(MethodContext* context, Object** stackPointer) {
-    if (!context) {
+    if (context == nullptr) {
         throw std::runtime_error("Cannot validate bounds for null context");
     }
     
