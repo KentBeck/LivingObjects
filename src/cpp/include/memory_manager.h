@@ -22,10 +22,8 @@ public:
      * 
      * @param initialSpaceSize The size of each memory space in bytes.
      */
-    const size_t DEFAULT_INITIAL_SPACE_SIZE = 1024 * 1024; // 1MB
+    static constexpr size_t DEFAULT_INITIAL_SPACE_SIZE = 1024 * 1024; // 1MB
 
-class MemoryManager {
-public:
     /**
      * Constructor that initializes memory spaces.
      * 

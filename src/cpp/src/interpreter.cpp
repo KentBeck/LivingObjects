@@ -1,6 +1,7 @@
 #include "interpreter.h"
 #include <stdexcept>
 #include <cstring>
+#include <vector>
 
 namespace smalltalk {
 
@@ -17,16 +18,28 @@ Object* Interpreter::executeMethod(Object* method, Object* receiver, std::vector
     // Create a new method context
     uint32_t methodObj = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(method));
     MethodContext* context = memoryManager.allocateMethodContext(10 + args.size(), methodObj, receiver, nullptr);
+
+    // Get the variable-sized storage area safely
+    // Memory layout: [MethodContext][Object* slots...]
+    // The stackPointer will point into this Object* array
+    char* contextEnd = reinterpret_cast<char*>(context) + sizeof(MethodContext);
+    Object** slots = reinterpret_cast<Object**>(contextEnd);
+    
+    // Validate alignment - Object** must be properly aligned
+    if (reinterpret_cast<uintptr_t>(slots) % alignof(Object*) != 0) {
+        throw std::runtime_error("Stack slots not properly aligned");
+    }
     
     // Copy arguments to the context
-    Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(context) + sizeof(MethodContext));
     for (size_t i = 0; i < args.size(); i++) {
         slots[i] = args[i];
     }
-    
-    // Set up stack pointer
-    context->stackPointer = reinterpret_cast<Object*>(slots + args.size());
-    
+
+    // Set up stack pointer to point to the first available slot after arguments
+    // Note: stackPointer is stored as Object* but represents a position in Object** array
+    Object** initialStackPos = slots + args.size();
+    context->stackPointer = reinterpret_cast<Object*>(initialStackPos);
+
     // Execute the context
     return executeContext(context);
 }
@@ -34,34 +47,37 @@ Object* Interpreter::executeMethod(Object* method, Object* receiver, std::vector
 Object* Interpreter::executeContext(MethodContext* context) {
     // Save current context
     MethodContext* previousContext = activeContext;
-    
+
     // Set new active context
     activeContext = context;
-    
+
     // Execute bytecodes until context returns
     executeLoop();
-    
+
     // Get the return value (top of stack)
-    Object* result = top();
-    
+    Object* result = nullptr;
+    if (activeContext) {
+        result = top();
+    }
+
     // Restore previous context
     activeContext = previousContext;
-    
+
     return result;
 }
 
 void Interpreter::executeLoop() {
     executing = true;
-    
+
     while (executing && activeContext) {
         // For a basic implementation, we'll just pretend we're executing bytecodes
         // In a real implementation, we would fetch bytecodes from the method
-        
+
         // For the minimal example, let's just execute a simple sequence
         // that pushes a value and returns
         handlePushSelf();
         handleReturnStackTop();
-        
+
         // Stop execution after this simple sequence
         executing = false;
     }
@@ -70,10 +86,10 @@ void Interpreter::executeLoop() {
 void Interpreter::dispatch(Bytecode bytecode) {
     // Get current instruction pointer
     size_t ip = activeContext->instructionPointer;
-    
+
     // Update instruction pointer for next instruction
     activeContext->instructionPointer += getInstructionSize(bytecode);
-    
+
     // Dispatch based on bytecode
     switch (bytecode) {
         case Bytecode::PUSH_LITERAL:
@@ -134,25 +150,68 @@ uint32_t Interpreter::readUInt32(size_t offset) {
 }
 
 void Interpreter::push(Object* value) {
-    // Push value onto the active context's stack
-    Object** sp = reinterpret_cast<Object**>(activeContext->stackPointer);
-    *sp = value;
-    activeContext->stackPointer = reinterpret_cast<Object*>(sp + 1);
+    if (!activeContext) {
+        throw std::runtime_error("No active context for push operation");
+    }
+    
+    // Get current stack pointer and validate bounds
+    Object** currentSP = getCurrentStackPointer(activeContext);
+    Object** stackEnd = getStackEnd(activeContext);
+    
+    // Check for stack overflow
+    if (currentSP >= stackEnd) {
+        throw std::runtime_error("Stack overflow");
+    }
+    
+    // Validate that we're writing to a valid Object* slot
+    validateStackBounds(activeContext, currentSP);
+    
+    // Push value and update stack pointer
+    *currentSP = value;
+    Object** newStackPos = currentSP + 1;
+    activeContext->stackPointer = reinterpret_cast<Object*>(newStackPos);
 }
 
 Object* Interpreter::pop() {
-    // Pop value from the active context's stack
-    Object** sp = reinterpret_cast<Object**>(activeContext->stackPointer);
-    sp--;
-    Object* value = *sp;
-    activeContext->stackPointer = reinterpret_cast<Object*>(sp);
+    if (!activeContext) {
+        throw std::runtime_error("No active context for pop operation");
+    }
+    
+    // Get current stack pointer and validate bounds
+    Object** currentSP = getCurrentStackPointer(activeContext);
+    Object** stackStart = getStackStart(activeContext);
+    
+    // Check for stack underflow
+    if (currentSP <= stackStart) {
+        throw std::runtime_error("Stack underflow");
+    }
+    
+    // Move stack pointer back and validate
+    Object** newStackPos = currentSP - 1;
+    validateStackBounds(activeContext, newStackPos);
+    
+    // Get value and update stack pointer
+    Object* value = *newStackPos;
+    activeContext->stackPointer = reinterpret_cast<Object*>(newStackPos);
     return value;
 }
 
 Object* Interpreter::top() {
-    // Get the top value from the active context's stack
-    Object** sp = reinterpret_cast<Object**>(activeContext->stackPointer);
-    return *(sp - 1);
+    if (!activeContext) {
+        throw std::runtime_error("No active context for top operation");
+    }
+    
+    // Get current stack pointer and validate bounds
+    Object** currentSP = getCurrentStackPointer(activeContext);
+    Object** stackStart = getStackStart(activeContext);
+    
+    // Check for empty stack
+    if (currentSP <= stackStart) {
+        throw std::runtime_error("Stack is empty");
+    }
+    
+    // Return top value without modifying stack pointer
+    return *(currentSP - 1);
 }
 
 // Bytecode handler implementations
@@ -201,22 +260,22 @@ void Interpreter::handleSendMessage(uint32_t selectorIndex, uint32_t argCount) {
     // Not fully implemented in this basic version
     // In a real implementation, this would look up the method and execute it
     (void)selectorIndex; // Suppress unused parameter warning
-    
+
     // Pop arguments
     std::vector<Object*> args;
     for (uint32_t i = 0; i < argCount; i++) {
         args.push_back(pop());
     }
-    
+
     // Pop receiver
     Object* receiver = pop();
-    
+
     // Create a selector object
     Object* selector = memoryManager.allocateObject(ObjectType::SYMBOL, 0);
-    
+
     // Send the message
     Object* result = sendMessage(receiver, selector, args);
-    
+
     // Push the result
     push(result);
 }
@@ -224,11 +283,11 @@ void Interpreter::handleSendMessage(uint32_t selectorIndex, uint32_t argCount) {
 void Interpreter::handleReturnStackTop() {
     // Return from the current context
     Object* result = top();
-    
+
     // Set the sender as the new active context
     MethodContext* sender = reinterpret_cast<MethodContext*>(activeContext->sender);
     activeContext = sender;
-    
+
     // If there is a sender, push the result onto its stack
     if (activeContext) {
         push(result);
@@ -243,10 +302,10 @@ void Interpreter::handleJump(uint32_t target) {
 void Interpreter::handleJumpIfTrue(uint32_t target) {
     // Pop the condition
     Object* condition = pop();
-    
+
     // Check if the condition is true (simplified)
     bool isTrue = (condition != nullptr);
-    
+
     // Jump if true
     if (isTrue) {
         activeContext->instructionPointer = target;
@@ -256,10 +315,10 @@ void Interpreter::handleJumpIfTrue(uint32_t target) {
 void Interpreter::handleJumpIfFalse(uint32_t target) {
     // Pop the condition
     Object* condition = pop();
-    
+
     // Check if the condition is false (simplified)
     bool isFalse = (condition == nullptr);
-    
+
     // Jump if false
     if (isFalse) {
         activeContext->instructionPointer = target;
@@ -282,9 +341,9 @@ void Interpreter::handleCreateBlock(uint32_t bytecodeSize, uint32_t literalCount
     (void)bytecodeSize; // Suppress unused parameter warning
     (void)literalCount; // Suppress unused parameter warning
     (void)tempVarCount; // Suppress unused parameter warning
-    
+
     Object* block = memoryManager.allocateObject(ObjectType::OBJECT, 0);
-    
+
     // Push the block onto the stack
     push(block);
 }
@@ -300,7 +359,7 @@ Object* Interpreter::sendMessage(Object* receiver, Object* selector, std::vector
     (void)receiver; // Suppress unused parameter warning
     (void)selector; // Suppress unused parameter warning
     (void)args; // Suppress unused parameter warning
-    
+
     // For now, just return a new object
     return memoryManager.allocateObject(ObjectType::OBJECT, 0);
 }
@@ -315,6 +374,56 @@ Object* Interpreter::lookupMethod(Object* receiver, Object* selector) {
 void Interpreter::switchContext(MethodContext* newContext) {
     // Set the new active context
     activeContext = newContext;
+}
+
+// Stack bounds checking helper methods
+Object** Interpreter::getStackStart(MethodContext* context) {
+    if (!context) {
+        throw std::runtime_error("Cannot get stack start for null context");
+    }
+    char* contextStart = reinterpret_cast<char*>(context) + sizeof(MethodContext);
+    return reinterpret_cast<Object**>(contextStart);
+}
+
+Object** Interpreter::getStackEnd(MethodContext* context) {
+    if (!context) {
+        throw std::runtime_error("Cannot get stack end for null context");
+    }
+    Object** stackStart = getStackStart(context);
+    return stackStart + context->header.size;
+}
+
+Object** Interpreter::getCurrentStackPointer(MethodContext* context) {
+    if (!context) {
+        throw std::runtime_error("Cannot get stack pointer for null context");
+    }
+    
+    // Convert stored Object* back to Object** with validation
+    Object** stackPointer = reinterpret_cast<Object**>(context->stackPointer);
+    
+    // Validate alignment
+    if (reinterpret_cast<uintptr_t>(stackPointer) % alignof(Object*) != 0) {
+        throw std::runtime_error("Stack pointer is not properly aligned");
+    }
+    
+    return stackPointer;
+}
+
+void Interpreter::validateStackBounds(MethodContext* context, Object** stackPointer) {
+    if (!context) {
+        throw std::runtime_error("Cannot validate bounds for null context");
+    }
+    
+    Object** stackStart = getStackStart(context);
+    Object** stackEnd = getStackEnd(context);
+    
+    if (stackPointer < stackStart) {
+        throw std::runtime_error("Stack pointer below stack start");
+    }
+    
+    if (stackPointer > stackEnd) {
+        throw std::runtime_error("Stack pointer above stack end");
+    }
 }
 
 } // namespace smalltalk

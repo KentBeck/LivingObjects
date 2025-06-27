@@ -34,8 +34,8 @@ struct ContextHeader {
     uint64_t method : 32;    // Reference to method object or block
     
     // Constructor
-    ContextHeader(ContextType type, size_t size, uint32_t method = 0)
-        : size(size), flags(0), type(static_cast<uint64_t>(type)), method(method) {}
+    ContextHeader(ContextType contextType, size_t contextSize, uint32_t methodRef = 0)
+        : size(contextSize), flags(0), type(static_cast<uint64_t>(contextType)), method(methodRef) {}
     
     // Flag operations
     void setFlag(ContextFlag flag) {
@@ -61,11 +61,11 @@ struct MethodContext {
     // Variable-sized temporaries and stack follow
     
     // Constructor
-    MethodContext(size_t size, uint32_t method, Object* self, Object* sender)
-        : header(ContextType::METHOD_CONTEXT, size, method),
+    MethodContext(size_t contextSize, uint32_t methodRef, Object* receiver, Object* senderContext)
+        : header(ContextType::METHOD_CONTEXT, contextSize, methodRef),
           stackPointer(nullptr),
-          sender(sender),
-          self(self),
+          sender(senderContext),
+          self(receiver),
           instructionPointer(0) {
         header.setFlag(ContextFlag::CONTAINS_POINTERS);
     }
@@ -76,9 +76,9 @@ struct BlockContext : public MethodContext {
     Object* home;            // Home context (method context)
     
     // Constructor
-    BlockContext(size_t size, uint32_t method, Object* self, Object* sender, Object* home)
-        : MethodContext(size, method, self, sender),
-          home(home) {
+    BlockContext(size_t contextSize, uint32_t methodRef, Object* receiver, Object* senderContext, Object* homeContext)
+        : MethodContext(contextSize, methodRef, receiver, senderContext),
+          home(homeContext) {
         header.type = static_cast<uint64_t>(ContextType::BLOCK_CONTEXT);
     }
 };
@@ -92,8 +92,8 @@ struct StackChunk {
     // Contexts follow
     
     // Constructor
-    StackChunk(size_t size)
-        : header(ContextType::STACK_CHUNK_BOUNDARY, size),
+    StackChunk(size_t chunkSize)
+        : header(ContextType::STACK_CHUNK_BOUNDARY, chunkSize),
           previousChunk(nullptr),
           nextChunk(nullptr),
           allocationPointer(nullptr) {}

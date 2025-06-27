@@ -75,6 +75,7 @@ public:
             case Operator::LessThan: opStr = "<"; break;
             case Operator::GreaterThan: opStr = ">"; break;
             case Operator::Equal: opStr = "="; break;
+            default: opStr = "?"; break;
         }
         return "(" + left_->toString() + " " + opStr + " " + right_->toString() + ")";
     }

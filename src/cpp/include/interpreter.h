@@ -70,6 +70,12 @@ private:
     
     // Context switching
     void switchContext(MethodContext* newContext);
+    
+    // Stack bounds checking helpers
+    Object** getStackStart(MethodContext* context);
+    Object** getStackEnd(MethodContext* context);
+    Object** getCurrentStackPointer(MethodContext* context);
+    void validateStackBounds(MethodContext* context, Object** stackPointer);
 };
 
 } // namespace smalltalk
