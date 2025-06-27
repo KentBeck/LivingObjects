@@ -1,0 +1,5 @@
+---
+Checks: '*,-readability-identifier-length'
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+FormatStyle: none
