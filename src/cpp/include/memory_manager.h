@@ -22,7 +22,16 @@ public:
      * 
      * @param initialSpaceSize The size of each memory space in bytes.
      */
-    MemoryManager(size_t initialSpaceSize = 1024 * 1024);
+    const size_t DEFAULT_INITIAL_SPACE_SIZE = 1024 * 1024; // 1MB
+
+class MemoryManager {
+public:
+    /**
+     * Constructor that initializes memory spaces.
+     * 
+     * @param initialSpaceSize The size of each memory space in bytes.
+     */
+    MemoryManager(size_t initialSpaceSize = DEFAULT_INITIAL_SPACE_SIZE);
     
     /**
      * Destructor that cleans up memory.

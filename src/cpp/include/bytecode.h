@@ -1,8 +1,15 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 
 namespace smalltalk {
+
+// Instruction sizes
+const size_t INSTRUCTION_SIZE_ONE_BYTE_OPCODE = 1;
+const size_t INSTRUCTION_SIZE_FOUR_BYTE_OPERAND = 5;
+const size_t INSTRUCTION_SIZE_SEND_MESSAGE = 9;
+const size_t INSTRUCTION_SIZE_CREATE_BLOCK = 13;
 
 // Bytecode constants based on Go implementation
 enum class Bytecode : uint8_t {
@@ -24,7 +31,7 @@ enum class Bytecode : uint8_t {
 };
 
 // Instruction size (in bytes, including opcode)
-inline int getInstructionSize(Bytecode bytecode) {
+inline size_t getInstructionSize(Bytecode bytecode) {
     switch (bytecode) {
         case Bytecode::PUSH_LITERAL:
         case Bytecode::PUSH_INSTANCE_VARIABLE:
@@ -35,18 +42,18 @@ inline int getInstructionSize(Bytecode bytecode) {
         case Bytecode::JUMP_IF_TRUE:
         case Bytecode::JUMP_IF_FALSE:
         case Bytecode::EXECUTE_BLOCK:
-            return 5; // 1 byte opcode + 4 byte operand
+            return INSTRUCTION_SIZE_FOUR_BYTE_OPERAND; // 1 byte opcode + 4 byte operand
         case Bytecode::SEND_MESSAGE:
-            return 9; // 1 byte opcode + 4 byte selector index + 4 byte arg count
+            return INSTRUCTION_SIZE_SEND_MESSAGE; // 1 byte opcode + 4 byte selector index + 4 byte arg count
         case Bytecode::CREATE_BLOCK:
-            return 13; // 1 byte opcode + 4 byte bytecode size + 4 byte literal count + 4 byte temp var count
+            return INSTRUCTION_SIZE_CREATE_BLOCK; // 1 byte opcode + 4 byte bytecode size + 4 byte literal count + 4 byte temp var count
         case Bytecode::PUSH_SELF:
         case Bytecode::RETURN_STACK_TOP:
         case Bytecode::POP:
         case Bytecode::DUPLICATE:
-            return 1; // 1 byte opcode
+            return INSTRUCTION_SIZE_ONE_BYTE_OPCODE; // 1 byte opcode
         default:
-            return 1; // Default to 1 byte for unknown bytecodes
+            return INSTRUCTION_SIZE_ONE_BYTE_OPCODE; // Default to 1 byte for unknown bytecodes
     }
 }
 

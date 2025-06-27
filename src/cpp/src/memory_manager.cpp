@@ -5,6 +5,8 @@
 
 namespace smalltalk {
 
+const size_t ALIGNMENT_BYTES = 8;
+
 MemoryManager::MemoryManager(size_t initialSpaceSize)
     : spaceSize(initialSpaceSize) {
     // Allocate memory spaces
@@ -58,7 +60,8 @@ Object* MemoryManager::allocateObject(ObjectType type, size_t size) {
 
 Object* MemoryManager::allocateBytes(size_t byteSize) {
     // Calculate size with proper alignment
-    size_t alignedSize = (byteSize + 7) & ~7; // Align to 8 bytes
+    const size_t ALIGNMENT_BYTES = 8;
+    size_t alignedSize = (byteSize + ALIGNMENT_BYTES - 1) & ~(ALIGNMENT_BYTES - 1); // Align to 8 bytes
     
     // Allocate as a byte array
     Object* obj = allocateObject(ObjectType::BYTE_ARRAY, alignedSize);
@@ -194,7 +197,7 @@ void MemoryManager::collectGarbage() {
         }
         
         // Align to 8 bytes
-        objSize = (objSize + 7) & ~7;
+        objSize = (objSize + ALIGNMENT_BYTES - 1) & ~(ALIGNMENT_BYTES - 1);
         
         scanPtr = static_cast<char*>(scanPtr) + objSize;
     }
@@ -240,7 +243,7 @@ Object* MemoryManager::copyObject(Object* obj) {
     }
     
     // Align to 8 bytes
-    objSize = (objSize + 7) & ~7;
+    objSize = (objSize + ALIGNMENT_BYTES - 1) & ~(ALIGNMENT_BYTES - 1);
     
     // Check if there's enough space in toSpace
     size_t remainingSpace = static_cast<size_t>(

@@ -5,6 +5,12 @@
 
 namespace smalltalk {
 
+// Object header bitfield sizes
+const uint64_t OBJECT_HEADER_SIZE_BITS = 24;
+const uint64_t OBJECT_HEADER_FLAGS_BITS = 5;
+const uint64_t OBJECT_HEADER_TYPE_BITS = 3;
+const uint64_t OBJECT_HEADER_HASH_BITS = 32;
+
 // Object type discriminators
 enum class ObjectType : uint8_t {
     IMMEDIATE       = 0, // SmallInteger, Character, Boolean
@@ -28,14 +34,14 @@ enum class ObjectFlag : uint8_t {
 
 // Object header structure (64 bits)
 struct ObjectHeader {
-    uint64_t size : 24;      // Size in slots or bytes
-    uint64_t flags : 5;      // Various flags
-    uint64_t type : 3;       // Object type
-    uint64_t hash : 32;      // Identity hash
+    uint64_t size : OBJECT_HEADER_SIZE_BITS;      // Size in slots or bytes
+    uint64_t flags : OBJECT_HEADER_FLAGS_BITS;      // Various flags
+    uint64_t type : OBJECT_HEADER_TYPE_BITS;       // Object type
+    uint64_t hash : OBJECT_HEADER_HASH_BITS;      // Identity hash
     
     // Constructor
-    ObjectHeader(ObjectType type, size_t size, uint32_t hash = 0)
-        : size(size), flags(0), type(static_cast<uint64_t>(type)), hash(hash) {}
+    ObjectHeader(ObjectType objectType, size_t objectSize, uint32_t objectHash = 0)
+        : size(objectSize), flags(0), type(static_cast<uint64_t>(objectType)), hash(objectHash) {}
     
     // Flag operations
     void setFlag(ObjectFlag flag) {
@@ -56,8 +62,8 @@ struct Object {
     ObjectHeader header;
     
     // Constructor
-    Object(ObjectType type, size_t size, uint32_t hash = 0)
-        : header(type, size, hash) {}
+    Object(ObjectType objectType, size_t objectSize, uint32_t objectHash = 0)
+        : header(objectType, objectSize, objectHash) {}
 };
 
 } // namespace smalltalk
