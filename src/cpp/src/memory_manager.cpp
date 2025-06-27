@@ -1,6 +1,8 @@
 #include "memory_manager.h"
-#include <cstring>
+
 #include <algorithm>
+#include <cstring>
+#include <memory>
 #include <stdexcept>
 
 namespace smalltalk {
@@ -8,24 +10,24 @@ namespace smalltalk {
 const size_t ALIGNMENT_BYTES = 8;
 
 MemoryManager::MemoryManager(size_t initialSpaceSize)
-    : spaceSize(initialSpaceSize) {
-    // Allocate memory spaces
-    fromSpace = malloc(spaceSize);
-    toSpace = malloc(spaceSize);
+    : spaceSize(initialSpaceSize),
+      fromSpacePtr(std::malloc(initialSpaceSize), &std::free),
+      toSpacePtr(std::malloc(initialSpaceSize), &std::free) {
+    // Check if allocation succeeded
     
-    if (fromSpace == nullptr || toSpace == nullptr) {
+    if (!fromSpacePtr || !toSpacePtr) {
         throw std::runtime_error("Failed to allocate memory spaces");
     }
+    
+    // Set raw pointers for compatibility
+    fromSpace = fromSpacePtr.get();
+    toSpace = toSpacePtr.get();
     
     // Initialize allocation pointer to the start of fromSpace
     currentAllocation = fromSpace;
 }
 
-MemoryManager::~MemoryManager() {
-    // Free memory spaces
-    free(fromSpace);
-    free(toSpace);
-}
+MemoryManager::~MemoryManager() = default;
 
 Object* MemoryManager::allocateObject(ObjectType type, size_t size) {
     // Check if there's enough space
@@ -148,17 +150,20 @@ BlockContext* MemoryManager::allocateBlockContext(size_t size, uint32_t method, 
 }
 
 StackChunk* MemoryManager::allocateStackChunk(size_t size) {
-    // For now, allocate stack chunks directly with malloc
-    // In a real implementation, this would be managed differently
+    // Use RAII approach for stack chunk allocation and track it
     size_t requiredBytes = sizeof(StackChunk) + (size * sizeof(Object*));
-    StackChunk* chunk = static_cast<StackChunk*>(malloc(requiredBytes));
+    auto chunkPtr = std::unique_ptr<void, decltype(&std::free)>(std::malloc(requiredBytes), &std::free);
     
-    if (chunk == nullptr) {
+    if (!chunkPtr) {
         throw std::runtime_error("Failed to allocate stack chunk");
     }
     
+    StackChunk* chunk = static_cast<StackChunk*>(chunkPtr.get());
     new (chunk) StackChunk(size);
     chunk->allocationPointer = reinterpret_cast<char*>(chunk) + sizeof(StackChunk);
+    
+    // Store the unique_ptr to manage lifetime
+    stackChunks.push_back(std::move(chunkPtr));
     
     return chunk;
 }

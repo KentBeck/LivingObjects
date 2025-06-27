@@ -1,4 +1,5 @@
 #include "bytecode.h"
+
 #include <gtest/gtest.h>
 
 using namespace smalltalk;

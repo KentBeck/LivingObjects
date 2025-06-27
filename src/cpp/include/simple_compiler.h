@@ -1,8 +1,9 @@
 #pragma once
 
 #include "ast.h"
-#include "compiled_method.h"
 #include "bytecode.h"
+#include "compiled_method.h"
+
 #include <memory>
 
 namespace smalltalk {

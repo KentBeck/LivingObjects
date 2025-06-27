@@ -1,6 +1,7 @@
-#include "../include/simple_interpreter.h"
-#include <iostream>
+#include "simple_interpreter.h"
+
 #include <cassert>
+#include <iostream>
 
 using namespace smalltalk;
 

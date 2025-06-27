@@ -1,13 +1,15 @@
-#include "../include/bytecode.h"
-#include "../include/object.h"
-#include "../include/memory_manager.h"
-#include "../include/tagged_value.h"
-#include <iostream>
+#include "bytecode.h"
+#include "memory_manager.h"
+#include "object.h"
+#include "tagged_value.h"
+
 #include <fstream>
+#include <iostream>
+#include <regex>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
-#include <regex>
+#include <cassert>
 
 using namespace smalltalk;
 

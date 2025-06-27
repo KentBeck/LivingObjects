@@ -1,4 +1,5 @@
 #include "simple_compiler.h"
+
 #include <stdexcept>
 
 namespace smalltalk {

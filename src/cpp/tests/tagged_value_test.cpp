@@ -1,6 +1,7 @@
-#include "../include/tagged_value.h"
-#include <iostream>
+#include "tagged_value.h"
+
 #include <cassert>
+#include <iostream>
 
 using namespace smalltalk;
 

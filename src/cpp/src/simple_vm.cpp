@@ -1,11 +1,12 @@
 #include "simple_vm.h"
 #include "bytecode.h"
-#include <stdexcept>
+
 #include <iostream>
+#include <stdexcept>
 
 namespace smalltalk {
 
-SimpleVM::SimpleVM() : stackPointer_(0), instructionPointer_(0), currentMethod_(nullptr) {
+SimpleVM::SimpleVM() {
     // Reserve space for the stack
     stack_.reserve(1000);
 }

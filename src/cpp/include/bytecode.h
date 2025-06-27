@@ -51,9 +51,8 @@ inline size_t getInstructionSize(Bytecode bytecode) {
         case Bytecode::RETURN_STACK_TOP:
         case Bytecode::POP:
         case Bytecode::DUPLICATE:
-            return INSTRUCTION_SIZE_ONE_BYTE_OPCODE; // 1 byte opcode
         default:
-            return INSTRUCTION_SIZE_ONE_BYTE_OPCODE; // Default to 1 byte for unknown bytecodes
+            return INSTRUCTION_SIZE_ONE_BYTE_OPCODE; // 1 byte opcode (includes default for unknown bytecodes)
     }
 }
 

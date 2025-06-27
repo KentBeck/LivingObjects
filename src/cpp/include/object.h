@@ -29,7 +29,8 @@ enum class ObjectFlag : uint8_t {
     REMEMBERED      = 1, // In the remembered set
     IMMUTABLE       = 2, // Cannot be modified
     FORWARDED       = 3, // Object has been forwarded
-    PINNED          = 4  // Cannot be moved by GC
+    PINNED          = 4,  // Cannot be moved by GC
+    CONTAINS_POINTERS = 5 // Object contains pointers to other objects
 };
 
 // Object header structure (64 bits)

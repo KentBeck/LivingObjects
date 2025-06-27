@@ -1,15 +1,13 @@
 #include "interpreter.h"
-#include <stdexcept>
+
 #include <cstring>
+#include <stdexcept>
 #include <vector>
 
 namespace smalltalk {
 
 Interpreter::Interpreter(MemoryManager& memory)
-    : memoryManager(memory),
-      activeContext(nullptr),
-      currentChunk(nullptr),
-      executing(false) {
+    : memoryManager(memory) {
     // Initialize the stack chunk
     currentChunk = memoryManager.allocateStackChunk(1024);
 }
@@ -263,6 +261,7 @@ void Interpreter::handleSendMessage(uint32_t selectorIndex, uint32_t argCount) {
 
     // Pop arguments
     std::vector<Object*> args;
+    args.reserve(argCount);
     for (uint32_t i = 0; i < argCount; i++) {
         args.push_back(pop());
     }

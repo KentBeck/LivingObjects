@@ -1,12 +1,13 @@
 #include "simple_parser.h"
-#include <stdexcept>
+
 #include <cctype>
 #include <iostream>
+#include <stdexcept>
 
 namespace smalltalk {
 
-SimpleParser::SimpleParser(const std::string& input) 
-    : input_(input), pos_(0) {
+SimpleParser::SimpleParser(std::string input) 
+    : input_(std::move(input)) {
 }
 
 std::unique_ptr<MethodNode> SimpleParser::parseMethod() {

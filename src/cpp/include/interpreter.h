@@ -1,9 +1,10 @@
 #pragma once
 
 #include "bytecode.h"
-#include "object.h"
 #include "context.h"
 #include "memory_manager.h"
+#include "object.h"
+
 #include <cstdint>
 #include <vector>
 
@@ -53,11 +54,11 @@ private:
     MemoryManager& memoryManager;
     
     // Current context and chunk
-    MethodContext* activeContext;
-    StackChunk* currentChunk;
+    MethodContext* activeContext = nullptr;
+    StackChunk* currentChunk = nullptr;
     
     // Internal state
-    bool executing;
+    bool executing = false;
     
     // Read 32-bit value from bytecode
     uint32_t readUInt32(size_t offset);

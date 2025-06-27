@@ -1,8 +1,9 @@
-#include "../include/simple_interpreter.h"
+#include "simple_interpreter.h"
+
 #include <algorithm>
 #include <cctype>
-#include <sstream>
 #include <limits>
+#include <sstream>
 
 namespace smalltalk
 {

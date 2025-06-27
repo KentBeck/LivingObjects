@@ -2,8 +2,9 @@
 
 #include "compiled_method.h"
 #include "tagged_value.h"
-#include <vector>
+
 #include <cstdint>
+#include <vector>
 
 namespace smalltalk {
 
@@ -20,9 +21,9 @@ public:
 private:
     // Execution state
     std::vector<TaggedValue> stack_;
-    uint32_t stackPointer_;
-    uint32_t instructionPointer_;
-    const CompiledMethod* currentMethod_;
+    uint32_t stackPointer_ = 0;
+    uint32_t instructionPointer_ = 0;
+    const CompiledMethod* currentMethod_ = nullptr;
     
     // Stack operations
     void push(TaggedValue value);

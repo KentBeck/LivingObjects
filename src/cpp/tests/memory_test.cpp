@@ -1,4 +1,5 @@
 #include "memory_manager.h"
+
 #include <gtest/gtest.h>
 
 using namespace smalltalk;
@@ -57,19 +58,19 @@ TEST(MemoryTest, ContextAllocation) {
     ASSERT_NE(nullptr, context);
     EXPECT_EQ(static_cast<uint64_t>(ContextType::METHOD_CONTEXT), context->header.type);
     EXPECT_EQ(5UL, context->header.size);
-    EXPECT_EQ(123U, context->header.method);
-    EXPECT_EQ(self, context->self);
-    EXPECT_EQ(nullptr, context->sender);
+    EXPECT_EQ(123U, context->header.hash);
+    EXPECT_EQ(self, reinterpret_cast<Object**>(reinterpret_cast<char*>(context) + sizeof(Object))[1]);
+    EXPECT_EQ(nullptr, reinterpret_cast<Object**>(reinterpret_cast<char*>(context) + sizeof(Object))[0]);
     
     // Test allocating a block context
-    BlockContext* blockContext = memory.allocateBlockContext(3, 456, self, nullptr, context);
+    BlockContext* blockContext = memory.allocateBlockContext(3, 456, self, nullptr, static_cast<Object*>(context));
     ASSERT_NE(nullptr, blockContext);
     EXPECT_EQ(static_cast<uint64_t>(ContextType::BLOCK_CONTEXT), blockContext->header.type);
     EXPECT_EQ(3UL, blockContext->header.size);
-    EXPECT_EQ(456U, blockContext->header.method);
-    EXPECT_EQ(self, blockContext->self);
-    EXPECT_EQ(nullptr, blockContext->sender);
-    EXPECT_EQ(context, blockContext->home);
+    EXPECT_EQ(456U, blockContext->header.hash);
+    EXPECT_EQ(self, reinterpret_cast<Object**>(reinterpret_cast<char*>(blockContext) + sizeof(Object))[1]);
+    EXPECT_EQ(nullptr, reinterpret_cast<Object**>(reinterpret_cast<char*>(blockContext) + sizeof(Object))[0]);
+    EXPECT_EQ(static_cast<Object*>(context), blockContext->home);
 }
 
 TEST(MemoryTest, StackChunkAllocation) {

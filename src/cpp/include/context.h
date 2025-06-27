@@ -1,6 +1,7 @@
 #pragma once
 
 #include "object.h"
+
 #include <cstdint>
 
 namespace smalltalk {
@@ -17,86 +18,59 @@ enum class ContextType : uint8_t {
     STACK_CHUNK_BOUNDARY = 7  // Stack chunk marker
 };
 
-// Context flags
-enum class ContextFlag : uint8_t {
-    MATERIALIZED         = 0, // Context has been materialized to heap
-    GC_SCANNED           = 1, // Context has been scanned by GC
-    CONTAINS_POINTERS    = 2, // Context contains pointers
-    RESERVED_3           = 3, // Reserved
-    RESERVED_4           = 4  // Reserved
-};
 
-// Context header structure (64 bits)
-struct ContextHeader {
-    uint64_t size : 24;      // Size in slots
-    uint64_t flags : 5;      // Various flags
-    uint64_t type : 3;       // Context type
-    uint64_t method : 32;    // Reference to method object or block
-    
-    // Constructor
-    ContextHeader(ContextType contextType, size_t contextSize, uint32_t methodRef = 0)
-        : size(contextSize), flags(0), type(static_cast<uint64_t>(contextType)), method(methodRef) {}
-    
-    // Flag operations
-    void setFlag(ContextFlag flag) {
-        flags |= (1 << static_cast<uint8_t>(flag));
-    }
-    
-    bool hasFlag(ContextFlag flag) const {
-        return (flags & (1 << static_cast<uint8_t>(flag))) != 0;
-    }
-    
-    void clearFlag(ContextFlag flag) {
-        flags &= ~(1 << static_cast<uint8_t>(flag));
-    }
-};
 
 // Method context structure
-struct MethodContext {
-    ContextHeader header;
-    Object* stackPointer;    // Current stack top
+struct MethodContext : public Object {
+    Object* stackPointer = nullptr;    // Current stack top
     Object* sender;          // Sender context
     Object* self;            // Receiver
-    uint64_t instructionPointer; // Current IP
+    uint64_t instructionPointer = 0; // Current IP
     // Variable-sized temporaries and stack follow
     
     // Constructor
     MethodContext(size_t contextSize, uint32_t methodRef, Object* receiver, Object* senderContext)
-        : header(ContextType::METHOD_CONTEXT, contextSize, methodRef),
-          stackPointer(nullptr),
+        : Object(ObjectType::CONTEXT, contextSize, methodRef),
           sender(senderContext),
-          self(receiver),
-          instructionPointer(0) {
-        header.setFlag(ContextFlag::CONTAINS_POINTERS);
+          self(receiver) {
+        header.setFlag(ObjectFlag::CONTAINS_POINTERS);
+        // Set the specific context type in the hash field (methodRef is already there)
+        header.type = static_cast<uint64_t>(ContextType::METHOD_CONTEXT);
     }
 };
 
 // Block context structure
-struct BlockContext : public MethodContext {
+struct BlockContext : public Object {
     Object* home;            // Home context (method context)
     
     // Constructor
     BlockContext(size_t contextSize, uint32_t methodRef, Object* receiver, Object* senderContext, Object* homeContext)
-        : MethodContext(contextSize, methodRef, receiver, senderContext),
+        : Object(ObjectType::CONTEXT, contextSize, methodRef),
           home(homeContext) {
+        header.setFlag(ObjectFlag::CONTAINS_POINTERS);
         header.type = static_cast<uint64_t>(ContextType::BLOCK_CONTEXT);
+        // Store sender and receiver in the object's variable-sized fields
+        // This is a simplified approach; a real VM would manage context fields more robustly
+        Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(this) + sizeof(Object));
+        if (contextSize >= 2) { // Ensure there's space for sender and receiver
+            slots[0] = senderContext;
+            slots[1] = receiver;
+        }
     }
 };
 
 // Stack chunk structure
-struct StackChunk {
-    ContextHeader header;    // Chunk header with STACK_CHUNK_BOUNDARY type
-    StackChunk* previousChunk; // Previous chunk in the chain
-    StackChunk* nextChunk;   // Next chunk in the chain
-    void* allocationPointer; // Current allocation position
+struct StackChunk : public Object {
+    StackChunk* previousChunk = nullptr; // Previous chunk in the chain
+    StackChunk* nextChunk = nullptr;   // Next chunk in the chain
+    void* allocationPointer = nullptr; // Current allocation position
     // Contexts follow
     
     // Constructor
     StackChunk(size_t chunkSize)
-        : header(ContextType::STACK_CHUNK_BOUNDARY, chunkSize),
-          previousChunk(nullptr),
-          nextChunk(nullptr),
-          allocationPointer(nullptr) {}
+        : Object(ObjectType::CONTEXT, chunkSize, 0) { // Using CONTEXT type for stack chunks
+        header.type = static_cast<uint64_t>(ContextType::STACK_CHUNK_BOUNDARY);
+    }
 };
 
 } // namespace smalltalk

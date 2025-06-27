@@ -1,9 +1,10 @@
 #pragma once
 
 #include "tagged_value.h"
+
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace smalltalk {
 

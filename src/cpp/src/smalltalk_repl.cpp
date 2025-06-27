@@ -1,4 +1,5 @@
-#include "../include/simple_interpreter.h"
+#include "simple_interpreter.h"
+
 #include <iostream>
 #include <string>
 

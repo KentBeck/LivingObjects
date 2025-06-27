@@ -1,8 +1,10 @@
 #pragma once
 
-#include "object.h"
 #include "context.h"
+#include "object.h"
+
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 namespace smalltalk {
@@ -125,13 +127,22 @@ public:
     size_t getUsedSpace() const;
     
 private:
-    // Memory spaces
+    // Size must be declared before unique_ptr members that use it
+    size_t spaceSize;    ///< Size of each space in bytes
+    
+    // Memory spaces (RAII-managed)
+    std::unique_ptr<void, decltype(&std::free)> fromSpacePtr;
+    std::unique_ptr<void, decltype(&std::free)> toSpacePtr;
+    
+    // Raw pointers for compatibility
     void* fromSpace;     ///< Current allocation space
     void* toSpace;       ///< Space for copying during GC
-    size_t spaceSize;    ///< Size of each space in bytes
     
     // Current allocation pointer
     void* currentAllocation;
+    
+    // Stack chunk management
+    std::vector<std::unique_ptr<void, decltype(&std::free)>> stackChunks;
     
     // Root set for GC
     std::vector<Object**> roots;

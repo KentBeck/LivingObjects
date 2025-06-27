@@ -1,9 +1,10 @@
-#include "../include/bytecode.h"
-#include "../include/object.h"
-#include "../include/memory_manager.h"
-#include <iostream>
+#include "bytecode.h"
+#include "memory_manager.h"
+#include "object.h"
+
 #include <cassert>
 #include <cstring>
+#include <iostream>
 
 using namespace smalltalk;
 

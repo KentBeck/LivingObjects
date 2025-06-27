@@ -1,8 +1,9 @@
 #pragma once
 
 #include "tagged_value.h"
-#include <string>
+
 #include <stdexcept>
+#include <string>
 
 namespace smalltalk {
 

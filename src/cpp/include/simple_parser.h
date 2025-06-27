@@ -1,8 +1,9 @@
 #pragma once
 
 #include "ast.h"
-#include <string>
+
 #include <memory>
+#include <string>
 
 namespace smalltalk {
 
@@ -18,7 +19,7 @@ namespace smalltalk {
  */
 class SimpleParser {
 public:
-    explicit SimpleParser(const std::string& input);
+    SimpleParser(std::string input);
     
     // Parse the input and return a method AST
     std::unique_ptr<MethodNode> parseMethod();
@@ -41,7 +42,7 @@ private:
     void error(const std::string& message);
     
     std::string input_;
-    size_t pos_;
+    size_t pos_ = 0;
 };
 
 } // namespace smalltalk
