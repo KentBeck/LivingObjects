@@ -157,33 +157,33 @@ TEST(TestTaggedValueSpecialValues)
 
 void runAllTests()
 {
-    std::cout << "Running tests..." << std::endl;
+    std::cout << "Running tests..." << '\n';
 
     TestBytecodeInstructionSizes();
-    std::cout << "✓ Bytecode instruction sizes test passed" << std::endl;
+    std::cout << "✓ Bytecode instruction sizes test passed" << '\n';
 
     TestBytecodeNames();
-    std::cout << "✓ Bytecode names test passed" << std::endl;
+    std::cout << "✓ Bytecode names test passed" << '\n';
 
     TestBytecodeValues();
-    std::cout << "✓ Bytecode values test passed" << std::endl;
+    std::cout << "✓ Bytecode values test passed" << '\n';
 
     TestMemoryObjectAllocation();
-    std::cout << "✓ Memory object allocation test passed" << std::endl;
+    std::cout << "✓ Memory object allocation test passed" << '\n';
 
     TestMemoryByteArrayAllocation();
-    std::cout << "✓ Memory byte array allocation test passed" << std::endl;
+    std::cout << "✓ Memory byte array allocation test passed" << '\n';
 
     TestTaggedValueInteger();
-    std::cout << "✓ Tagged value integer test passed" << std::endl;
+    std::cout << "✓ Tagged value integer test passed" << '\n';
 
     TestTaggedValueIntegerRange();
-    std::cout << "✓ Tagged value integer range test passed" << std::endl;
+    std::cout << "✓ Tagged value integer range test passed" << '\n';
 
     TestTaggedValueSpecialValues();
-    std::cout << "✓ Tagged value special values test passed" << std::endl;
+    std::cout << "✓ Tagged value special values test passed" << '\n';
 
-    std::cout << "All tests passed!" << std::endl;
+    std::cout << "All tests passed!" << '\n';
 }
 
 int main()
@@ -195,12 +195,12 @@ int main()
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Test failed: " << e.what() << std::endl;
+        std::cerr << "Test failed: " << e.what() << '\n';
         return 1;
     }
     catch (...)
     {
-        std::cerr << "Test failed with unknown exception" << std::endl;
+        std::cerr << "Test failed with unknown exception" << '\n';
         return 1;
     }
 }

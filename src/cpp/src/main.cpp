@@ -7,13 +7,13 @@
 using namespace smalltalk;
 
 void printUsage() {
-    std::cout << "Usage:" << std::endl;
-    std::cout << "  smalltalk-vm <expression>" << std::endl;
-    std::cout << std::endl;
-    std::cout << "Examples:" << std::endl;
-    std::cout << "  smalltalk-vm \"42\"" << std::endl;
-    std::cout << "  smalltalk-vm \"3 + 4\"" << std::endl;
-    std::cout << "  smalltalk-vm \"(10 - 2) * 3\"" << std::endl;
+    std::cout << "Usage:" << '\n';
+    std::cout << "  smalltalk-vm <expression>" << '\n';
+    std::cout << '\n';
+    std::cout << "Examples:" << '\n';
+    std::cout << "  smalltalk-vm \"42\"" << '\n';
+    std::cout << "  smalltalk-vm \"3 + 4\"" << '\n';
+    std::cout << "  smalltalk-vm \"(10 - 2) * 3\"" << '\n';
 }
 
 int main(int argc, char** argv) {
@@ -29,23 +29,23 @@ int main(int argc, char** argv) {
         SimpleParser parser(expression);
         auto methodAST = parser.parseMethod();
         
-        std::cout << "Parsed: " << methodAST->toString() << std::endl;
+        std::cout << "Parsed: " << methodAST->toString() << '\n';
         
         // Step 2: Compile to bytecode
         SimpleCompiler compiler;
         auto compiledMethod = compiler.compile(*methodAST);
         
-        std::cout << "Compiled: " << compiledMethod->toString() << std::endl;
+        std::cout << "Compiled: " << compiledMethod->toString() << '\n';
         
         // Step 3: Execute the bytecode
         SimpleVM vm;
         TaggedValue result = vm.execute(*compiledMethod);
         
         // Step 4: Print the result
-        std::cout << "Result: " << result << std::endl;
+        std::cout << "Result: " << result << '\n';
         
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << '\n';
         return 1;
     }
     

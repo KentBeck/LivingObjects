@@ -26,7 +26,7 @@ std::vector<ExpressionTest> parseExpressionTests(const std::string& filename) {
     std::ifstream file(filename);
     
     if (!file.is_open()) {
-        std::cerr << "Error: Could not open test file: " << filename << std::endl;
+        std::cerr << "Error: Could not open test file: " << filename << '\n';
         return tests;
     }
     
@@ -40,7 +40,7 @@ std::vector<ExpressionTest> parseExpressionTests(const std::string& filename) {
         // Find the delimiter between expression and expected result
         size_t pos = line.find(" -> ");
         if (pos == std::string::npos) {
-            std::cerr << "Warning: Invalid test line, skipping: " << line << std::endl;
+            std::cerr << "Warning: Invalid test line, skipping: " << line << '\n';
             continue;
         }
         
@@ -56,7 +56,7 @@ std::vector<ExpressionTest> parseExpressionTests(const std::string& filename) {
 // Execute a single test
 bool executeTest(ExpressionTest& test) {
     // This is a stub implementation that will be expanded as we implement more functionality
-    std::cout << "Executing: " << test.expression << std::endl;
+    std::cout << "Executing: " << test.expression << '\n';
     
     // Simple pattern matching for test expressions
     // This is just a placeholder - in reality we would parse and execute the expression
@@ -135,7 +135,7 @@ bool executeTest(ExpressionTest& test) {
 void runExpressionTests(const std::string& filename) {
     std::vector<ExpressionTest> tests = parseExpressionTests(filename);
     
-    std::cout << "Found " << tests.size() << " expression tests." << std::endl;
+    std::cout << "Found " << tests.size() << " expression tests." << '\n';
     
     // Initialize test counters
     int passed = 0;
@@ -147,83 +147,83 @@ void runExpressionTests(const std::string& filename) {
         bool result = executeTest(test);
         
         if (!test.executed) {
-            std::cout << "⚠️ SKIPPED: " << test.expression << " -> " << test.expectedResult << std::endl;
+            std::cout << "⚠️ SKIPPED: " << test.expression << " -> " << test.expectedResult << '\n';
             skipped++;
         } else if (result) {
-            std::cout << "✅ PASSED: " << test.expression << " -> " << test.actualResult << std::endl;
+            std::cout << "✅ PASSED: " << test.expression << " -> " << test.actualResult << '\n';
             passed++;
         } else {
-            std::cout << "❌ FAILED: " << test.expression << std::endl;
-            std::cout << "  Expected: " << test.expectedResult << std::endl;
-            std::cout << "  Actual:   " << test.actualResult << std::endl;
+            std::cout << "❌ FAILED: " << test.expression << '\n';
+            std::cout << "  Expected: " << test.expectedResult << '\n';
+            std::cout << "  Actual:   " << test.actualResult << '\n';
             failed++;
         }
     }
     
     // Print summary
-    std::cout << std::endl;
-    std::cout << "Test Results:" << std::endl;
-    std::cout << "  Total:   " << tests.size() << std::endl;
-    std::cout << "  Passed:  " << passed << std::endl;
-    std::cout << "  Failed:  " << failed << std::endl;
-    std::cout << "  Skipped: " << skipped << std::endl;
+    std::cout << '\n';
+    std::cout << "Test Results:" << '\n';
+    std::cout << "  Total:   " << tests.size() << '\n';
+    std::cout << "  Passed:  " << passed << '\n';
+    std::cout << "  Failed:  " << failed << '\n';
+    std::cout << "  Skipped: " << skipped << '\n';
 }
 
 // Test TaggedValue implementation
 void testTaggedValues() {
-    std::cout << "\nRunning TaggedValue tests:" << std::endl;
+    std::cout << "\nRunning TaggedValue tests:" << '\n';
     
     try {
         // Integer tests
         TaggedValue int42(42);
         assert(int42.isInteger());
         assert(int42.asInteger() == 42);
-        std::cout << "✅ Integer 42: " << int42 << std::endl;
+        std::cout << "✅ Integer 42: " << int42 << '\n';
         
         TaggedValue intNeg10(-10);
         assert(intNeg10.isInteger());
         assert(intNeg10.asInteger() == -10);
-        std::cout << "✅ Integer -10: " << intNeg10 << std::endl;
+        std::cout << "✅ Integer -10: " << intNeg10 << '\n';
         
         // Special value tests
         TaggedValue nilVal = TaggedValue::nil();
         assert(nilVal.isSpecial());
         assert(nilVal.isNil());
-        std::cout << "✅ nil: " << nilVal << std::endl;
+        std::cout << "✅ nil: " << nilVal << '\n';
         
         TaggedValue trueVal = TaggedValue::trueValue();
         assert(trueVal.isSpecial());
         assert(trueVal.isTrue());
         assert(trueVal.isBoolean());
         assert(trueVal.asBoolean() == true);
-        std::cout << "✅ true: " << trueVal << std::endl;
+        std::cout << "✅ true: " << trueVal << '\n';
         
         TaggedValue falseVal = TaggedValue::falseValue();
         assert(falseVal.isSpecial());
         assert(falseVal.isFalse());
         assert(falseVal.isBoolean());
         assert(falseVal.asBoolean() == false);
-        std::cout << "✅ false: " << falseVal << std::endl;
+        std::cout << "✅ false: " << falseVal << '\n';
         
         // Float tests (simplified)
         TaggedValue float0(0.0);
         assert(float0.isFloat());
         assert(float0.asFloat() == 0.0);
-        std::cout << "✅ Float 0.0: " << float0 << std::endl;
+        std::cout << "✅ Float 0.0: " << float0 << '\n';
         
         TaggedValue float1(1.0);
         assert(float1.isFloat());
         assert(float1.asFloat() == 1.0);
-        std::cout << "✅ Float 1.0: " << float1 << std::endl;
+        std::cout << "✅ Float 1.0: " << float1 << '\n';
         
         TaggedValue floatNeg1(-1.0);
         assert(floatNeg1.isFloat());
         assert(floatNeg1.asFloat() == -1.0);
-        std::cout << "✅ Float -1.0: " << floatNeg1 << std::endl;
+        std::cout << "✅ Float -1.0: " << floatNeg1 << '\n';
         
-        std::cout << "All TaggedValue tests passed!" << std::endl;
+        std::cout << "All TaggedValue tests passed!" << '\n';
     } catch (const std::exception& e) {
-        std::cerr << "❌ TaggedValue test failed: " << e.what() << std::endl;
+        std::cerr << "❌ TaggedValue test failed: " << e.what() << '\n';
         exit(1);
     }
 }

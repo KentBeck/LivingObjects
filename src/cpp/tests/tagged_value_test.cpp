@@ -76,29 +76,29 @@ TEST(TestTaggedValueOutput) {
     TaggedValue trueVal = TaggedValue::trueValue();
     
     // Just verify these don't crash
-    std::cout << "Testing output: " << three << ", " << nil << ", " << trueVal << std::endl;
+    std::cout << "Testing output: " << three << ", " << nil << ", " << trueVal << '\n';
 }
 
 void runAllTests() {
-    std::cout << "Running tagged value tests..." << std::endl;
+    std::cout << "Running tagged value tests..." << '\n';
     
     TestTaggedValueInteger();
-    std::cout << "✓ Tagged value integer test passed (expression '3' works!)" << std::endl;
+    std::cout << "✓ Tagged value integer test passed (expression '3' works!)" << '\n';
     
     TestTaggedValueIntegerRange();
-    std::cout << "✓ Tagged value integer range test passed" << std::endl;
+    std::cout << "✓ Tagged value integer range test passed" << '\n';
     
     TestTaggedValueSpecialValues();
-    std::cout << "✓ Tagged value special values test passed" << std::endl;
+    std::cout << "✓ Tagged value special values test passed" << '\n';
     
     TestTaggedValueEquality();
-    std::cout << "✓ Tagged value equality test passed" << std::endl;
+    std::cout << "✓ Tagged value equality test passed" << '\n';
     
     TestTaggedValueOutput();
-    std::cout << "✓ Tagged value output test passed" << std::endl;
+    std::cout << "✓ Tagged value output test passed" << '\n';
     
-    std::cout << "All tagged value tests passed! 🎉" << std::endl;
-    std::cout << "The Smalltalk expression '3' now works in C++!" << std::endl;
+    std::cout << "All tagged value tests passed! 🎉" << '\n';
+    std::cout << "The Smalltalk expression '3' now works in C++!" << '\n';
 }
 
 int main() {
@@ -106,10 +106,10 @@ int main() {
         runAllTests();
         return 0;
     } catch (const std::exception& e) {
-        std::cerr << "Test failed: " << e.what() << std::endl;
+        std::cerr << "Test failed: " << e.what() << '\n';
         return 1;
     } catch (...) {
-        std::cerr << "Test failed with unknown exception" << std::endl;
+        std::cerr << "Test failed with unknown exception" << '\n';
         return 1;
     }
 }

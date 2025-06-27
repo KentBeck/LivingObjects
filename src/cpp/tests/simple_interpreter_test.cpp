@@ -19,7 +19,7 @@ TEST(TestEvaluateInteger3) {
     EXPECT_TRUE(result.isInteger());
     EXPECT_EQ(3, result.asInteger());
     
-    std::cout << "✨ SUCCESS: '3' evaluates to " << result << std::endl;
+    std::cout << "✨ SUCCESS: '3' evaluates to " << result << '\n';
 }
 
 TEST(TestEvaluateVariousIntegers) {
@@ -83,31 +83,31 @@ TEST(TestEvaluateInvalidExpression) {
         interpreter.evaluate("invalid");
     } catch (const std::runtime_error& e) {
         caught = true;
-        std::cout << "Expected error for 'invalid': " << e.what() << std::endl;
+        std::cout << "Expected error for 'invalid': " << e.what() << '\n';
     }
     EXPECT_TRUE(caught);
 }
 
 void runAllTests() {
-    std::cout << "Running simple interpreter tests..." << std::endl;
+    std::cout << "Running simple interpreter tests..." << '\n';
     
     TestEvaluateInteger3();
-    std::cout << "✓ Evaluate integer '3' test passed" << std::endl;
+    std::cout << "✓ Evaluate integer '3' test passed" << '\n';
     
     TestEvaluateVariousIntegers();
-    std::cout << "✓ Evaluate various integers test passed" << std::endl;
+    std::cout << "✓ Evaluate various integers test passed" << '\n';
     
     TestEvaluateSpecialValues();
-    std::cout << "✓ Evaluate special values test passed" << std::endl;
+    std::cout << "✓ Evaluate special values test passed" << '\n';
     
     TestEvaluateWithWhitespace();
-    std::cout << "✓ Evaluate with whitespace test passed" << std::endl;
+    std::cout << "✓ Evaluate with whitespace test passed" << '\n';
     
     TestEvaluateInvalidExpression();
-    std::cout << "✓ Evaluate invalid expression test passed" << std::endl;
+    std::cout << "✓ Evaluate invalid expression test passed" << '\n';
     
-    std::cout << "All simple interpreter tests passed! 🚀" << std::endl;
-    std::cout << "The C++ Smalltalk interpreter can now evaluate '3'!" << std::endl;
+    std::cout << "All simple interpreter tests passed! 🚀" << '\n';
+    std::cout << "The C++ Smalltalk interpreter can now evaluate '3'!" << '\n';
 }
 
 int main() {
@@ -115,10 +115,10 @@ int main() {
         runAllTests();
         return 0;
     } catch (const std::exception& e) {
-        std::cerr << "Test failed: " << e.what() << std::endl;
+        std::cerr << "Test failed: " << e.what() << '\n';
         return 1;
     } catch (...) {
-        std::cerr << "Test failed with unknown exception" << std::endl;
+        std::cerr << "Test failed with unknown exception" << '\n';
         return 1;
     }
 }

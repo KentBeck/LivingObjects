@@ -100,24 +100,24 @@ TEST(TestMemoryByteArrayAllocation) {
 }
 
 void runAllTests() {
-    std::cout << "Running tests..." << std::endl;
+    std::cout << "Running tests..." << '\n';
     
     TestBytecodeInstructionSizes();
-    std::cout << "✓ Bytecode instruction sizes test passed" << std::endl;
+    std::cout << "✓ Bytecode instruction sizes test passed" << '\n';
     
     TestBytecodeNames();
-    std::cout << "✓ Bytecode names test passed" << std::endl;
+    std::cout << "✓ Bytecode names test passed" << '\n';
     
     TestBytecodeValues();
-    std::cout << "✓ Bytecode values test passed" << std::endl;
+    std::cout << "✓ Bytecode values test passed" << '\n';
     
     TestMemoryObjectAllocation();
-    std::cout << "✓ Memory object allocation test passed" << std::endl;
+    std::cout << "✓ Memory object allocation test passed" << '\n';
     
     TestMemoryByteArrayAllocation();
-    std::cout << "✓ Memory byte array allocation test passed" << std::endl;
+    std::cout << "✓ Memory byte array allocation test passed" << '\n';
     
-    std::cout << "All tests passed!" << std::endl;
+    std::cout << "All tests passed!" << '\n';
 }
 
 int main() {
@@ -125,10 +125,10 @@ int main() {
         runAllTests();
         return 0;
     } catch (const std::exception& e) {
-        std::cerr << "Test failed: " << e.what() << std::endl;
+        std::cerr << "Test failed: " << e.what() << '\n';
         return 1;
     } catch (...) {
-        std::cerr << "Test failed with unknown exception" << std::endl;
+        std::cerr << "Test failed with unknown exception" << '\n';
         return 1;
     }
 }

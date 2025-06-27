@@ -8,10 +8,10 @@ int main() {
     SimpleInterpreter interpreter;
     std::string input;
     
-    std::cout << "🎯 Smalltalk C++ Interpreter v0.1" << std::endl;
-    std::cout << "Currently supports: integers (3, -42), special values (nil, true, false)" << std::endl;
-    std::cout << "Type 'quit' to exit." << std::endl;
-    std::cout << std::endl;
+    std::cout << "🎯 Smalltalk C++ Interpreter v0.1" << '\n';
+    std::cout << "Currently supports: integers (3, -42), special values (nil, true, false)" << '\n';
+    std::cout << "Type 'quit' to exit." << '\n';
+    std::cout << '\n';
     
     while (true) {
         std::cout << "st> ";
@@ -19,7 +19,7 @@ int main() {
         
         // Check for quit command
         if (input == "quit" || input == "exit") {
-            std::cout << "Goodbye! 👋" << std::endl;
+            std::cout << "Goodbye! 👋" << '\n';
             break;
         }
         
@@ -30,12 +30,12 @@ int main() {
         
         try {
             TaggedValue result = interpreter.evaluate(input);
-            std::cout << "=> " << result << std::endl;
+            std::cout << "=> " << result << '\n';
         } catch (const std::exception& e) {
-            std::cout << "Error: " << e.what() << std::endl;
+            std::cout << "Error: " << e.what() << '\n';
         }
         
-        std::cout << std::endl;
+        std::cout << '\n';
     }
     
     return 0;
