@@ -38,15 +38,7 @@ std::vector<ExpressionTest> parseExpressionTests(const std::string& filename) {
         }
         
         // Find the delimiter between expression and expected result
-        size_t pos = line.find(" -> ");
-        if (pos == std::string::npos) {
-            std::cerr << "Warning: Invalid test line, skipping: " << line << '\n';
-            continue;
-        }
-        
-        ExpressionTest test;
-        test.expression = line.substr(0, pos);
-        test.expectedResult = line.substr(pos + 4); // Skip " -> "
+        size_t pos = line.find(" -> ");        if (pos == std::string::npos) {            std::cerr << "Warning: Invalid test line, skipping: " << line << '\n';            continue;        }                const size_t DELIMITER_LENGTH = 4;        ExpressionTest test;        test.expression = line.substr(0, pos);        test.expectedResult = line.substr(pos + DELIMITER_LENGTH); // Skip " -> "
         tests.push_back(test);
     }
     
@@ -175,14 +167,16 @@ void testTaggedValues() {
     
     try {
         // Integer tests
-        TaggedValue int42(42);
+        const int TEST_INT_42 = 42;
+        TaggedValue int42(TEST_INT_42);
         assert(int42.isInteger());
-        assert(int42.asInteger() == 42);
+        assert(int42.asInteger() == TEST_INT_42);
         std::cout << "✅ Integer 42: " << int42 << '\n';
         
-        TaggedValue intNeg10(-10);
+        const int TEST_INT_NEG10 = -10;
+        TaggedValue intNeg10(TEST_INT_NEG10);
         assert(intNeg10.isInteger());
-        assert(intNeg10.asInteger() == -10);
+        assert(intNeg10.asInteger() == TEST_INT_NEG10);
         std::cout << "✅ Integer -10: " << intNeg10 << '\n';
         
         // Special value tests

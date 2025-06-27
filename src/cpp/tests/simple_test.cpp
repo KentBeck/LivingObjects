@@ -18,21 +18,21 @@ using namespace smalltalk;
 TEST(TestBytecodeInstructionSizes)
 {
     // Test instruction sizes match the Go implementation
-    EXPECT_EQ(5, getInstructionSize(Bytecode::PUSH_LITERAL));
-    EXPECT_EQ(5, getInstructionSize(Bytecode::PUSH_INSTANCE_VARIABLE));
-    EXPECT_EQ(5, getInstructionSize(Bytecode::PUSH_TEMPORARY_VARIABLE));
-    EXPECT_EQ(1, getInstructionSize(Bytecode::PUSH_SELF));
-    EXPECT_EQ(5, getInstructionSize(Bytecode::STORE_INSTANCE_VARIABLE));
-    EXPECT_EQ(5, getInstructionSize(Bytecode::STORE_TEMPORARY_VARIABLE));
-    EXPECT_EQ(9, getInstructionSize(Bytecode::SEND_MESSAGE));
-    EXPECT_EQ(1, getInstructionSize(Bytecode::RETURN_STACK_TOP));
-    EXPECT_EQ(5, getInstructionSize(Bytecode::JUMP));
-    EXPECT_EQ(5, getInstructionSize(Bytecode::JUMP_IF_TRUE));
-    EXPECT_EQ(5, getInstructionSize(Bytecode::JUMP_IF_FALSE));
-    EXPECT_EQ(1, getInstructionSize(Bytecode::POP));
-    EXPECT_EQ(1, getInstructionSize(Bytecode::DUPLICATE));
-    EXPECT_EQ(13, getInstructionSize(Bytecode::CREATE_BLOCK));
-    EXPECT_EQ(5, getInstructionSize(Bytecode::EXECUTE_BLOCK));
+    EXPECT_EQ(INSTRUCTION_SIZE_FOUR_BYTE_OPERAND, getInstructionSize(Bytecode::PUSH_LITERAL));
+    EXPECT_EQ(INSTRUCTION_SIZE_FOUR_BYTE_OPERAND, getInstructionSize(Bytecode::PUSH_INSTANCE_VARIABLE));
+    EXPECT_EQ(INSTRUCTION_SIZE_FOUR_BYTE_OPERAND, getInstructionSize(Bytecode::PUSH_TEMPORARY_VARIABLE));
+    EXPECT_EQ(INSTRUCTION_SIZE_ONE_BYTE_OPCODE, getInstructionSize(Bytecode::PUSH_SELF));
+    EXPECT_EQ(INSTRUCTION_SIZE_FOUR_BYTE_OPERAND, getInstructionSize(Bytecode::STORE_INSTANCE_VARIABLE));
+    EXPECT_EQ(INSTRUCTION_SIZE_FOUR_BYTE_OPERAND, getInstructionSize(Bytecode::STORE_TEMPORARY_VARIABLE));
+    EXPECT_EQ(INSTRUCTION_SIZE_SEND_MESSAGE, getInstructionSize(Bytecode::SEND_MESSAGE));
+    EXPECT_EQ(INSTRUCTION_SIZE_ONE_BYTE_OPCODE, getInstructionSize(Bytecode::RETURN_STACK_TOP));
+    EXPECT_EQ(INSTRUCTION_SIZE_FOUR_BYTE_OPERAND, getInstructionSize(Bytecode::JUMP));
+    EXPECT_EQ(INSTRUCTION_SIZE_FOUR_BYTE_OPERAND, getInstructionSize(Bytecode::JUMP_IF_TRUE));
+    EXPECT_EQ(INSTRUCTION_SIZE_FOUR_BYTE_OPERAND, getInstructionSize(Bytecode::JUMP_IF_FALSE));
+    EXPECT_EQ(INSTRUCTION_SIZE_ONE_BYTE_OPCODE, getInstructionSize(Bytecode::POP));
+    EXPECT_EQ(INSTRUCTION_SIZE_ONE_BYTE_OPCODE, getInstructionSize(Bytecode::DUPLICATE));
+    EXPECT_EQ(INSTRUCTION_SIZE_CREATE_BLOCK, getInstructionSize(Bytecode::CREATE_BLOCK));
+    EXPECT_EQ(INSTRUCTION_SIZE_FOUR_BYTE_OPERAND, getInstructionSize(Bytecode::EXECUTE_BLOCK));
 }
 
 TEST(TestBytecodeNames)

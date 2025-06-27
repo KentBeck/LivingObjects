@@ -10,8 +10,9 @@ using namespace smalltalk;
 #define EXPECT_NE(expected, actual) assert((expected) != (actual))
 
 TEST(TestTaggedValueInteger) {
+    const int TEST_INTEGER_THREE = 3;
     // Test creating integer 3 - our target expression!
-    TaggedValue three(3);
+    TaggedValue three(TEST_INTEGER_THREE);
     
     // Verify it's recognized as an integer
     EXPECT_EQ(true, three.isInteger());
@@ -20,20 +21,24 @@ TEST(TestTaggedValueInteger) {
     EXPECT_EQ(false, three.isFloat());
     
     // Verify the value can be extracted
-    EXPECT_EQ(3, three.asInteger());
+    EXPECT_EQ(TEST_INTEGER_THREE, three.asInteger());
 }
 
 TEST(TestTaggedValueIntegerRange) {
+    const int TEST_INTEGER_ZERO = 0;
+    const int TEST_INTEGER_POSITIVE = 42;
+    const int TEST_INTEGER_NEGATIVE = -17;
+    const int TEST_INTEGER_LARGE = 1000000;
     // Test various integer values
-    TaggedValue zero(0);
-    TaggedValue positive(42);
-    TaggedValue negative(-17);
-    TaggedValue large(1000000);
+    TaggedValue zero(TEST_INTEGER_ZERO);
+    TaggedValue positive(TEST_INTEGER_POSITIVE);
+    TaggedValue negative(TEST_INTEGER_NEGATIVE);
+    TaggedValue large(TEST_INTEGER_LARGE);
     
-    EXPECT_EQ(0, zero.asInteger());
-    EXPECT_EQ(42, positive.asInteger());
-    EXPECT_EQ(-17, negative.asInteger());
-    EXPECT_EQ(1000000, large.asInteger());
+    EXPECT_EQ(TEST_INTEGER_ZERO, zero.asInteger());
+    EXPECT_EQ(TEST_INTEGER_POSITIVE, positive.asInteger());
+    EXPECT_EQ(TEST_INTEGER_NEGATIVE, negative.asInteger());
+    EXPECT_EQ(TEST_INTEGER_LARGE, large.asInteger());
     
     // All should be integers
     EXPECT_EQ(true, zero.isInteger());
@@ -58,10 +63,12 @@ TEST(TestTaggedValueSpecialValues) {
 }
 
 TEST(TestTaggedValueEquality) {
+    const int TEST_EQUALITY_THREE = 3;
+    const int TEST_EQUALITY_FOUR = 4;
     // Test equality comparison
-    TaggedValue three1(3);
-    TaggedValue three2(3);
-    TaggedValue four(4);
+    TaggedValue three1(TEST_EQUALITY_THREE);
+    TaggedValue three2(TEST_EQUALITY_THREE);
+    TaggedValue four(TEST_EQUALITY_FOUR);
     
     EXPECT_EQ(true, three1 == three2);
     EXPECT_EQ(false, three1 == four);
@@ -70,8 +77,9 @@ TEST(TestTaggedValueEquality) {
 }
 
 TEST(TestTaggedValueOutput) {
+    const int TEST_OUTPUT_THREE = 3;
     // Test that we can print values (for debugging)
-    TaggedValue three(3);
+    TaggedValue three(TEST_OUTPUT_THREE);
     TaggedValue nil = TaggedValue::nil();
     TaggedValue trueVal = TaggedValue::trueValue();
     

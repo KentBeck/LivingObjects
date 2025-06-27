@@ -11,13 +11,14 @@ using namespace smalltalk;
 #define EXPECT_FALSE(condition) assert(!(condition))
 
 TEST(TestEvaluateInteger3) {
+    const int TEST_INTEGER_THREE = 3;
     // This is our target: make "3" work!
     SimpleInterpreter interpreter;
     
     TaggedValue result = interpreter.evaluate("3");
     
     EXPECT_TRUE(result.isInteger());
-    EXPECT_EQ(3, result.asInteger());
+    EXPECT_EQ(TEST_INTEGER_THREE, result.asInteger());
     
     std::cout << "✨ SUCCESS: '3' evaluates to " << result << '\n';
 }
@@ -25,6 +26,11 @@ TEST(TestEvaluateInteger3) {
 TEST(TestEvaluateVariousIntegers) {
     SimpleInterpreter interpreter;
     
+    const int TEST_INTEGER_ZERO = 0;
+    const int TEST_INTEGER_POSITIVE = 42;
+    const int TEST_INTEGER_NEGATIVE = -17;
+    const int TEST_INTEGER_LARGE = 1000000;
+
     // Test various integer expressions
     TaggedValue zero = interpreter.evaluate("0");
     TaggedValue positive = interpreter.evaluate("42");
@@ -32,16 +38,16 @@ TEST(TestEvaluateVariousIntegers) {
     TaggedValue large = interpreter.evaluate("1000000");
     
     EXPECT_TRUE(zero.isInteger());
-    EXPECT_EQ(0, zero.asInteger());
+    EXPECT_EQ(TEST_INTEGER_ZERO, zero.asInteger());
     
     EXPECT_TRUE(positive.isInteger());
-    EXPECT_EQ(42, positive.asInteger());
+    EXPECT_EQ(TEST_INTEGER_POSITIVE, positive.asInteger());
     
     EXPECT_TRUE(negative.isInteger());
-    EXPECT_EQ(-17, negative.asInteger());
+    EXPECT_EQ(TEST_INTEGER_NEGATIVE, negative.asInteger());
     
     EXPECT_TRUE(large.isInteger());
-    EXPECT_EQ(1000000, large.asInteger());
+    EXPECT_EQ(TEST_INTEGER_LARGE, large.asInteger());
 }
 
 TEST(TestEvaluateSpecialValues) {
@@ -60,16 +66,20 @@ TEST(TestEvaluateSpecialValues) {
 TEST(TestEvaluateWithWhitespace) {
     SimpleInterpreter interpreter;
     
+    const int WHITESPACE_TEST_THREE = 3;
+    const int WHITESPACE_TEST_FORTY_TWO = 42;
+
     // Test that whitespace is handled correctly
     TaggedValue result1 = interpreter.evaluate("  3  ");
     TaggedValue result2 = interpreter.evaluate("\t42\n");
     TaggedValue result3 = interpreter.evaluate(" nil ");
     
     EXPECT_TRUE(result1.isInteger());
-    EXPECT_EQ(3, result1.asInteger());
+    EXPECT_EQ(WHITESPACE_TEST_THREE, result1.asInteger());
     
     EXPECT_TRUE(result2.isInteger());
-    EXPECT_EQ(42, result2.asInteger());
+    EXPECT_EQ(WHITESPACE_TEST_FORTY_TWO, result2.asInteger());
+
     
     EXPECT_TRUE(result3.isNil());
 }
