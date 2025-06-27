@@ -13,7 +13,7 @@ MemoryManager::MemoryManager(size_t initialSpaceSize)
     fromSpace = malloc(spaceSize);
     toSpace = malloc(spaceSize);
     
-    if (!fromSpace || !toSpace) {
+    if (fromSpace == nullptr || toSpace == nullptr) {
         throw std::runtime_error("Failed to allocate memory spaces");
     }
     
@@ -153,7 +153,7 @@ StackChunk* MemoryManager::allocateStackChunk(size_t size) {
     size_t requiredBytes = sizeof(StackChunk) + (size * sizeof(Object*));
     StackChunk* chunk = static_cast<StackChunk*>(malloc(requiredBytes));
     
-    if (!chunk) {
+    if (chunk == nullptr) {
         throw std::runtime_error("Failed to allocate stack chunk");
     }
     
@@ -175,7 +175,7 @@ void MemoryManager::collectGarbage() {
     
     // Forward all root objects
     for (Object** root : roots) {
-        if (*root) {
+        if (*root != nullptr) {
             *root = forwardObject(*root);
         }
     }
@@ -275,7 +275,7 @@ void MemoryManager::scanObject(Object* obj) {
         
         // Forward all slot references
         for (size_t i = 0; i < obj->header.size; i++) {
-            if (slots[i]) {
+            if (slots[i] != nullptr) {
                 slots[i] = forwardObject(slots[i]);
             }
         }
