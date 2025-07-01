@@ -1,6 +1,9 @@
 #include "simple_vm.h"
 #include "bytecode.h"
 #include "symbol.h"
+#include "smalltalk_object.h"
+#include "smalltalk_class.h"
+#include "primitive_methods.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -107,64 +110,21 @@ void SimpleVM::handleSendMessage() {
     }
     
     Symbol* selector = selectorValue.asSymbol();
-    std::string selectorName = selector->getName();
     
-    // Handle primitive operations based on selector name
-    TaggedValue result;
-    
-    if (selectorName == "+") {
-        if (argCount != 1) {
-            throw std::runtime_error("Add expects exactly 1 argument");
-        }
-        result = performAdd(receiver, args[0]);
-    } else if (selectorName == "-") {
-        if (argCount != 1) {
-            throw std::runtime_error("Subtract expects exactly 1 argument");
-        }
-        result = performSubtract(receiver, args[0]);
-    } else if (selectorName == "*") {
-        if (argCount != 1) {
-            throw std::runtime_error("Multiply expects exactly 1 argument");
-        }
-        result = performMultiply(receiver, args[0]);
-    } else if (selectorName == "/") {
-        if (argCount != 1) {
-            throw std::runtime_error("Divide expects exactly 1 argument");
-        }
-        result = performDivide(receiver, args[0]);
-    } else if (selectorName == "<") {
-        if (argCount != 1) {
-            throw std::runtime_error("Less than expects exactly 1 argument");
-        }
-        result = performLessThan(receiver, args[0]);
-    } else if (selectorName == ">") {
-        if (argCount != 1) {
-            throw std::runtime_error("Greater than expects exactly 1 argument");
-        }
-        result = performGreaterThan(receiver, args[0]);
-    } else if (selectorName == "=") {
-        if (argCount != 1) {
-            throw std::runtime_error("Equal expects exactly 1 argument");
-        }
-        result = performEqual(receiver, args[0]);
-    } else if (selectorName == "~=") {
-        if (argCount != 1) {
-            throw std::runtime_error("Not equal expects exactly 1 argument");
-        }
-        result = performNotEqual(receiver, args[0]);
-    } else if (selectorName == "<=") {
-        if (argCount != 1) {
-            throw std::runtime_error("Less than or equal expects exactly 1 argument");
-        }
-        result = performLessThanOrEqual(receiver, args[0]);
-    } else if (selectorName == ">=") {
-        if (argCount != 1) {
-            throw std::runtime_error("Greater than or equal expects exactly 1 argument");
-        }
-        result = performGreaterThanOrEqual(receiver, args[0]);
-    } else {
-        throw std::runtime_error("Unknown message selector: " + selectorName);
+    // Get the receiver's class
+    Class* receiverClass = receiver.getClass();
+    if (receiverClass == nullptr) {
+        throw std::runtime_error("Receiver has no class");
     }
+    
+    // Look up the method in the receiver's class
+    auto method = receiverClass->lookupMethod(selector);
+    if (method == nullptr) {
+        throw std::runtime_error("Method not found: " + receiverClass->getName() + ">>" + selector->getName());
+    }
+    
+    // Execute the method
+    TaggedValue result = executeMethod(method, receiver, args);
     
     push(result);
 }
@@ -175,88 +135,25 @@ void SimpleVM::handleReturn() {
     instructionPointer_ = static_cast<uint32_t>(currentMethod_->getBytecodes().size()); // Force loop to exit
 }
 
-TaggedValue SimpleVM::performAdd(TaggedValue left, TaggedValue right) {
-    if (left.isInteger() && right.isInteger()) {
-        int32_t result = left.asInteger() + right.asInteger();
-        return TaggedValue(result);
+TaggedValue SimpleVM::executeMethod(std::shared_ptr<CompiledMethod> method, TaggedValue receiver, const std::vector<TaggedValue>& args) {
+    // Check if this is a primitive method
+    auto primitiveMethod = std::dynamic_pointer_cast<PrimitiveMethod>(method);
+    if (primitiveMethod) {
+        // Execute primitive directly
+        return primitiveMethod->execute(receiver, args);
     }
-    throw std::runtime_error("Add operation only supports integers in this simple VM");
+    
+    // For now, we only support primitive methods
+    // In a full implementation, we would:
+    // 1. Create a new execution context
+    // 2. Set up the method's locals and temporaries
+    // 3. Execute the method's bytecode
+    // 4. Handle method return
+    
+    throw std::runtime_error("Non-primitive methods not yet implemented");
 }
 
-TaggedValue SimpleVM::performSubtract(TaggedValue left, TaggedValue right) {
-    if (left.isInteger() && right.isInteger()) {
-        int32_t result = left.asInteger() - right.asInteger();
-        return TaggedValue(result);
-    }
-    throw std::runtime_error("Subtract operation only supports integers in this simple VM");
-}
 
-TaggedValue SimpleVM::performMultiply(TaggedValue left, TaggedValue right) {
-    if (left.isInteger() && right.isInteger()) {
-        int32_t result = left.asInteger() * right.asInteger();
-        return TaggedValue(result);
-    }
-    throw std::runtime_error("Multiply operation only supports integers in this simple VM");
-}
-
-TaggedValue SimpleVM::performDivide(TaggedValue left, TaggedValue right) {
-    if (left.isInteger() && right.isInteger()) {
-        if (right.asInteger() == 0) {
-            throw std::runtime_error("Division by zero");
-        }
-        int32_t result = left.asInteger() / right.asInteger();
-        return TaggedValue(result);
-    }
-    throw std::runtime_error("Divide operation only supports integers in this simple VM");
-}
-
-TaggedValue SimpleVM::performLessThan(TaggedValue left, TaggedValue right) {
-    if (left.isInteger() && right.isInteger()) {
-        bool result = left.asInteger() < right.asInteger();
-        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
-    }
-    throw std::runtime_error("Less than operation only supports integers in this simple VM");
-}
-
-TaggedValue SimpleVM::performGreaterThan(TaggedValue left, TaggedValue right) {
-    if (left.isInteger() && right.isInteger()) {
-        bool result = left.asInteger() > right.asInteger();
-        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
-    }
-    throw std::runtime_error("Greater than operation only supports integers in this simple VM");
-}
-
-TaggedValue SimpleVM::performEqual(TaggedValue left, TaggedValue right) {
-    if (left.isInteger() && right.isInteger()) {
-        bool result = left.asInteger() == right.asInteger();
-        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
-    }
-    throw std::runtime_error("Equal operation only supports integers in this simple VM");
-}
-
-TaggedValue SimpleVM::performNotEqual(TaggedValue left, TaggedValue right) {
-    if (left.isInteger() && right.isInteger()) {
-        bool result = left.asInteger() != right.asInteger();
-        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
-    }
-    throw std::runtime_error("Not equal operation only supports integers in this simple VM");
-}
-
-TaggedValue SimpleVM::performLessThanOrEqual(TaggedValue left, TaggedValue right) {
-    if (left.isInteger() && right.isInteger()) {
-        bool result = left.asInteger() <= right.asInteger();
-        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
-    }
-    throw std::runtime_error("Less than or equal operation only supports integers in this simple VM");
-}
-
-TaggedValue SimpleVM::performGreaterThanOrEqual(TaggedValue left, TaggedValue right) {
-    if (left.isInteger() && right.isInteger()) {
-        bool result = left.asInteger() >= right.asInteger();
-        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
-    }
-    throw std::runtime_error("Greater than or equal operation only supports integers in this simple VM");
-}
 
 uint32_t SimpleVM::readOperand() {
     if (instructionPointer_ + 4 > currentMethod_->getBytecodes().size()) {

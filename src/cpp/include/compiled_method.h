@@ -15,6 +15,7 @@ namespace smalltalk {
 class CompiledMethod {
 public:
     CompiledMethod() = default;
+    virtual ~CompiledMethod() = default;
     
     // Add bytecode
     void addBytecode(uint8_t bytecode) {
@@ -49,7 +50,7 @@ public:
     }
     
     // Debug output
-    std::string toString() const {
+    virtual std::string toString() const {
         std::string result = "CompiledMethod {\n";
         result += "  Bytecodes: [";
         for (size_t i = 0; i < bytecodes_.size(); ++i) {
@@ -61,7 +62,11 @@ public:
         result += "  Literals: [";
         for (size_t i = 0; i < literals_.size(); ++i) {
             if (i > 0) result += ", ";
-            if (literals_[i].isInteger()) {
+            if (literals_[i].isNil()) {
+                result += "nil";
+            } else if (literals_[i].isBoolean()) {
+                result += literals_[i].asBoolean() ? "true" : "false";
+            } else if (literals_[i].isInteger()) {
                 result += std::to_string(literals_[i].asInteger());
             } else if (literals_[i].isPointer()) {
                 try {

@@ -1,4 +1,5 @@
 #include "simple_parser.h"
+#include "smalltalk_string.h"
 
 #include <cctype>
 #include <iostream>
@@ -142,6 +143,10 @@ ASTNodePtr SimpleParser::parseFactor() {
         return expr;
     } else if (isDigit(peek())) {
         return parseInteger();
+    } else if (isAlpha(peek())) {
+        return parseIdentifierOrLiteral();
+    } else if (peek() == '\'') {
+        return parseString();
     } else {
         error(std::string("Unexpected character: ") + peek());
         return nullptr; // Never reached
@@ -166,6 +171,72 @@ ASTNodePtr SimpleParser::parseInteger() {
         error("Invalid integer: " + numStr);
         return nullptr; // Never reached
     }
+}
+
+ASTNodePtr SimpleParser::parseIdentifierOrLiteral() {
+    std::string identifier;
+    
+    while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek()))) {
+        identifier += consume();
+    }
+    
+    if (identifier.empty()) {
+        error("Expected identifier");
+    }
+    
+    // Check for boolean and nil literals
+    if (identifier == "true") {
+        return std::make_unique<LiteralNode>(TaggedValue::trueValue());
+    } else if (identifier == "false") {
+        return std::make_unique<LiteralNode>(TaggedValue::falseValue());
+    } else if (identifier == "nil") {
+        return std::make_unique<LiteralNode>(TaggedValue::nil());
+    } else {
+        error("Unknown identifier: " + identifier);
+        return nullptr; // Never reached
+    }
+}
+
+ASTNodePtr SimpleParser::parseString() {
+    if (peek() != '\'') {
+        error("Expected string to start with '");
+    }
+    consume(); // consume opening '
+    
+    std::string content;
+    
+    while (!isAtEnd() && peek() != '\'') {
+        if (peek() == '\\') {
+            // Handle escape sequences
+            consume(); // consume backslash
+            if (isAtEnd()) {
+                error("Unexpected end of input in string literal");
+            }
+            
+            char escaped = consume();
+            switch (escaped) {
+                case 'n': content += '\n'; break;
+                case 't': content += '\t'; break;
+                case 'r': content += '\r'; break;
+                case '\\': content += '\\'; break;
+                case '\'': content += '\''; break;
+                default:
+                    content += escaped; // Keep unknown escapes as-is
+                    break;
+            }
+        } else {
+            content += consume();
+        }
+    }
+    
+    if (isAtEnd() || peek() != '\'') {
+        error("Unterminated string literal");
+    }
+    consume(); // consume closing '
+    
+    // Create a String object and wrap it in a TaggedValue
+    TaggedValue stringValue = StringUtils::createTaggedString(content);
+    return std::make_unique<LiteralNode>(stringValue);
 }
 
 void SimpleParser::skipWhitespace() {
@@ -194,6 +265,10 @@ bool SimpleParser::isAtEnd() const {
 
 bool SimpleParser::isDigit(char c) const {
     return c >= '0' && c <= '9';
+}
+
+bool SimpleParser::isAlpha(char c) const {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
 void SimpleParser::error(const std::string& message) {

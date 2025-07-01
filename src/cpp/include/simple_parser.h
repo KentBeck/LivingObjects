@@ -9,15 +9,17 @@ namespace smalltalk {
 
 /**
  * Simple recursive descent parser for basic expressions
- * Supports: integers, +, -, *, /, <, >, =, ~=, <=, >=, (, )
+ * Supports: integers, booleans, nil, +, -, *, /, <, >, =, ~=, <=, >=, (, )
  * 
  * Grammar:
  *   expression := comparison
  *   comparison := arithmetic (('<' | '>' | '=' | '~=' | '<=' | '>=') arithmetic)*
  *   arithmetic := term (('+' | '-') term)*
  *   term       := factor (('*' | '/') factor)*
- *   factor     := integer | '(' expression ')'
+ *   factor     := integer | literal | string | '(' expression ')'
  *   integer    := [0-9]+
+ *   literal    := 'true' | 'false' | 'nil'
+ *   string     := "'" [^']* "'"
  */
 class SimpleParser {
 public:
@@ -34,6 +36,8 @@ private:
     ASTNodePtr parseTerm();
     ASTNodePtr parseFactor();
     ASTNodePtr parseInteger();
+    ASTNodePtr parseIdentifierOrLiteral();
+    ASTNodePtr parseString();
     
     // Tokenization
     void skipWhitespace();
@@ -41,6 +45,7 @@ private:
     char consume();
     bool isAtEnd() const;
     bool isDigit(char c) const;
+    bool isAlpha(char c) const;
     
     // Error handling
     void error(const std::string& message);

@@ -5,8 +5,10 @@
 #include <iostream>
 namespace smalltalk {
 
-// Forward declaration
+// Forward declarations
 class Symbol;
+class Object;
+class Class;
 
 /**
  * TaggedValue provides an efficient representation for Smalltalk values.
@@ -54,6 +56,15 @@ public:
             throw std::runtime_error("Symbol pointer not properly aligned for tagging");
         }
         value = reinterpret_cast<uintptr_t>(symbol) | POINTER_TAG;
+    }
+    
+    // Create from Object pointer
+    explicit TaggedValue(Object* object) {
+        // Ensure pointer is aligned to at least 4 bytes
+        if (reinterpret_cast<uintptr_t>(object) & TAG_MASK) {
+            throw std::runtime_error("Object pointer not properly aligned for tagging");
+        }
+        value = reinterpret_cast<uintptr_t>(object) | POINTER_TAG;
     }
     
     // Create from integer
@@ -113,6 +124,13 @@ public:
         return reinterpret_cast<Symbol*>(value & ~TAG_MASK);
     }
     
+    Object* asObject() const {
+        if (!isPointer()) {
+            throw std::runtime_error("Tagged value is not an object");
+        }
+        return reinterpret_cast<Object*>(value & ~TAG_MASK);
+    }
+    
     int32_t asInteger() const {
         if (!isInteger()) {
             throw std::runtime_error("Tagged value is not an integer");
@@ -144,6 +162,12 @@ public:
         }
         return isTrue();
     }
+    
+    // Type checking for objects
+    bool isObjectOfClass(Class* clazz) const;
+    
+    // Get the class of this object (for tagged values that represent objects)
+    Class* getClass() const;
     
     // Comparison
     bool operator==(const TaggedValue& other) const {

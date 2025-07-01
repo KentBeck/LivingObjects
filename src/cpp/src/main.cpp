@@ -1,6 +1,9 @@
 #include "simple_parser.h"
 #include "simple_compiler.h"
 #include "simple_vm.h"
+#include "smalltalk_string.h"
+#include "smalltalk_class.h"
+#include "primitive_methods.h"
 
 #include <iostream>
 #include <string>
@@ -26,24 +29,40 @@ int main(int argc, char** argv) {
     std::string expression = argv[1];
     
     try {
-        // Step 1: Parse the expression
+        // Step 1: Initialize class system and primitives before parsing
+        ClassUtils::initializeCoreClasses();
+        
+        // Initialize primitive registry
+        auto& primitiveRegistry = PrimitiveRegistry::getInstance();
+        primitiveRegistry.initializeCorePrimitives();
+        
+        // Add primitive methods to Integer class
+        Class* integerClass = ClassUtils::getIntegerClass();
+        IntegerClassSetup::addPrimitiveMethods(integerClass);
+        
+        // Step 2: Parse the expression
         SimpleParser parser(expression);
         auto methodAST = parser.parseMethod();
         
         std::cout << "Parsed: " << methodAST->toString() << '\n';
         
-        // Step 2: Compile to bytecode
+        // Step 3: Compile to bytecode
         SimpleCompiler compiler;
         auto compiledMethod = compiler.compile(*methodAST);
         
         std::cout << "Compiled: " << compiledMethod->toString() << '\n';
         
-        // Step 3: Execute the bytecode
+        // Step 4: Execute the bytecode
         SimpleVM vm;
         TaggedValue result = vm.execute(*compiledMethod);
         
-        // Step 4: Print the result
-        std::cout << "Result: " << result << '\n';
+        // Step 5: Print the result
+        if (StringUtils::isString(result)) {
+            String* str = StringUtils::asString(result);
+            std::cout << "Result: " << str->toString() << '\n';
+        } else {
+            std::cout << "Result: " << result << '\n';
+        }
         
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << '\n';

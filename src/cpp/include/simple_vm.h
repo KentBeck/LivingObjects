@@ -5,8 +5,12 @@
 
 #include <cstdint>
 #include <vector>
+#include <memory>
 
 namespace smalltalk {
+
+// Forward declarations
+class Class;
 
 /**
  * Simple VM for executing bytecode
@@ -38,17 +42,10 @@ private:
     void handleSendMessage();
     void handleReturn();
     
-    // Primitive operations
-    TaggedValue performAdd(TaggedValue left, TaggedValue right);
-    TaggedValue performSubtract(TaggedValue left, TaggedValue right);
-    TaggedValue performMultiply(TaggedValue left, TaggedValue right);
-    TaggedValue performDivide(TaggedValue left, TaggedValue right);
-    TaggedValue performLessThan(TaggedValue left, TaggedValue right);
-    TaggedValue performGreaterThan(TaggedValue left, TaggedValue right);
-    TaggedValue performEqual(TaggedValue left, TaggedValue right);
-    TaggedValue performNotEqual(TaggedValue left, TaggedValue right);
-    TaggedValue performLessThanOrEqual(TaggedValue left, TaggedValue right);
-    TaggedValue performGreaterThanOrEqual(TaggedValue left, TaggedValue right);
+    // Method execution
+    TaggedValue executeMethod(std::shared_ptr<CompiledMethod> method, TaggedValue receiver, const std::vector<TaggedValue>& args);
+    
+
     
     // Helper functions
     uint32_t readOperand();
