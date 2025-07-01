@@ -23,6 +23,64 @@ std::unique_ptr<MethodNode> SimpleParser::parseMethod() {
 }
 
 ASTNodePtr SimpleParser::parseExpression() {
+    return parseComparison();
+}
+
+ASTNodePtr SimpleParser::parseComparison() {
+    auto left = parseArithmetic();
+    
+    while (!isAtEnd()) {
+        skipWhitespace();
+        
+        // Check for comparison operators
+        BinaryOpNode::Operator compOp;
+        bool foundComparison = false;
+        
+        if (peek() == '<') {
+            consume();
+            if (peek() == '=') {
+                consume();
+                compOp = BinaryOpNode::Operator::LessThanOrEqual;
+            } else {
+                compOp = BinaryOpNode::Operator::LessThan;
+            }
+            foundComparison = true;
+        } else if (peek() == '>') {
+            consume();
+            if (peek() == '=') {
+                consume();
+                compOp = BinaryOpNode::Operator::GreaterThanOrEqual;
+            } else {
+                compOp = BinaryOpNode::Operator::GreaterThan;
+            }
+            foundComparison = true;
+        } else if (peek() == '=') {
+            consume();
+            compOp = BinaryOpNode::Operator::Equal;
+            foundComparison = true;
+        } else if (peek() == '~') {
+            consume();
+            if (peek() == '=') {
+                consume();
+                compOp = BinaryOpNode::Operator::NotEqual;
+                foundComparison = true;
+            } else {
+                error("Expected '=' after '~'");
+            }
+        }
+        
+        if (foundComparison) {
+            auto right = parseArithmetic();
+            left = std::make_unique<BinaryOpNode>(std::move(left), compOp, std::move(right));
+        } else {
+            break;
+        }
+    }
+    
+    return left;
+}
+
+ASTNodePtr SimpleParser::parseArithmetic() {
     auto left = parseTerm();
     
     while (!isAtEnd()) {

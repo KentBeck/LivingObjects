@@ -1,5 +1,6 @@
 #include "simple_vm.h"
 #include "bytecode.h"
+#include "symbol.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -99,40 +100,70 @@ void SimpleVM::handleSendMessage() {
     
     TaggedValue receiver = pop();
     
-    // Handle primitive operations based on special selector indices
+    // Get the selector symbol from the literal table
+    TaggedValue selectorValue = currentMethod_->getLiteral(selectorIndex);
+    if (!selectorValue.isPointer()) {
+        throw std::runtime_error("Selector must be a symbol");
+    }
+    
+    Symbol* selector = selectorValue.asSymbol();
+    std::string selectorName = selector->getName();
+    
+    // Handle primitive operations based on selector name
     TaggedValue result;
     
-    switch (selectorIndex) {
-        case 999: // "+" (add)
-            if (argCount != 1) {
-                throw std::runtime_error("Add expects exactly 1 argument");
-            }
-            result = performAdd(receiver, args[0]);
-            break;
-            
-        case 998: // "-" (subtract)
-            if (argCount != 1) {
-                throw std::runtime_error("Subtract expects exactly 1 argument");
-            }
-            result = performSubtract(receiver, args[0]);
-            break;
-            
-        case 997: // "*" (multiply)
-            if (argCount != 1) {
-                throw std::runtime_error("Multiply expects exactly 1 argument");
-            }
-            result = performMultiply(receiver, args[0]);
-            break;
-            
-        case 996: // "/" (divide)
-            if (argCount != 1) {
-                throw std::runtime_error("Divide expects exactly 1 argument");
-            }
-            result = performDivide(receiver, args[0]);
-            break;
-            
-        default:
-            throw std::runtime_error("Unknown message selector index: " + std::to_string(selectorIndex));
+    if (selectorName == "+") {
+        if (argCount != 1) {
+            throw std::runtime_error("Add expects exactly 1 argument");
+        }
+        result = performAdd(receiver, args[0]);
+    } else if (selectorName == "-") {
+        if (argCount != 1) {
+            throw std::runtime_error("Subtract expects exactly 1 argument");
+        }
+        result = performSubtract(receiver, args[0]);
+    } else if (selectorName == "*") {
+        if (argCount != 1) {
+            throw std::runtime_error("Multiply expects exactly 1 argument");
+        }
+        result = performMultiply(receiver, args[0]);
+    } else if (selectorName == "/") {
+        if (argCount != 1) {
+            throw std::runtime_error("Divide expects exactly 1 argument");
+        }
+        result = performDivide(receiver, args[0]);
+    } else if (selectorName == "<") {
+        if (argCount != 1) {
+            throw std::runtime_error("Less than expects exactly 1 argument");
+        }
+        result = performLessThan(receiver, args[0]);
+    } else if (selectorName == ">") {
+        if (argCount != 1) {
+            throw std::runtime_error("Greater than expects exactly 1 argument");
+        }
+        result = performGreaterThan(receiver, args[0]);
+    } else if (selectorName == "=") {
+        if (argCount != 1) {
+            throw std::runtime_error("Equal expects exactly 1 argument");
+        }
+        result = performEqual(receiver, args[0]);
+    } else if (selectorName == "~=") {
+        if (argCount != 1) {
+            throw std::runtime_error("Not equal expects exactly 1 argument");
+        }
+        result = performNotEqual(receiver, args[0]);
+    } else if (selectorName == "<=") {
+        if (argCount != 1) {
+            throw std::runtime_error("Less than or equal expects exactly 1 argument");
+        }
+        result = performLessThanOrEqual(receiver, args[0]);
+    } else if (selectorName == ">=") {
+        if (argCount != 1) {
+            throw std::runtime_error("Greater than or equal expects exactly 1 argument");
+        }
+        result = performGreaterThanOrEqual(receiver, args[0]);
+    } else {
+        throw std::runtime_error("Unknown message selector: " + selectorName);
     }
     
     push(result);
@@ -177,6 +208,54 @@ TaggedValue SimpleVM::performDivide(TaggedValue left, TaggedValue right) {
         return TaggedValue(result);
     }
     throw std::runtime_error("Divide operation only supports integers in this simple VM");
+}
+
+TaggedValue SimpleVM::performLessThan(TaggedValue left, TaggedValue right) {
+    if (left.isInteger() && right.isInteger()) {
+        bool result = left.asInteger() < right.asInteger();
+        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
+    }
+    throw std::runtime_error("Less than operation only supports integers in this simple VM");
+}
+
+TaggedValue SimpleVM::performGreaterThan(TaggedValue left, TaggedValue right) {
+    if (left.isInteger() && right.isInteger()) {
+        bool result = left.asInteger() > right.asInteger();
+        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
+    }
+    throw std::runtime_error("Greater than operation only supports integers in this simple VM");
+}
+
+TaggedValue SimpleVM::performEqual(TaggedValue left, TaggedValue right) {
+    if (left.isInteger() && right.isInteger()) {
+        bool result = left.asInteger() == right.asInteger();
+        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
+    }
+    throw std::runtime_error("Equal operation only supports integers in this simple VM");
+}
+
+TaggedValue SimpleVM::performNotEqual(TaggedValue left, TaggedValue right) {
+    if (left.isInteger() && right.isInteger()) {
+        bool result = left.asInteger() != right.asInteger();
+        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
+    }
+    throw std::runtime_error("Not equal operation only supports integers in this simple VM");
+}
+
+TaggedValue SimpleVM::performLessThanOrEqual(TaggedValue left, TaggedValue right) {
+    if (left.isInteger() && right.isInteger()) {
+        bool result = left.asInteger() <= right.asInteger();
+        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
+    }
+    throw std::runtime_error("Less than or equal operation only supports integers in this simple VM");
+}
+
+TaggedValue SimpleVM::performGreaterThanOrEqual(TaggedValue left, TaggedValue right) {
+    if (left.isInteger() && right.isInteger()) {
+        bool result = left.asInteger() >= right.asInteger();
+        return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
+    }
+    throw std::runtime_error("Greater than or equal operation only supports integers in this simple VM");
 }
 
 uint32_t SimpleVM::readOperand() {

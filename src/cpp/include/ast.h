@@ -56,7 +56,8 @@ class BinaryOpNode : public ASTNode {
 public:
     enum class Operator {
         Add, Subtract, Multiply, Divide,
-        LessThan, GreaterThan, Equal
+        LessThan, GreaterThan, Equal, NotEqual,
+        LessThanOrEqual, GreaterThanOrEqual
     };
     
     BinaryOpNode(ASTNodePtr left, Operator op, ASTNodePtr right)
@@ -76,6 +77,9 @@ public:
             case Operator::LessThan: opStr = "<"; break;
             case Operator::GreaterThan: opStr = ">"; break;
             case Operator::Equal: opStr = "="; break;
+            case Operator::NotEqual: opStr = "~="; break;
+            case Operator::LessThanOrEqual: opStr = "<="; break;
+            case Operator::GreaterThanOrEqual: opStr = ">="; break;
             default: opStr = "?"; break;
         }
         return "(" + left_->toString() + " " + opStr + " " + right_->toString() + ")";

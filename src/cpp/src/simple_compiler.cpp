@@ -1,4 +1,5 @@
 #include "simple_compiler.h"
+#include "symbol.h"
 
 #include <stdexcept>
 
@@ -43,38 +44,30 @@ void SimpleCompiler::compileBinaryOp(const BinaryOpNode& node, CompiledMethod& m
     // Compile argument (right operand)  
     compileNode(*node.getRight(), method);
     
-    // For now, we'll use primitive operations instead of message sends
-    // In a full Smalltalk implementation, these would be message sends like "+" to the receiver
+    // Get the selector string for this operator
+    std::string selectorString = getSelectorForOperator(node.getOperator());
     
-    // Generate inline arithmetic instead of message send for simplicity
+    // Create a symbol for the selector and add it to the literals table
+    Symbol* selectorSymbol = Symbol::intern(selectorString);
+    uint32_t selectorIndex = method.addLiteral(TaggedValue(selectorSymbol));
+    
+    // Generate SEND_MESSAGE bytecode with proper selector index
+    method.addBytecode(static_cast<uint8_t>(Bytecode::SEND_MESSAGE));
+    method.addOperand(selectorIndex); // selector index from literal table
+    method.addOperand(1);             // argument count
+    
     switch (node.getOperator()) {
         case BinaryOpNode::Operator::Add:
-            // In a real VM, we'd have primitive add instruction or send "+" message
-            // For now, we'll implement this in the interpreter directly
-            method.addBytecode(static_cast<uint8_t>(Bytecode::SEND_MESSAGE));
-            
-            // Add "+" selector as literal and get its index
-            // For simplicity, we'll use a special literal index 999 to mean "add"
-            method.addOperand(999); // selector index (special value for "+")
-            method.addOperand(1);   // argument count
-            break;
-            
         case BinaryOpNode::Operator::Subtract:
-            method.addBytecode(static_cast<uint8_t>(Bytecode::SEND_MESSAGE));
-            method.addOperand(998); // special value for "-"
-            method.addOperand(1);
-            break;
-            
         case BinaryOpNode::Operator::Multiply:
-            method.addBytecode(static_cast<uint8_t>(Bytecode::SEND_MESSAGE));
-            method.addOperand(997); // special value for "*"
-            method.addOperand(1);
-            break;
-            
         case BinaryOpNode::Operator::Divide:
-            method.addBytecode(static_cast<uint8_t>(Bytecode::SEND_MESSAGE));
-            method.addOperand(996); // special value for "/"
-            method.addOperand(1);
+        case BinaryOpNode::Operator::LessThan:
+        case BinaryOpNode::Operator::GreaterThan:
+        case BinaryOpNode::Operator::Equal:
+        case BinaryOpNode::Operator::NotEqual:
+        case BinaryOpNode::Operator::LessThanOrEqual:
+        case BinaryOpNode::Operator::GreaterThanOrEqual:
+            // All handled by the common code above
             break;
             
         default:
@@ -91,6 +84,9 @@ std::string SimpleCompiler::getSelectorForOperator(BinaryOpNode::Operator op) {
         case BinaryOpNode::Operator::LessThan:  return "<";
         case BinaryOpNode::Operator::GreaterThan: return ">";
         case BinaryOpNode::Operator::Equal:     return "=";
+        case BinaryOpNode::Operator::NotEqual:  return "~=";
+        case BinaryOpNode::Operator::LessThanOrEqual: return "<=";
+        case BinaryOpNode::Operator::GreaterThanOrEqual: return ">=";
         default:                                return "unknown";
     }
 }

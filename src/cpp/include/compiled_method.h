@@ -1,6 +1,7 @@
 #pragma once
 
 #include "tagged_value.h"
+#include "symbol.h"
 
 #include <cstdint>
 #include <string>
@@ -62,6 +63,13 @@ public:
             if (i > 0) result += ", ";
             if (literals_[i].isInteger()) {
                 result += std::to_string(literals_[i].asInteger());
+            } else if (literals_[i].isPointer()) {
+                try {
+                    Symbol* symbol = literals_[i].asSymbol();
+                    result += symbol->toString();
+                } catch (...) {
+                    result += "Object@" + std::to_string(reinterpret_cast<uintptr_t>(literals_[i].asPointer()));
+                }
             } else {
                 result += "?";
             }

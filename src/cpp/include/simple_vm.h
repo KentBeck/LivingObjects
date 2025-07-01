@@ -43,6 +43,12 @@ private:
     TaggedValue performSubtract(TaggedValue left, TaggedValue right);
     TaggedValue performMultiply(TaggedValue left, TaggedValue right);
     TaggedValue performDivide(TaggedValue left, TaggedValue right);
+    TaggedValue performLessThan(TaggedValue left, TaggedValue right);
+    TaggedValue performGreaterThan(TaggedValue left, TaggedValue right);
+    TaggedValue performEqual(TaggedValue left, TaggedValue right);
+    TaggedValue performNotEqual(TaggedValue left, TaggedValue right);
+    TaggedValue performLessThanOrEqual(TaggedValue left, TaggedValue right);
+    TaggedValue performGreaterThanOrEqual(TaggedValue left, TaggedValue right);
     
     // Helper functions
     uint32_t readOperand();

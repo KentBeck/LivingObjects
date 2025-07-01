@@ -9,10 +9,12 @@ namespace smalltalk {
 
 /**
  * Simple recursive descent parser for basic expressions
- * Supports: integers, +, -, *, /, (, )
+ * Supports: integers, +, -, *, /, <, >, =, ~=, <=, >=, (, )
  * 
  * Grammar:
- *   expression := term (('+' | '-') term)*
+ *   expression := comparison
+ *   comparison := arithmetic (('<' | '>' | '=' | '~=' | '<=' | '>=') arithmetic)*
+ *   arithmetic := term (('+' | '-') term)*
  *   term       := factor (('*' | '/') factor)*
  *   factor     := integer | '(' expression ')'
  *   integer    := [0-9]+
@@ -27,6 +29,8 @@ public:
 private:
     // Parsing methods
     ASTNodePtr parseExpression();
+    ASTNodePtr parseComparison();
+    ASTNodePtr parseArithmetic();
     ASTNodePtr parseTerm();
     ASTNodePtr parseFactor();
     ASTNodePtr parseInteger();

@@ -3,8 +3,10 @@
 #include <cmath>
 #include <cstdint>
 #include <iostream>
-
 namespace smalltalk {
+
+// Forward declaration
+class Symbol;
 
 /**
  * TaggedValue provides an efficient representation for Smalltalk values.
@@ -43,6 +45,15 @@ public:
             throw std::runtime_error("Pointer not properly aligned for tagging");
         }
         value = reinterpret_cast<uintptr_t>(ptr) | POINTER_TAG;
+    }
+    
+    // Create from Symbol pointer
+    explicit TaggedValue(Symbol* symbol) {
+        // Ensure pointer is aligned to at least 4 bytes
+        if (reinterpret_cast<uintptr_t>(symbol) & TAG_MASK) {
+            throw std::runtime_error("Symbol pointer not properly aligned for tagging");
+        }
+        value = reinterpret_cast<uintptr_t>(symbol) | POINTER_TAG;
     }
     
     // Create from integer
@@ -93,6 +104,13 @@ public:
             throw std::runtime_error("Tagged value is not a pointer");
         }
         return reinterpret_cast<void*>(value & ~TAG_MASK);
+    }
+    
+    Symbol* asSymbol() const {
+        if (!isPointer()) {
+            throw std::runtime_error("Tagged value is not a symbol");
+        }
+        return reinterpret_cast<Symbol*>(value & ~TAG_MASK);
     }
     
     int32_t asInteger() const {
