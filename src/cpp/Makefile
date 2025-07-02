@@ -9,7 +9,7 @@ TEST_DIR = tests
 # Compiler and flags
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -I$(INCLUDE_DIR)
-LDFLAGS = 
+LDFLAGS =
 
 # Debug build flags
 DEBUG_FLAGS = -g -O0 -DDEBUG
@@ -26,8 +26,8 @@ else
     CXXFLAGS += $(RELEASE_FLAGS)
 endif
 
-# Source files (excluding main files)
-SOURCES = $(filter-out $(SRC_DIR)/main.cpp $(SRC_DIR)/smalltalk_repl.cpp, $(wildcard $(SRC_DIR)/*.cpp))
+# Source files (excluding main files and image_tool)
+SOURCES = $(filter-out $(SRC_DIR)/main.cpp $(SRC_DIR)/smalltalk_repl.cpp $(SRC_DIR)/image_tool.cpp, $(shell find $(SRC_DIR) -name "*.cpp"))
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(BUILD_DIR)/%.o)
 
 # Test files
@@ -40,11 +40,14 @@ EXECUTABLE = $(BUILD_DIR)/smalltalk-vm
 # REPL executable
 REPL_EXECUTABLE = $(BUILD_DIR)/smalltalk-repl
 
+# Image tool executable
+IMAGE_TOOL = $(BUILD_DIR)/image-tool
+
 # Test executable
 TEST_EXECUTABLE = $(BUILD_DIR)/run-tests
 
 # Default target
-all: create_dirs $(EXECUTABLE) $(REPL_EXECUTABLE)
+all: create_dirs $(EXECUTABLE) $(REPL_EXECUTABLE) $(IMAGE_TOOL)
 
 # Create build directories
 create_dirs:
@@ -59,12 +62,21 @@ $(EXECUTABLE): $(OBJECTS) $(BUILD_DIR)/main.o
 $(REPL_EXECUTABLE): $(BUILD_DIR)/smalltalk_repl.o $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
+# Build the image tool executable
+$(IMAGE_TOOL): $(BUILD_DIR)/image_tool.o $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
+
 # Compile source files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Compile main.cpp
 $(BUILD_DIR)/main.o: $(SRC_DIR)/main.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Compile image_tool.cpp
+$(BUILD_DIR)/image_tool.o: $(SRC_DIR)/image_tool.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Build and run tests

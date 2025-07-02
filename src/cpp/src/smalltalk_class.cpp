@@ -35,7 +35,7 @@ std::vector<Symbol*> MethodDictionary::getSelectors() const {
 
 // Class implementation
 Class::Class(const std::string& name, Class* superclass, Class* metaclass)
-    : Object(nullptr), name_(name), superclass_(superclass), metaclass_(metaclass) {
+    : Object(ObjectType::CLASS, sizeof(Class), nullptr), name_(name), superclass_(superclass), metaclass_(metaclass) {
     
     // Register with superclass
     if (superclass_ != nullptr) {
@@ -89,7 +89,7 @@ void Class::addClassVariable(const std::string& name) {
 Object* Class::createInstance() const {
     // Default implementation creates a basic Object
     // Subclasses should override this to create specific types
-    return new Object(const_cast<Class*>(this));
+    return new Object(ObjectType::OBJECT, sizeof(Object), const_cast<Class*>(this));
 }
 
 bool Class::isSubclassOf(const Class* other) const {

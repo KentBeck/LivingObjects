@@ -2,8 +2,12 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <string>
 
 namespace smalltalk {
+
+// Forward declarations
+class Class;
 
 // Object header bitfield sizes
 const uint64_t OBJECT_HEADER_SIZE_BITS = 24;
@@ -61,10 +65,82 @@ struct ObjectHeader {
 // Base object structure
 struct Object {
     ObjectHeader header;
+    Class* class_ = nullptr;  // Every object knows its class
     
     // Constructor
     Object(ObjectType objectType, size_t objectSize, uint32_t objectHash = 0)
         : header(objectType, objectSize, objectHash) {}
+    
+    // Constructor with class
+    Object(ObjectType objectType, size_t objectSize, Class* objectClass, uint32_t objectHash = 0)
+        : header(objectType, objectSize, objectHash), class_(objectClass) {}
+    
+    // Get the class of this object
+    Class* getClass() const { return class_; }
+    
+    // Set the class (used during object creation)
+    void setClass(Class* objectClass) { class_ = objectClass; }
+    
+    // Object identity
+    bool operator==(const Object& other) const {
+        return this == &other;
+    }
+    
+    bool operator!=(const Object& other) const {
+        return this != &other;
+    }
+    
+    // Hash code for object identity
+    size_t hash() const {
+        return reinterpret_cast<size_t>(this);
+    }
+    
+    // String representation for debugging
+    virtual std::string toString() const;
+    
+    // Virtual destructor for proper cleanup
+    virtual ~Object() = default;
+};
+
+/**
+ * SmallInteger represents immediate integer values.
+ * These are not heap-allocated objects but are represented
+ * via tagged pointers in TaggedValue.
+ */
+class SmallInteger : public Object {
+public:
+    SmallInteger(int32_t value, Class* integerClass)
+        : Object(ObjectType::IMMEDIATE, sizeof(SmallInteger), integerClass), value_(value) {}
+    
+    int32_t getValue() const { return value_; }
+    void setValue(int32_t value) { value_ = value; }
+    
+    std::string toString() const override {
+        return std::to_string(value_);
+    }
+    
+private:
+    int32_t value_;
+};
+
+/**
+ * Boolean represents true and false values.
+ * Like SmallInteger, these are typically immediate values.
+ */
+class Boolean : public Object {
+public:
+    Boolean(bool value, Class* booleanClass)
+        : Object(ObjectType::IMMEDIATE, sizeof(Boolean), booleanClass), value_(value) {}
+    
+    bool getValue() const { return value_; }
+    void setValue(bool value) { value_ = value; }
+    
+    std::string toString() const override {
+        return value_ ? "true" : "false";
+    }
+    
+private:
+    bool value_;
 };
 
 } // namespace smalltalk

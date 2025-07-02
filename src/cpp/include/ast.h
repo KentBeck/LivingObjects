@@ -108,4 +108,21 @@ private:
     ASTNodePtr body_;
 };
 
+/**
+ * Block node for expressions like [3 + 4]
+ */
+class BlockNode : public ASTNode {
+public:
+    explicit BlockNode(ASTNodePtr body) : body_(std::move(body)) {}
+    
+    const ASTNode* getBody() const { return body_.get(); }
+    
+    std::string toString() const override {
+        return "[" + body_->toString() + "]";
+    }
+    
+private:
+    ASTNodePtr body_;
+};
+
 } // namespace smalltalk

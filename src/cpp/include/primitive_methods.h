@@ -10,7 +10,7 @@
 namespace smalltalk {
 
 // Forward declarations
-class Object;
+struct Object;
 class Class;
 
 /**
@@ -20,12 +20,12 @@ class Class;
 class PrimitiveMethod : public CompiledMethod {
 public:
     // Function signature for primitive implementations
-    using PrimitiveFunction = std::function<TaggedValue(TaggedValue receiver, const std::vector<TaggedValue>& args)>;
+    using PrimitiveFunction = std::function<TaggedValue(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter)>;
     
     PrimitiveMethod(int primitiveNumber, PrimitiveFunction function);
     
     // Execute the primitive
-    TaggedValue execute(TaggedValue receiver, const std::vector<TaggedValue>& args) const;
+    TaggedValue execute(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter) const;
     
     // Get primitive number
     int getPrimitiveNumber() const { return primitiveNumber_; }
@@ -68,18 +68,18 @@ private:
  */
 namespace IntegerPrimitives {
     // Arithmetic primitives
-    TaggedValue add(TaggedValue receiver, const std::vector<TaggedValue>& args);
-    TaggedValue subtract(TaggedValue receiver, const std::vector<TaggedValue>& args);
-    TaggedValue multiply(TaggedValue receiver, const std::vector<TaggedValue>& args);
-    TaggedValue divide(TaggedValue receiver, const std::vector<TaggedValue>& args);
+    TaggedValue add(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter);
+    TaggedValue subtract(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter);
+    TaggedValue multiply(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter);
+    TaggedValue divide(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter);
     
     // Comparison primitives
-    TaggedValue lessThan(TaggedValue receiver, const std::vector<TaggedValue>& args);
-    TaggedValue greaterThan(TaggedValue receiver, const std::vector<TaggedValue>& args);
-    TaggedValue equal(TaggedValue receiver, const std::vector<TaggedValue>& args);
-    TaggedValue notEqual(TaggedValue receiver, const std::vector<TaggedValue>& args);
-    TaggedValue lessThanOrEqual(TaggedValue receiver, const std::vector<TaggedValue>& args);
-    TaggedValue greaterThanOrEqual(TaggedValue receiver, const std::vector<TaggedValue>& args);
+    TaggedValue lessThan(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter);
+    TaggedValue greaterThan(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter);
+    TaggedValue equal(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter);
+    TaggedValue notEqual(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter);
+    TaggedValue lessThanOrEqual(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter);
+    TaggedValue greaterThanOrEqual(TaggedValue receiver, const std::vector<TaggedValue>& args, class Interpreter& interpreter);
     
     // Utility functions
     void checkArgumentCount(const std::vector<TaggedValue>& args, size_t expected);

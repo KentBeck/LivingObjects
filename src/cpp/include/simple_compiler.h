@@ -23,6 +23,7 @@ private:
     void compileNode(const ASTNode& node, CompiledMethod& method);
     void compileLiteral(const LiteralNode& node, CompiledMethod& method);
     void compileBinaryOp(const BinaryOpNode& node, CompiledMethod& method);
+    void compileBlock(const BlockNode& node, CompiledMethod& method);
     
     // Get the selector name for a binary operator
     std::string getSelectorForOperator(BinaryOpNode::Operator op);

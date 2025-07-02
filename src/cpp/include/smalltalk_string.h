@@ -1,6 +1,6 @@
 #pragma once
 
-#include "smalltalk_object.h"
+#include "object.h"
 #include "tagged_value.h"
 #include <string>
 #include <memory>

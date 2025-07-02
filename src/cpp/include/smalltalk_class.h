@@ -2,7 +2,7 @@
 
 #include "compiled_method.h"
 #include "symbol.h"
-#include "smalltalk_object.h"
+#include "object.h"
 
 #include <unordered_map>
 #include <string>
@@ -12,7 +12,7 @@
 namespace smalltalk {
 
 // Forward declarations
-class Object;
+// Object is now defined in object.h
 class TaggedValue;
 
 /**

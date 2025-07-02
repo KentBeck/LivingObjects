@@ -1,9 +1,10 @@
 #include "simple_vm.h"
 #include "bytecode.h"
 #include "symbol.h"
-#include "smalltalk_object.h"
+#include "object.h"
 #include "smalltalk_class.h"
 #include "primitive_methods.h"
+#include "interpreter.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -13,7 +14,13 @@ namespace smalltalk {
 SimpleVM::SimpleVM() {
     // Reserve space for the stack
     stack_.reserve(1000);
+    
+    // Initialize memory manager and interpreter for primitive support
+    memoryManager_ = std::make_unique<MemoryManager>();
+    interpreter_ = std::make_unique<Interpreter>(*memoryManager_);
 }
+
+SimpleVM::~SimpleVM() = default;
 
 TaggedValue SimpleVM::execute(const CompiledMethod& method) {
     // Initialize execution state
@@ -78,6 +85,10 @@ void SimpleVM::executeBytecode() {
             handleReturn();
             break;
             
+        case Bytecode::CREATE_BLOCK:
+            handleCreateBlock();
+            break;
+            
         default:
             throw std::runtime_error("Unimplemented bytecode: " + std::string(getBytecodeString(bytecode)));
     }
@@ -135,12 +146,26 @@ void SimpleVM::handleReturn() {
     instructionPointer_ = static_cast<uint32_t>(currentMethod_->getBytecodes().size()); // Force loop to exit
 }
 
+void SimpleVM::handleCreateBlock() {
+    // Read the CREATE_BLOCK operands (bytecode size, literal count, temp var count)
+    uint32_t bytecodeSize = readOperand();
+    uint32_t literalCount = readOperand();
+    uint32_t tempVarCount = readOperand();
+    
+    // Use the interpreter to create the block context
+    interpreter_->handleCreateBlock(bytecodeSize, literalCount, tempVarCount);
+    
+    // Get the created block from the interpreter's stack and push it to our stack
+    Object* block = interpreter_->pop();
+    push(TaggedValue(block));
+}
+
 TaggedValue SimpleVM::executeMethod(std::shared_ptr<CompiledMethod> method, TaggedValue receiver, const std::vector<TaggedValue>& args) {
     // Check if this is a primitive method
     auto primitiveMethod = std::dynamic_pointer_cast<PrimitiveMethod>(method);
     if (primitiveMethod) {
         // Execute primitive directly
-        return primitiveMethod->execute(receiver, args);
+        return primitiveMethod->execute(receiver, args, *interpreter_);
     }
     
     // For now, we only support primitive methods

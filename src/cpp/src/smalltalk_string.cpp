@@ -7,11 +7,11 @@
 namespace smalltalk {
 
 String::String(const std::string& content, Class* stringClass) 
-    : Object(stringClass), content_(content) {
+    : Object(ObjectType::OBJECT, sizeof(String), stringClass), content_(content) {
 }
 
 String::String(const char* content, Class* stringClass) 
-    : Object(stringClass), content_(content ? content : "") {
+    : Object(ObjectType::OBJECT, sizeof(String), stringClass), content_(content ? content : "") {
 }
 
 String* String::concatenate(const String* other) const {

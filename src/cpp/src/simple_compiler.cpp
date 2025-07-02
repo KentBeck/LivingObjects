@@ -23,6 +23,8 @@ void SimpleCompiler::compileNode(const ASTNode& node, CompiledMethod& method) {
         compileLiteral(*literal, method);
     } else if (const auto* binOp = dynamic_cast<const BinaryOpNode*>(&node)) {
         compileBinaryOp(*binOp, method);
+    } else if (const auto* block = dynamic_cast<const BlockNode*>(&node)) {
+        compileBlock(*block, method);
     } else {
         throw std::runtime_error("Unknown AST node type");
     }
@@ -89,6 +91,24 @@ std::string SimpleCompiler::getSelectorForOperator(BinaryOpNode::Operator op) {
         case BinaryOpNode::Operator::GreaterThanOrEqual: return ">=";
         default:                                return "unknown";
     }
+}
+
+void SimpleCompiler::compileBlock(const BlockNode& node, CompiledMethod& method) {
+    // Simplified block compilation for now
+    // Just generate CREATE_BLOCK with placeholder values
+    // The interpreter will need to handle block creation
+    
+    // For demonstration, use a simple approach:
+    // Store the block's AST representation or compile it inline
+    
+    // Generate CREATE_BLOCK bytecode with minimal parameters
+    method.addBytecode(static_cast<uint8_t>(Bytecode::CREATE_BLOCK));
+    method.addOperand(0);  // bytecode size (placeholder)
+    method.addOperand(0);  // literal count (placeholder)  
+    method.addOperand(0);  // temp var count (placeholder)
+    
+    // TODO: Properly compile block body and store method reference
+    // For now, this creates an empty block that can be executed
 }
 
 } // namespace smalltalk

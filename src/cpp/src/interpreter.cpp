@@ -336,20 +336,70 @@ void Interpreter::handleDuplicate() {
 }
 
 void Interpreter::handleCreateBlock(uint32_t bytecodeSize, uint32_t literalCount, uint32_t tempVarCount) {
-    // Create a block object (simplified)
-    (void)bytecodeSize; // Suppress unused parameter warning
-    (void)literalCount; // Suppress unused parameter warning
-    (void)tempVarCount; // Suppress unused parameter warning
+    // Create a proper block context
+    (void)bytecodeSize; // Will be used when we have proper block compilation
+    (void)literalCount; // Will be used when we have proper block compilation
+    (void)tempVarCount; // Will be used when we have proper block compilation
 
-    Object* block = memoryManager.allocateObject(ObjectType::OBJECT, 0);
+    // Get the current context as the home context for the block
+    MethodContext* homeContext = activeContext;
+    if (!homeContext) {
+        throw std::runtime_error("Cannot create block without an active context");
+    }
 
-    // Push the block onto the stack
-    push(block);
+    // Create a block context
+    // For now, use a placeholder method reference (will be improved later)
+    uint32_t blockMethodRef = 999; // Placeholder method reference
+    
+    BlockContext* blockContext = memoryManager.allocateBlockContext(
+        4,                    // context size (enough for basic temporaries)
+        blockMethodRef,       // method reference for the block's code
+        homeContext->self,    // receiver (same as home context)
+        nullptr,             // sender (will be set when block is executed)
+        homeContext          // home context
+    );
+
+    // Push the block context onto the stack
+    push(blockContext);
 }
 
 void Interpreter::handleExecuteBlock(uint32_t argCount) {
-    // Not implemented in this basic version
-    (void)argCount; // Suppress unused parameter warning
+    // For now, we only support `value` with no arguments
+    (void)argCount;
+
+    // Pop the block context from the stack
+    Object* blockObj = pop();
+    if (blockObj->header.type != static_cast<uint64_t>(ContextType::BLOCK_CONTEXT)) {
+        throw std::runtime_error("Object on stack is not a block for EXECUTE_BLOCK");
+    }
+    BlockContext* block = static_cast<BlockContext*>(blockObj);
+
+    // Get the home context
+    MethodContext* home = static_cast<MethodContext*>(block->home);
+
+    // Get block's compiled method from the image using the reference in the block
+    uint32_t methodRef = block->header.hash;
+    // TODO: This depends on `image` being available and `getCompiledMethod`
+    // and `CompiledMethod::tempCount` being correct.
+    // CompiledMethod* compiledBlock = image->getCompiledMethod(methodRef);
+    // if (!compiledBlock) {
+    //     throw std::runtime_error("Could not find compiled method for block");
+    // }
+
+    // A block executes in the scope of its home context, so it uses the home's receiver
+    Object* receiver = home->self;
+
+    // The sender of the new context is the currently active context
+    MethodContext* sender = activeContext;
+
+    // Allocate a new context for the block
+    // HACK: Assuming tempCount of 16 until CompiledMethod is available
+    MethodContext* newContext = memoryManager.allocateMethodContext(
+        16, methodRef, receiver, sender);
+    newContext->instructionPointer = 0; // Start at the beginning of the block's bytecodes
+
+    // Activate the new context by making it the current one
+    activeContext = newContext;
 }
 
 Object* Interpreter::sendMessage(Object* receiver, Object* selector, std::vector<Object*>& args) {

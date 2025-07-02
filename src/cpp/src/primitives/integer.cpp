@@ -1,5 +1,6 @@
 #include "primitive_methods.h"
-#include "smalltalk_object.h"
+#include "primitives/block.h"
+#include "object.h"
 #include "smalltalk_class.h"
 #include <stdexcept>
 #include <sstream>
@@ -11,9 +12,9 @@ PrimitiveMethod::PrimitiveMethod(int primitiveNumber, PrimitiveFunction function
     : primitiveNumber_(primitiveNumber), function_(function) {
 }
 
-TaggedValue PrimitiveMethod::execute(TaggedValue receiver, const std::vector<TaggedValue>& args) const {
+TaggedValue PrimitiveMethod::execute(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) const {
     if (function_) {
-        return function_(receiver, args);
+        return function_(receiver, args, interpreter);
     }
     throw std::runtime_error("Primitive method has no implementation");
 }
@@ -60,6 +61,9 @@ void PrimitiveRegistry::initializeCorePrimitives() {
     registerPrimitive(PrimitiveNumbers::INTEGER_NOT_EQUAL, IntegerPrimitives::notEqual);
     registerPrimitive(PrimitiveNumbers::INTEGER_LESS_THAN_OR_EQUAL, IntegerPrimitives::lessThanOrEqual);
     registerPrimitive(PrimitiveNumbers::INTEGER_GREATER_THAN_OR_EQUAL, IntegerPrimitives::greaterThanOrEqual);
+    
+    // Register Block primitives
+    registerPrimitive(PrimitiveNumbers::BLOCK_VALUE, BlockPrimitives::value);
 }
 
 // Integer primitive implementations
@@ -84,7 +88,8 @@ namespace IntegerPrimitives {
         }
     }
     
-    TaggedValue add(TaggedValue receiver, const std::vector<TaggedValue>& args) {
+    TaggedValue add(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+        (void)interpreter; // Suppress unused parameter warning
         checkArgumentCount(args, 1);
         checkIntegerReceiver(receiver);
         checkIntegerArgument(args[0], 0);
@@ -93,7 +98,8 @@ namespace IntegerPrimitives {
         return TaggedValue(result);
     }
     
-    TaggedValue subtract(TaggedValue receiver, const std::vector<TaggedValue>& args) {
+    TaggedValue subtract(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+        (void)interpreter; // Suppress unused parameter warning
         checkArgumentCount(args, 1);
         checkIntegerReceiver(receiver);
         checkIntegerArgument(args[0], 0);
@@ -102,7 +108,8 @@ namespace IntegerPrimitives {
         return TaggedValue(result);
     }
     
-    TaggedValue multiply(TaggedValue receiver, const std::vector<TaggedValue>& args) {
+    TaggedValue multiply(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+        (void)interpreter; // Suppress unused parameter warning
         checkArgumentCount(args, 1);
         checkIntegerReceiver(receiver);
         checkIntegerArgument(args[0], 0);
@@ -111,7 +118,8 @@ namespace IntegerPrimitives {
         return TaggedValue(result);
     }
     
-    TaggedValue divide(TaggedValue receiver, const std::vector<TaggedValue>& args) {
+    TaggedValue divide(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+        (void)interpreter; // Suppress unused parameter warning
         checkArgumentCount(args, 1);
         checkIntegerReceiver(receiver);
         checkIntegerArgument(args[0], 0);
@@ -125,7 +133,8 @@ namespace IntegerPrimitives {
         return TaggedValue(result);
     }
     
-    TaggedValue lessThan(TaggedValue receiver, const std::vector<TaggedValue>& args) {
+    TaggedValue lessThan(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+        (void)interpreter; // Suppress unused parameter warning
         checkArgumentCount(args, 1);
         checkIntegerReceiver(receiver);
         checkIntegerArgument(args[0], 0);
@@ -134,7 +143,8 @@ namespace IntegerPrimitives {
         return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
     }
     
-    TaggedValue greaterThan(TaggedValue receiver, const std::vector<TaggedValue>& args) {
+    TaggedValue greaterThan(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+        (void)interpreter; // Suppress unused parameter warning
         checkArgumentCount(args, 1);
         checkIntegerReceiver(receiver);
         checkIntegerArgument(args[0], 0);
@@ -143,7 +153,8 @@ namespace IntegerPrimitives {
         return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
     }
     
-    TaggedValue equal(TaggedValue receiver, const std::vector<TaggedValue>& args) {
+    TaggedValue equal(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+        (void)interpreter; // Suppress unused parameter warning
         checkArgumentCount(args, 1);
         checkIntegerReceiver(receiver);
         checkIntegerArgument(args[0], 0);
@@ -152,7 +163,8 @@ namespace IntegerPrimitives {
         return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
     }
     
-    TaggedValue notEqual(TaggedValue receiver, const std::vector<TaggedValue>& args) {
+    TaggedValue notEqual(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+        (void)interpreter; // Suppress unused parameter warning
         checkArgumentCount(args, 1);
         checkIntegerReceiver(receiver);
         checkIntegerArgument(args[0], 0);
@@ -161,7 +173,8 @@ namespace IntegerPrimitives {
         return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
     }
     
-    TaggedValue lessThanOrEqual(TaggedValue receiver, const std::vector<TaggedValue>& args) {
+    TaggedValue lessThanOrEqual(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+        (void)interpreter; // Suppress unused parameter warning
         checkArgumentCount(args, 1);
         checkIntegerReceiver(receiver);
         checkIntegerArgument(args[0], 0);
@@ -170,7 +183,8 @@ namespace IntegerPrimitives {
         return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
     }
     
-    TaggedValue greaterThanOrEqual(TaggedValue receiver, const std::vector<TaggedValue>& args) {
+    TaggedValue greaterThanOrEqual(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+        (void)interpreter; // Suppress unused parameter warning
         checkArgumentCount(args, 1);
         checkIntegerReceiver(receiver);
         checkIntegerArgument(args[0], 0);

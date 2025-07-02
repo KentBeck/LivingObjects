@@ -7,7 +7,7 @@ namespace smalltalk {
 
 // Forward declarations
 class Symbol;
-class Object;
+struct Object;
 class Class;
 
 /**

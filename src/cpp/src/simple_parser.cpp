@@ -141,6 +141,17 @@ ASTNodePtr SimpleParser::parseFactor() {
         consume(); // consume ')'
         
         return expr;
+    } else if (peek() == '[') {
+        consume(); // consume '['
+        auto expr = parseExpression();
+        skipWhitespace();
+        
+        if (peek() != ']') {
+            error("Expected ']' after block expression");
+        }
+        consume(); // consume ']'
+        
+        return std::make_unique<BlockNode>(std::move(expr));
     } else if (isDigit(peek())) {
         return parseInteger();
     } else if (isAlpha(peek())) {

@@ -49,6 +49,13 @@ public:
     Object* pop();
     Object* top();
     
+    // Context access
+    MethodContext* getCurrentContext() const { return activeContext; }
+    void setCurrentContext(MethodContext* context) { activeContext = context; }
+    
+    // Memory manager access
+    MemoryManager& getMemoryManager() { return memoryManager; }
+    
 private:
     // Memory manager
     MemoryManager& memoryManager;

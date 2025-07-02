@@ -2,6 +2,7 @@
 
 #include "compiled_method.h"
 #include "tagged_value.h"
+#include "memory_manager.h"
 
 #include <cstdint>
 #include <vector>
@@ -11,6 +12,7 @@ namespace smalltalk {
 
 // Forward declarations
 class Class;
+class Interpreter;
 
 /**
  * Simple VM for executing bytecode
@@ -18,6 +20,7 @@ class Class;
 class SimpleVM {
 public:
     SimpleVM();
+    ~SimpleVM();
     
     // Execute a compiled method and return the result
     TaggedValue execute(const CompiledMethod& method);
@@ -28,6 +31,10 @@ private:
     uint32_t stackPointer_ = 0;
     uint32_t instructionPointer_ = 0;
     const CompiledMethod* currentMethod_ = nullptr;
+    
+    // Memory management and interpreter for primitives
+    std::unique_ptr<MemoryManager> memoryManager_;
+    std::unique_ptr<Interpreter> interpreter_;
     
     // Stack operations
     void push(TaggedValue value);
@@ -41,6 +48,7 @@ private:
     void handlePushLiteral();
     void handleSendMessage();
     void handleReturn();
+    void handleCreateBlock();
     
     // Method execution
     TaggedValue executeMethod(std::shared_ptr<CompiledMethod> method, TaggedValue receiver, const std::vector<TaggedValue>& args);

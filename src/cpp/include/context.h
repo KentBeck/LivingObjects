@@ -51,7 +51,7 @@ struct BlockContext : public Object {
         header.type = static_cast<uint64_t>(ContextType::BLOCK_CONTEXT);
         // Store sender and receiver in the object's variable-sized fields
         // This is a simplified approach; a real VM would manage context fields more robustly
-        Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(this) + sizeof(Object));
+        Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(this) + sizeof(BlockContext));
         if (contextSize >= 2) { // Ensure there's space for sender and receiver
             slots[0] = senderContext;
             slots[1] = receiver;
@@ -68,7 +68,7 @@ struct StackChunk : public Object {
     
     // Constructor
     StackChunk(size_t chunkSize)
-        : Object(ObjectType::CONTEXT, chunkSize, 0) { // Using CONTEXT type for stack chunks
+        : Object(ObjectType::CONTEXT, chunkSize, nullptr, 0) { // Using CONTEXT type for stack chunks
         header.type = static_cast<uint64_t>(ContextType::STACK_CHUNK_BOUNDARY);
     }
 };

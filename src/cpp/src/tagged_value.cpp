@@ -1,5 +1,5 @@
 #include "tagged_value.h"
-#include "smalltalk_object.h"
+#include "object.h"
 #include "smalltalk_class.h"
 #include "smalltalk_string.h"
 #include "symbol.h"
