@@ -143,7 +143,7 @@ ASTNodePtr SimpleParser::parseFactor() {
         return expr;
     } else if (peek() == '[') {
         consume(); // consume '['
-        auto expr = parseExpression();
+        auto expr = parseStatements();
         skipWhitespace();
         
         if (peek() != ']') {
@@ -268,6 +268,62 @@ char SimpleParser::consume() {
         error("Unexpected end of input");
     }
     return input_[pos_++];
+}
+
+ASTNodePtr SimpleParser::parseStatements() {
+    skipWhitespace();
+    
+    // Handle empty blocks
+    if (peek() == ']' || isAtEnd()) {
+        // Return a nil literal for empty blocks
+        return std::make_unique<LiteralNode>(TaggedValue());
+    }
+    
+    auto sequence = std::make_unique<SequenceNode>();
+    
+    // Parse first statement
+    auto statement = parseExpression();
+    sequence->addStatement(std::move(statement));
+    
+    // Parse additional statements separated by periods
+    while (!isAtEnd()) {
+        skipWhitespace();
+        
+        if (peek() == '.') {
+            consume(); // consume '.'
+            skipWhitespace();
+            
+            // Check if this is the end (trailing period)
+            if (peek() == ']' || isAtEnd()) {
+                break;
+            }
+            
+            // Parse next statement
+            auto nextStatement = parseExpression();
+            sequence->addStatement(std::move(nextStatement));
+        } else {
+            // No more periods, we're done
+            break;
+        }
+    }
+    
+    // If only one statement, return it directly instead of a sequence
+    const auto& statements = sequence->getStatements();
+    if (statements.size() == 1) {
+        // Create a copy of the single statement
+        const auto* statement = statements[0].get();
+        if (const auto* literal = dynamic_cast<const LiteralNode*>(statement)) {
+            return std::make_unique<LiteralNode>(literal->getValue());
+        } else if (const auto* binOp = dynamic_cast<const BinaryOpNode*>(statement)) {
+            // For binary operations, we need to recursively copy
+            // For now, just return the sequence
+            return std::move(sequence);
+        }
+        // For other types, return the sequence
+        return std::move(sequence);
+    }
+    
+    return std::move(sequence);
 }
 
 bool SimpleParser::isAtEnd() const {

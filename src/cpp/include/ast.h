@@ -125,4 +125,33 @@ private:
     ASTNodePtr body_;
 };
 
+/**
+ * Sequence node for multiple statements separated by periods
+ */
+class SequenceNode : public ASTNode {
+public:
+    SequenceNode() = default;
+    
+    void addStatement(ASTNodePtr statement) {
+        statements_.push_back(std::move(statement));
+    }
+    
+    const std::vector<ASTNodePtr>& getStatements() const { return statements_; }
+    
+    std::string toString() const override {
+        if (statements_.empty()) {
+            return "";
+        }
+        
+        std::string result = statements_[0]->toString();
+        for (size_t i = 1; i < statements_.size(); i++) {
+            result += ". " + statements_[i]->toString();
+        }
+        return result;
+    }
+    
+private:
+    std::vector<ASTNodePtr> statements_;
+};
+
 } // namespace smalltalk

@@ -31,6 +31,7 @@ public:
 private:
     // Parsing methods
     ASTNodePtr parseExpression();
+    ASTNodePtr parseStatements();
     ASTNodePtr parseComparison();
     ASTNodePtr parseArithmetic();
     ASTNodePtr parseTerm();

@@ -64,6 +64,172 @@ Object* Interpreter::executeContext(MethodContext* context) {
     return result;
 }
 
+TaggedValue Interpreter::executeCompiledMethod(const CompiledMethod& method) {
+    const auto& bytecodes = method.getBytecodes();
+    const auto& literals = method.getLiterals();
+    
+    // Set up execution state
+    std::vector<TaggedValue> stack;
+    size_t ip = 0;
+    
+    // Main bytecode execution loop - process one instruction at a time
+    while (ip < bytecodes.size()) {
+        uint8_t opcode = bytecodes[ip];
+        Bytecode instruction = static_cast<Bytecode>(opcode);
+        
+        switch (instruction) {
+            case Bytecode::PUSH_LITERAL: {
+                ip++; // Skip opcode
+                if (ip + 3 >= bytecodes.size()) {
+                    throw std::runtime_error("Invalid PUSH_LITERAL: not enough bytes for operand");
+                }
+                
+                uint32_t literalIndex = 
+                    static_cast<uint32_t>(bytecodes[ip]) |
+                    (static_cast<uint32_t>(bytecodes[ip+1]) << 8) |
+                    (static_cast<uint32_t>(bytecodes[ip+2]) << 16) |
+                    (static_cast<uint32_t>(bytecodes[ip+3]) << 24);
+                ip += 4;
+                
+                if (literalIndex >= literals.size()) {
+                    throw std::runtime_error("Invalid literal index: " + std::to_string(literalIndex));
+                }
+                
+                stack.push_back(literals[literalIndex]);
+                break;
+            }
+            
+            case Bytecode::SEND_MESSAGE: {
+                ip++; // Skip opcode
+                if (ip + 7 >= bytecodes.size()) {
+                    throw std::runtime_error("Invalid SEND_MESSAGE: not enough bytes for operands");
+                }
+                
+                // Read selector index
+                uint32_t selectorIndex = 
+                    static_cast<uint32_t>(bytecodes[ip]) |
+                    (static_cast<uint32_t>(bytecodes[ip+1]) << 8) |
+                    (static_cast<uint32_t>(bytecodes[ip+2]) << 16) |
+                    (static_cast<uint32_t>(bytecodes[ip+3]) << 24);
+                ip += 4;
+                
+                // Read argument count
+                uint32_t argCount = 
+                    static_cast<uint32_t>(bytecodes[ip]) |
+                    (static_cast<uint32_t>(bytecodes[ip+1]) << 8) |
+                    (static_cast<uint32_t>(bytecodes[ip+2]) << 16) |
+                    (static_cast<uint32_t>(bytecodes[ip+3]) << 24);
+                ip += 4;
+                
+                // Validate arguments
+                if (stack.size() < argCount + 1) {
+                    throw std::runtime_error("Stack underflow in SEND_MESSAGE");
+                }
+                if (selectorIndex >= literals.size()) {
+                    throw std::runtime_error("Invalid selector index: " + std::to_string(selectorIndex));
+                }
+                
+                // Pop arguments and receiver
+                std::vector<TaggedValue> args;
+                for (uint32_t i = 0; i < argCount; i++) {
+                    args.insert(args.begin(), stack.back());
+                    stack.pop_back();
+                }
+                TaggedValue receiver = stack.back();
+                stack.pop_back();
+                
+                // Perform the operation
+                TaggedValue selector = literals[selectorIndex];
+                TaggedValue result;
+                
+                if (argCount == 1) {
+                    result = performOperation(receiver, args[0], selector);
+                } else {
+                    // For now, only support binary operations
+                    result = TaggedValue(); // nil
+                }
+                
+                stack.push_back(result);
+                break;
+            }
+            
+            case Bytecode::CREATE_BLOCK: {
+                ip++; // Skip opcode
+                if (ip + 11 >= bytecodes.size()) {
+                    throw std::runtime_error("Invalid CREATE_BLOCK: not enough bytes for operands");
+                }
+                
+                // Read block parameters (we skip them for now)
+                ip += 12; // Skip 3 * 4-byte parameters
+                
+                // Create a temporary context to hold the block
+                MethodContext* tempContext = memoryManager.allocateMethodContext(4, 0, nullptr, nullptr);
+                tempContext->self = reinterpret_cast<Object*>(0x1000);
+                MethodContext* oldContext = activeContext;
+                activeContext = tempContext;
+                
+                // Execute CREATE_BLOCK handler
+                handleCreateBlock(0, 0, 0);
+                Object* blockObj = pop();
+                
+                // Restore context
+                activeContext = oldContext;
+                
+                // Push block as TaggedValue
+                stack.push_back(TaggedValue(blockObj));
+                break;
+            }
+            
+            case Bytecode::RETURN_STACK_TOP: {
+                if (stack.empty()) {
+                    return TaggedValue(); // Return nil if stack is empty
+                }
+                return stack.back();
+            }
+            
+            default:
+                // Skip unknown instructions
+                ip++;
+                break;
+        }
+    }
+    
+    // If we reach here, return top of stack or nil
+    return stack.empty() ? TaggedValue() : stack.back();
+}
+
+TaggedValue Interpreter::performOperation(const TaggedValue& left, const TaggedValue& right, const TaggedValue& selector) {
+    if (!selector.isPointer()) return TaggedValue();
+    
+    // Try to get the selector as a symbol and extract the operator string
+    std::string op;
+    try {
+        Symbol* sym = selector.asSymbol();
+        op = sym->toString();
+    } catch (...) {
+        // If it's not a symbol, try as a string or return nil
+        return TaggedValue();
+    }
+    
+    if (left.isInteger() && right.isInteger()) {
+        int32_t l = left.asInteger();
+        int32_t r = right.asInteger();
+        
+        if (op == "+" || op == "#+") return TaggedValue(l + r);
+        if (op == "-" || op == "#-") return TaggedValue(l - r);
+        if (op == "*" || op == "#*") return TaggedValue(l * r);
+        if (op == "/" || op == "#/") return TaggedValue(r != 0 ? l / r : 0);
+        if (op == "<" || op == "#<") return l < r ? TaggedValue::trueValue() : TaggedValue::falseValue();
+        if (op == ">" || op == "#>") return l > r ? TaggedValue::trueValue() : TaggedValue::falseValue();
+        if (op == "=" || op == "#=") return l == r ? TaggedValue::trueValue() : TaggedValue::falseValue();
+        if (op == "~=" || op == "#~=") return l != r ? TaggedValue::trueValue() : TaggedValue::falseValue();
+        if (op == "<=" || op == "#<=") return l <= r ? TaggedValue::trueValue() : TaggedValue::falseValue();
+        if (op == ">=" || op == "#>=") return l >= r ? TaggedValue::trueValue() : TaggedValue::falseValue();
+    }
+    
+    return TaggedValue();
+}
+
 void Interpreter::executeLoop() {
     executing = true;
 

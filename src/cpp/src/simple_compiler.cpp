@@ -25,6 +25,8 @@ void SimpleCompiler::compileNode(const ASTNode& node, CompiledMethod& method) {
         compileBinaryOp(*binOp, method);
     } else if (const auto* block = dynamic_cast<const BlockNode*>(&node)) {
         compileBlock(*block, method);
+    } else if (const auto* sequence = dynamic_cast<const SequenceNode*>(&node)) {
+        compileSequence(*sequence, method);
     } else {
         throw std::runtime_error("Unknown AST node type");
     }
@@ -109,6 +111,21 @@ void SimpleCompiler::compileBlock(const BlockNode& node, CompiledMethod& method)
     
     // TODO: Properly compile block body and store method reference
     // For now, this creates an empty block that can be executed
+}
+
+void SimpleCompiler::compileSequence(const SequenceNode& node, CompiledMethod& method) {
+    const auto& statements = node.getStatements();
+    
+    // Compile each statement
+    for (size_t i = 0; i < statements.size(); i++) {
+        compileNode(*statements[i], method);
+        
+        // Pop intermediate results except for the last statement
+        // The last statement's result should remain on the stack as the sequence result
+        if (i < statements.size() - 1) {
+            method.addBytecode(static_cast<uint8_t>(Bytecode::POP));
+        }
+    }
 }
 
 } // namespace smalltalk

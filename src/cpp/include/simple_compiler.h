@@ -24,6 +24,7 @@ private:
     void compileLiteral(const LiteralNode& node, CompiledMethod& method);
     void compileBinaryOp(const BinaryOpNode& node, CompiledMethod& method);
     void compileBlock(const BlockNode& node, CompiledMethod& method);
+    void compileSequence(const SequenceNode& node, CompiledMethod& method);
     
     // Get the selector name for a binary operator
     std::string getSelectorForOperator(BinaryOpNode::Operator op);

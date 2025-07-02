@@ -4,6 +4,8 @@
 #include "context.h"
 #include "memory_manager.h"
 #include "object.h"
+#include "tagged_value.h"
+#include "compiled_method.h"
 
 #include <cstdint>
 #include <vector>
@@ -17,6 +19,9 @@ public:
     
     // Execute method
     Object* executeMethod(Object* method, Object* receiver, std::vector<Object*>& args);
+    
+    // Execute compiled method directly
+    TaggedValue executeCompiledMethod(const CompiledMethod& method);
     
     // Execute context
     Object* executeContext(MethodContext* context);
@@ -72,6 +77,9 @@ private:
     
     // Helper for message sending
     Object* sendMessage(Object* receiver, Object* selector, std::vector<Object*>& args);
+    
+    // Helper for primitive operations
+    TaggedValue performOperation(const TaggedValue& left, const TaggedValue& right, const TaggedValue& selector);
     
     // Method lookup
     Object* lookupMethod(Object* receiver, Object* selector);

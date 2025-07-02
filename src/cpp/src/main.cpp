@@ -1,9 +1,12 @@
 #include "simple_parser.h"
 #include "simple_compiler.h"
-#include "simple_vm.h"
+#include "interpreter.h"
+#include "memory_manager.h"
 #include "smalltalk_string.h"
 #include "smalltalk_class.h"
 #include "primitive_methods.h"
+#include "primitives/block.h"
+#include "compiled_method.h"
 
 #include <iostream>
 #include <string>
@@ -40,6 +43,9 @@ int main(int argc, char** argv) {
         Class* integerClass = ClassUtils::getIntegerClass();
         IntegerClassSetup::addPrimitiveMethods(integerClass);
         
+        // Register block primitive
+        primitiveRegistry.registerPrimitive(PrimitiveNumbers::BLOCK_VALUE, BlockPrimitives::value);
+        
         // Step 2: Parse the expression
         SimpleParser parser(expression);
         auto methodAST = parser.parseMethod();
@@ -52,9 +58,15 @@ int main(int argc, char** argv) {
         
         std::cout << "Compiled: " << compiledMethod->toString() << '\n';
         
-        // Step 4: Execute the bytecode
-        SimpleVM vm;
-        TaggedValue result = vm.execute(*compiledMethod);
+        // Step 4: Execute using unified interpreter
+        MemoryManager memoryManager;
+        Interpreter interpreter(memoryManager);
+        
+        // Register block primitive
+        primitiveRegistry.registerPrimitive(PrimitiveNumbers::BLOCK_VALUE, BlockPrimitives::value);
+        
+        // Execute the compiled method
+        TaggedValue result = interpreter.executeCompiledMethod(*compiledMethod);
         
         // Step 5: Print the result
         if (StringUtils::isString(result)) {

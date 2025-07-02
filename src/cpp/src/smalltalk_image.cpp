@@ -1,7 +1,7 @@
 #include "smalltalk_image.h"
 #include "simple_parser.h"
 #include "simple_compiler.h"
-#include "simple_vm.h"
+#include "interpreter.h"
 #include "smalltalk_string.h"
 #include "symbol.h"
 #include "primitive_methods.h"
@@ -328,8 +328,9 @@ TaggedValue SmalltalkImage::evaluate(const std::string& code) {
         SimpleCompiler compiler;
         auto compiledMethod = compiler.compile(*methodAST);
         
-        SimpleVM vm;
-        return vm.execute(*compiledMethod);
+        MemoryManager memoryManager;
+        Interpreter interpreter(memoryManager);
+        return interpreter.executeCompiledMethod(*compiledMethod);
         
     } catch (const std::exception& e) {
         std::cerr << "Error evaluating code: " << e.what() << std::endl;

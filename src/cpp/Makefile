@@ -8,7 +8,7 @@ TEST_DIR = tests
 
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -I$(INCLUDE_DIR)
+CXXFLAGS = -std=c++17 -Wall -Wextra -I$(INCLUDE_DIR) -arch x86_64
 LDFLAGS =
 
 # Debug build flags
@@ -46,13 +46,22 @@ IMAGE_TOOL = $(BUILD_DIR)/image-tool
 # Test executable
 TEST_EXECUTABLE = $(BUILD_DIR)/run-tests
 
+# Library
+LIBRARY = $(BUILD_DIR)/lib/libsmalltalk_vm.a
+
 # Default target
-all: create_dirs $(EXECUTABLE) $(REPL_EXECUTABLE) $(IMAGE_TOOL)
+all: create_dirs $(LIBRARY) $(EXECUTABLE) $(REPL_EXECUTABLE) $(IMAGE_TOOL)
 
 # Create build directories
 create_dirs:
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(BUILD_DIR)/tests
+	@mkdir -p $(BUILD_DIR)/lib
+
+# Build the main library
+$(LIBRARY): $(OBJECTS)
+	@mkdir -p $(dir $@)
+	ar rcs $@ $^
 
 # Build the main executable
 $(EXECUTABLE): $(OBJECTS) $(BUILD_DIR)/main.o
@@ -84,8 +93,8 @@ test: create_dirs $(TEST_EXECUTABLE)
 	./$(TEST_EXECUTABLE)
 
 # Build the test executable
-$(TEST_EXECUTABLE): $(TEST_OBJECTS) $(filter-out $(BUILD_DIR)/main.o, $(OBJECTS))
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@ -lgtest -lgtest_main -pthread
+$(TEST_EXECUTABLE): $(TEST_DIR)/all_expressions_test.cpp $(LIBRARY)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $< -o $@ -L$(BUILD_DIR)/lib -lsmalltalk_vm
 
 # Compile test files
 $(BUILD_DIR)/tests/%.o: $(TEST_DIR)/%.cpp
@@ -112,4 +121,20 @@ install_gtest_mac:
 repl: $(REPL_EXECUTABLE)
 	./$(REPL_EXECUTABLE)
 
-.PHONY: all create_dirs test clean rebuild install_gtest install_gtest_mac repl
+# Run all tests
+test-all: all
+	./run_all_tests.sh
+
+# Run tests with verbose output
+test-verbose: all
+	VERBOSE=1 ./run_all_tests.sh
+
+# Run expression demos
+expressions: all
+	./run_expressions.sh
+
+# Run expression with details
+expressions-verbose: all
+	SHOW_DETAILS=1 ./run_expressions.sh
+
+.PHONY: all create_dirs test clean rebuild install_gtest install_gtest_mac repl test-all test-verbose expressions expressions-verbose
