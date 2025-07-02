@@ -1,0 +1,71 @@
+# Simple Makefile for testing the new simplified object model
+# Usage: make -f Makefile.simple_test
+
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra -g -O0 -I./include
+LDFLAGS =
+
+# Source files
+TEST_SRC = tests/test_simple_object_model.cpp
+HEADERS = include/simple_object.h include/simple_tagged_value.h include/vm_support.h
+
+# Output
+TEST_EXECUTABLE = test_simple_object_model
+
+.PHONY: all test clean
+
+all: $(TEST_EXECUTABLE)
+
+$(TEST_EXECUTABLE): $(TEST_SRC) $(HEADERS)
+	@echo "Compiling simplified object model test..."
+	$(CXX) $(CXXFLAGS) -o $(TEST_EXECUTABLE) $(TEST_SRC) $(LDFLAGS)
+	@echo "✓ Compilation successful"
+
+test: $(TEST_EXECUTABLE)
+	@echo "Running simplified object model tests..."
+	./$(TEST_EXECUTABLE)
+
+run: test
+
+clean:
+	@echo "Cleaning up..."
+	rm -f $(TEST_EXECUTABLE)
+	@echo "✓ Clean complete"
+
+# Debug build with more verbose output
+debug: CXXFLAGS += -DDEBUG -fsanitize=address -fsanitize=undefined
+debug: LDFLAGS += -fsanitize=address -fsanitize=undefined
+debug: $(TEST_EXECUTABLE)
+	@echo "✓ Debug build complete (with AddressSanitizer)"
+
+# Check compilation only (useful for quick syntax checking)
+check: $(TEST_SRC) $(HEADERS)
+	@echo "Checking compilation..."
+	$(CXX) $(CXXFLAGS) -fsyntax-only $(TEST_SRC)
+	@echo "✓ Syntax check passed"
+
+# Show info about the new architecture
+info:
+	@echo ""
+	@echo "=== Simplified Smalltalk Object Model ==="
+	@echo ""
+	@echo "Key Improvements:"
+	@echo "• TaggedValue for immediates (nil, booleans, integers, floats)"
+	@echo "• Uniform Object struct for ALL heap objects"
+	@echo "• No C++ inheritance hierarchy - behavior based on Smalltalk class"
+	@echo "• Simplified memory layout and GC traversal"
+	@echo "• VM operations based on Smalltalk class, not C++ type"
+	@echo ""
+	@echo "Files:"
+	@echo "• include/simple_object.h        - Uniform Object struct"
+	@echo "• include/simple_tagged_value.h  - Immediate values only"
+	@echo "• include/vm_support.h           - VM integration helpers"
+	@echo "• tests/test_simple_object_model.cpp - Demonstration tests"
+	@echo ""
+	@echo "Usage:"
+	@echo "  make -f Makefile.simple_test test    # Run tests"
+	@echo "  make -f Makefile.simple_test debug   # Debug build with sanitizers"
+	@echo "  make -f Makefile.simple_test check   # Syntax check only"
+	@echo ""
+
+help: info
