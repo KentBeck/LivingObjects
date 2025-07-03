@@ -8,7 +8,7 @@ TEST_DIR = tests
 
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -I$(INCLUDE_DIR) -arch x86_64
+CXXFLAGS = -std=c++17 -Wall -Wextra -I$(INCLUDE_DIR)
 LDFLAGS =
 
 # Debug build flags
