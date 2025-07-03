@@ -35,10 +35,16 @@ std::vector<Symbol*> MethodDictionary::getSelectors() const {
 
 // Class implementation
 Class::Class(const std::string& name, Class* superclass, Class* metaclass)
-    : Object(ObjectType::CLASS, sizeof(Class), nullptr), name_(name), superclass_(superclass), metaclass_(metaclass) {
+    : Object(ObjectType::CLASS, sizeof(Class), nullptr), 
+      name_(name), 
+      superclass_(superclass), 
+      metaclass_(metaclass),
+      instanceSize_(0),
+      format_(ObjectFormat::POINTER_OBJECTS) {
     
-    // Register with superclass
+    // Calculate instance size from superclass chain
     if (superclass_ != nullptr) {
+        instanceSize_ = superclass_->getInstanceSize();
         superclass_->addSubclass(this);
     }
 }
@@ -72,6 +78,7 @@ bool Class::hasMethod(Symbol* selector) const {
 
 void Class::addInstanceVariable(const std::string& name) {
     instanceVariables_.push_back(name);
+    instanceSize_++;
 }
 
 int Class::getInstanceVariableIndex(const std::string& name) const {
@@ -87,9 +94,42 @@ void Class::addClassVariable(const std::string& name) {
 }
 
 Object* Class::createInstance() const {
-    // Default implementation creates a basic Object
-    // Subclasses should override this to create specific types
-    return new Object(ObjectType::OBJECT, sizeof(Object), const_cast<Class*>(this));
+    return createInstance(0);
+}
+
+Object* Class::createInstance(size_t indexedSize) const {
+    // Calculate total size needed
+    size_t totalSize = sizeof(Object);
+    
+    if (format_ == ObjectFormat::POINTER_OBJECTS) {
+        // Named instance variables + indexed slots (if any)
+        totalSize += (instanceSize_ + indexedSize) * sizeof(Object*);
+    } else if (format_ == ObjectFormat::INDEXABLE_OBJECTS) {
+        // Named instance variables + indexed object slots
+        totalSize += instanceSize_ * sizeof(Object*) + indexedSize * sizeof(Object*);
+    } else if (format_ == ObjectFormat::BYTE_INDEXABLE) {
+        // Named instance variables + byte data
+        totalSize += instanceSize_ * sizeof(Object*) + indexedSize;
+    }
+    
+    // Allocate the object
+    Object* obj = reinterpret_cast<Object*>(malloc(totalSize));
+    if (obj == nullptr) {
+        throw std::runtime_error("Failed to allocate memory for object");
+    }
+    
+    // Initialize the object
+    new (obj) Object(ObjectType::OBJECT, totalSize, const_cast<Class*>(this));
+    
+    // Clear instance variable slots
+    if (instanceSize_ > 0 || indexedSize > 0) {
+        Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(obj) + sizeof(Object));
+        for (size_t i = 0; i < instanceSize_ + indexedSize; ++i) {
+            slots[i] = nullptr;
+        }
+    }
+    
+    return obj;
 }
 
 bool Class::isSubclassOf(const Class* other) const {
@@ -231,10 +271,14 @@ namespace ClassUtils {
         
         // Create Object class first (root of hierarchy)
         objectClass = new Class("Object", nullptr, nullptr);
+        objectClass->setInstanceSize(0);  // Object has no instance variables
+        objectClass->setFormat(ObjectFormat::POINTER_OBJECTS);
         registry.registerClass("Object", objectClass);
         
         // Create Class class
         classClass = new Class("Class", objectClass, nullptr);
+        classClass->setInstanceSize(0);  // Class metadata is handled internally
+        classClass->setFormat(ObjectFormat::POINTER_OBJECTS);
         registry.registerClass("Class", classClass);
         
         // Set Object's class to be Class
@@ -242,6 +286,8 @@ namespace ClassUtils {
         
         // Create Metaclass class
         metaclassClass = new Metaclass("Metaclass", classClass, classClass);
+        metaclassClass->setInstanceSize(0);
+        metaclassClass->setFormat(ObjectFormat::POINTER_OBJECTS);
         registry.registerClass("Metaclass", metaclassClass);
         
         // Set Class's class to be Metaclass
@@ -249,23 +295,45 @@ namespace ClassUtils {
         
         // Create Integer class
         integerClass = new Class("Integer", objectClass, nullptr);
+        integerClass->setInstanceSize(0);  // Integers are immediate values
+        integerClass->setFormat(ObjectFormat::POINTER_OBJECTS);
         integerClass->setClass(classClass);
         registry.registerClass("Integer", integerClass);
         
         // Create Boolean class
         booleanClass = new Class("Boolean", objectClass, nullptr);
+        booleanClass->setInstanceSize(0);  // Booleans are immediate values
+        booleanClass->setFormat(ObjectFormat::POINTER_OBJECTS);
         booleanClass->setClass(classClass);
         registry.registerClass("Boolean", booleanClass);
         
         // Create Symbol class
         symbolClass = new Class("Symbol", objectClass, nullptr);
+        symbolClass->setInstanceSize(0);  // Symbol data is managed internally
+        symbolClass->setFormat(ObjectFormat::POINTER_OBJECTS);
         symbolClass->setClass(classClass);
         registry.registerClass("Symbol", symbolClass);
         
-        // Create String class
+        // Create String class - byte indexable for character data
         stringClass = new Class("String", objectClass, nullptr);
+        stringClass->setInstanceSize(0);  // No named instance variables
+        stringClass->setFormat(ObjectFormat::BYTE_INDEXABLE);
         stringClass->setClass(classClass);
         registry.registerClass("String", stringClass);
+        
+        // Create Array class - indexable for elements
+        Class* arrayClass = new Class("Array", objectClass, nullptr);
+        arrayClass->setInstanceSize(0);  // No named instance variables
+        arrayClass->setFormat(ObjectFormat::INDEXABLE_OBJECTS);
+        arrayClass->setClass(classClass);
+        registry.registerClass("Array", arrayClass);
+        
+        // Create ByteArray class - byte indexable
+        Class* byteArrayClass = new Class("ByteArray", objectClass, nullptr);
+        byteArrayClass->setInstanceSize(0);  // No named instance variables
+        byteArrayClass->setFormat(ObjectFormat::BYTE_INDEXABLE);
+        byteArrayClass->setClass(classClass);
+        registry.registerClass("ByteArray", byteArrayClass);
     }
     
     Class* getObjectClass() { return objectClass; }

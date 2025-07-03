@@ -9,6 +9,9 @@
 
 namespace smalltalk {
 
+// Forward declaration
+class Class;
+
 /**
  * MemoryManager handles object allocation and garbage collection.
  * 
@@ -48,6 +51,32 @@ public:
      * @return A pointer to the allocated object.
      */
     Object* allocateObject(ObjectType type, size_t size);
+    
+    /**
+     * Allocates a new instance of the specified class.
+     * 
+     * @param clazz The class to create an instance of.
+     * @return A pointer to the allocated instance.
+     */
+    Object* allocateInstance(Class* clazz);
+    
+    /**
+     * Allocates a new indexable instance of the specified class.
+     * 
+     * @param clazz The class to create an instance of.
+     * @param indexedSize The number of indexed slots.
+     * @return A pointer to the allocated instance.
+     */
+    Object* allocateIndexableInstance(Class* clazz, size_t indexedSize);
+    
+    /**
+     * Allocates a new byte-indexable instance of the specified class.
+     * 
+     * @param clazz The class to create an instance of.
+     * @param byteSize The number of bytes in the indexed portion.
+     * @return A pointer to the allocated instance.
+     */
+    Object* allocateByteIndexableInstance(Class* clazz, size_t byteSize);
     
     /**
      * Allocates a byte array of the specified size.

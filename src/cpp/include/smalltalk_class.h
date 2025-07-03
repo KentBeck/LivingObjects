@@ -49,6 +49,16 @@ private:
 };
 
 /**
+ * Object format flags for different types of objects
+ */
+enum class ObjectFormat : uint8_t {
+    POINTER_OBJECTS = 0,    // Regular objects with named instance variables
+    INDEXABLE_OBJECTS = 1,  // Objects with indexed slots (like Array)
+    BYTE_INDEXABLE = 2,     // Objects with byte-indexed data (like ByteArray, String)
+    COMPILED_METHOD = 3     // Special format for compiled methods
+};
+
+/**
  * Class represents a Smalltalk class.
  * Contains method dictionary, superclass, instance variables, etc.
  */
@@ -93,8 +103,29 @@ public:
     void addClassVariable(const std::string& name);
     const std::vector<std::string>& getClassVariables() const { return classVariables_; }
     
+    // Instance size and format
+    size_t getInstanceSize() const { return instanceSize_; }
+    void setInstanceSize(size_t size) { instanceSize_ = size; }
+    
+    ObjectFormat getFormat() const { return format_; }
+    void setFormat(ObjectFormat format) { format_ = format; }
+    
+    bool isIndexable() const { 
+        return format_ == ObjectFormat::INDEXABLE_OBJECTS || 
+               format_ == ObjectFormat::BYTE_INDEXABLE; 
+    }
+    
+    bool isByteIndexable() const { 
+        return format_ == ObjectFormat::BYTE_INDEXABLE; 
+    }
+    
+    bool isPointerFormat() const {
+        return format_ == ObjectFormat::POINTER_OBJECTS;
+    }
+    
     // Object creation
     virtual Object* createInstance() const;
+    virtual Object* createInstance(size_t indexedSize) const;
     
     // Inheritance testing
     bool isSubclassOf(const Class* other) const;
@@ -116,6 +147,10 @@ private:
     
     std::vector<std::string> instanceVariables_;
     std::vector<std::string> classVariables_;
+    
+    // Instance format information
+    size_t instanceSize_;           // Number of named instance variables
+    ObjectFormat format_;           // How instances are formatted
     
     // Keep track of direct subclasses
     mutable std::vector<Class*> subclasses_;

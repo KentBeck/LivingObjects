@@ -1,4 +1,5 @@
 #include "memory_manager.h"
+#include "smalltalk_class.h"
 
 #include <algorithm>
 #include <cstring>
@@ -53,6 +54,149 @@ Object* MemoryManager::allocateObject(ObjectType type, size_t size) {
     // Allocate the object
     Object* obj = static_cast<Object*>(currentAllocation);
     new (obj) Object(type, size);
+    
+    // Update allocation pointer
+    currentAllocation = static_cast<char*>(currentAllocation) + requiredBytes;
+    
+    return obj;
+}
+
+Object* MemoryManager::allocateInstance(Class* clazz) {
+    if (clazz == nullptr) {
+        throw std::runtime_error("Cannot allocate instance of null class");
+    }
+    
+    size_t instanceSize = clazz->getInstanceSize();
+    size_t requiredBytes = sizeof(Object) + (instanceSize * sizeof(Object*));
+    
+    // Check if there's enough space
+    size_t remainingSpace = static_cast<size_t>(
+        static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+    );
+    
+    if (remainingSpace < requiredBytes) {
+        collectGarbage();
+        remainingSpace = static_cast<size_t>(
+            static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+        );
+        
+        if (remainingSpace < requiredBytes) {
+            throw std::runtime_error("Out of memory");
+        }
+    }
+    
+    // Allocate the object
+    Object* obj = static_cast<Object*>(currentAllocation);
+    new (obj) Object(ObjectType::OBJECT, instanceSize, clazz);
+    
+    // Initialize instance variable slots to null
+    if (instanceSize > 0) {
+        Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(obj) + sizeof(Object));
+        for (size_t i = 0; i < instanceSize; i++) {
+            slots[i] = nullptr;
+        }
+    }
+    
+    // Update allocation pointer
+    currentAllocation = static_cast<char*>(currentAllocation) + requiredBytes;
+    
+    return obj;
+}
+
+Object* MemoryManager::allocateIndexableInstance(Class* clazz, size_t indexedSize) {
+    if (clazz == nullptr) {
+        throw std::runtime_error("Cannot allocate instance of null class");
+    }
+    
+    if (!clazz->isIndexable()) {
+        throw std::runtime_error("Class is not indexable");
+    }
+    
+    size_t instanceSize = clazz->getInstanceSize();
+    size_t totalSlots = instanceSize + indexedSize;
+    size_t requiredBytes = sizeof(Object) + (totalSlots * sizeof(Object*));
+    
+    // Check if there's enough space
+    size_t remainingSpace = static_cast<size_t>(
+        static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+    );
+    
+    if (remainingSpace < requiredBytes) {
+        collectGarbage();
+        remainingSpace = static_cast<size_t>(
+            static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+        );
+        
+        if (remainingSpace < requiredBytes) {
+            throw std::runtime_error("Out of memory");
+        }
+    }
+    
+    // Allocate the object
+    Object* obj = static_cast<Object*>(currentAllocation);
+    new (obj) Object(ObjectType::ARRAY, totalSlots, clazz);
+    
+    // Initialize all slots to null
+    if (totalSlots > 0) {
+        Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(obj) + sizeof(Object));
+        for (size_t i = 0; i < totalSlots; i++) {
+            slots[i] = nullptr;
+        }
+    }
+    
+    // Update allocation pointer
+    currentAllocation = static_cast<char*>(currentAllocation) + requiredBytes;
+    
+    return obj;
+}
+
+Object* MemoryManager::allocateByteIndexableInstance(Class* clazz, size_t byteSize) {
+    if (clazz == nullptr) {
+        throw std::runtime_error("Cannot allocate instance of null class");
+    }
+    
+    if (!clazz->isByteIndexable()) {
+        throw std::runtime_error("Class is not byte indexable");
+    }
+    
+    size_t instanceSize = clazz->getInstanceSize();
+    // Align byte data to pointer boundaries
+    size_t alignedByteSize = (byteSize + sizeof(Object*) - 1) & ~(sizeof(Object*) - 1);
+    size_t requiredBytes = sizeof(Object) + (instanceSize * sizeof(Object*)) + alignedByteSize;
+    
+    // Check if there's enough space
+    size_t remainingSpace = static_cast<size_t>(
+        static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+    );
+    
+    if (remainingSpace < requiredBytes) {
+        collectGarbage();
+        remainingSpace = static_cast<size_t>(
+            static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
+        );
+        
+        if (remainingSpace < requiredBytes) {
+            throw std::runtime_error("Out of memory");
+        }
+    }
+    
+    // Allocate the object
+    Object* obj = static_cast<Object*>(currentAllocation);
+    new (obj) Object(ObjectType::BYTE_ARRAY, byteSize, clazz);
+    
+    // Initialize instance variable slots to null
+    if (instanceSize > 0) {
+        Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(obj) + sizeof(Object));
+        for (size_t i = 0; i < instanceSize; i++) {
+            slots[i] = nullptr;
+        }
+    }
+    
+    // Initialize byte data to zero
+    if (byteSize > 0) {
+        char* byteData = reinterpret_cast<char*>(obj) + sizeof(Object) + (instanceSize * sizeof(Object*));
+        memset(byteData, 0, byteSize);
+    }
     
     // Update allocation pointer
     currentAllocation = static_cast<char*>(currentAllocation) + requiredBytes;
