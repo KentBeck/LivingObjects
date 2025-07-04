@@ -90,9 +90,6 @@ private:
     // Helper for primitive operations
     TaggedValue performOperation(const TaggedValue& left, const TaggedValue& right, const TaggedValue& selector);
     
-    // Method lookup
-    Object* lookupMethod(Object* receiver, Object* selector);
-    
     // Context switching
     void switchContext(MethodContext* newContext);
     

@@ -645,12 +645,7 @@ Class* Interpreter::getObjectClass(TaggedValue value) {
 
 // Temporarily removed - will implement proper message send parsing later
 
-Object* Interpreter::lookupMethod(Object* receiver, Object* selector) {
-    // Not implemented in this basic version
-    (void)receiver; // Suppress unused parameter warning
-    (void)selector; // Suppress unused parameter warning
-    return nullptr;
-}
+
 
 void Interpreter::switchContext(MethodContext* newContext) {
     // Set the new active context
