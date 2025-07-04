@@ -237,54 +237,6 @@ namespace smalltalk
         return stack.empty() ? TaggedValue() : stack.back();
     }
 
-    TaggedValue Interpreter::performOperation(const TaggedValue &left, const TaggedValue &right, const TaggedValue &selector)
-    {
-        if (!selector.isPointer())
-            return TaggedValue();
-
-        // Try to get the selector as a symbol and extract the operator string
-        std::string op;
-        try
-        {
-            Symbol *sym = selector.asSymbol();
-            op = sym->toString();
-        }
-        catch (...)
-        {
-            // If it's not a symbol, try as a string or return nil
-            return TaggedValue();
-        }
-
-        if (left.isInteger() && right.isInteger())
-        {
-            int32_t l = left.asInteger();
-            int32_t r = right.asInteger();
-
-            if (op == "+" || op == "#+")
-                return TaggedValue(l + r);
-            if (op == "-" || op == "#-")
-                return TaggedValue(l - r);
-            if (op == "*" || op == "#*")
-                return TaggedValue(l * r);
-            if (op == "/" || op == "#/")
-                return TaggedValue(r != 0 ? l / r : 0);
-            if (op == "<" || op == "#<")
-                return l < r ? TaggedValue::trueValue() : TaggedValue::falseValue();
-            if (op == ">" || op == "#>")
-                return l > r ? TaggedValue::trueValue() : TaggedValue::falseValue();
-            if (op == "=" || op == "#=")
-                return l == r ? TaggedValue::trueValue() : TaggedValue::falseValue();
-            if (op == "~=" || op == "#~=")
-                return l != r ? TaggedValue::trueValue() : TaggedValue::falseValue();
-            if (op == "<=" || op == "#<=")
-                return l <= r ? TaggedValue::trueValue() : TaggedValue::falseValue();
-            if (op == ">=" || op == "#>=")
-                return l >= r ? TaggedValue::trueValue() : TaggedValue::falseValue();
-        }
-
-        return TaggedValue();
-    }
-
     void Interpreter::executeLoop()
     {
         executing = true;
