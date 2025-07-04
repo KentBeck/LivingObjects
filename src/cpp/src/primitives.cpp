@@ -43,11 +43,13 @@ void PrimitiveRegistry::clear() {
 void PrimitiveRegistry::initializeCorePrimitives() {
     // Forward declarations for primitive registration functions
     extern void registerObjectPrimitives();
+    extern void registerArrayPrimitives();
     extern void registerIntegerPrimitives();
     extern void registerBlockPrimitives();
     
     // Register all core primitive groups
     registerObjectPrimitives();
+    registerArrayPrimitives();
     // registerIntegerPrimitives(); // Will implement later
     // registerBlockPrimitives(); // Will implement later
 }

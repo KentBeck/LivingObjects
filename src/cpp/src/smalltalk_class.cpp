@@ -341,6 +341,14 @@ namespace ClassUtils {
         addPrimitiveMethod(objectClass, "basicNew:", 72);     // Object basicNew: size
         addPrimitiveMethod(objectClass, "identityHash", 75);  // Object identityHash
         addPrimitiveMethod(objectClass, "class", 111);        // Object class
+        
+        // Add class methods to Class class (for all classes)
+        addPrimitiveMethod(classClass, "new:", 72);           // Class new: size (for Array new:, etc.)
+        
+        // Add primitive methods to Array class (instance methods)
+        addPrimitiveMethod(arrayClass, "at:", 60);            // Array at: index
+        addPrimitiveMethod(arrayClass, "at:put:", 61);        // Array at: index put: value
+        addPrimitiveMethod(arrayClass, "size", 62);           // Array size
     }
     
     Class* getObjectClass() { return objectClass; }
