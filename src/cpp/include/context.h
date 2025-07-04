@@ -10,12 +10,12 @@ namespace smalltalk {
 enum class ContextType : uint8_t {
     METHOD_CONTEXT       = 0, // Method activation
     BLOCK_CONTEXT        = 1, // Block activation
-    SPECIAL_CONTEXT      = 2, // Primitive execution
+    STACK_CHUNK_BOUNDARY = 2, // Stack chunk marker
     RESERVED_3           = 3, // Reserved
     RESERVED_4           = 4, // Reserved
     RESERVED_5           = 5, // Reserved
     RESERVED_6           = 6, // Reserved
-    STACK_CHUNK_BOUNDARY = 7  // Stack chunk marker
+    RESERVED_7           = 7  // Reserved
 };
 
 
