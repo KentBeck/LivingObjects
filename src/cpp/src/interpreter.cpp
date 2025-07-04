@@ -181,7 +181,7 @@ namespace smalltalk
                 }
                 else
                 {
-                    result = TaggedValue(); // nil
+                    throw std::runtime_error("Invalid selector in SEND_MESSAGE: selector is not a pointer");
                 }
 
                 stack.push_back(result);
