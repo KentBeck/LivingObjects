@@ -1,5 +1,6 @@
 #include "simple_parser.h"
 #include "smalltalk_string.h"
+#include "smalltalk_class.h"
 
 #include <cctype>
 #include <iostream>
@@ -202,10 +203,19 @@ ASTNodePtr SimpleParser::parseIdentifierOrLiteral() {
         return std::make_unique<LiteralNode>(TaggedValue::falseValue());
     } else if (identifier == "nil") {
         return std::make_unique<LiteralNode>(TaggedValue::nil());
-    } else {
-        error("Unknown identifier: " + identifier);
-        return nullptr; // Never reached
     }
+    
+    // Check for global class names
+    ClassRegistry& registry = ClassRegistry::getInstance();
+    if (registry.hasClass(identifier)) {
+        Class* clazz = registry.getClass(identifier);
+        return std::make_unique<LiteralNode>(TaggedValue::fromObject(clazz));
+    }
+    
+    // For now, treat unrecognized identifiers as variables (temporary)
+    // In a full implementation, this would handle local variables, instance variables, etc.
+    error("Unknown identifier: " + identifier);
+    return nullptr; // Never reached
 }
 
 ASTNodePtr SimpleParser::parseString() {

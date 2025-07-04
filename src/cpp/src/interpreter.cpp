@@ -1,4 +1,8 @@
 #include "interpreter.h"
+#include "primitives.h"
+#include "smalltalk_class.h"
+#include "symbol.h"
+#include "simple_parser.h"
 
 #include <cstring>
 #include <stdexcept>
@@ -8,6 +12,13 @@ namespace smalltalk {
 
 Interpreter::Interpreter(MemoryManager& memory)
     : memoryManager(memory) {
+    // Initialize core classes and primitives on first use
+    static bool systemInitialized = false;
+    if (!systemInitialized) {
+        ClassUtils::initializeCoreClasses();
+        Primitives::initialize();
+        systemInitialized = true;
+    }
     // Initialize the stack chunk
     currentChunk = memoryManager.allocateStackChunk(1024);
 }
@@ -570,15 +581,69 @@ void Interpreter::handleExecuteBlock(uint32_t argCount) {
 }
 
 Object* Interpreter::sendMessage(Object* receiver, Object* selector, std::vector<Object*>& args) {
-    // Not fully implemented in this basic version
-    // In a real implementation, this would look up the method and execute it
-    (void)receiver; // Suppress unused parameter warning
-    (void)selector; // Suppress unused parameter warning
-    (void)args; // Suppress unused parameter warning
-
-    // For now, just return a new object
-    return memoryManager.allocateObject(ObjectType::OBJECT, 0);
+    // Convert to TaggedValue for new message sending
+    TaggedValue tvReceiver = TaggedValue::fromObject(receiver);
+    std::vector<TaggedValue> tvArgs;
+    for (Object* arg : args) {
+        tvArgs.push_back(TaggedValue::fromObject(arg));
+    }
+    
+    // Get selector string
+    std::string selectorString;
+    if (selector && selector->header.getType() == ObjectType::SYMBOL) {
+        // Symbol inherits from Object, so this cast is safe
+        Symbol* sym = reinterpret_cast<Symbol*>(selector);
+        selectorString = sym->getName();
+    } else {
+        throw std::runtime_error("Invalid selector in message send");
+    }
+    
+    TaggedValue result = sendMessage(tvReceiver, selectorString, tvArgs);
+    return result.asObject();
 }
+
+TaggedValue Interpreter::sendMessage(TaggedValue receiver, const std::string& selector, const std::vector<TaggedValue>& args) {
+    // Get receiver's class
+    Class* receiverClass = getObjectClass(receiver);
+    if (!receiverClass) {
+        throw std::runtime_error("Cannot determine receiver class");
+    }
+    
+    // Create selector symbol
+    Symbol* selectorSymbol = Symbol::intern(selector);
+    
+    // Look up method
+    std::shared_ptr<CompiledMethod> method = receiverClass->lookupMethod(selectorSymbol);
+    
+    if (method && method->primitiveNumber != 0) {
+        // Try primitive first
+        try {
+            return Primitives::callPrimitive(method->primitiveNumber, receiver, args, *this);
+        } catch (const PrimitiveFailure& e) {
+            // Fall back to Smalltalk code (not implemented yet)
+            throw std::runtime_error("Primitive failed and fallback not implemented: " + std::string(e.what()));
+        }
+    }
+    
+    // No method found or no primitive - error for now
+    throw std::runtime_error("Method not found: " + selector);
+}
+
+Class* Interpreter::getObjectClass(TaggedValue value) {
+    if (value.isSmallInteger()) {
+        return ClassUtils::getIntegerClass();
+    } else if (value.isBoolean()) {
+        return ClassUtils::getBooleanClass();
+    } else if (value.isNil()) {
+        return ClassRegistry::getInstance().getClass("UndefinedObject");
+    } else if (value.isPointer()) {
+        return value.asObject()->getClass();
+    }
+    
+    throw std::runtime_error("Unknown value type");
+}
+
+// Temporarily removed - will implement proper message send parsing later
 
 Object* Interpreter::lookupMethod(Object* receiver, Object* selector) {
     // Not implemented in this basic version

@@ -61,6 +61,12 @@ public:
     // Memory manager access
     MemoryManager& getMemoryManager() { return memoryManager; }
     
+    // TaggedValue message sending
+    TaggedValue sendMessage(TaggedValue receiver, const std::string& selector, const std::vector<TaggedValue>& args);
+    
+    // Get object class for TaggedValue
+    Class* getObjectClass(TaggedValue value);
+    
 private:
     // Memory manager
     MemoryManager& memoryManager;
@@ -77,6 +83,9 @@ private:
     
     // Helper for message sending
     Object* sendMessage(Object* receiver, Object* selector, std::vector<Object*>& args);
+    
+    // Simple evaluation method for testing (temporarily disabled)
+    // TaggedValue evaluate(const std::string& expression);
     
     // Helper for primitive operations
     TaggedValue performOperation(const TaggedValue& left, const TaggedValue& right, const TaggedValue& selector);

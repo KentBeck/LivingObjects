@@ -234,6 +234,9 @@ namespace ClassUtils {
     
     // Create a new metaclass
     Metaclass* createMetaclass(const std::string& name, Class* instanceClass, Class* superclass = nullptr);
+    
+    // Add a primitive method to a class
+    void addPrimitiveMethod(Class* clazz, const std::string& selector, int primitiveNumber);
 }
 
 } // namespace smalltalk

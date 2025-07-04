@@ -221,9 +221,9 @@ void SmalltalkImage::initializeFreshImage() {
     auto& primitiveRegistry = PrimitiveRegistry::getInstance();
     primitiveRegistry.initializeCorePrimitives();
     
-    // Add primitive methods to Integer class
-    Class* integerClass = ClassUtils::getIntegerClass();
-    IntegerClassSetup::addPrimitiveMethods(integerClass);
+    // Add primitive methods to Integer class (temporarily disabled)
+    // Class* integerClass = ClassUtils::getIntegerClass();
+    // IntegerClassSetup::addPrimitiveMethods(integerClass);
     
     // Set up global bindings
     // Set up basic globals

@@ -98,11 +98,18 @@ public:
     static TaggedValue trueValue() { return TaggedValue(SPECIAL_TRUE); }
     static TaggedValue falseValue() { return TaggedValue(SPECIAL_FALSE); }
     
+    // Factory methods
+    static TaggedValue fromObject(Object* object) { return TaggedValue(object); }
+    static TaggedValue fromSmallInteger(int32_t value) { return TaggedValue(value); }
+    static TaggedValue fromFloat(double value) { return TaggedValue(value); }
+    static TaggedValue fromBoolean(bool value) { return value ? trueValue() : falseValue(); }
+    
     // Type checking
     bool isPointer() const { return (value & TAG_MASK) == POINTER_TAG; }
     bool isSpecial() const { return (value & TAG_MASK) == SPECIAL_TAG; }
     bool isFloat() const { return (value & TAG_MASK) == FLOAT_TAG; }
     bool isInteger() const { return (value & TAG_MASK) == INTEGER_TAG; }
+    bool isSmallInteger() const { return isInteger(); }
     
     bool isNil() const { return value == SPECIAL_NIL; }
     bool isTrue() const { return value == SPECIAL_TRUE; }
@@ -137,6 +144,14 @@ public:
         }
         // Shift right to remove tag bits, then sign-extend
         return static_cast<int32_t>(value >> 2);
+    }
+    
+    int32_t getSmallInteger() const {
+        return asInteger();
+    }
+    
+    bool getBoolean() const {
+        return asBoolean();
     }
     
     double asFloat() const {

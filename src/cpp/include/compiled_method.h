@@ -17,63 +17,70 @@ public:
     CompiledMethod() = default;
     virtual ~CompiledMethod() = default;
     
+    // Primitive number (0 if no primitive)
+    int primitiveNumber = 0;
+    
+    // Bytecodes and literals (public for easy access)
+    std::vector<uint8_t> bytecodes;
+    std::vector<TaggedValue> literals;
+    
     // Add bytecode
     void addBytecode(uint8_t bytecode) {
-        bytecodes_.push_back(bytecode);
+        bytecodes.push_back(bytecode);
     }
     
     // Add a 4-byte operand (little-endian)
     void addOperand(uint32_t operand) {
-        bytecodes_.push_back(static_cast<uint8_t>(operand & 0xFF));
-        bytecodes_.push_back(static_cast<uint8_t>((operand >> 8) & 0xFF));
-        bytecodes_.push_back(static_cast<uint8_t>((operand >> 16) & 0xFF));
-        bytecodes_.push_back(static_cast<uint8_t>((operand >> 24) & 0xFF));
+        bytecodes.push_back(static_cast<uint8_t>(operand & 0xFF));
+        bytecodes.push_back(static_cast<uint8_t>((operand >> 8) & 0xFF));
+        bytecodes.push_back(static_cast<uint8_t>((operand >> 16) & 0xFF));
+        bytecodes.push_back(static_cast<uint8_t>((operand >> 24) & 0xFF));
     }
     
     // Add a literal value and return its index
     uint32_t addLiteral(TaggedValue value) {
-        uint32_t index = static_cast<uint32_t>(literals_.size());
-        literals_.push_back(value);
+        uint32_t index = static_cast<uint32_t>(literals.size());
+        literals.push_back(value);
         return index;
     }
     
     // Getters
-    const std::vector<uint8_t>& getBytecodes() const { return bytecodes_; }
-    const std::vector<TaggedValue>& getLiterals() const { return literals_; }
+    const std::vector<uint8_t>& getBytecodes() const { return bytecodes; }
+    const std::vector<TaggedValue>& getLiterals() const { return literals; }
     
     // Get literal by index
     TaggedValue getLiteral(uint32_t index) const {
-        if (index >= literals_.size()) {
+        if (index >= literals.size()) {
             throw std::runtime_error("Literal index out of bounds");
         }
-        return literals_[index];
+        return literals[index];
     }
     
     // Debug output
     virtual std::string toString() const {
         std::string result = "CompiledMethod {\n";
         result += "  Bytecodes: [";
-        for (size_t i = 0; i < bytecodes_.size(); ++i) {
+        for (size_t i = 0; i < bytecodes.size(); ++i) {
             if (i > 0) result += ", ";
-            result += std::to_string(static_cast<int>(bytecodes_[i]));
+            result += std::to_string(static_cast<int>(bytecodes[i]));
         }
         result += "]\n";
         
         result += "  Literals: [";
-        for (size_t i = 0; i < literals_.size(); ++i) {
+        for (size_t i = 0; i < literals.size(); ++i) {
             if (i > 0) result += ", ";
-            if (literals_[i].isNil()) {
+            if (literals[i].isNil()) {
                 result += "nil";
-            } else if (literals_[i].isBoolean()) {
-                result += literals_[i].asBoolean() ? "true" : "false";
-            } else if (literals_[i].isInteger()) {
-                result += std::to_string(literals_[i].asInteger());
-            } else if (literals_[i].isPointer()) {
+            } else if (literals[i].isBoolean()) {
+                result += literals[i].asBoolean() ? "true" : "false";
+            } else if (literals[i].isInteger()) {
+                result += std::to_string(literals[i].asInteger());
+            } else if (literals[i].isPointer()) {
                 try {
-                    Symbol* symbol = literals_[i].asSymbol();
+                    Symbol* symbol = literals[i].asSymbol();
                     result += symbol->toString();
                 } catch (...) {
-                    result += "Object@" + std::to_string(reinterpret_cast<uintptr_t>(literals_[i].asPointer()));
+                    result += "Object@" + std::to_string(reinterpret_cast<uintptr_t>(literals[i].asPointer()));
                 }
             } else {
                 result += "?";
@@ -84,10 +91,7 @@ public:
         
         return result;
     }
-    
-private:
-    std::vector<uint8_t> bytecodes_;
-    std::vector<TaggedValue> literals_;
+
 };
 
 } // namespace smalltalk

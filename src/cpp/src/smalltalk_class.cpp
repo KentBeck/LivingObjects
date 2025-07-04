@@ -334,6 +334,13 @@ namespace ClassUtils {
         byteArrayClass->setFormat(ObjectFormat::BYTE_INDEXABLE);
         byteArrayClass->setClass(classClass);
         registry.registerClass("ByteArray", byteArrayClass);
+        
+        // Add primitive methods to Object class
+        addPrimitiveMethod(objectClass, "new", 70);           // Object new
+        addPrimitiveMethod(objectClass, "basicNew", 71);      // Object basicNew
+        addPrimitiveMethod(objectClass, "basicNew:", 72);     // Object basicNew: size
+        addPrimitiveMethod(objectClass, "identityHash", 75);  // Object identityHash
+        addPrimitiveMethod(objectClass, "class", 111);        // Object class
     }
     
     Class* getObjectClass() { return objectClass; }
@@ -343,6 +350,22 @@ namespace ClassUtils {
     Class* getBooleanClass() { return booleanClass; }
     Class* getSymbolClass() { return symbolClass; }
     Class* getStringClass() { return stringClass; }
+    
+    void addPrimitiveMethod(Class* clazz, const std::string& selector, int primitiveNumber);
+    
+    void addPrimitiveMethod(Class* clazz, const std::string& selector, int primitiveNumber) {
+        // Create a compiled method with the primitive
+        auto method = std::make_shared<CompiledMethod>();
+        method->primitiveNumber = primitiveNumber;
+        method->bytecodes.clear(); // No bytecode needed for primitives
+        method->literals.clear();
+        
+        // Create selector symbol
+        Symbol* selectorSymbol = Symbol::intern(selector);
+        
+        // Add method to class
+        clazz->addMethod(selectorSymbol, method);
+    }
     
     Class* createClass(const std::string& name, Class* superclass) {
         if (superclass == nullptr) {
