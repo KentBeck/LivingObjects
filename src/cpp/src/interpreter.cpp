@@ -227,9 +227,7 @@ namespace smalltalk
             }
 
             default:
-                // Skip unknown instructions
-                ip++;
-                break;
+                throw std::runtime_error("Unknown bytecode: " + std::to_string(static_cast<int>(instruction)));
             }
         }
 
