@@ -291,9 +291,9 @@ int main()
         {"'hello'", "hello", true, "strings"},
         {"'world'", "world", true, "strings"},
 
-        // String operations - SHOULD FAIL (not implemented)
-        {"'hello' , ' world'", "hello world", false, "string_operations"},
-        {"'hello' size", "5", false, "string_operations"},
+        // String operations - SHOULD PASS (now implemented!)
+        {"'hello' , ' world'", "hello world", true, "string_operations"},
+        {"'hello' size", "5", true, "string_operations"},
 
         // Literals - SHOULD PASS (now implemented)
         {"true", "true", true, "literals"},
@@ -436,6 +436,11 @@ int main()
                     else if (result.isNil())
                     {
                         resultStr = "nil";
+                    }
+                    else if (StringUtils::isString(result))
+                    {
+                        String *str = StringUtils::asString(result);
+                        resultStr = str->getContent(); // Get content without quotes for comparison
                     }
                     else
                     {
