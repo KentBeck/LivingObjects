@@ -38,7 +38,7 @@ public:
     }
     
 private:
-    explicit Symbol(const std::string& name) : name_(name) {}
+    explicit Symbol(std::string name) : name_(std::move(name)) {}
     
     std::string name_;
     

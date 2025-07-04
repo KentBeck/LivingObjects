@@ -23,7 +23,7 @@ using PrimitiveFunction = std::function<TaggedValue(TaggedValue receiver, const 
  */
 class PrimitiveFailure : public std::exception {
 public:
-    explicit PrimitiveFailure(const std::string& message) : message_(message) {}
+    explicit PrimitiveFailure(std::string message) : message_(std::move(message)) {}
     const char* what() const noexcept override { return message_.c_str(); }
     
 private:

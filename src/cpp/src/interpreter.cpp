@@ -520,7 +520,7 @@ void Interpreter::handleCreateBlock(uint32_t bytecodeSize, uint32_t literalCount
 
     // Get the current context as the home context for the block
     MethodContext* homeContext = activeContext;
-    if (!homeContext) {
+    if (homeContext == nullptr) {
         throw std::runtime_error("Cannot create block without an active context");
     }
 
@@ -584,13 +584,14 @@ Object* Interpreter::sendMessage(Object* receiver, Object* selector, std::vector
     // Convert to TaggedValue for new message sending
     TaggedValue tvReceiver = TaggedValue::fromObject(receiver);
     std::vector<TaggedValue> tvArgs;
+    tvArgs.reserve(args.size());
     for (Object* arg : args) {
         tvArgs.push_back(TaggedValue::fromObject(arg));
     }
     
     // Get selector string
     std::string selectorString;
-    if (selector && selector->header.getType() == ObjectType::SYMBOL) {
+    if (selector != nullptr && selector->header.getType() == ObjectType::SYMBOL) {
         // Symbol inherits from Object, so this cast is safe
         Symbol* sym = reinterpret_cast<Symbol*>(selector);
         selectorString = sym->getName();
@@ -605,7 +606,7 @@ Object* Interpreter::sendMessage(Object* receiver, Object* selector, std::vector
 TaggedValue Interpreter::sendMessage(TaggedValue receiver, const std::string& selector, const std::vector<TaggedValue>& args) {
     // Get receiver's class
     Class* receiverClass = getObjectClass(receiver);
-    if (!receiverClass) {
+    if (receiverClass == nullptr) {
         throw std::runtime_error("Cannot determine receiver class");
     }
     
@@ -632,11 +633,14 @@ TaggedValue Interpreter::sendMessage(TaggedValue receiver, const std::string& se
 Class* Interpreter::getObjectClass(TaggedValue value) {
     if (value.isSmallInteger()) {
         return ClassUtils::getIntegerClass();
-    } else if (value.isBoolean()) {
+    }
+    if (value.isBoolean()) {
         return ClassUtils::getBooleanClass();
-    } else if (value.isNil()) {
+    }
+    if (value.isNil()) {
         return ClassRegistry::getInstance().getClass("UndefinedObject");
-    } else if (value.isPointer()) {
+    }
+    if (value.isPointer()) {
         return value.asObject()->getClass();
     }
     

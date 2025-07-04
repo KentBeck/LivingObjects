@@ -43,7 +43,7 @@ public:
     // Create from pointer
     explicit TaggedValue(void* ptr) {
         // Ensure pointer is aligned to at least 4 bytes
-        if (reinterpret_cast<uintptr_t>(ptr) & TAG_MASK) {
+        if ((reinterpret_cast<uintptr_t>(ptr) & TAG_MASK) != 0) {
             throw std::runtime_error("Pointer not properly aligned for tagging");
         }
         value = reinterpret_cast<uintptr_t>(ptr) | POINTER_TAG;
@@ -52,7 +52,7 @@ public:
     // Create from Symbol pointer
     explicit TaggedValue(Symbol* symbol) {
         // Ensure pointer is aligned to at least 4 bytes
-        if (reinterpret_cast<uintptr_t>(symbol) & TAG_MASK) {
+        if ((reinterpret_cast<uintptr_t>(symbol) & TAG_MASK) != 0) {
             throw std::runtime_error("Symbol pointer not properly aligned for tagging");
         }
         value = reinterpret_cast<uintptr_t>(symbol) | POINTER_TAG;
@@ -61,16 +61,16 @@ public:
     // Create from Object pointer
     explicit TaggedValue(Object* object) {
         // Ensure pointer is aligned to at least 4 bytes
-        if (reinterpret_cast<uintptr_t>(object) & TAG_MASK) {
+        if ((reinterpret_cast<uintptr_t>(object) & TAG_MASK) != 0) {
             throw std::runtime_error("Object pointer not properly aligned for tagging");
         }
         value = reinterpret_cast<uintptr_t>(object) | POINTER_TAG;
     }
     
     // Create from integer
-    explicit TaggedValue(int32_t intValue) {
+    explicit TaggedValue(int32_t intValue) 
+        : value((static_cast<uintptr_t>(intValue) << 2) | INTEGER_TAG) {
         // Shift left to make room for tag bits, then apply tag
-        value = (static_cast<uintptr_t>(intValue) << 2) | INTEGER_TAG;
     }
     
     // Create from double (may need to allocate on heap if doesn't fit in tagged value)

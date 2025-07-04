@@ -75,7 +75,7 @@ TaggedValue primitive_basic_new_size(TaggedValue receiver, const std::vector<Tag
     }
     
     // Allocate new indexable instance
-    Object* instance;
+    Object* instance = nullptr;
     if (clazz->isByteIndexable()) {
         instance = interpreter.getMemoryManager().allocateByteIndexableInstance(clazz, static_cast<size_t>(size));
     } else {
@@ -97,10 +97,12 @@ TaggedValue primitive_identity_hash(TaggedValue receiver, const std::vector<Tagg
     if (receiver.isSmallInteger()) {
         // For small integers, use the value itself as hash
         return TaggedValue::fromSmallInteger(receiver.getSmallInteger());
-    } else if (receiver.isBoolean()) {
+    }
+    if (receiver.isBoolean()) {
         // For booleans, use 0 for false, 1 for true
         return TaggedValue::fromSmallInteger(receiver.getBoolean() ? 1 : 0);
-    } else if (receiver.isNil()) {
+    }
+    if (receiver.isNil()) {
         // For nil, use a fixed hash
         return TaggedValue::fromSmallInteger(42);
     }
@@ -135,13 +137,13 @@ TaggedValue primitive_class(TaggedValue receiver, const std::vector<TaggedValue>
     } else if (receiver.isNil()) {
         // UndefinedObject class for nil
         receiverClass = ClassRegistry::getInstance().getClass("UndefinedObject");
-        if (!receiverClass) {
+        if (receiverClass == nullptr) {
             throw PrimitiveFailure("UndefinedObject class not found");
         }
     } else if (receiver.isPointer()) {
         Object* obj = receiver.asObject();
         receiverClass = obj->getClass();
-        if (!receiverClass) {
+        if (receiverClass == nullptr) {
             throw PrimitiveFailure("Object has no class");
         }
     } else {

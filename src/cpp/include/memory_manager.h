@@ -27,7 +27,7 @@ public:
      * 
      * @param initialSpaceSize The size of each memory space in bytes.
      */
-    static constexpr size_t DEFAULT_INITIAL_SPACE_SIZE = 1024 * 1024; // 1MB
+    static constexpr size_t DEFAULT_INITIAL_SPACE_SIZE = static_cast<size_t>(1024) * 1024; // 1MB
 
     /**
      * Constructor that initializes memory spaces.
