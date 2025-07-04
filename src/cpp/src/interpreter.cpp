@@ -88,9 +88,23 @@ namespace smalltalk
         const auto &bytecodes = method.getBytecodes();
         const auto &literals = method.getLiterals();
 
-        // Set up execution state
-        std::vector<TaggedValue> stack;
-        std::vector<TaggedValue> tempVars(10, TaggedValue::nil()); // Support up to 10 temp vars, initialized to nil
+        // Create a method context for execution
+        Object *self = memoryManager.allocateObject(ObjectType::OBJECT, 0); // Simple self object
+        MethodContext *methodContext = memoryManager.allocateMethodContext(
+            16,     // context size (enough for stack and temporaries)
+            0,      // method reference (placeholder)
+            self,   // self
+            nullptr // sender
+        );
+
+        // Initialize the stack pointer properly
+        char *contextEnd = reinterpret_cast<char *>(methodContext) + sizeof(MethodContext);
+        Object **slots = reinterpret_cast<Object **>(contextEnd);
+        methodContext->stackPointer = reinterpret_cast<Object *>(slots);
+
+        // Set up execution state using context-based stack
+        MethodContext *savedContext = activeContext;
+        activeContext = methodContext;
         size_t ip = 0;
 
         // Main bytecode execution loop - process one instruction at a time
@@ -121,7 +135,26 @@ namespace smalltalk
                     throw std::runtime_error("Invalid literal index: " + std::to_string(literalIndex));
                 }
 
-                stack.push_back(literals[literalIndex]);
+                // Convert TaggedValue to Object* for context-based stack
+                TaggedValue literal = literals[literalIndex];
+                Object *literalObj;
+                if (literal.isInteger())
+                {
+                    // Create an integer object
+                    literalObj = memoryManager.allocateObject(ObjectType::OBJECT, 0);
+                    // Store the integer value in the object (simplified)
+                }
+                else if (literal.isPointer())
+                {
+                    literalObj = literal.asObject();
+                }
+                else
+                {
+                    // Handle other types (nil, boolean, etc.)
+                    literalObj = memoryManager.allocateObject(ObjectType::OBJECT, 0);
+                }
+
+                push(literalObj);
                 break;
             }
 
@@ -149,43 +182,60 @@ namespace smalltalk
                     (static_cast<uint32_t>(bytecodes[ip + 3]) << 24);
                 ip += 4;
 
-                // Validate arguments
-                if (stack.size() < argCount + 1)
-                {
-                    throw std::runtime_error("Stack underflow in SEND_MESSAGE");
-                }
                 if (selectorIndex >= literals.size())
                 {
                     throw std::runtime_error("Invalid selector index: " + std::to_string(selectorIndex));
                 }
 
-                // Pop arguments and receiver
+                // Get the selector from literals
+                TaggedValue selectorValue = literals[selectorIndex];
+                if (!selectorValue.isPointer())
+                {
+                    throw std::runtime_error("Selector is not a pointer");
+                }
+
+                // Try to get the selector as a Symbol
+                Symbol *selector;
+                try
+                {
+                    selector = selectorValue.asSymbol();
+                }
+                catch (const std::exception &)
+                {
+                    throw std::runtime_error("Selector is not a symbol");
+                }
+
+                std::string selectorString = selector->getName();
+
+                // Pop arguments from context-based stack
                 std::vector<TaggedValue> args;
+                args.reserve(argCount);
                 for (uint32_t i = 0; i < argCount; i++)
                 {
-                    args.insert(args.begin(), stack.back());
-                    stack.pop_back();
+                    Object *argObj = pop();
+                    args.push_back(TaggedValue::fromObject(argObj));
                 }
-                TaggedValue receiver = stack.back();
-                stack.pop_back();
 
-                // Perform the operation
-                TaggedValue selector = literals[selectorIndex];
-                TaggedValue result;
+                // Pop receiver from context-based stack
+                Object *receiverObj = pop();
+                TaggedValue receiver = TaggedValue::fromObject(receiverObj);
 
-                // All messages should go through proper message sending
-                if (selector.isPointer())
+                // Send the message
+                TaggedValue result = sendMessage(receiver, selectorString, args);
+
+                // Convert result back to Object* and push onto context-based stack
+                Object *resultObj;
+                if (result.isPointer())
                 {
-                    Object *selectorObj = selector.asObject();
-                    Symbol *selectorSymbol = reinterpret_cast<Symbol *>(selectorObj);
-                    result = sendMessage(receiver, selectorSymbol->getName(), args);
+                    resultObj = result.asObject();
                 }
                 else
                 {
-                    throw std::runtime_error("Invalid selector in SEND_MESSAGE: selector is not a pointer");
+                    // Create object for immediate values
+                    resultObj = memoryManager.allocateObject(ObjectType::OBJECT, 0);
                 }
 
-                stack.push_back(result);
+                push(resultObj);
                 break;
             }
 
@@ -197,24 +247,25 @@ namespace smalltalk
                     throw std::runtime_error("Invalid CREATE_BLOCK: not enough bytes for operands");
                 }
 
-                // Read block parameters (we skip them for now)
-                ip += 12; // Skip 3 * 4-byte parameters
+                // Read block parameters (little-endian)
+                uint32_t bytecodeSize = static_cast<uint32_t>(bytecodes[ip]) |
+                                        (static_cast<uint32_t>(bytecodes[ip + 1]) << 8) |
+                                        (static_cast<uint32_t>(bytecodes[ip + 2]) << 16) |
+                                        (static_cast<uint32_t>(bytecodes[ip + 3]) << 24);
+                ip += 4;
+                uint32_t literalCount = static_cast<uint32_t>(bytecodes[ip]) |
+                                        (static_cast<uint32_t>(bytecodes[ip + 1]) << 8) |
+                                        (static_cast<uint32_t>(bytecodes[ip + 2]) << 16) |
+                                        (static_cast<uint32_t>(bytecodes[ip + 3]) << 24);
+                ip += 4;
+                uint32_t tempVarCount = static_cast<uint32_t>(bytecodes[ip]) |
+                                        (static_cast<uint32_t>(bytecodes[ip + 1]) << 8) |
+                                        (static_cast<uint32_t>(bytecodes[ip + 2]) << 16) |
+                                        (static_cast<uint32_t>(bytecodes[ip + 3]) << 24);
+                ip += 4;
 
-                // Create a temporary context to hold the block
-                MethodContext *tempContext = memoryManager.allocateMethodContext(4, 0, nullptr, nullptr);
-                tempContext->self = reinterpret_cast<Object *>(0x1000);
-                MethodContext *oldContext = activeContext;
-                activeContext = tempContext;
-
-                // Execute CREATE_BLOCK handler
-                handleCreateBlock(0, 0, 0);
-                Object *blockObj = pop();
-
-                // Restore context
-                activeContext = oldContext;
-
-                // Push block as TaggedValue
-                stack.push_back(TaggedValue(blockObj));
+                // Execute CREATE_BLOCK handler using context-based stack
+                handleCreateBlock(bytecodeSize, literalCount, tempVarCount);
                 break;
             }
 
@@ -233,12 +284,8 @@ namespace smalltalk
                     (static_cast<uint32_t>(bytecodes[ip + 3]) << 24);
                 ip += 4;
 
-                if (tempIndex >= tempVars.size())
-                {
-                    throw std::runtime_error("Invalid temporary variable index: " + std::to_string(tempIndex));
-                }
-
-                stack.push_back(tempVars[tempIndex]);
+                // Use context-based temporary variable access
+                handlePushTemporaryVariable(tempIndex);
                 break;
             }
 
@@ -257,50 +304,35 @@ namespace smalltalk
                     (static_cast<uint32_t>(bytecodes[ip + 3]) << 24);
                 ip += 4;
 
-                if (tempIndex >= tempVars.size())
-                {
-                    throw std::runtime_error("Invalid temporary variable index: " + std::to_string(tempIndex));
-                }
-
-                if (stack.empty())
-                {
-                    throw std::runtime_error("Stack unexpectedly empty in STORE_TEMPORARY_VARIABLE");
-                }
-
-                TaggedValue value = stack.back();
-                stack.pop_back(); // Pop the value after storing it
-                tempVars[tempIndex] = value;
+                // Use context-based temporary variable storage
+                handleStoreTemporaryVariable(tempIndex);
                 break;
             }
 
             case Bytecode::POP:
             {
-                if (stack.empty())
-                {
-                    throw std::runtime_error("Stack unexpectedly empty in POP");
-                }
-                stack.pop_back();
+                // Use context-based pop
+                handlePop();
                 break;
             }
 
             case Bytecode::DUPLICATE:
             {
-                if (stack.empty())
-                {
-                    throw std::runtime_error("Stack unexpectedly empty in DUPLICATE");
-                }
-                TaggedValue value = stack.back();
-                stack.push_back(value);
+                // Use context-based duplicate
+                handleDuplicate();
                 break;
             }
 
             case Bytecode::RETURN_STACK_TOP:
             {
-                if (stack.empty())
-                {
-                    throw std::runtime_error("Stack unexpectedly empty in RETURN_STACK_TOP");
-                }
-                return stack.back();
+                // Pop the return value from context-based stack
+                Object *returnObj = pop();
+
+                // Restore the previous context
+                activeContext = savedContext;
+
+                // Convert Object* back to TaggedValue for return
+                return TaggedValue(returnObj);
             }
 
             default:
@@ -308,8 +340,9 @@ namespace smalltalk
             }
         }
 
-        // If we reach here, return top of stack or nil
-        return stack.empty() ? TaggedValue() : stack.back();
+        // If we reach here without explicit return, restore context and return nil
+        activeContext = savedContext;
+        return TaggedValue::nil();
     }
 
     void Interpreter::executeLoop()
@@ -639,6 +672,13 @@ namespace smalltalk
             nullptr,           // sender (will be set when block is executed)
             homeContext        // home context
         );
+
+        // Set the block's class to Block class
+        Class *blockClass = ClassRegistry::getInstance().getClass("Block");
+        if (blockClass != nullptr)
+        {
+            blockContext->setClass(blockClass);
+        }
 
         // Push the block context onto the stack
         push(blockContext);

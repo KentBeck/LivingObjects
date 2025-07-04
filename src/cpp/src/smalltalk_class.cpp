@@ -397,6 +397,13 @@ namespace smalltalk
             byteArrayClass->setClass(classClass);
             registry.registerClass("ByteArray", byteArrayClass);
 
+            // Create Block class
+            Class *blockClass = new Class("Block", objectClass, nullptr);
+            blockClass->setInstanceSize(0); // No named instance variables
+            blockClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+            blockClass->setClass(classClass);
+            registry.registerClass("Block", blockClass);
+
             // Add primitive methods to Object class
             addPrimitiveMethod(objectClass, "new", 70);          // Object new
             addPrimitiveMethod(objectClass, "basicNew", 71);     // Object basicNew
@@ -427,6 +434,9 @@ namespace smalltalk
             // Add primitive methods to String class
             addPrimitiveMethod(stringClass, ",", PrimitiveNumbers::STRING_CONCAT);  // String ,
             addPrimitiveMethod(stringClass, "size", PrimitiveNumbers::STRING_SIZE); // String size
+
+            // Add primitive methods to Block class
+            addPrimitiveMethod(blockClass, "value", PrimitiveNumbers::BLOCK_VALUE); // Block value
         }
 
         Class *getObjectClass() { return objectClass; }
