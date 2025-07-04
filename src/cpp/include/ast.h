@@ -154,4 +154,30 @@ private:
     std::vector<ASTNodePtr> statements_;
 };
 
+/**
+ * Message send node for expressions like "Object new" or "array at: 1"
+ */
+class MessageSendNode : public ASTNode {
+public:
+    MessageSendNode(ASTNodePtr receiver, std::string selector, std::vector<ASTNodePtr> arguments)
+        : receiver_(std::move(receiver)), selector_(std::move(selector)), arguments_(std::move(arguments)) {}
+    
+    const ASTNode* getReceiver() const { return receiver_.get(); }
+    const std::string& getSelector() const { return selector_; }
+    const std::vector<ASTNodePtr>& getArguments() const { return arguments_; }
+    
+    std::string toString() const override {
+        std::string result = receiver_->toString() + " " + selector_;
+        for (const auto& arg : arguments_) {
+            result += " " + arg->toString();
+        }
+        return result;
+    }
+    
+private:
+    ASTNodePtr receiver_;
+    std::string selector_;
+    std::vector<ASTNodePtr> arguments_;
+};
+
 } // namespace smalltalk

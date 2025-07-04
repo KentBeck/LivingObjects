@@ -8,18 +8,21 @@
 namespace smalltalk {
 
 /**
- * Simple recursive descent parser for basic expressions
- * Supports: integers, booleans, nil, +, -, *, /, <, >, =, ~=, <=, >=, (, )
+ * Simple recursive descent parser for basic expressions and unary messages
+ * Supports: integers, booleans, nil, +, -, *, /, <, >, =, ~=, <=, >=, (, ), unary messages
  * 
  * Grammar:
  *   expression := comparison
  *   comparison := arithmetic (('<' | '>' | '=' | '~=' | '<=' | '>=') arithmetic)*
  *   arithmetic := term (('+' | '-') term)*
  *   term       := factor (('*' | '/') factor)*
- *   factor     := integer | literal | string | '(' expression ')'
+ *   factor     := unary
+ *   unary      := primary (identifier)*
+ *   primary    := integer | literal | string | identifier | '(' expression ')'
  *   integer    := [0-9]+
  *   literal    := 'true' | 'false' | 'nil'
  *   string     := "'" [^']* "'"
+ *   identifier := [a-zA-Z][a-zA-Z0-9]*
  */
 class SimpleParser {
 public:
@@ -36,6 +39,8 @@ private:
     ASTNodePtr parseArithmetic();
     ASTNodePtr parseTerm();
     ASTNodePtr parseFactor();
+    ASTNodePtr parseUnary();
+    ASTNodePtr parsePrimary();
     ASTNodePtr parseInteger();
     ASTNodePtr parseIdentifierOrLiteral();
     ASTNodePtr parseString();

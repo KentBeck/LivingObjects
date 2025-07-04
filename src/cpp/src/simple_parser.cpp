@@ -129,6 +129,53 @@ ASTNodePtr SimpleParser::parseTerm() {
 }
 
 ASTNodePtr SimpleParser::parseFactor() {
+    return parseUnary();
+}
+
+ASTNodePtr SimpleParser::parseUnary() {
+    auto receiver = parsePrimary();
+    
+    // Parse chain of unary messages
+    while (!isAtEnd()) {
+        skipWhitespace();
+        
+        // Check if next token is an identifier (unary message)
+        if (isAlpha(peek())) {
+            // Save current position to check if this is actually a message
+            size_t savedPos = pos_;
+            
+            // Parse the identifier
+            std::string selector;
+            while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek()))) {
+                selector += consume();
+            }
+            
+            // Check if this is followed by something that would make it NOT a unary message
+            skipWhitespace();
+            char next = isAtEnd() ? '\0' : peek();
+            
+            // If followed by operators or end of input, it's a unary message
+            if (next == '\0' || next == '+' || next == '-' || next == '*' || next == '/' ||
+                next == '<' || next == '>' || next == '=' || next == '~' ||
+                next == ')' || next == ']' || next == '.') {
+                
+                // It's a unary message
+                std::vector<ASTNodePtr> args; // No arguments for unary messages
+                receiver = std::make_unique<MessageSendNode>(std::move(receiver), selector, std::move(args));
+            } else {
+                // Not a unary message, restore position
+                pos_ = savedPos;
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+    
+    return receiver;
+}
+
+ASTNodePtr SimpleParser::parsePrimary() {
     skipWhitespace();
     
     if (peek() == '(') {

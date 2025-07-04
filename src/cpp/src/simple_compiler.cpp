@@ -23,6 +23,8 @@ void SimpleCompiler::compileNode(const ASTNode& node, CompiledMethod& method) {
         compileLiteral(*literal, method);
     } else if (const auto* binOp = dynamic_cast<const BinaryOpNode*>(&node)) {
         compileBinaryOp(*binOp, method);
+    } else if (const auto* messageSend = dynamic_cast<const MessageSendNode*>(&node)) {
+        compileMessageSend(*messageSend, method);
     } else if (const auto* block = dynamic_cast<const BlockNode*>(&node)) {
         compileBlock(*block, method);
     } else if (const auto* sequence = dynamic_cast<const SequenceNode*>(&node)) {
@@ -77,6 +79,26 @@ void SimpleCompiler::compileBinaryOp(const BinaryOpNode& node, CompiledMethod& m
         default:
             throw std::runtime_error("Unsupported binary operator");
     }
+}
+
+void SimpleCompiler::compileMessageSend(const MessageSendNode& node, CompiledMethod& method) {
+    // Compile receiver
+    compileNode(*node.getReceiver(), method);
+    
+    // Compile arguments
+    const auto& arguments = node.getArguments();
+    for (const auto& arg : arguments) {
+        compileNode(*arg, method);
+    }
+    
+    // Create a symbol for the selector and add it to the literals table
+    Symbol* selectorSymbol = Symbol::intern(node.getSelector());
+    uint32_t selectorIndex = method.addLiteral(TaggedValue(selectorSymbol));
+    
+    // Generate SEND_MESSAGE bytecode
+    method.addBytecode(static_cast<uint8_t>(Bytecode::SEND_MESSAGE));
+    method.addOperand(selectorIndex);           // selector index from literal table
+    method.addOperand(static_cast<uint32_t>(arguments.size())); // argument count
 }
 
 std::string SimpleCompiler::getSelectorForOperator(BinaryOpNode::Operator op) {
