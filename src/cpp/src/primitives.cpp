@@ -78,12 +78,14 @@ namespace smalltalk
         extern void registerArrayPrimitives();
         extern void registerIntegerPrimitives();
         extern void registerBlockPrimitives();
+        extern void registerStringPrimitives();
 
         // Register all core primitive groups
         registerObjectPrimitives();
         registerArrayPrimitives();
         registerIntegerPrimitives();
         registerBlockPrimitives();
+        registerStringPrimitives();
     }
 
     // Primitives namespace implementation

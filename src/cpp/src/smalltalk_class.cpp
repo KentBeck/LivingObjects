@@ -423,6 +423,10 @@ namespace smalltalk
             addPrimitiveMethod(integerClass, "~=", PrimitiveNumbers::SMALL_INT_NE); // Integer ~=
             addPrimitiveMethod(integerClass, "<=", PrimitiveNumbers::SMALL_INT_LE); // Integer <=
             addPrimitiveMethod(integerClass, ">=", PrimitiveNumbers::SMALL_INT_GE); // Integer >=
+
+            // Add primitive methods to String class
+            addPrimitiveMethod(stringClass, ",", PrimitiveNumbers::STRING_CONCAT);  // String ,
+            addPrimitiveMethod(stringClass, "size", PrimitiveNumbers::STRING_SIZE); // String size
         }
 
         Class *getObjectClass() { return objectClass; }

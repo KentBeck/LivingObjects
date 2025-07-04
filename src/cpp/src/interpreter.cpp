@@ -221,7 +221,7 @@ namespace smalltalk
             {
                 if (stack.empty())
                 {
-                    return TaggedValue(); // Return nil if stack is empty
+                    throw std::runtime_error("Stack unexpectedly empty in RETURN_STACK_TOP");
                 }
                 return stack.back();
             }
