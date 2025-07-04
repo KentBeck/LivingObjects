@@ -96,6 +96,19 @@ test: create_dirs $(TEST_EXECUTABLE)
 $(TEST_EXECUTABLE): $(TEST_DIR)/all_expressions_test.cpp $(LIBRARY)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $< -o $@ -L$(BUILD_DIR)/lib -lsmalltalk_vm
 
+# Build individual test executables
+$(BUILD_DIR)/minimal_parse_test: $(TEST_DIR)/minimal_parse_test.cpp $(LIBRARY)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $< -o $@ -L$(BUILD_DIR)/lib -lsmalltalk_vm
+
+$(BUILD_DIR)/simple_block_test: $(TEST_DIR)/simple_block_test.cpp $(LIBRARY)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $< -o $@ -L$(BUILD_DIR)/lib -lsmalltalk_vm
+
+$(BUILD_DIR)/minimal_block_test: $(TEST_DIR)/minimal_block_test.cpp $(LIBRARY)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $< -o $@ -L$(BUILD_DIR)/lib -lsmalltalk_vm
+
+$(BUILD_DIR)/debug_block_layout: $(TEST_DIR)/debug_block_layout.cpp $(LIBRARY)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $< -o $@ -L$(BUILD_DIR)/lib -lsmalltalk_vm
+
 # Compile test files
 $(BUILD_DIR)/tests/%.o: $(TEST_DIR)/%.cpp
 	@mkdir -p $(BUILD_DIR)/tests
@@ -137,4 +150,25 @@ expressions: all
 expressions-verbose: all
 	SHOW_DETAILS=1 ./run_expressions.sh
 
-.PHONY: all create_dirs test clean rebuild install_gtest install_gtest_mac repl test-all test-verbose expressions expressions-verbose
+# Build individual test targets
+test-parse: $(BUILD_DIR)/minimal_parse_test
+	./$(BUILD_DIR)/minimal_parse_test
+
+test-block-compile: $(BUILD_DIR)/simple_block_test
+	./$(BUILD_DIR)/simple_block_test
+
+test-block-runtime: $(BUILD_DIR)/minimal_block_test
+	./$(BUILD_DIR)/minimal_block_test
+
+test-block-layout: $(BUILD_DIR)/debug_block_layout
+	./$(BUILD_DIR)/debug_block_layout
+
+# Quick test - just run our main expression test
+test-quick: $(TEST_EXECUTABLE)
+	./$(TEST_EXECUTABLE)
+
+# Test Object new specifically
+test-object-new: all
+	echo "Object new" | ./$(REPL_EXECUTABLE)
+
+.PHONY: all create_dirs test clean rebuild install_gtest install_gtest_mac repl test-all test-verbose expressions expressions-verbose test-parse test-block-compile test-block-runtime test-block-layout test-quick test-object-new

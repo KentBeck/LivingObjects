@@ -172,27 +172,15 @@ namespace smalltalk
                 TaggedValue selector = literals[selectorIndex];
                 TaggedValue result;
 
-                if (argCount == 0)
+                // All messages should go through proper message sending
+                if (selector.isPointer())
                 {
-                    // Unary message - use new message sending system
-                    if (selector.isPointer())
-                    {
-                        Object *selectorObj = selector.asObject();
-                        Symbol *selectorSymbol = reinterpret_cast<Symbol *>(selectorObj);
-                        result = sendMessage(receiver, selectorSymbol->getName(), args);
-                    }
-                    else
-                    {
-                        result = TaggedValue(); // nil
-                    }
-                }
-                else if (argCount == 1)
-                {
-                    result = performOperation(receiver, args[0], selector);
+                    Object *selectorObj = selector.asObject();
+                    Symbol *selectorSymbol = reinterpret_cast<Symbol *>(selectorObj);
+                    result = sendMessage(receiver, selectorSymbol->getName(), args);
                 }
                 else
                 {
-                    // For now, only support unary and binary operations
                     result = TaggedValue(); // nil
                 }
 
