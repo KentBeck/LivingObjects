@@ -82,21 +82,38 @@ namespace smalltalk
     };
 
     /**
-     * Method node - represents a complete method with an expression body
+     * Method node - represents a complete method with optional temporary variables and an expression body
      */
     class MethodNode : public ASTNode
     {
     public:
-        explicit MethodNode(ASTNodePtr body) : body_(std::move(body)) {}
+        explicit MethodNode(ASTNodePtr body) : tempVars_(), body_(std::move(body)) {}
+        MethodNode(std::vector<std::string> tempVars, ASTNodePtr body)
+            : tempVars_(std::move(tempVars)), body_(std::move(body)) {}
 
+        const std::vector<std::string> &getTempVars() const { return tempVars_; }
         const ASTNode *getBody() const { return body_.get(); }
 
         std::string toString() const override
         {
-            return "method { " + body_->toString() + " }";
+            std::string result = "method ";
+            if (!tempVars_.empty())
+            {
+                result += "| ";
+                for (size_t i = 0; i < tempVars_.size(); i++)
+                {
+                    if (i > 0)
+                        result += " ";
+                    result += tempVars_[i];
+                }
+                result += " | ";
+            }
+            result += "{ " + body_->toString() + " }";
+            return result;
         }
 
     private:
+        std::vector<std::string> tempVars_;
         ASTNodePtr body_;
     };
 
@@ -180,6 +197,82 @@ namespace smalltalk
         ASTNodePtr receiver_;
         std::string selector_;
         std::vector<ASTNodePtr> arguments_;
+    };
+
+    /**
+     * Variable reference node for accessing variables
+     */
+    class VariableNode : public ASTNode
+    {
+    public:
+        explicit VariableNode(std::string name) : name_(std::move(name)) {}
+
+        const std::string &getName() const { return name_; }
+
+        std::string toString() const override
+        {
+            return name_;
+        }
+
+    private:
+        std::string name_;
+    };
+
+    /**
+     * Assignment node for variable assignments like "x := 42"
+     */
+    class AssignmentNode : public ASTNode
+    {
+    public:
+        AssignmentNode(std::string variable, ASTNodePtr value)
+            : variable_(std::move(variable)), value_(std::move(value)) {}
+
+        const std::string &getVariable() const { return variable_; }
+        const ASTNode *getValue() const { return value_.get(); }
+
+        std::string toString() const override
+        {
+            return variable_ + " := " + value_->toString();
+        }
+
+    private:
+        std::string variable_;
+        ASTNodePtr value_;
+    };
+
+    /**
+     * Method node with temporary variables - represents a complete method
+     */
+    class MethodWithTempsNode : public ASTNode
+    {
+    public:
+        MethodWithTempsNode(std::vector<std::string> tempVars, ASTNodePtr body)
+            : tempVars_(std::move(tempVars)), body_(std::move(body)) {}
+
+        const std::vector<std::string> &getTempVars() const { return tempVars_; }
+        const ASTNode *getBody() const { return body_.get(); }
+
+        std::string toString() const override
+        {
+            std::string result = "method ";
+            if (!tempVars_.empty())
+            {
+                result += "| ";
+                for (size_t i = 0; i < tempVars_.size(); i++)
+                {
+                    if (i > 0)
+                        result += " ";
+                    result += tempVars_[i];
+                }
+                result += " | ";
+            }
+            result += "{ " + body_->toString() + " }";
+            return result;
+        }
+
+    private:
+        std::vector<std::string> tempVars_;
+        ASTNodePtr body_;
     };
 
 } // namespace smalltalk

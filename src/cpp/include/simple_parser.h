@@ -37,6 +37,8 @@ namespace smalltalk
         // Parsing methods
         ASTNodePtr parseExpression();
         ASTNodePtr parseStatements();
+        ASTNodePtr parseStatement();
+        ASTNodePtr parseAssignment();
         ASTNodePtr parseBinaryMessage();
         ASTNodePtr parseComparison();
         ASTNodePtr parseFactor();
@@ -45,6 +47,12 @@ namespace smalltalk
         ASTNodePtr parseInteger();
         ASTNodePtr parseIdentifierOrLiteral();
         ASTNodePtr parseString();
+        ASTNodePtr parseVariable();
+        std::string parseIdentifier();
+
+        // Temporary variable parsing
+        std::vector<std::string> parseTemporaryVariables();
+        bool isTemporaryVariableDeclaration();
 
         // Tokenization
         void skipWhitespace();

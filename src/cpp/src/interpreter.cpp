@@ -90,6 +90,7 @@ namespace smalltalk
 
         // Set up execution state
         std::vector<TaggedValue> stack;
+        std::vector<TaggedValue> tempVars(10, TaggedValue::nil()); // Support up to 10 temp vars, initialized to nil
         size_t ip = 0;
 
         // Main bytecode execution loop - process one instruction at a time
@@ -214,6 +215,71 @@ namespace smalltalk
 
                 // Push block as TaggedValue
                 stack.push_back(TaggedValue(blockObj));
+                break;
+            }
+
+            case Bytecode::PUSH_TEMPORARY_VARIABLE:
+            {
+                ip++; // Skip opcode
+                if (ip + 3 >= bytecodes.size())
+                {
+                    throw std::runtime_error("Invalid PUSH_TEMPORARY_VARIABLE: not enough bytes for operand");
+                }
+
+                uint32_t tempIndex =
+                    static_cast<uint32_t>(bytecodes[ip]) |
+                    (static_cast<uint32_t>(bytecodes[ip + 1]) << 8) |
+                    (static_cast<uint32_t>(bytecodes[ip + 2]) << 16) |
+                    (static_cast<uint32_t>(bytecodes[ip + 3]) << 24);
+                ip += 4;
+
+                if (tempIndex >= tempVars.size())
+                {
+                    throw std::runtime_error("Invalid temporary variable index: " + std::to_string(tempIndex));
+                }
+
+                stack.push_back(tempVars[tempIndex]);
+                break;
+            }
+
+            case Bytecode::STORE_TEMPORARY_VARIABLE:
+            {
+                ip++; // Skip opcode
+                if (ip + 3 >= bytecodes.size())
+                {
+                    throw std::runtime_error("Invalid STORE_TEMPORARY_VARIABLE: not enough bytes for operand");
+                }
+
+                uint32_t tempIndex =
+                    static_cast<uint32_t>(bytecodes[ip]) |
+                    (static_cast<uint32_t>(bytecodes[ip + 1]) << 8) |
+                    (static_cast<uint32_t>(bytecodes[ip + 2]) << 16) |
+                    (static_cast<uint32_t>(bytecodes[ip + 3]) << 24);
+                ip += 4;
+
+                if (tempIndex >= tempVars.size())
+                {
+                    throw std::runtime_error("Invalid temporary variable index: " + std::to_string(tempIndex));
+                }
+
+                if (stack.empty())
+                {
+                    throw std::runtime_error("Stack unexpectedly empty in STORE_TEMPORARY_VARIABLE");
+                }
+
+                TaggedValue value = stack.back();
+                tempVars[tempIndex] = value;
+                // Leave the value on the stack (Smalltalk assignment returns the assigned value)
+                break;
+            }
+
+            case Bytecode::POP:
+            {
+                if (stack.empty())
+                {
+                    throw std::runtime_error("Stack unexpectedly empty in POP");
+                }
+                stack.pop_back();
                 break;
             }
 

@@ -27,6 +27,11 @@ namespace smalltalk
         void compileMessageSend(const MessageSendNode &node, CompiledMethod &method);
         void compileBlock(const BlockNode &node, CompiledMethod &method);
         void compileSequence(const SequenceNode &node, CompiledMethod &method);
+        void compileVariable(const VariableNode &node, CompiledMethod &method);
+        void compileAssignment(const AssignmentNode &node, CompiledMethod &method);
+
+        // Temporary variables for the current method being compiled
+        std::vector<std::string> tempVars_;
     };
 
 } // namespace smalltalk

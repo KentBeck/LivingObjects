@@ -300,8 +300,8 @@ int main()
         {"false", "false", true, "literals"},
         {"nil", "nil", true, "literals"},
 
-        // Variable assignment - SHOULD FAIL (not implemented)
-        {"| x | x := 42. x", "42", false, "variables"},
+        // Variable assignment - SHOULD PASS (now implemented!)
+        {"| x | x := 42. x", "42", true, "variables"},
 
         // Blocks - SHOULD FAIL (not implemented)
         {"[3 + 4] value", "7", false, "blocks"},

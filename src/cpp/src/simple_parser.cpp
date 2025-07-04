@@ -17,7 +17,16 @@ namespace smalltalk
     std::unique_ptr<MethodNode> SimpleParser::parseMethod()
     {
         skipWhitespace();
-        auto body = parseExpression();
+
+        // Check for temporary variable declarations
+        std::vector<std::string> tempVars;
+        if (isTemporaryVariableDeclaration())
+        {
+            tempVars = parseTemporaryVariables();
+            skipWhitespace();
+        }
+
+        auto body = parseStatements();
         skipWhitespace();
 
         if (!isAtEnd())
@@ -25,12 +34,105 @@ namespace smalltalk
             error("Unexpected characters at end of input");
         }
 
-        return std::make_unique<MethodNode>(std::move(body));
+        // Always return a MethodNode, with empty tempVars if none were declared
+        return std::make_unique<MethodNode>(std::move(tempVars), std::move(body));
     }
 
     ASTNodePtr SimpleParser::parseExpression()
     {
         return parseBinaryMessage();
+    }
+
+    ASTNodePtr SimpleParser::parseStatements()
+    {
+        auto statements = std::make_unique<SequenceNode>();
+
+        // Parse first statement
+        auto stmt = parseStatement();
+        statements->addStatement(std::move(stmt));
+
+        // Parse additional statements separated by periods
+        while (!isAtEnd())
+        {
+            skipWhitespace();
+            if (peek() == '.')
+            {
+                consume(); // consume '.'
+                skipWhitespace();
+
+                if (isAtEnd())
+                {
+                    break; // Allow trailing period
+                }
+
+                auto nextStmt = parseStatement();
+                statements->addStatement(std::move(nextStmt));
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        // If only one statement, return it directly
+        if (statements->getStatements().size() == 1)
+        {
+            return std::move(const_cast<std::vector<ASTNodePtr> &>(statements->getStatements())[0]);
+        }
+
+        return std::move(statements);
+    }
+
+    ASTNodePtr SimpleParser::parseStatement()
+    {
+        // Check for assignment
+        size_t savedPos = pos_;
+        skipWhitespace();
+
+        // Look ahead for identifier followed by :=
+        if (isAlpha(peek()))
+        {
+            std::string identifier;
+            while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek())))
+            {
+                identifier += consume();
+            }
+
+            skipWhitespace();
+            if (!isAtEnd() && peek() == ':' && pos_ + 1 < input_.size() && input_[pos_ + 1] == '=')
+            {
+                // This is an assignment
+                consume(); // consume ':'
+                consume(); // consume '='
+                skipWhitespace();
+
+                auto value = parseExpression();
+                return std::make_unique<AssignmentNode>(std::move(identifier), std::move(value));
+            }
+        }
+
+        // Not an assignment, restore position and parse as expression
+        pos_ = savedPos;
+        return parseExpression();
+    }
+
+    ASTNodePtr SimpleParser::parseAssignment()
+    {
+        // This method is called when we know we have an assignment
+        std::string varName = parseIdentifier();
+        skipWhitespace();
+
+        if (peek() != ':' || pos_ + 1 >= input_.size() || input_[pos_ + 1] != '=')
+        {
+            error("Expected ':=' in assignment");
+        }
+
+        consume(); // consume ':'
+        consume(); // consume '='
+        skipWhitespace();
+
+        auto value = parseExpression();
+        return std::make_unique<AssignmentNode>(std::move(varName), std::move(value));
     }
 
     // Helper to check if current position starts a binary selector
@@ -304,10 +406,8 @@ namespace smalltalk
             return std::make_unique<LiteralNode>(TaggedValue::fromObject(clazz));
         }
 
-        // For now, treat unrecognized identifiers as variables (temporary)
-        // In a full implementation, this would handle local variables, instance variables, etc.
-        error("Unknown identifier: " + identifier);
-        return nullptr; // Never reached
+        // Treat unrecognized identifiers as variable references
+        return std::make_unique<VariableNode>(identifier);
     }
 
     ASTNodePtr SimpleParser::parseString()
@@ -397,67 +497,6 @@ namespace smalltalk
         return input_[pos_++];
     }
 
-    ASTNodePtr SimpleParser::parseStatements()
-    {
-        skipWhitespace();
-
-        // Handle empty blocks
-        if (peek() == ']' || isAtEnd())
-        {
-            // Return a nil literal for empty blocks
-            return std::make_unique<LiteralNode>(TaggedValue());
-        }
-
-        auto sequence = std::make_unique<SequenceNode>();
-
-        // Parse first statement
-        auto statement = parseExpression();
-        sequence->addStatement(std::move(statement));
-
-        // Parse additional statements separated by periods
-        while (!isAtEnd())
-        {
-            skipWhitespace();
-
-            if (peek() == '.')
-            {
-                consume(); // consume '.'
-                skipWhitespace();
-
-                // Check if this is the end (trailing period)
-                if (peek() == ']' || isAtEnd())
-                {
-                    break;
-                }
-
-                // Parse next statement
-                auto nextStatement = parseExpression();
-                sequence->addStatement(std::move(nextStatement));
-            }
-            else
-            {
-                // No more periods, we're done
-                break;
-            }
-        }
-
-        // If only one statement, return it directly instead of a sequence
-        const auto &statements = sequence->getStatements();
-        if (statements.size() == 1)
-        {
-            // Create a copy of the single statement
-            const auto *statement = statements[0].get();
-            if (const auto *literal = dynamic_cast<const LiteralNode *>(statement))
-            {
-                return std::make_unique<LiteralNode>(literal->getValue());
-            }
-            // For other types, return the sequence
-            return std::move(sequence);
-        }
-
-        return std::move(sequence);
-    }
-
     bool SimpleParser::isAtEnd() const
     {
         return pos_ >= input_.size();
@@ -476,6 +515,82 @@ namespace smalltalk
     void SimpleParser::error(const std::string &message)
     {
         throw std::runtime_error("Parse error at position " + std::to_string(pos_) + ": " + message);
+    }
+
+    std::vector<std::string> SimpleParser::parseTemporaryVariables()
+    {
+        std::vector<std::string> tempVars;
+
+        if (peek() != '|')
+        {
+            error("Expected '|' to start temporary variable declaration");
+        }
+        consume(); // consume '|'
+
+        skipWhitespace();
+
+        // Parse variable names
+        while (!isAtEnd() && peek() != '|')
+        {
+            if (!isAlpha(peek()))
+            {
+                error("Expected variable name in temporary variable declaration");
+            }
+
+            std::string varName;
+            while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek())))
+            {
+                varName += consume();
+            }
+
+            tempVars.push_back(varName);
+            skipWhitespace();
+        }
+
+        if (peek() != '|')
+        {
+            error("Expected '|' to end temporary variable declaration");
+        }
+        consume(); // consume '|'
+
+        return tempVars;
+    }
+
+    bool SimpleParser::isTemporaryVariableDeclaration()
+    {
+        return !isAtEnd() && peek() == '|';
+    }
+
+    ASTNodePtr SimpleParser::parseVariable()
+    {
+        if (!isAlpha(peek()))
+        {
+            error("Expected variable name");
+        }
+
+        std::string varName;
+        while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek())))
+        {
+            varName += consume();
+        }
+
+        return std::make_unique<VariableNode>(std::move(varName));
+    }
+
+    std::string SimpleParser::parseIdentifier()
+    {
+        if (!isAlpha(peek()))
+        {
+            error("Expected identifier");
+        }
+
+        std::string identifier;
+        while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek())))
+        {
+            identifier += consume();
+        }
+
+        return identifier;
     }
 
 } // namespace smalltalk

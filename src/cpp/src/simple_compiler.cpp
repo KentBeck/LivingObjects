@@ -10,6 +10,9 @@ namespace smalltalk
     {
         auto compiledMethod = std::make_unique<CompiledMethod>();
 
+        // Set up temporary variables (may be empty)
+        tempVars_ = method.getTempVars();
+
         // Compile the method body
         compileNode(*method.getBody(), *compiledMethod);
 
@@ -38,6 +41,14 @@ namespace smalltalk
         else if (const auto *sequence = dynamic_cast<const SequenceNode *>(&node))
         {
             compileSequence(*sequence, method);
+        }
+        else if (const auto *variable = dynamic_cast<const VariableNode *>(&node))
+        {
+            compileVariable(*variable, method);
+        }
+        else if (const auto *assignment = dynamic_cast<const AssignmentNode *>(&node))
+        {
+            compileAssignment(*assignment, method);
         }
         else
         {
@@ -112,6 +123,49 @@ namespace smalltalk
                 method.addBytecode(static_cast<uint8_t>(Bytecode::POP));
             }
         }
+    }
+
+    void SimpleCompiler::compileVariable(const VariableNode &node, CompiledMethod &method)
+    {
+        const std::string &varName = node.getName();
+
+        // Find the variable in temporary variables
+        for (size_t i = 0; i < tempVars_.size(); i++)
+        {
+            if (tempVars_[i] == varName)
+            {
+                // Generate PUSH_TEMPORARY_VARIABLE bytecode
+                method.addBytecode(static_cast<uint8_t>(Bytecode::PUSH_TEMPORARY_VARIABLE));
+                method.addOperand(static_cast<uint32_t>(i));
+                return;
+            }
+        }
+
+        // Variable not found - this is an error
+        throw std::runtime_error("Undefined variable: " + varName);
+    }
+
+    void SimpleCompiler::compileAssignment(const AssignmentNode &node, CompiledMethod &method)
+    {
+        const std::string &varName = node.getVariable();
+
+        // Compile the value expression first
+        compileNode(*node.getValue(), method);
+
+        // Find the variable in temporary variables
+        for (size_t i = 0; i < tempVars_.size(); i++)
+        {
+            if (tempVars_[i] == varName)
+            {
+                // Generate STORE_TEMPORARY_VARIABLE bytecode
+                method.addBytecode(static_cast<uint8_t>(Bytecode::STORE_TEMPORARY_VARIABLE));
+                method.addOperand(static_cast<uint32_t>(i));
+                return;
+            }
+        }
+
+        // Variable not found - this is an error
+        throw std::runtime_error("Cannot assign to undefined variable: " + varName);
     }
 
 } // namespace smalltalk
