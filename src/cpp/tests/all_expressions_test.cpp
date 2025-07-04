@@ -307,6 +307,7 @@ int main()
         // Blocks - SHOULD FAIL (not implemented)
         {"[3 + 4] value", "7", false, "blocks"},
         {"[:x | x + 1] value: 5", "6", false, "blocks"},
+        {"[| x | x := 5. x + 1] value", "6", false, "blocks"},
 
         // Conditionals - SHOULD FAIL (not implemented)
         {"3 < 4) ifTrue: [10] ifFalse: [20]", "10", false, "conditionals"},

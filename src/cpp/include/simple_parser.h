@@ -48,6 +48,7 @@ namespace smalltalk
         ASTNodePtr parseIdentifierOrLiteral();
         ASTNodePtr parseString();
         ASTNodePtr parseVariable();
+        ASTNodePtr parseBlock();
         std::string parseIdentifier();
 
         // Temporary variable parsing

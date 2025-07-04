@@ -118,21 +118,39 @@ namespace smalltalk
     };
 
     /**
-     * Block node for expressions like [3 + 4]
+     * Block node for expressions like [3 + 4] or [:x | x + 1]
      */
     class BlockNode : public ASTNode
     {
     public:
         explicit BlockNode(ASTNodePtr body) : body_(std::move(body)) {}
 
+        BlockNode(std::vector<std::string> parameters, ASTNodePtr body)
+            : parameters_(std::move(parameters)), body_(std::move(body)) {}
+
+        const std::vector<std::string> &getParameters() const { return parameters_; }
         const ASTNode *getBody() const { return body_.get(); }
 
         std::string toString() const override
         {
-            return "[" + body_->toString() + "]";
+            std::string result = "[";
+            if (!parameters_.empty())
+            {
+                result += ":";
+                for (size_t i = 0; i < parameters_.size(); i++)
+                {
+                    if (i > 0)
+                        result += " :";
+                    result += parameters_[i];
+                }
+                result += " | ";
+            }
+            result += body_->toString() + "]";
+            return result;
         }
 
     private:
+        std::vector<std::string> parameters_;
         ASTNodePtr body_;
     };
 

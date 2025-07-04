@@ -90,21 +90,39 @@ namespace smalltalk
 
     void SimpleCompiler::compileBlock(const BlockNode &node, CompiledMethod &method)
     {
-        // Simplified block compilation for now
-        // Just generate CREATE_BLOCK with placeholder values
-        // The interpreter will need to handle block creation
+        // Create a separate compiled method for the block
+        CompiledMethod blockMethod;
 
-        // For demonstration, use a simple approach:
-        // Store the block's AST representation or compile it inline
+        // Create a separate compiler instance for the block with its own temp var context
+        SimpleCompiler blockCompiler;
 
-        // Generate CREATE_BLOCK bytecode with minimal parameters
+        // Set up the block compiler's temporary variables (parameters)
+        blockCompiler.tempVars_ = node.getParameters();
+
+        // Add block parameters as temporary variables to the block method
+        for (const auto &param : node.getParameters())
+        {
+            blockMethod.addTempVar(param);
+        }
+
+        // Compile the block body using the block compiler
+        blockCompiler.compileNode(*node.getBody(), blockMethod);
+
+        // Add return instruction if not already present
+        if (blockMethod.getBytecodes().empty() ||
+            blockMethod.getBytecodes().back() != static_cast<uint8_t>(Bytecode::RETURN_STACK_TOP))
+        {
+            blockMethod.addBytecode(static_cast<uint8_t>(Bytecode::RETURN_STACK_TOP));
+        }
+
+        // Store the block method as a literal in the main method
+        int blockMethodIndex = method.addLiteral(TaggedValue(reinterpret_cast<Object *>(&blockMethod)));
+
+        // Generate CREATE_BLOCK bytecode with actual parameters
         method.addBytecode(static_cast<uint8_t>(Bytecode::CREATE_BLOCK));
-        method.addOperand(0); // bytecode size (placeholder)
-        method.addOperand(0); // literal count (placeholder)
-        method.addOperand(0); // temp var count (placeholder)
-
-        // TODO: Properly compile block body and store method reference
-        // For now, this creates an empty block that can be executed
+        method.addOperand(static_cast<uint32_t>(blockMethod.getBytecodes().size())); // bytecode size
+        method.addOperand(static_cast<uint32_t>(blockMethod.getLiterals().size()));  // literal count
+        method.addOperand(static_cast<uint32_t>(node.getParameters().size()));       // temp var count (parameters)
     }
 
     void SimpleCompiler::compileSequence(const SequenceNode &node, CompiledMethod &method)

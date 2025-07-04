@@ -313,17 +313,7 @@ namespace smalltalk
         }
         else if (peek() == '[')
         {
-            consume(); // consume '['
-            auto expr = parseStatements();
-            skipWhitespace();
-
-            if (peek() != ']')
-            {
-                error("Expected ']' after block expression");
-            }
-            consume(); // consume ']'
-
-            return std::make_unique<BlockNode>(std::move(expr));
+            return parseBlock();
         }
         else if (isDigit(peek()))
         {
@@ -510,6 +500,65 @@ namespace smalltalk
     bool SimpleParser::isAlpha(char c) const
     {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    }
+
+    ASTNodePtr SimpleParser::parseBlock()
+    {
+        consume(); // consume '['
+        skipWhitespace();
+
+        std::vector<std::string> parameters;
+
+        // Check for block parameters starting with ':'
+        if (peek() == ':')
+        {
+            // Parse block parameters
+            while (peek() == ':')
+            {
+                consume(); // consume ':'
+                skipWhitespace();
+
+                if (!isAlpha(peek()))
+                {
+                    error("Expected identifier after ':' in block parameter");
+                }
+
+                std::string paramName;
+                while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek())))
+                {
+                    paramName += consume();
+                }
+                parameters.push_back(paramName);
+                skipWhitespace();
+            }
+
+            // Expect '|' after parameters
+            if (peek() != '|')
+            {
+                error("Expected '|' after block parameters");
+            }
+            consume(); // consume '|'
+            skipWhitespace();
+        }
+
+        // Parse block body
+        auto body = parseStatements();
+        skipWhitespace();
+
+        if (peek() != ']')
+        {
+            error("Expected ']' after block expression");
+        }
+        consume(); // consume ']'
+
+        if (parameters.empty())
+        {
+            return std::make_unique<BlockNode>(std::move(body));
+        }
+        else
+        {
+            return std::make_unique<BlockNode>(std::move(parameters), std::move(body));
+        }
     }
 
     void SimpleParser::error(const std::string &message)
