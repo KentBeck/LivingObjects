@@ -7,44 +7,35 @@ LDFLAGS =
 
 # Source files
 TEST_SRC = tests/test_simple_object_model.cpp
-MEMORY_TEST_SRC = tests/test_simple_memory_manager.cpp
-IMPL_SRC = src/simple_object.cpp src/simple_memory_manager.cpp
-HEADERS = include/simple_object.h include/simple_tagged_value.h include/vm_support.h include/simple_memory_manager.h
+IMPL_SRC = src/simple_object.cpp
+HEADERS = include/simple_object.h include/simple_tagged_value.h include/vm_support.h
 
 # Output
 TEST_EXECUTABLE = test_simple_object_model
-MEMORY_TEST_EXECUTABLE = test_simple_memory_manager
 
-.PHONY: all test test-memory test-all clean
+.PHONY: all test test-all clean
 
-all: $(TEST_EXECUTABLE) $(MEMORY_TEST_EXECUTABLE)
+all: $(TEST_EXECUTABLE)
 
 $(TEST_EXECUTABLE): $(TEST_SRC) $(HEADERS) $(IMPL_SRC)
 	@echo "Compiling simplified object model test..."
 	$(CXX) $(CXXFLAGS) -o $(TEST_EXECUTABLE) $(TEST_SRC) $(IMPL_SRC) $(LDFLAGS)
 	@echo "✓ Compilation successful"
 
-$(MEMORY_TEST_EXECUTABLE): $(MEMORY_TEST_SRC) $(HEADERS) $(IMPL_SRC)
-	@echo "Compiling simplified memory manager test..."
-	$(CXX) $(CXXFLAGS) -o $(MEMORY_TEST_EXECUTABLE) $(MEMORY_TEST_SRC) $(IMPL_SRC) $(LDFLAGS)
-	@echo "✓ Memory manager compilation successful"
+
 
 test: $(TEST_EXECUTABLE)
 	@echo "Running simplified object model tests..."
 	./$(TEST_EXECUTABLE)
 
-test-memory: $(MEMORY_TEST_EXECUTABLE)
-	@echo "Running simplified memory manager tests..."
-	./$(MEMORY_TEST_EXECUTABLE)
-
-test-all: test test-memory
+test-all: test
 	@echo "✓ All tests completed successfully"
 
 run: test-all
 
 clean:
 	@echo "Cleaning up..."
-	rm -f $(TEST_EXECUTABLE) $(MEMORY_TEST_EXECUTABLE)
+	rm -f $(TEST_EXECUTABLE)
 	@echo "✓ Clean complete"
 
 # Debug build with more verbose output
@@ -54,11 +45,9 @@ debug: all
 	@echo "✓ Debug build complete (with AddressSanitizer)"
 
 # Check compilation only (useful for quick syntax checking)
-check: $(TEST_SRC) $(MEMORY_TEST_SRC) $(HEADERS) $(IMPL_SRC)
+check: $(TEST_SRC) $(HEADERS) $(IMPL_SRC)
 	@echo "Checking object model compilation..."
 	$(CXX) $(CXXFLAGS) -fsyntax-only $(TEST_SRC) $(IMPL_SRC)
-	@echo "Checking memory manager compilation..."
-	$(CXX) $(CXXFLAGS) -fsyntax-only $(MEMORY_TEST_SRC) $(IMPL_SRC)
 	@echo "✓ Syntax check passed"
 
 # Show info about the new architecture
@@ -82,7 +71,6 @@ info:
 	@echo "Usage:"
 	@echo "  make -f Makefile.simple_test test-all   # Run all tests"
 	@echo "  make -f Makefile.simple_test test       # Run object model tests only"
-	@echo "  make -f Makefile.simple_test test-memory # Run memory manager tests only"
 	@echo "  make -f Makefile.simple_test debug      # Debug build with sanitizers"
 	@echo "  make -f Makefile.simple_test check      # Syntax check only"
 	@echo ""
