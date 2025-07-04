@@ -157,7 +157,10 @@ namespace smalltalk
         {
             if (tempVars_[i] == varName)
             {
-                // Generate STORE_TEMPORARY_VARIABLE bytecode
+                // Duplicate the value so assignment returns the assigned value
+                method.addBytecode(static_cast<uint8_t>(Bytecode::DUPLICATE));
+
+                // Generate STORE_TEMPORARY_VARIABLE bytecode (this will pop one copy)
                 method.addBytecode(static_cast<uint8_t>(Bytecode::STORE_TEMPORARY_VARIABLE));
                 method.addOperand(static_cast<uint32_t>(i));
                 return;

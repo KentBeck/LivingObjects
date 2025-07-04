@@ -268,8 +268,8 @@ namespace smalltalk
                 }
 
                 TaggedValue value = stack.back();
+                stack.pop_back(); // Pop the value after storing it
                 tempVars[tempIndex] = value;
-                // Leave the value on the stack (Smalltalk assignment returns the assigned value)
                 break;
             }
 
@@ -280,6 +280,17 @@ namespace smalltalk
                     throw std::runtime_error("Stack unexpectedly empty in POP");
                 }
                 stack.pop_back();
+                break;
+            }
+
+            case Bytecode::DUPLICATE:
+            {
+                if (stack.empty())
+                {
+                    throw std::runtime_error("Stack unexpectedly empty in DUPLICATE");
+                }
+                TaggedValue value = stack.back();
+                stack.push_back(value);
                 break;
             }
 

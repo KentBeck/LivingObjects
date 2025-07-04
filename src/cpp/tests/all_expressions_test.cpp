@@ -302,6 +302,7 @@ int main()
 
         // Variable assignment - SHOULD PASS (now implemented!)
         {"| x | x := 42. x", "42", true, "variables"},
+        {"| x | (x := 5) + 1", "6", true, "variables"},
 
         // Blocks - SHOULD FAIL (not implemented)
         {"[3 + 4] value", "7", false, "blocks"},
