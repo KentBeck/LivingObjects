@@ -30,148 +30,108 @@ namespace smalltalk
 
     ASTNodePtr SimpleParser::parseExpression()
     {
-        return parseComparison();
+        return parseBinaryMessage();
+    }
+
+    // Helper to check if current position starts a binary selector
+    bool SimpleParser::isBinarySelector()
+    {
+        if (isAtEnd())
+            return false;
+
+        char c = peek();
+        // Check for single-character binary selectors
+        if (c == '+' || c == '-' || c == '*' || c == '/' || c == ',' ||
+            c == '<' || c == '>' || c == '=' || c == '~')
+        {
+            return true;
+        }
+        return false;
+    }
+
+    // Parse a binary selector and return it as a string
+    std::string SimpleParser::parseBinarySelector()
+    {
+        std::string selector;
+
+        char c = peek();
+        if (c == '<')
+        {
+            consume();
+            selector = "<";
+            if (!isAtEnd() && peek() == '=')
+            {
+                consume();
+                selector = "<=";
+            }
+        }
+        else if (c == '>')
+        {
+            consume();
+            selector = ">";
+            if (!isAtEnd() && peek() == '=')
+            {
+                consume();
+                selector = ">=";
+            }
+        }
+        else if (c == '~')
+        {
+            consume();
+            if (!isAtEnd() && peek() == '=')
+            {
+                consume();
+                selector = "~=";
+            }
+            else
+            {
+                error("Expected '=' after '~'");
+            }
+        }
+        else if (c == '+' || c == '-' || c == '*' || c == '/' || c == ',' || c == '=')
+        {
+            consume();
+            selector = c;
+        }
+        else
+        {
+            error("Invalid binary selector");
+        }
+
+        return selector;
+    }
+
+    ASTNodePtr SimpleParser::parseBinaryMessage()
+    {
+        auto left = parseUnary();
+
+        while (!isAtEnd())
+        {
+            skipWhitespace();
+
+            if (isBinarySelector())
+            {
+                std::string selector = parseBinarySelector();
+                skipWhitespace();
+                auto right = parseUnary();
+
+                std::vector<ASTNodePtr> args;
+                args.push_back(std::move(right));
+                left = std::make_unique<MessageSendNode>(std::move(left), selector, std::move(args));
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return left;
     }
 
     ASTNodePtr SimpleParser::parseComparison()
     {
-        auto left = parseArithmetic();
-
-        while (!isAtEnd())
-        {
-            skipWhitespace();
-
-            // Check for comparison operators
-            BinaryOpNode::Operator compOp;
-            bool foundComparison = false;
-
-            if (peek() == '<')
-            {
-                consume();
-                if (peek() == '=')
-                {
-                    consume();
-                    compOp = BinaryOpNode::Operator::LessThanOrEqual;
-                }
-                else
-                {
-                    compOp = BinaryOpNode::Operator::LessThan;
-                }
-                foundComparison = true;
-            }
-            else if (peek() == '>')
-            {
-                consume();
-                if (peek() == '=')
-                {
-                    consume();
-                    compOp = BinaryOpNode::Operator::GreaterThanOrEqual;
-                }
-                else
-                {
-                    compOp = BinaryOpNode::Operator::GreaterThan;
-                }
-                foundComparison = true;
-            }
-            else if (peek() == '=')
-            {
-                consume();
-                compOp = BinaryOpNode::Operator::Equal;
-                foundComparison = true;
-            }
-            else if (peek() == '~')
-            {
-                consume();
-                if (peek() == '=')
-                {
-                    consume();
-                    compOp = BinaryOpNode::Operator::NotEqual;
-                    foundComparison = true;
-                }
-                else
-                {
-                    error("Expected '=' after '~'");
-                }
-            }
-
-            if (foundComparison)
-            {
-                auto right = parseArithmetic();
-                left = std::make_unique<BinaryOpNode>(std::move(left), compOp, std::move(right));
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        return left;
-    }
-
-    ASTNodePtr SimpleParser::parseArithmetic()
-    {
-        auto left = parseTerm();
-
-        while (!isAtEnd())
-        {
-            skipWhitespace();
-            char op = peek();
-
-            if (op == '+' || op == '-' || op == ',')
-            {
-                consume(); // consume operator
-                auto right = parseTerm();
-
-                BinaryOpNode::Operator binOp;
-                if (op == '+')
-                {
-                    binOp = BinaryOpNode::Operator::Add;
-                }
-                else if (op == '-')
-                {
-                    binOp = BinaryOpNode::Operator::Subtract;
-                }
-                else
-                { // op == ','
-                    binOp = BinaryOpNode::Operator::Concatenate;
-                }
-
-                left = std::make_unique<BinaryOpNode>(std::move(left), binOp, std::move(right));
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        return left;
-    }
-
-    ASTNodePtr SimpleParser::parseTerm()
-    {
-        auto left = parseFactor();
-
-        while (!isAtEnd())
-        {
-            skipWhitespace();
-            char op = peek();
-
-            if (op == '*' || op == '/')
-            {
-                consume(); // consume operator
-                auto right = parseFactor();
-
-                BinaryOpNode::Operator binOp = (op == '*') ? BinaryOpNode::Operator::Multiply : BinaryOpNode::Operator::Divide;
-
-                left = std::make_unique<BinaryOpNode>(std::move(left), binOp, std::move(right));
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        return left;
+        // This method is now unused but kept for compatibility
+        return parseBinaryMessage();
     }
 
     ASTNodePtr SimpleParser::parseFactor()
@@ -490,12 +450,6 @@ namespace smalltalk
             if (const auto *literal = dynamic_cast<const LiteralNode *>(statement))
             {
                 return std::make_unique<LiteralNode>(literal->getValue());
-            }
-            else if (const auto *binOp = dynamic_cast<const BinaryOpNode *>(statement))
-            {
-                // For binary operations, we need to recursively copy
-                // For now, just return the sequence
-                return std::move(sequence);
             }
             // For other types, return the sequence
             return std::move(sequence);

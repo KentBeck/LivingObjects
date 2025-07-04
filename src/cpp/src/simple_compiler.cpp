@@ -26,10 +26,7 @@ namespace smalltalk
         {
             compileLiteral(*literal, method);
         }
-        else if (const auto *binOp = dynamic_cast<const BinaryOpNode *>(&node))
-        {
-            compileBinaryOp(*binOp, method);
-        }
+
         else if (const auto *messageSend = dynamic_cast<const MessageSendNode *>(&node))
         {
             compileMessageSend(*messageSend, method);
@@ -58,47 +55,6 @@ namespace smalltalk
         method.addOperand(literalIndex);
     }
 
-    void SimpleCompiler::compileBinaryOp(const BinaryOpNode &node, CompiledMethod &method)
-    {
-        // Compile receiver (left operand)
-        compileNode(*node.getLeft(), method);
-
-        // Compile argument (right operand)
-        compileNode(*node.getRight(), method);
-
-        // Get the selector string for this operator
-        std::string selectorString = getSelectorForOperator(node.getOperator());
-
-        // Create a symbol for the selector and add it to the literals table
-        Symbol *selectorSymbol = Symbol::intern(selectorString);
-        uint32_t selectorIndex = method.addLiteral(TaggedValue(selectorSymbol));
-
-        // Generate SEND_MESSAGE bytecode with proper selector index
-        method.addBytecode(static_cast<uint8_t>(Bytecode::SEND_MESSAGE));
-        method.addOperand(selectorIndex); // selector index from literal table
-        method.addOperand(1);             // argument count
-
-        switch (node.getOperator())
-        {
-        case BinaryOpNode::Operator::Add:
-        case BinaryOpNode::Operator::Subtract:
-        case BinaryOpNode::Operator::Multiply:
-        case BinaryOpNode::Operator::Divide:
-        case BinaryOpNode::Operator::Concatenate:
-        case BinaryOpNode::Operator::LessThan:
-        case BinaryOpNode::Operator::GreaterThan:
-        case BinaryOpNode::Operator::Equal:
-        case BinaryOpNode::Operator::NotEqual:
-        case BinaryOpNode::Operator::LessThanOrEqual:
-        case BinaryOpNode::Operator::GreaterThanOrEqual:
-            // All handled by the common code above
-            break;
-
-        default:
-            throw std::runtime_error("Unsupported binary operator");
-        }
-    }
-
     void SimpleCompiler::compileMessageSend(const MessageSendNode &node, CompiledMethod &method)
     {
         // Compile receiver
@@ -119,37 +75,6 @@ namespace smalltalk
         method.addBytecode(static_cast<uint8_t>(Bytecode::SEND_MESSAGE));
         method.addOperand(selectorIndex);                           // selector index from literal table
         method.addOperand(static_cast<uint32_t>(arguments.size())); // argument count
-    }
-
-    std::string SimpleCompiler::getSelectorForOperator(BinaryOpNode::Operator op)
-    {
-        switch (op)
-        {
-        case BinaryOpNode::Operator::Add:
-            return "+";
-        case BinaryOpNode::Operator::Subtract:
-            return "-";
-        case BinaryOpNode::Operator::Multiply:
-            return "*";
-        case BinaryOpNode::Operator::Divide:
-            return "/";
-        case BinaryOpNode::Operator::Concatenate:
-            return ",";
-        case BinaryOpNode::Operator::LessThan:
-            return "<";
-        case BinaryOpNode::Operator::GreaterThan:
-            return ">";
-        case BinaryOpNode::Operator::Equal:
-            return "=";
-        case BinaryOpNode::Operator::NotEqual:
-            return "~=";
-        case BinaryOpNode::Operator::LessThanOrEqual:
-            return "<=";
-        case BinaryOpNode::Operator::GreaterThanOrEqual:
-            return ">=";
-        default:
-            return "unknown";
-        }
     }
 
     void SimpleCompiler::compileBlock(const BlockNode &node, CompiledMethod &method)
