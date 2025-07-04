@@ -17,7 +17,8 @@ TaggedValue value(TaggedValue receiver, const std::vector<TaggedValue>& args, In
     }
     
     Object* receiverObj = receiver.asObject();
-    if (receiverObj->header.type != static_cast<uint64_t>(ContextType::BLOCK_CONTEXT)) {
+    if (receiverObj->header.getType() != ObjectType::CONTEXT || 
+        receiverObj->header.getContextType() != static_cast<uint8_t>(ContextType::BLOCK_CONTEXT)) {
         throw std::runtime_error("Block value primitive called on non-block object");
     }
     

@@ -144,7 +144,7 @@ TEST(TestMemoryObjectAllocation)
     // Test allocating a basic object
     Object *obj = memory.allocateObject(ObjectType::OBJECT, 10);
     EXPECT_NE(nullptr, obj);
-    EXPECT_EQ(static_cast<uint64_t>(ObjectType::OBJECT), obj->header.type);
+    EXPECT_EQ(ObjectType::OBJECT, obj->header.getType());
     EXPECT_EQ(10UL, obj->header.size);
 
     // Test the free space decreased
@@ -159,7 +159,7 @@ TEST(TestMemoryByteArrayAllocation)
     // Test allocating a byte array
     Object *bytes = memory.allocateBytes(100);
     EXPECT_NE(nullptr, bytes);
-    EXPECT_EQ(static_cast<uint64_t>(ObjectType::BYTE_ARRAY), bytes->header.type);
+    EXPECT_EQ(ObjectType::BYTE_ARRAY, bytes->header.getType());
 
     // Check the allocated size is properly aligned
     size_t alignedSize = (100 + 7) & ~7; // Align to 8 bytes

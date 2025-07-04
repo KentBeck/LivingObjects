@@ -336,7 +336,7 @@ void MemoryManager::collectGarbage() {
         
         // Move to next object
         size_t objSize;
-        switch (static_cast<ObjectType>(obj->header.type)) {
+        switch (obj->header.getType()) {
             case ObjectType::BYTE_ARRAY:
                 objSize = sizeof(Object) + obj->header.size;
                 break;
@@ -382,7 +382,7 @@ Object* MemoryManager::forwardObject(Object* obj) {
 Object* MemoryManager::copyObject(Object* obj) {
     // Calculate object size
     size_t objSize;
-    switch (static_cast<ObjectType>(obj->header.type)) {
+    switch (obj->header.getType()) {
         case ObjectType::BYTE_ARRAY:
             objSize = sizeof(Object) + obj->header.size;
             break;
@@ -418,7 +418,7 @@ Object* MemoryManager::copyObject(Object* obj) {
 
 void MemoryManager::scanObject(Object* obj) {
     // Scan object fields for references
-    if (static_cast<ObjectType>(obj->header.type) != ObjectType::BYTE_ARRAY) {
+    if (obj->header.getType() != ObjectType::BYTE_ARRAY) {
         // Get object slots
         Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(obj) + sizeof(Object));
         

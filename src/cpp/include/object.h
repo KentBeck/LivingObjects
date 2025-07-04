@@ -8,12 +8,22 @@ namespace smalltalk {
 
 // Forward declarations
 class Class;
+enum class ContextType : uint8_t;
 
 // Object header bitfield sizes
 const uint64_t OBJECT_HEADER_SIZE_BITS = 24;
-const uint64_t OBJECT_HEADER_FLAGS_BITS = 5;
-const uint64_t OBJECT_HEADER_TYPE_BITS = 3;
+const uint64_t OBJECT_HEADER_FLAGS_BITS = 8;  // Now includes ObjectType (3 bits) + flags (3 bits) + 2 spare
 const uint64_t OBJECT_HEADER_HASH_BITS = 32;
+
+// ObjectType is packed into the flags field (bits 3-5)
+const uint64_t OBJECT_TYPE_SHIFT = 3;
+const uint64_t OBJECT_TYPE_MASK = 0x7;  // 3 bits mask
+const uint64_t OBJECT_FLAGS_MASK = 0x7; // 3 bits mask for actual flags
+
+// ContextType is packed into the top 3 bits of hash field for CONTEXT objects
+const uint64_t CONTEXT_TYPE_SHIFT = 29;
+const uint64_t CONTEXT_TYPE_MASK = 0x7;  // 3 bits mask
+const uint64_t CONTEXT_HASH_MASK = 0x1FFFFFFF; // 29 bits mask for actual hash
 
 // Object type discriminators
 enum class ObjectType : uint8_t {
@@ -40,13 +50,48 @@ enum class ObjectFlag : uint8_t {
 // Object header structure (64 bits)
 struct ObjectHeader {
     uint64_t size : OBJECT_HEADER_SIZE_BITS;      // Size in slots or bytes
-    uint64_t flags : OBJECT_HEADER_FLAGS_BITS;      // Various flags
-    uint64_t type : OBJECT_HEADER_TYPE_BITS;       // Object type
+    uint64_t flags : OBJECT_HEADER_FLAGS_BITS;    // Flags (3 bits) + ObjectType (3 bits) + 2 spare
     uint64_t hash : OBJECT_HEADER_HASH_BITS;      // Identity hash
     
     // Constructor
     ObjectHeader(ObjectType objectType, size_t objectSize, uint32_t objectHash = 0)
-        : size(objectSize), flags(0), type(static_cast<uint64_t>(objectType)), hash(objectHash) {}
+        : size(objectSize), flags(static_cast<uint64_t>(objectType) << OBJECT_TYPE_SHIFT), hash(objectHash) {}
+    
+    // ObjectType operations
+    ObjectType getType() const {
+        return static_cast<ObjectType>((flags >> OBJECT_TYPE_SHIFT) & OBJECT_TYPE_MASK);
+    }
+    
+    void setType(ObjectType objectType) {
+        flags = (flags & ~(OBJECT_TYPE_MASK << OBJECT_TYPE_SHIFT)) | 
+                (static_cast<uint64_t>(objectType) << OBJECT_TYPE_SHIFT);
+    }
+    
+    // ContextType operations (stored in top 3 bits of hash field for CONTEXT objects)
+    uint8_t getContextType() const {
+        return static_cast<uint8_t>((hash >> CONTEXT_TYPE_SHIFT) & CONTEXT_TYPE_MASK);
+    }
+    
+    void setContextType(uint8_t contextType) {
+        hash = (hash & CONTEXT_HASH_MASK) | (static_cast<uint64_t>(contextType) << CONTEXT_TYPE_SHIFT);
+    }
+    
+    // Get the actual hash value (29 bits for CONTEXT objects, 32 bits for others)
+    uint32_t getHash() const {
+        if (getType() == ObjectType::CONTEXT) {
+            return static_cast<uint32_t>(hash & CONTEXT_HASH_MASK);
+        }
+        return static_cast<uint32_t>(hash);
+    }
+    
+    // Set the actual hash value (preserves ContextType for CONTEXT objects)
+    void setHash(uint32_t hashValue) {
+        if (getType() == ObjectType::CONTEXT) {
+            hash = (hash & ~CONTEXT_HASH_MASK) | (hashValue & CONTEXT_HASH_MASK);
+        } else {
+            hash = hashValue;
+        }
+    }
     
     // Flag operations
     void setFlag(ObjectFlag flag) {

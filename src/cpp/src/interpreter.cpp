@@ -535,7 +535,8 @@ void Interpreter::handleExecuteBlock(uint32_t argCount) {
 
     // Pop the block context from the stack
     Object* blockObj = pop();
-    if (blockObj->header.type != static_cast<uint64_t>(ContextType::BLOCK_CONTEXT)) {
+    if (blockObj->header.getType() != ObjectType::CONTEXT || 
+        blockObj->header.getContextType() != static_cast<uint8_t>(ContextType::BLOCK_CONTEXT)) {
         throw std::runtime_error("Object on stack is not a block for EXECUTE_BLOCK");
     }
     BlockContext* block = static_cast<BlockContext*>(blockObj);

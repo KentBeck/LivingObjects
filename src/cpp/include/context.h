@@ -34,8 +34,7 @@ struct MethodContext : public Object {
           sender(senderContext),
           self(receiver) {
         header.setFlag(ObjectFlag::CONTAINS_POINTERS);
-        // Set the specific context type in the hash field (methodRef is already there)
-        header.type = static_cast<uint64_t>(ContextType::METHOD_CONTEXT);
+        header.setContextType(static_cast<uint8_t>(ContextType::METHOD_CONTEXT));
     }
 };
 
@@ -48,7 +47,7 @@ struct BlockContext : public Object {
         : Object(ObjectType::CONTEXT, contextSize, methodRef),
           home(homeContext) {
         header.setFlag(ObjectFlag::CONTAINS_POINTERS);
-        header.type = static_cast<uint64_t>(ContextType::BLOCK_CONTEXT);
+        header.setContextType(static_cast<uint8_t>(ContextType::BLOCK_CONTEXT));
         // Store sender and receiver in the object's variable-sized fields
         // This is a simplified approach; a real VM would manage context fields more robustly
         Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(this) + sizeof(BlockContext));
@@ -68,8 +67,8 @@ struct StackChunk : public Object {
     
     // Constructor
     StackChunk(size_t chunkSize)
-        : Object(ObjectType::CONTEXT, chunkSize, nullptr, 0) { // Using CONTEXT type for stack chunks
-        header.type = static_cast<uint64_t>(ContextType::STACK_CHUNK_BOUNDARY);
+        : Object(ObjectType::CONTEXT, chunkSize, static_cast<uint32_t>(0)) { // Using CONTEXT type for stack chunks
+        header.setContextType(static_cast<uint8_t>(ContextType::STACK_CHUNK_BOUNDARY));
     }
 };
 
