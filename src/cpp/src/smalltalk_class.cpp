@@ -2,6 +2,7 @@
 #include "primitives.h"
 #include <algorithm>
 #include <sstream>
+#include <iostream>
 
 namespace smalltalk
 {
@@ -318,101 +319,113 @@ namespace smalltalk
     namespace ClassUtils
     {
 
-        // Global class pointers for core classes
-        static Class *objectClass = nullptr;
-        static Class *classClass = nullptr;
-        static Metaclass *metaclassClass = nullptr;
-        static Class *integerClass = nullptr;
-        static Class *booleanClass = nullptr;
-        static Class *symbolClass = nullptr;
-        static Class *stringClass = nullptr;
+        // Core class storage as a singleton
+        struct CoreClasses {
+            Class *objectClass = nullptr;
+            Class *classClass = nullptr;
+            Metaclass *metaclassClass = nullptr;
+            Class *integerClass = nullptr;
+            Class *booleanClass = nullptr;
+            Class *symbolClass = nullptr;
+            Class *stringClass = nullptr;
+            
+            static CoreClasses& getInstance() {
+                static CoreClasses instance;
+                return instance;
+            }
+        };
 
         void initializeCoreClasses()
         {
+            auto& core = CoreClasses::getInstance();
+            
+            // Check if already initialized by checking if core classes exist
+            if (core.objectClass != nullptr) return;
+            
             auto &registry = ClassRegistry::getInstance();
 
             // Create Object class first (root of hierarchy)
-            objectClass = new Class("Object", nullptr, nullptr);
-            objectClass->setInstanceSize(0); // Object has no instance variables
-            objectClass->setFormat(ObjectFormat::POINTER_OBJECTS);
-            registry.registerClass("Object", objectClass);
+            core.objectClass = new Class("Object", nullptr, nullptr);
+            core.objectClass->setInstanceSize(0); // Object has no instance variables
+            core.objectClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+            registry.registerClass("Object", core.objectClass);
 
             // Create Class class
-            classClass = new Class("Class", objectClass, nullptr);
-            classClass->setInstanceSize(0); // Class metadata is handled internally
-            classClass->setFormat(ObjectFormat::POINTER_OBJECTS);
-            registry.registerClass("Class", classClass);
+            core.classClass = new Class("Class", core.objectClass, nullptr);
+            core.classClass->setInstanceSize(0); // Class metadata is handled internally
+            core.classClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+            registry.registerClass("Class", core.classClass);
 
             // Set Object's class to be Class
-            objectClass->setClass(classClass);
+            core.objectClass->setClass(core.classClass);
 
             // Create Metaclass class
-            metaclassClass = new Metaclass("Metaclass", classClass, classClass);
-            metaclassClass->setInstanceSize(0);
-            metaclassClass->setFormat(ObjectFormat::POINTER_OBJECTS);
-            registry.registerClass("Metaclass", metaclassClass);
+            core.metaclassClass = new Metaclass("Metaclass", core.classClass, core.classClass);
+            core.metaclassClass->setInstanceSize(0);
+            core.metaclassClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+            registry.registerClass("Metaclass", core.metaclassClass);
 
             // Set Class's class to be Metaclass
-            classClass->setClass(metaclassClass);
+            core.classClass->setClass(core.metaclassClass);
 
             // Create Integer class
-            integerClass = new Class("Integer", objectClass, nullptr);
-            integerClass->setInstanceSize(0); // Integers are immediate values
-            integerClass->setFormat(ObjectFormat::POINTER_OBJECTS);
-            integerClass->setClass(classClass);
-            registry.registerClass("Integer", integerClass);
+            core.integerClass = new Class("Integer", core.objectClass, nullptr);
+            core.integerClass->setInstanceSize(0); // Integers are immediate values
+            core.integerClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+            core.integerClass->setClass(core.classClass);
+            registry.registerClass("Integer", core.integerClass);
 
             // Create Boolean class
-            booleanClass = new Class("Boolean", objectClass, nullptr);
-            booleanClass->setInstanceSize(0); // Booleans are immediate values
-            booleanClass->setFormat(ObjectFormat::POINTER_OBJECTS);
-            booleanClass->setClass(classClass);
-            registry.registerClass("Boolean", booleanClass);
+            core.booleanClass = new Class("Boolean", core.objectClass, nullptr);
+            core.booleanClass->setInstanceSize(0); // Booleans are immediate values
+            core.booleanClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+            core.booleanClass->setClass(core.classClass);
+            registry.registerClass("Boolean", core.booleanClass);
 
             // Create Symbol class
-            symbolClass = new Class("Symbol", objectClass, nullptr);
-            symbolClass->setInstanceSize(0); // Symbol data is managed internally
-            symbolClass->setFormat(ObjectFormat::POINTER_OBJECTS);
-            symbolClass->setClass(classClass);
-            registry.registerClass("Symbol", symbolClass);
+            core.symbolClass = new Class("Symbol", core.objectClass, nullptr);
+            core.symbolClass->setInstanceSize(0); // Symbol data is managed internally
+            core.symbolClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+            core.symbolClass->setClass(core.classClass);
+            registry.registerClass("Symbol", core.symbolClass);
 
             // Create String class - byte indexable for character data
-            stringClass = new Class("String", objectClass, nullptr);
-            stringClass->setInstanceSize(0); // No named instance variables
-            stringClass->setFormat(ObjectFormat::BYTE_INDEXABLE);
-            stringClass->setClass(classClass);
-            registry.registerClass("String", stringClass);
+            core.stringClass = new Class("String", core.objectClass, nullptr);
+            core.stringClass->setInstanceSize(0); // No named instance variables
+            core.stringClass->setFormat(ObjectFormat::BYTE_INDEXABLE);
+            core.stringClass->setClass(core.classClass);
+            registry.registerClass("String", core.stringClass);
 
             // Create Array class - indexable for elements
-            Class *arrayClass = new Class("Array", objectClass, nullptr);
+            Class *arrayClass = new Class("Array", core.objectClass, nullptr);
             arrayClass->setInstanceSize(0); // No named instance variables
             arrayClass->setFormat(ObjectFormat::INDEXABLE_OBJECTS);
-            arrayClass->setClass(classClass);
+            arrayClass->setClass(core.classClass);
             registry.registerClass("Array", arrayClass);
 
             // Create ByteArray class - byte indexable
-            Class *byteArrayClass = new Class("ByteArray", objectClass, nullptr);
+            Class *byteArrayClass = new Class("ByteArray", core.objectClass, nullptr);
             byteArrayClass->setInstanceSize(0); // No named instance variables
             byteArrayClass->setFormat(ObjectFormat::BYTE_INDEXABLE);
-            byteArrayClass->setClass(classClass);
+            byteArrayClass->setClass(core.classClass);
             registry.registerClass("ByteArray", byteArrayClass);
 
             // Create Block class
-            Class *blockClass = new Class("Block", objectClass, nullptr);
+            Class *blockClass = new Class("Block", core.objectClass, nullptr);
             blockClass->setInstanceSize(0); // No named instance variables
             blockClass->setFormat(ObjectFormat::POINTER_OBJECTS);
-            blockClass->setClass(classClass);
+            blockClass->setClass(core.classClass);
             registry.registerClass("Block", blockClass);
 
             // Add primitive methods to Object class
-            addPrimitiveMethod(objectClass, "new", 70);          // Object new
-            addPrimitiveMethod(objectClass, "basicNew", 71);     // Object basicNew
-            addPrimitiveMethod(objectClass, "basicNew:", 72);    // Object basicNew: size
-            addPrimitiveMethod(objectClass, "identityHash", 75); // Object identityHash
-            addPrimitiveMethod(objectClass, "class", 111);       // Object class
+            addPrimitiveMethod(core.objectClass, "new", 70);          // Object new
+            addPrimitiveMethod(core.objectClass, "basicNew", 71);     // Object basicNew
+            addPrimitiveMethod(core.objectClass, "basicNew:", 72);    // Object basicNew: size
+            addPrimitiveMethod(core.objectClass, "identityHash", 75); // Object identityHash
+            addPrimitiveMethod(core.objectClass, "class", 111);       // Object class
 
             // Add class methods to Class class (for all classes)
-            addPrimitiveMethod(classClass, "new:", 72); // Class new: size (for Array new:, etc.)
+            addPrimitiveMethod(core.classClass, "new:", 72); // Class new: size (for Array new:, etc.)
 
             // Add primitive methods to Array class (instance methods)
             addPrimitiveMethod(arrayClass, "at:", 60);     // Array at: index
@@ -420,32 +433,32 @@ namespace smalltalk
             addPrimitiveMethod(arrayClass, "size", 62);    // Array size
 
             // Add primitive methods to Integer class (arithmetic and comparison)
-            addPrimitiveMethod(integerClass, "+", PrimitiveNumbers::SMALL_INT_ADD); // Integer +
-            addPrimitiveMethod(integerClass, "-", PrimitiveNumbers::SMALL_INT_SUB); // Integer -
-            addPrimitiveMethod(integerClass, "*", PrimitiveNumbers::SMALL_INT_MUL); // Integer *
-            addPrimitiveMethod(integerClass, "/", PrimitiveNumbers::SMALL_INT_DIV); // Integer /
-            addPrimitiveMethod(integerClass, "<", PrimitiveNumbers::SMALL_INT_LT);  // Integer <
-            addPrimitiveMethod(integerClass, ">", PrimitiveNumbers::SMALL_INT_GT);  // Integer >
-            addPrimitiveMethod(integerClass, "=", PrimitiveNumbers::SMALL_INT_EQ);  // Integer =
-            addPrimitiveMethod(integerClass, "~=", PrimitiveNumbers::SMALL_INT_NE); // Integer ~=
-            addPrimitiveMethod(integerClass, "<=", PrimitiveNumbers::SMALL_INT_LE); // Integer <=
-            addPrimitiveMethod(integerClass, ">=", PrimitiveNumbers::SMALL_INT_GE); // Integer >=
+            addPrimitiveMethod(core.integerClass, "+", PrimitiveNumbers::SMALL_INT_ADD); // Integer +
+            addPrimitiveMethod(core.integerClass, "-", PrimitiveNumbers::SMALL_INT_SUB); // Integer -
+            addPrimitiveMethod(core.integerClass, "*", PrimitiveNumbers::SMALL_INT_MUL); // Integer *
+            addPrimitiveMethod(core.integerClass, "/", PrimitiveNumbers::SMALL_INT_DIV); // Integer /
+            addPrimitiveMethod(core.integerClass, "<", PrimitiveNumbers::SMALL_INT_LT);  // Integer <
+            addPrimitiveMethod(core.integerClass, ">", PrimitiveNumbers::SMALL_INT_GT);  // Integer >
+            addPrimitiveMethod(core.integerClass, "=", PrimitiveNumbers::SMALL_INT_EQ);  // Integer =
+            addPrimitiveMethod(core.integerClass, "~=", PrimitiveNumbers::SMALL_INT_NE); // Integer ~=
+            addPrimitiveMethod(core.integerClass, "<=", PrimitiveNumbers::SMALL_INT_LE); // Integer <=
+            addPrimitiveMethod(core.integerClass, ">=", PrimitiveNumbers::SMALL_INT_GE); // Integer >=
 
             // Add primitive methods to String class
-            addPrimitiveMethod(stringClass, ",", PrimitiveNumbers::STRING_CONCAT);  // String ,
-            addPrimitiveMethod(stringClass, "size", PrimitiveNumbers::STRING_SIZE); // String size
+            addPrimitiveMethod(core.stringClass, ",", PrimitiveNumbers::STRING_CONCAT);  // String ,
+            addPrimitiveMethod(core.stringClass, "size", PrimitiveNumbers::STRING_SIZE); // String size
 
             // Add primitive methods to Block class
             addPrimitiveMethod(blockClass, "value", PrimitiveNumbers::BLOCK_VALUE); // Block value
         }
 
-        Class *getObjectClass() { return objectClass; }
-        Class *getClassClass() { return classClass; }
-        Class *getMetaclassClass() { return metaclassClass; }
-        Class *getIntegerClass() { return integerClass; }
-        Class *getBooleanClass() { return booleanClass; }
-        Class *getSymbolClass() { return symbolClass; }
-        Class *getStringClass() { return stringClass; }
+        Class *getObjectClass() { return CoreClasses::getInstance().objectClass; }
+        Class *getClassClass() { return CoreClasses::getInstance().classClass; }
+        Class *getMetaclassClass() { return CoreClasses::getInstance().metaclassClass; }
+        Class *getIntegerClass() { return CoreClasses::getInstance().integerClass; }
+        Class *getBooleanClass() { return CoreClasses::getInstance().booleanClass; }
+        Class *getSymbolClass() { return CoreClasses::getInstance().symbolClass; }
+        Class *getStringClass() { return CoreClasses::getInstance().stringClass; }
 
         void addPrimitiveMethod(Class *clazz, const std::string &selector, int primitiveNumber);
 
@@ -466,13 +479,14 @@ namespace smalltalk
 
         Class *createClass(const std::string &name, Class *superclass)
         {
+            auto& core = CoreClasses::getInstance();
             if (superclass == nullptr)
             {
-                superclass = objectClass;
+                superclass = core.objectClass;
             }
 
             Class *newClass = new Class(name, superclass, nullptr);
-            newClass->setClass(classClass);
+            newClass->setClass(core.classClass);
 
             ClassRegistry::getInstance().registerClass(name, newClass);
             return newClass;
@@ -480,8 +494,9 @@ namespace smalltalk
 
         Metaclass *createMetaclass(const std::string &name, Class *instanceClass, Class *superclass)
         {
+            auto& core = CoreClasses::getInstance();
             Metaclass *newMetaclass = new Metaclass(name, instanceClass, superclass);
-            newMetaclass->setClass(metaclassClass);
+            newMetaclass->setClass(core.metaclassClass);
 
             ClassRegistry::getInstance().registerClass(name + " class", newMetaclass);
             return newMetaclass;

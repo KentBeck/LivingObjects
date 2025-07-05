@@ -1,0 +1,95 @@
+./build/run-tests
+Running tests...
+✓ Bytecode instruction sizes test passed
+✓ Bytecode names test passed
+✓ Bytecode values test passed
+✓ Memory object allocation test passed
+✓ Memory byte array allocation test passed
+✓ Tagged value integer test passed
+✓ Tagged value integer range test passed
+✓ Tagged value special values test passed
+All tests passed!
+=== Smalltalk Expression Test Suite ===
+Testing 40 expressions...
+
+
+=== arithmetic ===
+Testing: 3 + 4 -> 7 ❌ FAIL (exception: Stack overflow)
+Testing: 5 - 2 -> 3 ❌ FAIL (exception: Stack overflow)
+Testing: 2 * 3 -> 6 ❌ FAIL (exception: Stack overflow)
+Testing: 10 / 2 -> 5 ❌ FAIL (exception: Stack overflow)
+Testing: (3 + 2) * 4 -> 20 ❌ FAIL (exception: Stack overflow)
+Testing: 10 - 2 * 3 -> 4 ❌ FAIL (exception: Stack overflow)
+Testing: (10 - 2) / 4 -> 2 ❌ FAIL (exception: Stack overflow)
+
+=== comparison ===
+Testing: 3 < 5 -> true ❌ FAIL (exception: Stack overflow)
+Testing: 7 > 2 -> true ❌ FAIL (exception: Stack overflow)
+Testing: 3 = 3 -> true ❌ FAIL (exception: Stack overflow)
+Testing: 4 ~= 5 -> true ❌ FAIL (exception: Stack overflow)
+Testing: 4 <= 4 -> true ❌ FAIL (exception: Stack overflow)
+Testing: 5 >= 3 -> true ❌ FAIL (exception: Stack overflow)
+Testing: 5 < 3 -> false ❌ FAIL (exception: Stack overflow)
+Testing: 2 > 7 -> false ❌ FAIL (exception: Stack overflow)
+Testing: 3 = 4 -> false ❌ FAIL (exception: Stack overflow)
+Testing: (3 + 2) < (4 * 2) -> true ❌ FAIL (exception: Stack overflow)
+Testing: (10 - 3) > (2 * 3) -> true ❌ FAIL (exception: Stack overflow)
+Testing: (6 / 2) = (1 + 2) -> true ❌ FAIL (exception: Stack overflow)
+
+=== object_creation ===
+Testing: Object new -> Object ❌ FAIL (exception: Stack overflow)
+Testing: Array new: 3 -> <Array size: 3> ✅ EXPECTED FAIL (Parse error at position 6: Unexpected characters at end of input)
+
+=== strings ===
+Testing: 'hello' -> hello ❌ FAIL (exception: Stack overflow)
+Testing: 'world' -> world ❌ FAIL (exception: Stack overflow)
+
+=== string_operations ===
+Testing: 'hello' , ' world' -> hello world ❌ FAIL (exception: Stack overflow)
+Testing: 'hello' size -> 5 ❌ FAIL (exception: Stack overflow)
+
+=== literals ===
+Testing: true -> true ❌ FAIL (exception: Stack overflow)
+Testing: false -> false ❌ FAIL (exception: Stack overflow)
+Testing: nil -> nil ❌ FAIL (exception: Stack overflow)
+
+=== variables ===
+Testing: | x | x := 42. x -> 42 ❌ FAIL (exception: Stack overflow)
+Testing: | x | (x := 5) + 1 -> 6 ❌ FAIL (exception: Parse error at position 9: Expected ')' after expression)
+
+=== blocks ===
+Testing: [3 + 4] value -> 7 ✅ EXPECTED FAIL (Stack overflow)
+Testing: [:x | x + 1] value: 5 -> 6 ✅ EXPECTED FAIL (Parse error at position 13: Unexpected characters at end of input)
+Testing: [| x | x := 5. x + 1] value -> 6 ✅ EXPECTED FAIL (Parse error at position 1: Unexpected character: |)
+Testing: | y | y := 3. [| x | x := 5. x + y] value -> 8 ✅ EXPECTED FAIL (Parse error at position 15: Unexpected character: |)
+
+=== conditionals ===
+Testing: 3 < 4) ifTrue: [10] ifFalse: [20] -> 10 ✅ EXPECTED FAIL (Parse error at position 5: Unexpected characters at end of input)
+Testing: true ifTrue: [42] -> 42 ✅ EXPECTED FAIL (Parse error at position 5: Unexpected characters at end of input)
+
+=== collections ===
+Testing: #(1 2 3) at: 2 -> 2 ✅ EXPECTED FAIL (Parse error at position 0: Unexpected character: #)
+Testing: #(1 2 3) size -> 3 ✅ EXPECTED FAIL (Parse error at position 0: Unexpected character: #)
+
+=== dictionaries ===
+Testing: Dictionary new -> <Dictionary> ✅ EXPECTED FAIL (Undefined variable: Dictionary)
+
+=== class_creation ===
+Testing: Object subclass: #Point -> <Class: Point> ✅ EXPECTED FAIL (Parse error at position 7: Unexpected characters at end of input)
+
+=== SUMMARY ===
+Expressions that work correctly: 11/40
+
+By category:
+  arithmetic: 0/7 ❌
+  comparison: 0/12 ❌
+  object_creation: 1/2 ❌
+  strings: 0/2 ❌
+  string_operations: 0/2 ❌
+  literals: 0/3 ❌
+  variables: 0/2 ❌
+  blocks: 4/4 ✅
+  conditionals: 2/2 ✅
+  collections: 2/2 ✅
+  dictionaries: 1/1 ✅
+  class_creation: 1/1 ✅

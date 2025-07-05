@@ -1,4 +1,5 @@
 #include "interpreter.h"
+#include "smalltalk_vm.h"
 #include "primitives.h"
 #include "smalltalk_class.h"
 #include "symbol.h"
@@ -7,6 +8,7 @@
 #include <cstring>
 #include <stdexcept>
 #include <vector>
+#include <iostream>
 
 namespace smalltalk
 {
@@ -14,13 +16,9 @@ namespace smalltalk
     Interpreter::Interpreter(MemoryManager &memory)
         : memoryManager(memory)
     {
-        // Initialize core classes and primitives on first use
-        static bool systemInitialized = false;
-        if (!systemInitialized)
-        {
-            ClassUtils::initializeCoreClasses();
-            Primitives::initialize();
-            systemInitialized = true;
+        // Ensure VM is initialized before any operations
+        if (!SmalltalkVM::isInitialized()) {
+            SmalltalkVM::initialize();
         }
         // Initialize the stack chunk
         currentChunk = memoryManager.allocateStackChunk(1024);
@@ -33,13 +31,13 @@ namespace smalltalk
         MethodContext *context = memoryManager.allocateMethodContext(10 + args.size(), methodObj, receiver, nullptr);
 
         // Get the variable-sized storage area safely
-        // Memory layout: [MethodContext][Object* slots...]
-        // The stackPointer will point into this Object* array
+        // Memory layout: [MethodContext][TaggedValue slots...]
+        // The stackPointer will point into this TaggedValue array
         char *contextEnd = reinterpret_cast<char *>(context) + sizeof(MethodContext);
-        Object **slots = reinterpret_cast<Object **>(contextEnd);
+        TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
 
-        // Validate alignment - Object** must be properly aligned
-        if (reinterpret_cast<uintptr_t>(slots) % alignof(Object *) != 0)
+        // Validate alignment - TaggedValue must be properly aligned
+        if (reinterpret_cast<uintptr_t>(slots) % alignof(TaggedValue) != 0)
         {
             throw std::runtime_error("Stack slots not properly aligned");
         }
@@ -47,13 +45,12 @@ namespace smalltalk
         // Copy arguments to the context
         for (size_t i = 0; i < args.size(); i++)
         {
-            slots[i] = args[i];
+            slots[i] = TaggedValue(args[i]);
         }
 
         // Set up stack pointer to point to the first available slot after arguments
-        // Note: stackPointer is stored as Object* but represents a position in Object** array
-        Object **initialStackPos = slots + args.size();
-        context->stackPointer = reinterpret_cast<Object *>(initialStackPos);
+        TaggedValue *initialStackPos = slots + args.size();
+        context->stackPointer = initialStackPos;
 
         // Execute the context
         return executeContext(context);
@@ -71,7 +68,7 @@ namespace smalltalk
         executeLoop();
 
         // Get the return value (top of stack)
-        Object *result = nullptr;
+        TaggedValue result = TaggedValue::nil();
         if (activeContext != nullptr)
         {
             result = top();
@@ -80,7 +77,17 @@ namespace smalltalk
         // Restore previous context
         activeContext = previousContext;
 
-        return result;
+        // Convert TaggedValue result to Object* for legacy compatibility
+        if (result.isPointer())
+        {
+            return result.asObject();
+        }
+        else
+        {
+            // For immediate values, we need to box them
+            // This is a temporary solution - ideally the whole system should use TaggedValue
+            return nullptr; // TODO: Implement proper boxing
+        }
     }
 
     TaggedValue Interpreter::executeCompiledMethod(const CompiledMethod &method)
@@ -99,8 +106,8 @@ namespace smalltalk
 
         // Initialize the stack pointer properly
         char *contextEnd = reinterpret_cast<char *>(methodContext) + sizeof(MethodContext);
-        Object **slots = reinterpret_cast<Object **>(contextEnd);
-        methodContext->stackPointer = reinterpret_cast<Object *>(slots);
+        TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
+        methodContext->stackPointer = slots;
 
         // Set up execution state using context-based stack
         MethodContext *savedContext = activeContext;
@@ -135,26 +142,9 @@ namespace smalltalk
                     throw std::runtime_error("Invalid literal index: " + std::to_string(literalIndex));
                 }
 
-                // Convert TaggedValue to Object* for context-based stack
+                // Push TaggedValue directly
                 TaggedValue literal = literals[literalIndex];
-                Object *literalObj;
-                if (literal.isInteger())
-                {
-                    // Create an integer object
-                    literalObj = memoryManager.allocateObject(ObjectType::OBJECT, 0);
-                    // Store the integer value in the object (simplified)
-                }
-                else if (literal.isPointer())
-                {
-                    literalObj = literal.asObject();
-                }
-                else
-                {
-                    // Handle other types (nil, boolean, etc.)
-                    literalObj = memoryManager.allocateObject(ObjectType::OBJECT, 0);
-                }
-
-                push(literalObj);
+                push(literal);
                 break;
             }
 
@@ -207,35 +197,22 @@ namespace smalltalk
 
                 std::string selectorString = selector->getName();
 
-                // Pop arguments from context-based stack
+                // Pop arguments from stack
                 std::vector<TaggedValue> args;
                 args.reserve(argCount);
                 for (uint32_t i = 0; i < argCount; i++)
                 {
-                    Object *argObj = pop();
-                    args.push_back(TaggedValue::fromObject(argObj));
+                    args.push_back(pop());
                 }
 
-                // Pop receiver from context-based stack
-                Object *receiverObj = pop();
-                TaggedValue receiver = TaggedValue::fromObject(receiverObj);
+                // Pop receiver from stack
+                TaggedValue receiver = pop();
 
                 // Send the message
                 TaggedValue result = sendMessage(receiver, selectorString, args);
 
-                // Convert result back to Object* and push onto context-based stack
-                Object *resultObj;
-                if (result.isPointer())
-                {
-                    resultObj = result.asObject();
-                }
-                else
-                {
-                    // Create object for immediate values
-                    resultObj = memoryManager.allocateObject(ObjectType::OBJECT, 0);
-                }
-
-                push(resultObj);
+                // Push result directly
+                push(result);
                 break;
             }
 
@@ -326,13 +303,13 @@ namespace smalltalk
             case Bytecode::RETURN_STACK_TOP:
             {
                 // Pop the return value from context-based stack
-                Object *returnObj = pop();
+                TaggedValue returnValue = pop();
 
                 // Restore the previous context
                 activeContext = savedContext;
 
-                // Convert Object* back to TaggedValue for return
-                return TaggedValue(returnObj);
+                // Return the TaggedValue directly
+                return returnValue;
             }
 
             default:
@@ -433,16 +410,20 @@ namespace smalltalk
         return 0;
     }
 
-    void Interpreter::push(Object *value)
+    void Interpreter::push(TaggedValue value)
     {
         if (activeContext == nullptr)
         {
             throw std::runtime_error("No active context for push operation");
         }
 
-        // Get current stack pointer and validate bounds
-        Object **currentSP = getCurrentStackPointer(activeContext);
-        Object **stackEnd = getStackEnd(activeContext);
+        // Get current stack pointer as TaggedValue*
+        TaggedValue *currentSP = activeContext->stackPointer;
+        
+        // Calculate stack bounds - use fixed size for now
+        char *contextEnd = reinterpret_cast<char *>(activeContext) + sizeof(MethodContext);
+        TaggedValue *stackStart = reinterpret_cast<TaggedValue *>(contextEnd);
+        TaggedValue *stackEnd = stackStart + 16; // Fixed stack size
 
         // Check for stack overflow
         if (currentSP >= stackEnd)
@@ -450,25 +431,26 @@ namespace smalltalk
             throw std::runtime_error("Stack overflow");
         }
 
-        // Validate that we're writing to a valid Object* slot
-        validateStackBounds(activeContext, currentSP);
-
         // Push value and update stack pointer
         *currentSP = value;
-        Object **newStackPos = currentSP + 1;
-        activeContext->stackPointer = reinterpret_cast<Object *>(newStackPos);
+        activeContext->stackPointer = currentSP + 1;
     }
+    
 
-    Object *Interpreter::pop()
+
+    TaggedValue Interpreter::pop()
     {
         if (activeContext == nullptr)
         {
             throw std::runtime_error("No active context for pop operation");
         }
 
-        // Get current stack pointer and validate bounds
-        Object **currentSP = getCurrentStackPointer(activeContext);
-        Object **stackStart = getStackStart(activeContext);
+        // Get current stack pointer as TaggedValue*
+        TaggedValue *currentSP = activeContext->stackPointer;
+        
+        // Calculate stack bounds
+        char *contextEnd = reinterpret_cast<char *>(activeContext) + sizeof(MethodContext);
+        TaggedValue *stackStart = reinterpret_cast<TaggedValue *>(contextEnd);
 
         // Check for stack underflow
         if (currentSP <= stackStart)
@@ -476,26 +458,28 @@ namespace smalltalk
             throw std::runtime_error("Stack underflow");
         }
 
-        // Move stack pointer back and validate
-        Object **newStackPos = currentSP - 1;
-        validateStackBounds(activeContext, newStackPos);
-
-        // Get value and update stack pointer
-        Object *value = *newStackPos;
-        activeContext->stackPointer = reinterpret_cast<Object *>(newStackPos);
+        // Move stack pointer back and get value
+        TaggedValue *newStackPos = currentSP - 1;
+        TaggedValue value = *newStackPos;
+        activeContext->stackPointer = newStackPos;
         return value;
     }
+    
 
-    Object *Interpreter::top()
+
+    TaggedValue Interpreter::top()
     {
         if (activeContext == nullptr)
         {
             throw std::runtime_error("No active context for top operation");
         }
 
-        // Get current stack pointer and validate bounds
-        Object **currentSP = getCurrentStackPointer(activeContext);
-        Object **stackStart = getStackStart(activeContext);
+        // Get current stack pointer as TaggedValue*
+        TaggedValue *currentSP = activeContext->stackPointer;
+        
+        // Calculate stack bounds
+        char *contextEnd = reinterpret_cast<char *>(activeContext) + sizeof(MethodContext);
+        TaggedValue *stackStart = reinterpret_cast<TaggedValue *>(contextEnd);
 
         // Check for empty stack
         if (currentSP <= stackStart)
@@ -513,7 +497,7 @@ namespace smalltalk
         // In a real implementation, this would get the literal from the method's literal array
         // For now, we just create a new object
         (void)index; // Suppress unused parameter warning
-        Object *literal = memoryManager.allocateObject(ObjectType::OBJECT, 0);
+        TaggedValue literal = TaggedValue::nil(); // Create a nil value
         push(literal);
     }
 
@@ -522,21 +506,21 @@ namespace smalltalk
         // Get the instance variable from the receiver at the given offset
         // For now, just push a new object
         (void)offset; // Suppress unused parameter warning
-        Object *value = memoryManager.allocateObject(ObjectType::OBJECT, 0);
+        TaggedValue value = TaggedValue::nil();
         push(value);
     }
 
     void Interpreter::handlePushTemporaryVariable(uint32_t offset)
     {
         // Get the temporary variable at the given offset
-        Object **slots = reinterpret_cast<Object **>(reinterpret_cast<char *>(activeContext) + sizeof(MethodContext));
+        TaggedValue *slots = reinterpret_cast<TaggedValue *>(reinterpret_cast<char *>(activeContext) + sizeof(MethodContext));
         push(slots[offset]);
     }
 
     void Interpreter::handlePushSelf()
     {
         // Push the receiver onto the stack
-        push(activeContext->self);
+        push(TaggedValue(activeContext->self));
     }
 
     void Interpreter::handleStoreInstanceVariable(uint32_t offset)
@@ -549,8 +533,8 @@ namespace smalltalk
     void Interpreter::handleStoreTemporaryVariable(uint32_t offset)
     {
         // Store the top of the stack into the temporary variable at the given offset
-        Object *value = pop();
-        Object **slots = reinterpret_cast<Object **>(reinterpret_cast<char *>(activeContext) + sizeof(MethodContext));
+        TaggedValue value = pop();
+        TaggedValue *slots = reinterpret_cast<TaggedValue *>(reinterpret_cast<char *>(activeContext) + sizeof(MethodContext));
         slots[offset] = value;
         push(value); // Leave the value on the stack
     }
@@ -562,7 +546,7 @@ namespace smalltalk
         (void)selectorIndex; // Suppress unused parameter warning
 
         // Pop arguments
-        std::vector<Object *> args;
+        std::vector<TaggedValue> args;
         args.reserve(argCount);
         for (uint32_t i = 0; i < argCount; i++)
         {
@@ -570,13 +554,13 @@ namespace smalltalk
         }
 
         // Pop receiver
-        Object *receiver = pop();
+        TaggedValue receiver = pop();
 
-        // Create a selector object
-        Object *selector = memoryManager.allocateObject(ObjectType::SYMBOL, 0);
+        // Create a selector string (simplified for now)
+        std::string selectorString = "unknownSelector";
 
-        // Send the message
-        Object *result = sendMessage(receiver, selector, args);
+        // Send the message using TaggedValue version
+        TaggedValue result = sendMessage(receiver, selectorString, args);
 
         // Push the result
         push(result);
@@ -585,7 +569,7 @@ namespace smalltalk
     void Interpreter::handleReturnStackTop()
     {
         // Return from the current context
-        Object *result = top();
+        TaggedValue result = top();
 
         // Set the sender as the new active context
         MethodContext *sender = reinterpret_cast<MethodContext *>(activeContext->sender);
@@ -607,10 +591,10 @@ namespace smalltalk
     void Interpreter::handleJumpIfTrue(uint32_t target)
     {
         // Pop the condition
-        Object *condition = pop();
+        TaggedValue condition = pop();
 
         // Check if the condition is true (simplified)
-        bool isTrue = (condition != nullptr);
+        bool isTrue = (!condition.isNil() && !condition.isFalse());
 
         // Jump if true
         if (isTrue)
@@ -622,10 +606,10 @@ namespace smalltalk
     void Interpreter::handleJumpIfFalse(uint32_t target)
     {
         // Pop the condition
-        Object *condition = pop();
+        TaggedValue condition = pop();
 
         // Check if the condition is false (simplified)
-        bool isFalse = (condition == nullptr);
+        bool isFalse = (condition.isNil() || condition.isFalse());
 
         // Jump if false
         if (isFalse)
@@ -643,7 +627,7 @@ namespace smalltalk
     void Interpreter::handleDuplicate()
     {
         // Duplicate the top value on the stack
-        Object *value = top();
+        TaggedValue value = top();
         push(value);
     }
 
@@ -681,7 +665,7 @@ namespace smalltalk
         }
 
         // Push the block context onto the stack
-        push(blockContext);
+        push(TaggedValue(blockContext));
     }
 
     void Interpreter::handleExecuteBlock(uint32_t argCount)
@@ -690,7 +674,12 @@ namespace smalltalk
         (void)argCount;
 
         // Pop the block context from the stack
-        Object *blockObj = pop();
+        TaggedValue blockValue = pop();
+        if (!blockValue.isPointer())
+        {
+            throw std::runtime_error("Block value is not a pointer for EXECUTE_BLOCK");
+        }
+        Object *blockObj = blockValue.asObject();
         if (blockObj->header.getType() != ObjectType::CONTEXT ||
             blockObj->header.getContextType() != static_cast<uint8_t>(ContextType::BLOCK_CONTEXT))
         {

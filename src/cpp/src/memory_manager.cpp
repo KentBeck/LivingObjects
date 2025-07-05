@@ -232,8 +232,8 @@ Object* MemoryManager::allocateArray(size_t length) {
 }
 
 MethodContext* MemoryManager::allocateMethodContext(size_t size, uint32_t method, Object* self, Object* sender) {
-    // Check if there's enough space
-    size_t requiredBytes = sizeof(MethodContext) + (size * sizeof(Object*));
+    // Check if there's enough space  
+    size_t requiredBytes = sizeof(MethodContext) + (size * sizeof(TaggedValue));
     size_t remainingSpace = static_cast<size_t>(
         static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
     );

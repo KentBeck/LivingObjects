@@ -52,9 +52,9 @@ namespace smalltalk
         void handleExecuteBlock(uint32_t argCount);
 
         // Stack operations
-        void push(Object *value);
-        Object *pop();
-        Object *top();
+        void push(TaggedValue value);
+        TaggedValue pop();
+        TaggedValue top();
 
         // Context access
         MethodContext *getCurrentContext() const { return activeContext; }

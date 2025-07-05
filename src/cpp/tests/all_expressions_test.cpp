@@ -5,6 +5,7 @@
 #include "tagged_value.h"
 #include "smalltalk_string.h"
 #include "smalltalk_class.h"
+#include "smalltalk_vm.h"
 #include "primitive_methods.h"
 #include "bytecode.h"
 
@@ -244,12 +245,8 @@ int main()
 {
     runAllTests();
 
-    // Initialize class system and primitives before running tests
-    ClassUtils::initializeCoreClasses();
-
-    // Initialize primitive registry
-    auto &primitiveRegistry = PrimitiveRegistry::getInstance();
-    primitiveRegistry.initializeCorePrimitives();
+    // Initialize the entire Smalltalk VM
+    SmalltalkVM::initialize();
 
     // Add primitive methods to Integer class (temporarily disabled)
     // Class* integerClass = ClassUtils::getIntegerClass();
@@ -264,7 +261,7 @@ int main()
 
         // Complex arithmetic - SHOULD PASS
         {"(3 + 2) * 4", "20", true, "arithmetic"},
-        {"10 - 2 * 3", "4", true, "arithmetic"},
+        {"10 - 2 * 3", "24", true, "arithmetic"},
         {"(10 - 2) / 4", "2", true, "arithmetic"},
 
         // Integer comparisons - SHOULD PASS
@@ -308,6 +305,7 @@ int main()
         {"[3 + 4] value", "7", false, "blocks"},
         {"[:x | x + 1] value: 5", "6", false, "blocks"},
         {"[| x | x := 5. x + 1] value", "6", false, "blocks"},
+        {"| y | y := 3. [| x | x := 5. x + y] value", "8", false, "blocks"},
 
         // Conditionals - SHOULD FAIL (not implemented)
         {"3 < 4) ifTrue: [10] ifFalse: [20]", "10", false, "conditionals"},
