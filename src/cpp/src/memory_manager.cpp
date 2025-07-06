@@ -68,7 +68,7 @@ Object* MemoryManager::allocateInstance(Class* clazz) {
     }
     
     size_t instanceSize = clazz->getInstanceSize();
-    size_t requiredBytes = sizeof(Object) + (instanceSize * sizeof(Object*));
+    size_t requiredBytes = sizeof(Object) + (instanceSize * sizeof(TaggedValue));
     
     // Check if there's enough space
     size_t remainingSpace = static_cast<size_t>(
@@ -90,11 +90,11 @@ Object* MemoryManager::allocateInstance(Class* clazz) {
     Object* obj = static_cast<Object*>(currentAllocation);
     new (obj) Object(ObjectType::OBJECT, instanceSize, clazz);
     
-    // Initialize instance variable slots to null
+    // Initialize instance variable slots to nil (TaggedValue)
     if (instanceSize > 0) {
-        Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(obj) + sizeof(Object));
+        TaggedValue* slots = reinterpret_cast<TaggedValue*>(reinterpret_cast<char*>(obj) + sizeof(Object));
         for (size_t i = 0; i < instanceSize; i++) {
-            slots[i] = nullptr;
+            slots[i] = TaggedValue::nil();
         }
     }
     
@@ -115,7 +115,7 @@ Object* MemoryManager::allocateIndexableInstance(Class* clazz, size_t indexedSiz
     
     size_t instanceSize = clazz->getInstanceSize();
     size_t totalSlots = instanceSize + indexedSize;
-    size_t requiredBytes = sizeof(Object) + (totalSlots * sizeof(Object*));
+    size_t requiredBytes = sizeof(Object) + (totalSlots * sizeof(TaggedValue));
     
     // Check if there's enough space
     size_t remainingSpace = static_cast<size_t>(
@@ -137,11 +137,11 @@ Object* MemoryManager::allocateIndexableInstance(Class* clazz, size_t indexedSiz
     Object* obj = static_cast<Object*>(currentAllocation);
     new (obj) Object(ObjectType::ARRAY, totalSlots, clazz);
     
-    // Initialize all slots to null
+    // Initialize all slots to nil (TaggedValue)
     if (totalSlots > 0) {
-        Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(obj) + sizeof(Object));
+        TaggedValue* slots = reinterpret_cast<TaggedValue*>(reinterpret_cast<char*>(obj) + sizeof(Object));
         for (size_t i = 0; i < totalSlots; i++) {
-            slots[i] = nullptr;
+            slots[i] = TaggedValue::nil();
         }
     }
     
@@ -161,9 +161,9 @@ Object* MemoryManager::allocateByteIndexableInstance(Class* clazz, size_t byteSi
     }
     
     size_t instanceSize = clazz->getInstanceSize();
-    // Align byte data to pointer boundaries
-    size_t alignedByteSize = (byteSize + sizeof(Object*) - 1) & ~(sizeof(Object*) - 1);
-    size_t requiredBytes = sizeof(Object) + (instanceSize * sizeof(Object*)) + alignedByteSize;
+    // Align byte data to TaggedValue boundaries for consistency
+    size_t alignedByteSize = (byteSize + sizeof(TaggedValue) - 1) & ~(sizeof(TaggedValue) - 1);
+    size_t requiredBytes = sizeof(Object) + (instanceSize * sizeof(TaggedValue)) + alignedByteSize;
     
     // Check if there's enough space
     size_t remainingSpace = static_cast<size_t>(
@@ -185,17 +185,17 @@ Object* MemoryManager::allocateByteIndexableInstance(Class* clazz, size_t byteSi
     Object* obj = static_cast<Object*>(currentAllocation);
     new (obj) Object(ObjectType::BYTE_ARRAY, byteSize, clazz);
     
-    // Initialize instance variable slots to null
+    // Initialize instance variable slots to nil (TaggedValue)
     if (instanceSize > 0) {
-        Object** slots = reinterpret_cast<Object**>(reinterpret_cast<char*>(obj) + sizeof(Object));
+        TaggedValue* slots = reinterpret_cast<TaggedValue*>(reinterpret_cast<char*>(obj) + sizeof(Object));
         for (size_t i = 0; i < instanceSize; i++) {
-            slots[i] = nullptr;
+            slots[i] = TaggedValue::nil();
         }
     }
     
     // Initialize byte data to zero
     if (byteSize > 0) {
-        char* byteData = reinterpret_cast<char*>(obj) + sizeof(Object) + (instanceSize * sizeof(Object*));
+        char* byteData = reinterpret_cast<char*>(obj) + sizeof(Object) + (instanceSize * sizeof(TaggedValue));
         memset(byteData, 0, byteSize);
     }
     
@@ -252,7 +252,7 @@ Object* MemoryManager::allocateBoolean(bool value) {
     return obj;
 }
 
-MethodContext* MemoryManager::allocateMethodContext(size_t size, uint32_t method, Object* self, Object* sender) {
+MethodContext* MemoryManager::allocateMethodContext(size_t size, uint32_t method, TaggedValue self, TaggedValue sender) {
     // Check if there's enough space  
     size_t requiredBytes = sizeof(MethodContext) + (size * sizeof(TaggedValue));
     size_t remainingSpace = static_cast<size_t>(
@@ -283,9 +283,9 @@ MethodContext* MemoryManager::allocateMethodContext(size_t size, uint32_t method
     return context;
 }
 
-BlockContext* MemoryManager::allocateBlockContext(size_t size, uint32_t method, Object* self, Object* sender, Object* home) {
-    // Check if there's enough space
-    size_t requiredBytes = sizeof(BlockContext) + (size * sizeof(Object*));
+BlockContext* MemoryManager::allocateBlockContext(size_t size, uint32_t method, TaggedValue self, TaggedValue sender, TaggedValue home) {
+    // Check if there's enough space - use TaggedValue size for consistency
+    size_t requiredBytes = sizeof(BlockContext) + (size * sizeof(TaggedValue));
     size_t remainingSpace = static_cast<size_t>(
         static_cast<char*>(fromSpace) + spaceSize - static_cast<char*>(currentAllocation)
     );

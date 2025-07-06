@@ -25,13 +25,13 @@ namespace smalltalk
     struct MethodContext : public Object
     {
         TaggedValue *stackPointer = nullptr;  // Current stack top
-        Object *sender;                  // Sender context
-        Object *self;                    // Receiver
-        uint64_t instructionPointer = 0; // Current IP
+        TaggedValue sender;                   // Sender context (TaggedValue for consistency)
+        TaggedValue self;                     // Receiver (TaggedValue for consistency)
+        uint64_t instructionPointer = 0;     // Current IP
         // Variable-sized temporaries and stack follow
 
         // Constructor
-        MethodContext(size_t contextSize, uint32_t methodRef, Object *receiver, Object *senderContext)
+        MethodContext(size_t contextSize, uint32_t methodRef, TaggedValue receiver, TaggedValue senderContext)
             : Object(ObjectType::CONTEXT, contextSize, methodRef),
               sender(senderContext),
               self(receiver)
@@ -44,18 +44,17 @@ namespace smalltalk
     // Block context structure
     struct BlockContext : public Object
     {
-        Object *home; // Home context (method context)
+        TaggedValue home; // Home context (method context) - TaggedValue for consistency
 
         // Constructor
-        BlockContext(size_t contextSize, uint32_t methodRef, Object *receiver, Object *senderContext, Object *homeContext)
+        BlockContext(size_t contextSize, uint32_t methodRef, TaggedValue receiver, TaggedValue senderContext, TaggedValue homeContext)
             : Object(ObjectType::CONTEXT, contextSize, methodRef),
               home(homeContext)
         {
             header.setFlag(ObjectFlag::CONTAINS_POINTERS);
             header.setContextType(static_cast<uint8_t>(ContextType::BLOCK_CONTEXT));
-            // Store sender and receiver in the object's variable-sized fields
-            // This is a simplified approach; a real VM would manage context fields more robustly
-            Object **slots = reinterpret_cast<Object **>(reinterpret_cast<char *>(this) + sizeof(BlockContext));
+            // Store sender and receiver in the object's variable-sized fields as TaggedValue
+            TaggedValue *slots = reinterpret_cast<TaggedValue *>(reinterpret_cast<char *>(this) + sizeof(BlockContext));
             if (contextSize >= 2)
             { // Ensure there's space for sender and receiver
                 slots[0] = senderContext;

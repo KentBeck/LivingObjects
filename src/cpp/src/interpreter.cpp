@@ -32,8 +32,10 @@ namespace smalltalk
         // Save current context
         MethodContext *previousContext = activeContext;
 
-        // Create a new method context
-        MethodContext *context = memoryManager.allocateMethodContext(10 + args.size(), method->getHash(), receiver, previousContext);
+        // Create a new method context - convert Object* to TaggedValue
+        TaggedValue receiverValue = TaggedValue::fromObject(receiver);
+        TaggedValue senderValue = previousContext ? TaggedValue::fromObject(previousContext) : TaggedValue::nil();
+        MethodContext *context = memoryManager.allocateMethodContext(10 + args.size(), method->getHash(), receiverValue, senderValue);
 
         // Get the variable-sized storage area safely
         // Memory layout: [MethodContext][TaggedValue slots...]
@@ -109,11 +111,13 @@ namespace smalltalk
 
         // Create a method context for execution
         Object *self = memoryManager.allocateObject(ObjectType::OBJECT, 0); // Simple self object
+        TaggedValue selfValue = TaggedValue::fromObject(self);
+        TaggedValue senderValue = TaggedValue::nil(); // No sender
         MethodContext *methodContext = memoryManager.allocateMethodContext(
             16,     // context size (enough for stack and temporaries)
             0,      // method reference (placeholder)
-            self,   // self
-            nullptr // sender
+            selfValue,   // self as TaggedValue
+            senderValue  // sender as TaggedValue
         );
 
         // Initialize the stack pointer properly
@@ -547,15 +551,16 @@ namespace smalltalk
             throw std::runtime_error("No active context for instance variable access");
         }
 
-        Object *receiver = activeContext->self;
-        if (!receiver)
+        // Get receiver from TaggedValue (context->self is now TaggedValue)
+        if (activeContext->self.isNil())
         {
             throw std::runtime_error("No receiver in current context");
         }
+        Object *receiver = activeContext->self.asObject();
 
         // Calculate the instance variable slot location
-        // Instance variables are stored after the Object header as Object* pointers
-        Object **instanceVarSlots = reinterpret_cast<Object **>(
+        // Instance variables are now stored after the Object header as TaggedValue
+        TaggedValue *instanceVarSlots = reinterpret_cast<TaggedValue *>(
             reinterpret_cast<char *>(receiver) + sizeof(Object));
 
         // Check bounds - we need to validate the offset is within the object's instance variables
@@ -564,9 +569,8 @@ namespace smalltalk
             throw std::runtime_error("Instance variable offset out of bounds");
         }
 
-        // Convert Object* to TaggedValue (nullptr becomes nil)
-        Object *objectPtr = instanceVarSlots[offset];
-        TaggedValue value = objectPtr ? TaggedValue(objectPtr) : TaggedValue::nil();
+        // Get TaggedValue directly - no conversion needed
+        TaggedValue value = instanceVarSlots[offset];
         push(value);
     }
 
@@ -591,18 +595,19 @@ namespace smalltalk
             throw std::runtime_error("No active context for instance variable access");
         }
 
-        Object *receiver = activeContext->self;
-        if (!receiver)
+        // Get receiver from TaggedValue (context->self is now TaggedValue)
+        if (activeContext->self.isNil())
         {
             throw std::runtime_error("No receiver in current context");
         }
+        Object *receiver = activeContext->self.asObject();
 
         // Get the value to store
         TaggedValue value = pop();
 
         // Calculate the instance variable slot location
-        // Instance variables are stored after the Object header as Object* pointers
-        Object **instanceVarSlots = reinterpret_cast<Object **>(
+        // Instance variables are now stored after the Object header as TaggedValue
+        TaggedValue *instanceVarSlots = reinterpret_cast<TaggedValue *>(
             reinterpret_cast<char *>(receiver) + sizeof(Object));
 
         // Check bounds - we need to validate the offset is within the object's instance variables
@@ -611,18 +616,8 @@ namespace smalltalk
             throw std::runtime_error("Instance variable offset out of bounds");
         }
 
-        // Convert TaggedValue to Object* for storage
-        // For now, only support object pointers, not immediate values
-        if (value.isPointer())
-        {
-            instanceVarSlots[offset] = value.asObject();
-        }
-        else
-        {
-            // For immediate values, we'd need to box them as objects
-            // For this implementation, we'll throw an error
-            throw std::runtime_error("Cannot store immediate values in instance variables yet");
-        }
+        // Store TaggedValue directly - supports all value types (immediate and pointer)
+        instanceVarSlots[offset] = value;
 
         // Leave the value on the stack (Smalltalk assignment returns the assigned value)
         push(value);
@@ -688,8 +683,11 @@ namespace smalltalk
         // Get the return value from the stack
         TaggedValue returnValue = pop();
         
-        // Get the sender context
-        MethodContext* sender = static_cast<MethodContext*>(activeContext->sender);
+        // Get the sender context (activeContext->sender is now TaggedValue)
+        MethodContext* sender = nullptr;
+        if (!activeContext->sender.isNil()) {
+            sender = static_cast<MethodContext*>(activeContext->sender.asObject());
+        }
         
         if (sender) {
             // Restore the sender context
@@ -774,12 +772,17 @@ namespace smalltalk
         // For now, we'll use the current method's hash as the base
         uint32_t blockMethodRef = activeContext->header.hash;
 
+        // Convert to TaggedValue for consistent allocation
+        TaggedValue receiverValue = homeContext->self;  // Already TaggedValue now
+        TaggedValue senderValue = TaggedValue::nil();   // No sender yet
+        TaggedValue homeValue = TaggedValue::fromObject(homeContext);
+        
         BlockContext *blockContext = memoryManager.allocateBlockContext(
             4,                 // context size (enough for basic temporaries)
             blockMethodRef,    // method reference for the block's code
-            homeContext->self, // receiver (same as home context)
-            nullptr,           // sender (will be set when block is executed)
-            homeContext        // home context
+            receiverValue,     // receiver (same as home context)
+            senderValue,       // sender (will be set when block is executed)
+            homeValue          // home context
         );
 
         // Set the block's class to Block class
@@ -818,8 +821,8 @@ namespace smalltalk
         }
         BlockContext *block = static_cast<BlockContext *>(blockObj);
 
-        // Get the home context
-        MethodContext *home = static_cast<MethodContext *>(block->home);
+        // Get the home context (block->home is now TaggedValue)
+        MethodContext *home = static_cast<MethodContext *>(block->home.asObject());
 
         // Get block's compiled method from the image using the reference in the block
         uint32_t methodRef = block->header.hash;
@@ -829,16 +832,16 @@ namespace smalltalk
         }
 
         // A block executes in the scope of its home context, so it uses the home's receiver
-        Object *receiver = home->self;
+        TaggedValue receiverValue = home->self;  // Already TaggedValue now
 
         // The sender of the new context is the currently active context
-        MethodContext *sender = activeContext;
+        TaggedValue senderValue = TaggedValue::fromObject(activeContext);
 
         // Allocate a new context for the block with space for temporaries and stack
         size_t tempCount = compiledBlock->tempVars.size();
         size_t stackSize = 16; // Default stack size
         MethodContext *newContext = memoryManager.allocateMethodContext(
-            tempCount + stackSize, methodRef, receiver, sender);
+            tempCount + stackSize, methodRef, receiverValue, senderValue);
         
         // Get the variable-sized storage area for temporaries and arguments
         char *contextEnd = reinterpret_cast<char *>(newContext) + sizeof(MethodContext);

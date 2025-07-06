@@ -109,7 +109,7 @@ public:
      * @param sender The sender context.
      * @return A pointer to the allocated method context.
      */
-    MethodContext* allocateMethodContext(size_t size, uint32_t method, Object* self, Object* sender);
+    MethodContext* allocateMethodContext(size_t size, uint32_t method, TaggedValue self, TaggedValue sender);
     
     /**
      * Allocates a block context.
@@ -121,7 +121,7 @@ public:
      * @param home The home context.
      * @return A pointer to the allocated block context.
      */
-    BlockContext* allocateBlockContext(size_t size, uint32_t method, Object* self, Object* sender, Object* home);
+    BlockContext* allocateBlockContext(size_t size, uint32_t method, TaggedValue self, TaggedValue sender, TaggedValue home);
     
     /**
      * Allocates a stack chunk.
