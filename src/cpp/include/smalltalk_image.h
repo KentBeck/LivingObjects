@@ -3,6 +3,7 @@
 #include "object.h"
 #include "smalltalk_class.h"
 #include "tagged_value.h"
+#include "compiled_method.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -120,6 +121,10 @@ public:
     // Get image metadata
     std::unordered_map<std::string, std::string> getMetadata() const;
     void setMetadata(const std::string& key, const std::string& value);
+
+    // Get compiled method
+    CompiledMethod* getCompiledMethod(uint32_t hash) const;
+    void addCompiledMethod(std::unique_ptr<CompiledMethod> method);
     
 public:
     // === Binary Serialization Constants ===
@@ -147,6 +152,7 @@ private:
     std::vector<SourceFile> sourceFiles_;
     std::unordered_map<std::string, TaggedValue> globals_;
     std::unordered_map<std::string, std::string> metadata_;
+    std::unordered_map<uint32_t, std::unique_ptr<CompiledMethod>> compiledMethods_;
     
     std::string imageVersion_;
     uint64_t creationTime_;

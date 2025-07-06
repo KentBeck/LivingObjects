@@ -13,14 +13,16 @@
 namespace smalltalk
 {
 
+    class SmalltalkImage; // Forward declaration
+
     class Interpreter
     {
     public:
         // Constructor
-        Interpreter(MemoryManager &memory);
+        Interpreter(MemoryManager &memory, SmalltalkImage& image);
 
         // Execute method
-        Object *executeMethod(Object *method, Object *receiver, std::vector<Object *> &args);
+        Object *executeMethod(CompiledMethod *method, Object *receiver, std::vector<Object *> &args);
 
         // Execute compiled method directly
         TaggedValue executeCompiledMethod(const CompiledMethod &method);
@@ -72,6 +74,7 @@ namespace smalltalk
     private:
         // Memory manager
         MemoryManager &memoryManager;
+        SmalltalkImage& image;
 
         // Current context and chunk
         MethodContext *activeContext = nullptr;

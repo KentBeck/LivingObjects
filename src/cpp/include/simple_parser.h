@@ -39,6 +39,7 @@ namespace smalltalk
         ASTNodePtr parseStatements();
         ASTNodePtr parseStatement();
         ASTNodePtr parseAssignment();
+        ASTNodePtr parseReturn();
         ASTNodePtr parseBinaryMessage();
         ASTNodePtr parseComparison();
         ASTNodePtr parseFactor();

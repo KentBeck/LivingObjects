@@ -5,6 +5,7 @@
 #include "smalltalk_string.h"
 #include "symbol.h"
 #include "primitive_methods.h"
+#include "compiled_method.h"
 
 #include <filesystem>
 #include <fstream>
@@ -329,7 +330,7 @@ TaggedValue SmalltalkImage::evaluate(const std::string& code) {
         auto compiledMethod = compiler.compile(*methodAST);
         
         MemoryManager memoryManager;
-        Interpreter interpreter(memoryManager);
+        Interpreter interpreter(memoryManager, *this);
         return interpreter.executeCompiledMethod(*compiledMethod);
         
     } catch (const std::exception& e) {
@@ -351,6 +352,19 @@ std::unordered_map<std::string, std::string> SmalltalkImage::getMetadata() const
 void SmalltalkImage::setMetadata(const std::string& key, const std::string& value) {
     metadata_[key] = value;
     touch();
+}
+
+CompiledMethod* SmalltalkImage::getCompiledMethod(uint32_t hash) const {
+    auto it = compiledMethods_.find(hash);
+    if (it != compiledMethods_.end()) {
+        return it->second.get();
+    }
+    return nullptr;
+}
+
+void SmalltalkImage::addCompiledMethod(std::unique_ptr<CompiledMethod> method) {
+    uint32_t hash = method->getHash();
+    compiledMethods_[hash] = std::move(method);
 }
 
 // === Binary Serialization ===

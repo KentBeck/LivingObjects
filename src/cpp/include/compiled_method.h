@@ -63,6 +63,19 @@ namespace smalltalk
         const std::vector<TaggedValue> &getLiterals() const { return literals; }
         const std::vector<std::string> &getTempVars() const { return tempVars; }
 
+        // Get hash of the method
+        uint32_t getHash() const {
+            // Simple hash for now, can be improved later
+            uint32_t hash = 0;
+            for (uint8_t b : bytecodes) {
+                hash = (hash << 5) + hash + b;
+            }
+            for (const auto& lit : literals) {
+                hash = (hash << 5) + hash + lit.rawValue();
+            }
+            return hash;
+        }
+
         // Get literal by index
         TaggedValue getLiteral(uint32_t index) const
         {

@@ -4,6 +4,7 @@
 #include "smalltalk_class.h"
 #include "symbol.h"
 #include "simple_parser.h"
+#include "smalltalk_image.h"
 
 #include <cstring>
 #include <stdexcept>
@@ -13,22 +14,25 @@
 namespace smalltalk
 {
 
-    Interpreter::Interpreter(MemoryManager &memory)
-        : memoryManager(memory)
+    Interpreter::Interpreter(MemoryManager &memory, SmalltalkImage &image)
+        : memoryManager(memory), image(image)
     {
         // Ensure VM is initialized before any operations
-        if (!SmalltalkVM::isInitialized()) {
+        if (!SmalltalkVM::isInitialized())
+        {
             SmalltalkVM::initialize();
         }
         // Initialize the stack chunk
         currentChunk = memoryManager.allocateStackChunk(1024);
     }
 
-    Object *Interpreter::executeMethod(Object *method, Object *receiver, std::vector<Object *> &args)
+    Object *Interpreter::executeMethod(CompiledMethod *method, Object *receiver, std::vector<Object *> &args)
     {
+        // Save current context
+        MethodContext *previousContext = activeContext;
+
         // Create a new method context
-        uint32_t methodObj = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(method));
-        MethodContext *context = memoryManager.allocateMethodContext(10 + args.size(), methodObj, receiver, nullptr);
+        MethodContext *context = memoryManager.allocateMethodContext(10 + args.size(), method->getHash(), receiver, previousContext);
 
         // Get the variable-sized storage area safely
         // Memory layout: [MethodContext][TaggedValue slots...]
@@ -53,40 +57,47 @@ namespace smalltalk
         context->stackPointer = initialStackPos;
 
         // Execute the context
-        return executeContext(context);
+        Object *result = executeContext(context);
+
+        // Restore previous context
+        activeContext = previousContext;
+
+        return result;
     }
 
     Object *Interpreter::executeContext(MethodContext *context)
     {
-        // Save current context
-        MethodContext *previousContext = activeContext;
-
         // Set new active context
         activeContext = context;
 
         // Execute bytecodes until context returns
         executeLoop();
 
-        // Get the return value (top of stack)
-        TaggedValue result = TaggedValue::nil();
-        if (activeContext != nullptr)
-        {
-            result = top();
-        }
-
-        // Restore previous context
-        activeContext = previousContext;
+        // Get the return value (pop from stack)
+        TaggedValue result = pop();
 
         // Convert TaggedValue result to Object* for legacy compatibility
         if (result.isPointer())
         {
             return result.asObject();
         }
+        else if (result.isInteger())
+        {
+            return memoryManager.allocateInteger(result.asInteger());
+        }
+        else if (result.isBoolean())
+        {
+            return memoryManager.allocateBoolean(result.asBoolean());
+        }
+        else if (result.isNil())
+        {
+            // Nil is a special object, not an immediate value that needs boxing
+            return ClassRegistry::getInstance().getClass("UndefinedObject");
+        }
         else
         {
-            // For immediate values, we need to box them
-            // This is a temporary solution - ideally the whole system should use TaggedValue
-            return nullptr; // TODO: Implement proper boxing
+            // Should not happen for now, but handle other immediate types if they arise
+            throw std::runtime_error("Unhandled immediate value type in executeContext");
         }
     }
 
@@ -307,7 +318,7 @@ namespace smalltalk
 
                 // Restore the previous context
                 activeContext = savedContext;
-
+                // should push it on top of the calling context's stack
                 // Return the TaggedValue directly
                 return returnValue;
             }
@@ -328,16 +339,27 @@ namespace smalltalk
 
         while (executing && (activeContext != nullptr))
         {
-            // For a basic implementation, we'll just pretend we're executing bytecodes
-            // In a real implementation, we would fetch bytecodes from the method
+            // Get the compiled method from the image
+            CompiledMethod *method = image.getCompiledMethod(activeContext->header.hash);
+            if (!method)
+            {
+                throw std::runtime_error("Could not find compiled method for context");
+            }
+            const auto &bytecodes = method->getBytecodes();
 
-            // For the minimal example, let's just execute a simple sequence
-            // that pushes a value and returns
-            handlePushSelf();
-            handleReturnStackTop();
+            // Get the current instruction pointer
+            size_t ip = activeContext->instructionPointer;
 
-            // Stop execution after this simple sequence
-            executing = false;
+            // Check if we've run off the end of the bytecodes
+            if (ip >= bytecodes.size())
+            {
+                executing = false;
+                break;
+            }
+
+            // Fetch and dispatch the next bytecode
+            Bytecode bytecode = static_cast<Bytecode>(bytecodes[ip]);
+            dispatch(bytecode);
         }
     }
 
@@ -404,10 +426,25 @@ namespace smalltalk
 
     uint32_t Interpreter::readUInt32(size_t offset)
     {
-        // In a real implementation, this would read from actual bytecodes
-        // For this stub, just return a placeholder value
-        (void)offset; // Suppress unused parameter warning
-        return 0;
+        // Get the compiled method from the image
+        CompiledMethod *method = image.getCompiledMethod(activeContext->header.hash);
+        if (!method)
+        {
+            throw std::runtime_error("Could not find compiled method for context");
+        }
+        const auto &bytecodes = method->getBytecodes();
+
+        // Check for bounds
+        if (offset + 3 >= bytecodes.size())
+        {
+            throw std::runtime_error("Attempt to read beyond bytecode bounds");
+        }
+
+        // Read the 32-bit value
+        return static_cast<uint32_t>(bytecodes[offset]) |
+               (static_cast<uint32_t>(bytecodes[offset + 1]) << 8) |
+               (static_cast<uint32_t>(bytecodes[offset + 2]) << 16) |
+               (static_cast<uint32_t>(bytecodes[offset + 3]) << 24);
     }
 
     void Interpreter::push(TaggedValue value)
@@ -419,7 +456,7 @@ namespace smalltalk
 
         // Get current stack pointer as TaggedValue*
         TaggedValue *currentSP = activeContext->stackPointer;
-        
+
         // Calculate stack bounds - use fixed size for now
         char *contextEnd = reinterpret_cast<char *>(activeContext) + sizeof(MethodContext);
         TaggedValue *stackStart = reinterpret_cast<TaggedValue *>(contextEnd);
@@ -435,8 +472,6 @@ namespace smalltalk
         *currentSP = value;
         activeContext->stackPointer = currentSP + 1;
     }
-    
-
 
     TaggedValue Interpreter::pop()
     {
@@ -447,7 +482,7 @@ namespace smalltalk
 
         // Get current stack pointer as TaggedValue*
         TaggedValue *currentSP = activeContext->stackPointer;
-        
+
         // Calculate stack bounds
         char *contextEnd = reinterpret_cast<char *>(activeContext) + sizeof(MethodContext);
         TaggedValue *stackStart = reinterpret_cast<TaggedValue *>(contextEnd);
@@ -464,8 +499,6 @@ namespace smalltalk
         activeContext->stackPointer = newStackPos;
         return value;
     }
-    
-
 
     TaggedValue Interpreter::top()
     {
@@ -476,7 +509,7 @@ namespace smalltalk
 
         // Get current stack pointer as TaggedValue*
         TaggedValue *currentSP = activeContext->stackPointer;
-        
+
         // Calculate stack bounds
         char *contextEnd = reinterpret_cast<char *>(activeContext) + sizeof(MethodContext);
         TaggedValue *stackStart = reinterpret_cast<TaggedValue *>(contextEnd);
@@ -494,19 +527,43 @@ namespace smalltalk
     // Bytecode handler implementations
     void Interpreter::handlePushLiteral(uint32_t index)
     {
-        // In a real implementation, this would get the literal from the method's literal array
-        // For now, we just create a new object
-        (void)index; // Suppress unused parameter warning
-        TaggedValue literal = TaggedValue::nil(); // Create a nil value
+        CompiledMethod *method = image.getCompiledMethod(activeContext->header.hash);
+        if (!method)
+        {
+            throw std::runtime_error("Could not find compiled method for context");
+        }
+        TaggedValue literal = method->getLiteral(index);
         push(literal);
     }
 
     void Interpreter::handlePushInstanceVariable(uint32_t offset)
     {
         // Get the instance variable from the receiver at the given offset
-        // For now, just push a new object
-        (void)offset; // Suppress unused parameter warning
-        TaggedValue value = TaggedValue::nil();
+        if (!activeContext)
+        {
+            throw std::runtime_error("No active context for instance variable access");
+        }
+
+        Object *receiver = activeContext->self;
+        if (!receiver)
+        {
+            throw std::runtime_error("No receiver in current context");
+        }
+
+        // Calculate the instance variable slot location
+        // Instance variables are stored after the Object header as Object* pointers
+        Object **instanceVarSlots = reinterpret_cast<Object **>(
+            reinterpret_cast<char *>(receiver) + sizeof(Object));
+
+        // Check bounds - we need to validate the offset is within the object's instance variables
+        if (offset >= receiver->header.size)
+        {
+            throw std::runtime_error("Instance variable offset out of bounds");
+        }
+
+        // Convert Object* to TaggedValue (nullptr becomes nil)
+        Object *objectPtr = instanceVarSlots[offset];
+        TaggedValue value = objectPtr ? TaggedValue(objectPtr) : TaggedValue::nil();
         push(value);
     }
 
@@ -526,8 +583,46 @@ namespace smalltalk
     void Interpreter::handleStoreInstanceVariable(uint32_t offset)
     {
         // Store the top of the stack into the instance variable at the given offset
-        // Not implemented in this basic version
-        (void)offset; // Suppress unused parameter warning
+        if (!activeContext)
+        {
+            throw std::runtime_error("No active context for instance variable access");
+        }
+
+        Object *receiver = activeContext->self;
+        if (!receiver)
+        {
+            throw std::runtime_error("No receiver in current context");
+        }
+
+        // Get the value to store
+        TaggedValue value = pop();
+
+        // Calculate the instance variable slot location
+        // Instance variables are stored after the Object header as Object* pointers
+        Object **instanceVarSlots = reinterpret_cast<Object **>(
+            reinterpret_cast<char *>(receiver) + sizeof(Object));
+
+        // Check bounds - we need to validate the offset is within the object's instance variables
+        if (offset >= receiver->header.size)
+        {
+            throw std::runtime_error("Instance variable offset out of bounds");
+        }
+
+        // Convert TaggedValue to Object* for storage
+        // For now, only support object pointers, not immediate values
+        if (value.isPointer())
+        {
+            instanceVarSlots[offset] = value.asObject();
+        }
+        else
+        {
+            // For immediate values, we'd need to box them as objects
+            // For this implementation, we'll throw an error
+            throw std::runtime_error("Cannot store immediate values in instance variables yet");
+        }
+
+        // Leave the value on the stack (Smalltalk assignment returns the assigned value)
+        push(value);
     }
 
     void Interpreter::handleStoreTemporaryVariable(uint32_t offset)
@@ -541,11 +636,33 @@ namespace smalltalk
 
     void Interpreter::handleSendMessage(uint32_t selectorIndex, uint32_t argCount)
     {
-        // Not fully implemented in this basic version
-        // In a real implementation, this would look up the method and execute it
-        (void)selectorIndex; // Suppress unused parameter warning
+        CompiledMethod *method = image.getCompiledMethod(activeContext->header.hash);
+        if (!method)
+        {
+            throw std::runtime_error("Could not find compiled method for context");
+        }
 
-        // Pop arguments
+        // Get the selector from literals
+        TaggedValue selectorValue = method->getLiteral(selectorIndex);
+        if (!selectorValue.isPointer())
+        {
+            throw std::runtime_error("Selector is not a pointer");
+        }
+
+        // Try to get the selector as a Symbol
+        Symbol *selector;
+        try
+        {
+            selector = selectorValue.asSymbol();
+        }
+        catch (const std::exception &)
+        {
+            throw std::runtime_error("Selector is not a symbol");
+        }
+
+        std::string selectorString = selector->getName();
+
+        // Pop arguments from stack
         std::vector<TaggedValue> args;
         args.reserve(argCount);
         for (uint32_t i = 0; i < argCount; i++)
@@ -553,33 +670,20 @@ namespace smalltalk
             args.push_back(pop());
         }
 
-        // Pop receiver
+        // Pop receiver from stack
         TaggedValue receiver = pop();
 
-        // Create a selector string (simplified for now)
-        std::string selectorString = "unknownSelector";
-
-        // Send the message using TaggedValue version
+        // Send the message
         TaggedValue result = sendMessage(receiver, selectorString, args);
 
-        // Push the result
+        // Push result directly
         push(result);
     }
 
     void Interpreter::handleReturnStackTop()
     {
-        // Return from the current context
-        TaggedValue result = top();
-
-        // Set the sender as the new active context
-        MethodContext *sender = reinterpret_cast<MethodContext *>(activeContext->sender);
-        activeContext = sender;
-
-        // If there is a sender, push the result onto its stack
-        if (activeContext != nullptr)
-        {
-            push(result);
-        }
+        // Mark execution as finished for this context
+        executing = false;
     }
 
     void Interpreter::handleJump(uint32_t target)

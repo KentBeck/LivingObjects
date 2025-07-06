@@ -259,6 +259,25 @@ namespace smalltalk
     };
 
     /**
+     * Return node for expressions like "^ 42"
+     */
+    class ReturnNode : public ASTNode
+    {
+    public:
+        explicit ReturnNode(ASTNodePtr value) : value_(std::move(value)) {}
+
+        const ASTNode *getValue() const { return value_.get(); }
+
+        std::string toString() const override
+        {
+            return "^ " + value_->toString();
+        }
+
+    private:
+        ASTNodePtr value_;
+    };
+
+    /**
      * Method node with temporary variables - represents a complete method
      */
     class MethodWithTempsNode : public ASTNode

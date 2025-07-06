@@ -16,9 +16,6 @@ namespace smalltalk
         // Compile the method body
         compileNode(*method.getBody(), *compiledMethod);
 
-        // Add return instruction
-        compiledMethod->addBytecode(static_cast<uint8_t>(Bytecode::RETURN_STACK_TOP));
-
         return compiledMethod;
     }
 
@@ -50,10 +47,20 @@ namespace smalltalk
         {
             compileAssignment(*assignment, method);
         }
+        else if (const auto *ret = dynamic_cast<const ReturnNode *>(&node))
+        {
+            compileReturn(*ret, method);
+        }
         else
         {
             throw std::runtime_error("Unknown AST node type");
         }
+    }
+
+    void SimpleCompiler::compileReturn(const ReturnNode &node, CompiledMethod &method)
+    {
+        compileNode(*node.getValue(), method);
+        method.addBytecode(static_cast<uint8_t>(Bytecode::RETURN_STACK_TOP));
     }
 
     void SimpleCompiler::compileLiteral(const LiteralNode &node, CompiledMethod &method)

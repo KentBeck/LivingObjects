@@ -85,6 +85,11 @@ namespace smalltalk
 
     ASTNodePtr SimpleParser::parseStatement()
     {
+        skipWhitespace();
+        if (peek() == '^') {
+            return parseReturn();
+        }
+
         // Check for assignment
         size_t savedPos = pos_;
         skipWhitespace();
@@ -114,6 +119,13 @@ namespace smalltalk
         // Not an assignment, restore position and parse as expression
         pos_ = savedPos;
         return parseExpression();
+    }
+
+    ASTNodePtr SimpleParser::parseReturn() {
+        consume(); // consume '^'
+        skipWhitespace();
+        auto value = parseExpression();
+        return std::make_unique<ReturnNode>(std::move(value));
     }
 
     ASTNodePtr SimpleParser::parseAssignment()

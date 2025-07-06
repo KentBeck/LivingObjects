@@ -93,6 +93,10 @@ public:
      * @return A pointer to the allocated array.
      */
     Object* allocateArray(size_t length);
+
+    // Allocate boxed primitive values
+    Object* allocateInteger(int32_t value);
+    Object* allocateBoolean(bool value);
     
     // Context allocation
     

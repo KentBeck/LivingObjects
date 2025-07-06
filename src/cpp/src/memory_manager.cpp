@@ -1,5 +1,6 @@
 #include "memory_manager.h"
 #include "smalltalk_class.h"
+#include "smalltalk_string.h" // Required for StringUtils if used elsewhere, good to have for completeness
 
 #include <algorithm>
 #include <cstring>
@@ -228,6 +229,26 @@ Object* MemoryManager::allocateArray(size_t length) {
         slots[i] = nullptr;
     }
     
+    return obj;
+}
+
+Object* MemoryManager::allocateInteger(int32_t value) {
+    Class* integerClass = ClassUtils::getIntegerClass();
+    Object* obj = allocateInstance(integerClass);
+    obj->header.setFlag(ObjectFlag::TAGGED_VALUE_WRAPPER);
+    // Assuming the first instance variable of Integer is its value
+    TaggedValue* valueSlot = reinterpret_cast<TaggedValue*>(reinterpret_cast<char*>(obj) + sizeof(Object));
+    *valueSlot = TaggedValue(value);
+    return obj;
+}
+
+Object* MemoryManager::allocateBoolean(bool value) {
+    Class* booleanClass = ClassUtils::getBooleanClass();
+    Object* obj = allocateInstance(booleanClass);
+    obj->header.setFlag(ObjectFlag::TAGGED_VALUE_WRAPPER);
+    // Assuming the first instance variable of Boolean is its value
+    TaggedValue* valueSlot = reinterpret_cast<TaggedValue*>(reinterpret_cast<char*>(obj) + sizeof(Object));
+    *valueSlot = TaggedValue(value);
     return obj;
 }
 
