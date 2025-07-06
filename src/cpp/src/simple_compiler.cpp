@@ -16,6 +16,13 @@ namespace smalltalk
         // Compile the method body
         compileNode(*method.getBody(), *compiledMethod);
 
+        // Add implicit return of last expression (if no explicit return was generated)
+        if (compiledMethod->getBytecodes().empty() ||
+            compiledMethod->getBytecodes().back() != static_cast<uint8_t>(Bytecode::RETURN_STACK_TOP))
+        {
+            compiledMethod->addBytecode(static_cast<uint8_t>(Bytecode::RETURN_STACK_TOP));
+        }
+
         return compiledMethod;
     }
 
