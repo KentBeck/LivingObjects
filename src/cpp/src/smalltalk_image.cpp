@@ -1,7 +1,6 @@
 #include "smalltalk_image.h"
 #include "simple_parser.h"
 #include "simple_compiler.h"
-#include "interpreter.h"
 #include "smalltalk_string.h"
 #include "symbol.h"
 #include "primitive_methods.h"
@@ -321,23 +320,9 @@ std::vector<std::string> SmalltalkImage::getGlobalNames() const {
 
 // === Image Execution ===
 
-TaggedValue SmalltalkImage::evaluate(const std::string& code) {
-    try {
-        SimpleParser parser(code);
-        auto methodAST = parser.parseMethod();
-        
-        SimpleCompiler compiler;
-        auto compiledMethod = compiler.compile(*methodAST);
-        
-        MemoryManager memoryManager;
-        Interpreter interpreter(memoryManager, *this);
-        return interpreter.executeCompiledMethod(*compiledMethod);
-        
-    } catch (const std::exception& e) {
-        std::cerr << "Error evaluating code: " << e.what() << std::endl;
-        return TaggedValue::nil();
-    }
-}
+// evaluate(code) method moved to smalltalk_image_interpreter.cpp to avoid circular dependency
+
+// evaluate(code, interpreter) method moved to smalltalk_image_interpreter.cpp to avoid circular dependency
 
 TaggedValue SmalltalkImage::doIt(const std::string& expression) {
     return evaluate(expression);

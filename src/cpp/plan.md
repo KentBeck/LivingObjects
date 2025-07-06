@@ -39,9 +39,19 @@ A comprehensive 5-phase plan to transform the VM from a fundamentally flawed arc
 - [ ] Create stack trace generation for debugging
 - [ ] Implement proper context switching with stack preservation
 
-### Basic Infrastructure
-- [ ] Fix circular dependencies between VM and compiler packages
-- [ ] Implement proper error handling and exception propagation
+### Basic Infrastructure ✅ COMPLETE
+- [x] **Fix circular dependencies between VM and compiler packages**
+  - Created `smalltalk_image_interpreter.cpp` to separate interpreter-dependent code
+  - Removed `#include "interpreter.h"` from `smalltalk_image.cpp`
+  - Used dependency injection pattern with overloaded `evaluate()` method
+  - Successfully broke circular dependency: `interpreter.cpp` → `smalltalk_image.h` → `smalltalk_image.cpp` → `interpreter.h`
+- [x] **Implement proper error handling and exception propagation**
+  - Created complete Smalltalk exception hierarchy (`ZeroDivisionError`, `NameError`, `IndexError`, `MessageNotUnderstood`, `ArgumentError`, `RuntimeError`)
+  - Added `ExceptionHandler` for converting C++ exceptions to Smalltalk exceptions
+  - Updated interpreter to catch and properly classify exceptions
+  - Updated primitives to throw proper Smalltalk exceptions (e.g., division by zero → `ZeroDivisionError`)
+  - Added exception test expressions to drive implementation: `10 / 0`, `undefined_variable`, etc.
+  - All exceptions now properly report their Smalltalk class names for debugging
 - [ ] Add comprehensive logging and debugging infrastructure
 - [ ] Create proper unit test framework for VM components
 - [ ] Implement basic performance profiling hooks

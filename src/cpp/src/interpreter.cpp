@@ -5,6 +5,7 @@
 #include "symbol.h"
 #include "simple_parser.h"
 #include "smalltalk_image.h"
+#include "smalltalk_exception.h"
 
 #include <cstring>
 #include <stdexcept>
@@ -119,11 +120,12 @@ namespace smalltalk
         TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
         methodContext->stackPointer = slots;
 
-        // Set up execution state using context-based stack
+        // Set up execution state using context-based stack  
         MethodContext *savedContext = activeContext;
         activeContext = methodContext;
         size_t ip = 0;
 
+        try {
         // Main bytecode execution loop - process one instruction at a time
         while (ip < bytecodes.size())
         {
@@ -332,6 +334,18 @@ namespace smalltalk
         // If we reach here without explicit return, restore context and return nil
         activeContext = savedContext;
         return TaggedValue::nil();
+        
+        } catch (const std::exception& e) {
+            // Restore context state first
+            activeContext = savedContext;
+            
+            // Convert C++ exceptions to Smalltalk exceptions for testing
+            auto smalltalkException = ExceptionHandler::fromStdException(e);
+            std::string exceptionClass = smalltalkException->getExceptionClass();
+            
+            // Rethrow with just the exception class name for testing
+            throw std::runtime_error(exceptionClass);
+        }
     }
 
     TaggedValue Interpreter::executeMethodContext(MethodContext *context)

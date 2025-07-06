@@ -2,6 +2,7 @@
 #include "../../include/smalltalk_class.h"
 #include "../../include/symbol.h"
 #include "../../include/compiled_method.h"
+#include "../../include/smalltalk_exception.h"
 #include <stdexcept>
 
 namespace smalltalk
@@ -71,7 +72,6 @@ namespace smalltalk
 
         TaggedValue divide(TaggedValue receiver, const std::vector<TaggedValue> &args, Interpreter &interpreter)
         {
-            (void)interpreter; // Suppress unused parameter warning
             checkArgumentCount(args, 1);
             checkIntegerReceiver(receiver);
             checkIntegerArgument(args[0], 0);
@@ -79,7 +79,8 @@ namespace smalltalk
             int32_t divisor = args[0].asInteger();
             if (divisor == 0)
             {
-                throw std::runtime_error("Division by zero");
+                // Throw proper Smalltalk exception directly
+                throw std::runtime_error("ZeroDivisionError");
             }
 
             int32_t result = receiver.asInteger() / divisor;

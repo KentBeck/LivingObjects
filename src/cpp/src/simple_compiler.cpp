@@ -1,5 +1,6 @@
 #include "simple_compiler.h"
 #include "symbol.h"
+#include "smalltalk_exception.h"
 
 #include <stdexcept>
 
@@ -174,7 +175,8 @@ namespace smalltalk
         }
 
         // Variable not found - this is an error
-        throw std::runtime_error("Undefined variable: " + varName);
+        // Throw proper Smalltalk exception
+        ExceptionHandler::throwException(std::make_unique<NameError>(varName));
     }
 
     void SimpleCompiler::compileAssignment(const AssignmentNode &node, CompiledMethod &method)
@@ -200,7 +202,8 @@ namespace smalltalk
         }
 
         // Variable not found - this is an error
-        throw std::runtime_error("Cannot assign to undefined variable: " + varName);
+        // Throw proper Smalltalk exception
+        ExceptionHandler::throwException(std::make_unique<NameError>(varName));
     }
 
 } // namespace smalltalk

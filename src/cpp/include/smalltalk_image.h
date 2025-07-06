@@ -13,6 +13,7 @@
 namespace smalltalk {
 
 // Forward declarations
+class Interpreter;
 class CompiledMethod;
 class Symbol;
 
@@ -102,6 +103,9 @@ public:
     
     // Evaluate Smalltalk code in the context of this image
     TaggedValue evaluate(const std::string& code);
+    
+    // Evaluate Smalltalk code using provided interpreter (breaks circular dependency)
+    TaggedValue evaluate(const std::string& code, Interpreter& interpreter);
     
     // Execute a "do it" (arbitrary Smalltalk expression)
     TaggedValue doIt(const std::string& expression);

@@ -383,6 +383,19 @@ int main()
     IntegerClassSetup::addPrimitiveMethods(integerClass);
 
     std::vector<ExpressionTest> tests = {
+        // Exception handling - SHOULD FAIL with proper exceptions
+        {"10 / 0", "ZeroDivisionError", false, "exceptions"},
+        {"undefined_variable", "NameError", false, "exceptions"},
+        {"'hello' at: 10", "IndexError", false, "exceptions"},
+        {"Object new unknownMethod", "MessageNotUnderstood", false, "exceptions"},
+        {"Array new: -1", "ArgumentError", false, "exceptions"},
+        
+        // Exception handling expressions - SHOULD FAIL (not implemented yet)
+        {"[10 / 0] ensure: [42]", "42", false, "exception_handling"},
+        {"[10 / 0] on: ZeroDivisionError do: [:ex | 'caught']", "caught", false, "exception_handling"},
+        {"[1 + 2] ensure: [3 + 4]", "2", false, "exception_handling"},
+        {"ZeroDivisionError signal: 'test error'", "ZeroDivisionError", false, "exception_handling"},
+        
         // Basic arithmetic - SHOULD PASS
         {"3 + 4", "7", true, "arithmetic"},
         {"5 - 2", "3", true, "arithmetic"},

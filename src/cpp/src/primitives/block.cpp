@@ -34,19 +34,23 @@ namespace smalltalk
             BlockContext *block = static_cast<BlockContext *>(receiverObj);
 
             // Get the home context (where the block was defined)
-            if (!block->home)
+            if (block->home.isNil())
             {
                 throw std::runtime_error("Block has no home context");
             }
 
-            MethodContext *home = static_cast<MethodContext *>(block->home);
+            if (!block->home.isPointer()) {
+                throw std::runtime_error("Block home is not a pointer");
+            }
+
+            MethodContext *home = static_cast<MethodContext *>(block->home.asObject());
 
             // Get block's method reference
             uint32_t methodRef = block->header.hash;
 
             // Create a new method context for the block execution
             // The receiver (self) for the block is the same as the home context's self
-            Object *self = home->self;
+            TaggedValue self = home->self;
 
             // The sender is the currently active context
             MethodContext *sender = interpreter.getCurrentContext();
