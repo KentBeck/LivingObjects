@@ -64,6 +64,9 @@ namespace smalltalk
 
         // Memory manager access
         MemoryManager &getMemoryManager() { return memoryManager; }
+        
+        // Image access
+        SmalltalkImage& getImage() { return image; }
 
         // TaggedValue message sending
         TaggedValue sendMessage(TaggedValue receiver, const std::string &selector, const std::vector<TaggedValue> &args);

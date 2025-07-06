@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 namespace smalltalk
 {
@@ -682,8 +683,25 @@ namespace smalltalk
 
     void Interpreter::handleReturnStackTop()
     {
-        // Mark execution as finished for this context
-        executing = false;
+        // Get the return value from the stack
+        TaggedValue returnValue = pop();
+        
+        // Get the sender context
+        MethodContext* sender = static_cast<MethodContext*>(activeContext->sender);
+        
+        if (sender) {
+            // Restore the sender context
+            activeContext = sender;
+            
+            // Push the return value onto the sender's stack
+            push(returnValue);
+        } else {
+            // No sender - we're at the top level, so stop execution
+            executing = false;
+            
+            // Push the value back for the top-level to retrieve
+            push(returnValue);
+        }
     }
 
     void Interpreter::handleJump(uint32_t target)
@@ -749,9 +767,10 @@ namespace smalltalk
             throw std::runtime_error("Cannot create block without an active context");
         }
 
-        // Create a block context
-        // For now, use a placeholder method reference (will be improved later)
-        uint32_t blockMethodRef = 999; // Placeholder method reference
+        // The block method reference will be the current method's hash
+        // combined with the literal index where the block method is stored
+        // For now, we'll use the current method's hash as the base
+        uint32_t blockMethodRef = activeContext->header.hash;
 
         BlockContext *blockContext = memoryManager.allocateBlockContext(
             4,                 // context size (enough for basic temporaries)
@@ -774,8 +793,14 @@ namespace smalltalk
 
     void Interpreter::handleExecuteBlock(uint32_t argCount)
     {
-        // For now, we only support `value` with no arguments
-        (void)argCount;
+        // Pop arguments from the stack (in reverse order)
+        std::vector<TaggedValue> args;
+        args.reserve(argCount);
+        for (uint32_t i = 0; i < argCount; i++)
+        {
+            args.push_back(pop());
+        }
+        std::reverse(args.begin(), args.end());
 
         // Pop the block context from the stack
         TaggedValue blockValue = pop();
@@ -796,12 +821,10 @@ namespace smalltalk
 
         // Get block's compiled method from the image using the reference in the block
         uint32_t methodRef = block->header.hash;
-        // TODO: This depends on `image` being available and `getCompiledMethod`
-        // and `CompiledMethod::tempCount` being correct.
-        // CompiledMethod* compiledBlock = image->getCompiledMethod(methodRef);
-        // if (!compiledBlock) {
-        //     throw std::runtime_error("Could not find compiled method for block");
-        // }
+        CompiledMethod* compiledBlock = image.getCompiledMethod(methodRef);
+        if (!compiledBlock) {
+            throw std::runtime_error("Could not find compiled method for block");
+        }
 
         // A block executes in the scope of its home context, so it uses the home's receiver
         Object *receiver = home->self;
@@ -809,14 +832,42 @@ namespace smalltalk
         // The sender of the new context is the currently active context
         MethodContext *sender = activeContext;
 
-        // Allocate a new context for the block
-        // HACK: Assuming tempCount of 16 until CompiledMethod is available
+        // Allocate a new context for the block with space for temporaries and stack
+        size_t tempCount = compiledBlock->tempVars.size();
+        size_t stackSize = 16; // Default stack size
         MethodContext *newContext = memoryManager.allocateMethodContext(
-            16, methodRef, receiver, sender);
+            tempCount + stackSize, methodRef, receiver, sender);
+        
+        // Get the variable-sized storage area for temporaries and arguments
+        char *contextEnd = reinterpret_cast<char *>(newContext) + sizeof(MethodContext);
+        TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
+        
+        // Copy arguments to the context's temporary variables
+        for (size_t i = 0; i < args.size() && i < tempCount; i++)
+        {
+            slots[i] = args[i];
+        }
+        
+        // Initialize remaining temporaries to nil
+        for (size_t i = args.size(); i < tempCount; i++)
+        {
+            slots[i] = TaggedValue::nil();
+        }
+        
+        // Set up stack pointer to point to the first available slot after temporaries
+        TaggedValue *initialStackPos = slots + tempCount;
+        newContext->stackPointer = initialStackPos;
         newContext->instructionPointer = 0; // Start at the beginning of the block's bytecodes
 
-        // Activate the new context by making it the current one
+        // Execute the block by making it the current context and running its bytecode
         activeContext = newContext;
+        
+        // Execute the block's bytecode until it returns
+        // The executeLoop will run until RETURN_STACK_TOP is encountered
+        executeLoop();
+        
+        // At this point, the block has returned and activeContext should be restored
+        // The return value should be on top of the caller's stack (pushed by RETURN_STACK_TOP)
     }
 
     Object *Interpreter::sendMessage(Object *receiver, Object *selector, std::vector<Object *> &args)
