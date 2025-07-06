@@ -40,7 +40,7 @@ namespace smalltalk
 
     ASTNodePtr SimpleParser::parseExpression()
     {
-        return parseBinaryMessage();
+        return parseAssignmentExpression();
     }
 
     ASTNodePtr SimpleParser::parseStatements()
@@ -90,7 +90,20 @@ namespace smalltalk
             return parseReturn();
         }
 
-        // Check for assignment
+        // For statements, just parse as expression (assignment is now part of expression parsing)
+        return parseExpression();
+    }
+
+    ASTNodePtr SimpleParser::parseReturn() {
+        consume(); // consume '^'
+        skipWhitespace();
+        auto value = parseExpression();
+        return std::make_unique<ReturnNode>(std::move(value));
+    }
+
+    ASTNodePtr SimpleParser::parseAssignmentExpression()
+    {
+        // Check for assignment (lowest precedence)
         size_t savedPos = pos_;
         skipWhitespace();
 
@@ -111,40 +124,14 @@ namespace smalltalk
                 consume(); // consume '='
                 skipWhitespace();
 
-                auto value = parseExpression();
+                auto value = parseAssignmentExpression(); // Right-associative
                 return std::make_unique<AssignmentNode>(std::move(identifier), std::move(value));
             }
         }
 
-        // Not an assignment, restore position and parse as expression
+        // Not an assignment, restore position and parse binary messages
         pos_ = savedPos;
-        return parseExpression();
-    }
-
-    ASTNodePtr SimpleParser::parseReturn() {
-        consume(); // consume '^'
-        skipWhitespace();
-        auto value = parseExpression();
-        return std::make_unique<ReturnNode>(std::move(value));
-    }
-
-    ASTNodePtr SimpleParser::parseAssignment()
-    {
-        // This method is called when we know we have an assignment
-        std::string varName = parseIdentifier();
-        skipWhitespace();
-
-        if (peek() != ':' || pos_ + 1 >= input_.size() || input_[pos_ + 1] != '=')
-        {
-            error("Expected ':=' in assignment");
-        }
-
-        consume(); // consume ':'
-        consume(); // consume '='
-        skipWhitespace();
-
-        auto value = parseExpression();
-        return std::make_unique<AssignmentNode>(std::move(varName), std::move(value));
+        return parseBinaryMessage();
     }
 
     // Helper to check if current position starts a binary selector
@@ -312,7 +299,7 @@ namespace smalltalk
         if (peek() == '(')
         {
             consume(); // consume '('
-            auto expr = parseExpression();
+            auto expr = parseExpression(); // Allow assignments in parentheses
             skipWhitespace();
 
             if (peek() != ')')

@@ -300,6 +300,7 @@ namespace smalltalk
 
             case Bytecode::POP:
             {
+                ip++; // Skip opcode - POP is single-byte instruction
                 // Use context-based pop
                 handlePop();
                 break;
@@ -307,6 +308,7 @@ namespace smalltalk
 
             case Bytecode::DUPLICATE:
             {
+                ip++; // Skip opcode - CRITICAL FIX: DUPLICATE is single-byte instruction
                 // Use context-based duplicate
                 handleDuplicate();
                 break;
