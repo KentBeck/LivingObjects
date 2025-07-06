@@ -9,6 +9,7 @@
 #include "primitives/block.h"
 #include "smalltalk_class.h"
 #include "smalltalk_string.h"
+#include "smalltalk_image.h"
 
 #include <iostream>
 #include <string>
@@ -25,12 +26,17 @@ int main()
     auto &primitiveRegistry = PrimitiveRegistry::getInstance();
     primitiveRegistry.initializeCorePrimitives();
 
+    // Add primitive methods to Integer class
+    Class* integerClass = ClassUtils::getIntegerClass();
+    IntegerClassSetup::addPrimitiveMethods(integerClass);
+
     // Register block primitive
     primitiveRegistry.registerPrimitive(PrimitiveNumbers::BLOCK_VALUE, BlockPrimitives::value);
 
     // Setup the Smalltalk environment
     MemoryManager memory_manager;
-    Interpreter interpreter(memory_manager);
+    SmalltalkImage image;
+    Interpreter interpreter(memory_manager, image);
     SimpleCompiler compiler;
     std::string input;
 

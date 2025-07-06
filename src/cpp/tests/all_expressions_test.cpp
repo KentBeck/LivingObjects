@@ -378,9 +378,9 @@ int main()
     // Initialize the entire Smalltalk VM
     SmalltalkVM::initialize();
 
-    // Add primitive methods to Integer class (temporarily disabled)
-    // Class* integerClass = ClassUtils::getIntegerClass();
-    // IntegerClassSetup::addPrimitiveMethods(integerClass);
+    // Add primitive methods to Integer class
+    Class* integerClass = ClassUtils::getIntegerClass();
+    IntegerClassSetup::addPrimitiveMethods(integerClass);
 
     std::vector<ExpressionTest> tests = {
         // Basic arithmetic - SHOULD PASS

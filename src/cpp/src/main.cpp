@@ -4,6 +4,7 @@
 #include "memory_manager.h"
 #include "smalltalk_string.h"
 #include "smalltalk_class.h"
+#include "smalltalk_image.h"
 #include "primitive_methods.h"
 #include "primitives/block.h"
 #include "compiled_method.h"
@@ -39,9 +40,9 @@ int main(int argc, char** argv) {
         auto& primitiveRegistry = PrimitiveRegistry::getInstance();
         primitiveRegistry.initializeCorePrimitives();
         
-        // Add primitive methods to Integer class (temporarily disabled)
-        // Class* integerClass = ClassUtils::getIntegerClass();
-        // IntegerClassSetup::addPrimitiveMethods(integerClass);
+        // Add primitive methods to Integer class
+        Class* integerClass = ClassUtils::getIntegerClass();
+        IntegerClassSetup::addPrimitiveMethods(integerClass);
         
         // Register block primitive
         primitiveRegistry.registerPrimitive(PrimitiveNumbers::BLOCK_VALUE, BlockPrimitives::value);
@@ -60,7 +61,8 @@ int main(int argc, char** argv) {
         
         // Step 4: Execute using unified interpreter
         MemoryManager memoryManager;
-        Interpreter interpreter(memoryManager);
+        SmalltalkImage image;
+        Interpreter interpreter(memoryManager, image);
         
         // Register block primitive
         primitiveRegistry.registerPrimitive(PrimitiveNumbers::BLOCK_VALUE, BlockPrimitives::value);

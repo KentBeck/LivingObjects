@@ -1,4 +1,7 @@
-#include "../../include/primitive_methods.h"
+#include "../../include/primitives.h"
+#include "../../include/smalltalk_class.h"
+#include "../../include/symbol.h"
+#include "../../include/compiled_method.h"
 #include <stdexcept>
 
 namespace smalltalk
@@ -149,5 +152,44 @@ namespace smalltalk
             return result ? TaggedValue::trueValue() : TaggedValue::falseValue();
         }
     }
+
+    // IntegerClassSetup implementation
+    namespace IntegerClassSetup
+    {
+        void addPrimitiveMethod(Class* clazz, const std::string& selector, int primitiveNumber)
+        {
+            // Create a symbol for the selector
+            Symbol* selectorSymbol = Symbol::intern(selector);
+            
+            // Create a CompiledMethod with the primitive number
+            auto primitiveMethod = std::make_shared<CompiledMethod>();
+            primitiveMethod->primitiveNumber = primitiveNumber;
+            
+            // Add the method to the class
+            clazz->addMethod(selectorSymbol, primitiveMethod);
+        }
+        
+        void addPrimitiveMethods(Class* integerClass)
+        {
+            if (!integerClass) {
+                throw std::runtime_error("Integer class is null");
+            }
+            
+            // Add arithmetic primitive methods using correct primitive numbers
+            addPrimitiveMethod(integerClass, "+", PrimitiveNumbers::SMALL_INT_ADD);
+            addPrimitiveMethod(integerClass, "-", PrimitiveNumbers::SMALL_INT_SUB);
+            addPrimitiveMethod(integerClass, "*", PrimitiveNumbers::SMALL_INT_MUL);
+            addPrimitiveMethod(integerClass, "/", PrimitiveNumbers::SMALL_INT_DIV);
+            
+            // Add comparison primitive methods
+            addPrimitiveMethod(integerClass, "<", PrimitiveNumbers::SMALL_INT_LT);
+            addPrimitiveMethod(integerClass, ">", PrimitiveNumbers::SMALL_INT_GT);
+            addPrimitiveMethod(integerClass, "=", PrimitiveNumbers::SMALL_INT_EQ);
+            addPrimitiveMethod(integerClass, "~=", PrimitiveNumbers::SMALL_INT_NE);
+            addPrimitiveMethod(integerClass, "<=", PrimitiveNumbers::SMALL_INT_LE);
+            addPrimitiveMethod(integerClass, ">=", PrimitiveNumbers::SMALL_INT_GE);
+        }
+    }
+
 
 } // namespace smalltalk

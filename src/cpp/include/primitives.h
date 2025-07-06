@@ -10,6 +10,7 @@ namespace smalltalk {
 
 // Forward declarations
 class Interpreter;
+class Class;
 
 /**
  * Primitive function type
@@ -122,6 +123,17 @@ namespace Primitives {
     
     // Helper to ensure receiver is an object
     Object* ensureReceiverIsObject(TaggedValue receiver, const std::string& primitiveName);
+}
+
+/**
+ * Utility functions for setting up Integer class with primitive methods
+ */
+namespace IntegerClassSetup {
+    // Add all primitive methods to Integer class
+    void addPrimitiveMethods(Class* integerClass);
+    
+    // Create a primitive method and add it to a class
+    void addPrimitiveMethod(Class* clazz, const std::string& selector, int primitiveNumber);
 }
 
 } // namespace smalltalk
