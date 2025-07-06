@@ -1002,3 +1002,150 @@ echo "🚀 Ready to begin Phase 2: Raw Memory Stack Implementation"
 **Current status: Phase 1 at 85% completion, 2-3 weeks to Phase 2 readiness**
 
 This plan provides a complete roadmap from the current partial implementation to a world-class, high-performance Smalltalk VM with comprehensive tooling and production readiness.
+
+## Immediate Action Items (Next Steps)
+
+### 🚨 CRITICAL: Fix Variable Assignment Stack Overflow (Priority 1)
+
+The most critical issue blocking progress is the stack overflow in variable assignment. Based on test results showing `| x | x := 42. x` causes infinite recursion, the immediate next step is:
+
+#### Investigation Strategy:
+1. **Add debug tracing** to `handleStoreTemporary` and `handlePushTemporary` in `src/interpreter.cpp`
+2. **Trace the call stack** to identify where the recursion occurs
+3. **Check for recursive method dispatch** that might be triggered by variable operations
+4. **Validate context state** to ensure proper stack frame management
+
+#### Quick Debug Implementation:
+```cpp
+// Add to src/interpreter.cpp immediately
+void Interpreter::debugTemporaryOperation(const char* op, uint8_t index) {
+    static int depth = 0;
+    if (++depth > 50) {
+        std::cerr << "RECURSION DETECTED in " << op << " index=" << (int)index 
+                  << " depth=" << depth << std::endl;
+        std::cerr << "ActiveContext: " << (void*)activeContext << std::endl;
+        if (activeContext) {
+            std::cerr << "StackPointer: " << (void*)activeContext->stackPointer << std::endl;
+        }
+        abort();
+    }
+    --depth;
+}
+```
+
+### 🔧 Parser Enhancements (Priority 2)
+
+After fixing variable assignment, enhance the parser to support:
+
+#### Array Literals:
+```cpp
+// Add to simple_parser.cpp
+ParsedExpression parseArrayLiteral() {
+    if (current() == '#' && peek() == '(') {
+        advance(); // skip '#'
+        advance(); // skip '('
+        // Parse array elements...
+    }
+}
+```
+
+#### Keyword Messages:
+```cpp
+// Support "Array new: 3" syntax
+ParsedExpression parseKeywordMessage() {
+    // Implementation for keyword:argument pairs
+}
+```
+
+### 📊 Performance Baseline (Priority 3)
+
+Before Phase 2 optimization, establish current performance metrics:
+
+```bash
+# Add to Makefile
+benchmark: build/run-tests
+	@echo "=== Performance Baseline ==="
+	@time ./build/run-tests 2>&1 | grep -E "(PASS|FAIL|ms|expressions)"
+	@echo "=== Memory Usage ==="
+	@/usr/bin/time -l ./build/run-tests 2>&1 | grep -E "(maximum resident|peak memory)"
+```
+
+## Phase 2 Implementation Kickoff Plan
+
+Once Phase 1 is complete (all 42 expressions pass), begin Phase 2 with these steps:
+
+### Week 1: Raw Memory Stack Foundation
+1. **Design stack frame layout** (64-byte aligned)
+2. **Implement basic push/pop operations** with pointer arithmetic
+3. **Create performance measurement infrastructure**
+4. **Benchmark current vs. raw memory performance**
+
+### Week 2: Context Materialization
+1. **Implement lazy MethodContext creation**
+2. **Add materialization triggers** (debugging, exceptions)
+3. **Create conversion between raw frames and contexts**
+4. **Validate compatibility with existing code**
+
+### Week 3: Dispatch Optimization
+1. **Replace switch with computed goto**
+2. **Implement basic inline caching**
+3. **Measure performance improvements**
+4. **Optimize critical path operations**
+
+## Expected Outcomes and Milestones
+
+### Phase 1 Completion (2-3 weeks)
+- ✅ **100% test pass rate** (42/42 expressions)
+- ✅ **Variable assignment working** (no stack overflow)
+- ✅ **Enhanced parser** supporting arrays and keyword messages
+- ✅ **Memory leak free** operation
+- ✅ **Performance baseline** documented
+
+### Phase 2 Completion (3-6 months)
+- ✅ **100x performance improvement** achieved
+- ✅ **Sub-millisecond execution** for simple expressions
+- ✅ **Raw memory stack** operational
+- ✅ **Lazy context materialization** working
+- ✅ **Computed goto dispatch** implemented
+
+### Long-term Vision (18 months)
+- ✅ **Production-ready VM** with full Smalltalk-80 compatibility
+- ✅ **Comprehensive tooling** (debugger, profiler, browser)
+- ✅ **Self-hosted development** environment
+- ✅ **Industry-competitive performance** rivaling modern VMs
+
+## Risk Assessment and Mitigation
+
+### High-Risk Areas:
+1. **Variable assignment bug** - Could indicate fundamental architectural issues
+2. **Memory management complexity** - GC interactions with raw memory stack
+3. **Backward compatibility** - Ensuring existing code continues to work
+4. **Performance regression** - Avoiding slowdowns during optimization
+
+### Mitigation Strategies:
+1. **Incremental development** with feature flags
+2. **Comprehensive testing** at each stage
+3. **Performance monitoring** with automated alerts
+4. **Rollback procedures** for critical failures
+
+## Success Metrics and KPIs
+
+### Technical Metrics:
+- **Test Coverage**: 100% expression test pass rate
+- **Performance**: 100x improvement in method call speed
+- **Memory**: 90% reduction in allocation overhead
+- **Reliability**: Zero crashes in 24-hour stress tests
+
+### Quality Metrics:
+- **Code Quality**: Zero memory leaks (valgrind clean)
+- **Documentation**: Complete API documentation
+- **Testing**: Automated CI/CD with regression detection
+- **Maintainability**: Clear architectural boundaries
+
+### User Experience Metrics:
+- **Startup Time**: Sub-millisecond for simple programs
+- **Development Speed**: Real-time feedback in development tools
+- **Debugging Experience**: Full stack traces and variable inspection
+- **Learning Curve**: Accessible to new Smalltalk developers
+
+This comprehensive plan now provides both strategic vision and tactical implementation guidance for creating a world-class Smalltalk VM that can compete with modern language implementations while maintaining the elegance and power of the Smalltalk-80 system.
