@@ -30,11 +30,8 @@ namespace smalltalk
         // Execute context
         Object *executeContext(MethodContext *context);
 
-        // Main bytecode execution loop
-        void executeLoop();
-
-        // Bytecode dispatch
-        void dispatch(Bytecode bytecode);
+        // Unified method context execution (replaces executeLoop + dispatch)
+        TaggedValue executeMethodContext(MethodContext *context);
 
         // Bytecode handlers
         void handlePushLiteral(uint32_t index);
@@ -85,9 +82,6 @@ namespace smalltalk
 
         // Internal state
         bool executing = false;
-
-        // Read 32-bit value from bytecode
-        uint32_t readUInt32(size_t offset);
 
         // Helper for message sending
         Object *sendMessage(Object *receiver, Object *selector, std::vector<Object *> &args);

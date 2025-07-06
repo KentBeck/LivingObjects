@@ -70,14 +70,8 @@ namespace smalltalk
 
     Object *Interpreter::executeContext(MethodContext *context)
     {
-        // Set new active context
-        activeContext = context;
-
-        // Execute bytecodes until context returns
-        executeLoop();
-
-        // Get the return value (pop from stack)
-        TaggedValue result = pop();
+        // Execute bytecodes until context returns using unified method
+        TaggedValue result = executeMethodContext(context);
 
         // Convert TaggedValue result to Object* for legacy compatibility
         if (result.isPointer())
@@ -340,118 +334,230 @@ namespace smalltalk
         return TaggedValue::nil();
     }
 
-    void Interpreter::executeLoop()
+    TaggedValue Interpreter::executeMethodContext(MethodContext *context)
     {
-        executing = true;
-
-        while (executing && (activeContext != nullptr))
-        {
-            // Get the compiled method from the image
-            CompiledMethod *method = image.getCompiledMethod(activeContext->header.hash);
-            if (!method)
-            {
-                throw std::runtime_error("Could not find compiled method for context");
-            }
-            const auto &bytecodes = method->getBytecodes();
-
-            // Get the current instruction pointer
-            size_t ip = activeContext->instructionPointer;
-
-            // Check if we've run off the end of the bytecodes
-            if (ip >= bytecodes.size())
-            {
-                executing = false;
-                break;
-            }
-
-            // Fetch and dispatch the next bytecode
-            Bytecode bytecode = static_cast<Bytecode>(bytecodes[ip]);
-            dispatch(bytecode);
-        }
-    }
-
-    void Interpreter::dispatch(Bytecode bytecode)
-    {
-        // Get current instruction pointer
-        size_t ip = activeContext->instructionPointer;
-
-        // Update instruction pointer for next instruction
-        activeContext->instructionPointer += getInstructionSize(bytecode);
-
-        // Dispatch based on bytecode
-        switch (bytecode)
-        {
-        case Bytecode::PUSH_LITERAL:
-            handlePushLiteral(readUInt32(ip + 1));
-            break;
-        case Bytecode::PUSH_INSTANCE_VARIABLE:
-            handlePushInstanceVariable(readUInt32(ip + 1));
-            break;
-        case Bytecode::PUSH_TEMPORARY_VARIABLE:
-            handlePushTemporaryVariable(readUInt32(ip + 1));
-            break;
-        case Bytecode::PUSH_SELF:
-            handlePushSelf();
-            break;
-        case Bytecode::STORE_INSTANCE_VARIABLE:
-            handleStoreInstanceVariable(readUInt32(ip + 1));
-            break;
-        case Bytecode::STORE_TEMPORARY_VARIABLE:
-            handleStoreTemporaryVariable(readUInt32(ip + 1));
-            break;
-        case Bytecode::SEND_MESSAGE:
-            handleSendMessage(readUInt32(ip + 1), readUInt32(ip + 5));
-            break;
-        case Bytecode::RETURN_STACK_TOP:
-            handleReturnStackTop();
-            break;
-        case Bytecode::JUMP:
-            handleJump(readUInt32(ip + 1));
-            break;
-        case Bytecode::JUMP_IF_TRUE:
-            handleJumpIfTrue(readUInt32(ip + 1));
-            break;
-        case Bytecode::JUMP_IF_FALSE:
-            handleJumpIfFalse(readUInt32(ip + 1));
-            break;
-        case Bytecode::POP:
-            handlePop();
-            break;
-        case Bytecode::DUPLICATE:
-            handleDuplicate();
-            break;
-        case Bytecode::CREATE_BLOCK:
-            handleCreateBlock(readUInt32(ip + 1), readUInt32(ip + 5), readUInt32(ip + 9));
-            break;
-        case Bytecode::EXECUTE_BLOCK:
-            handleExecuteBlock(readUInt32(ip + 1));
-            break;
-        default:
-            throw std::runtime_error("Unknown bytecode");
-        }
-    }
-
-    uint32_t Interpreter::readUInt32(size_t offset)
-    {
-        // Get the compiled method from the image
-        CompiledMethod *method = image.getCompiledMethod(activeContext->header.hash);
+        // Get the compiled method from the context
+        CompiledMethod *method = image.getCompiledMethod(context->header.hash);
         if (!method)
         {
             throw std::runtime_error("Could not find compiled method for context");
         }
+        
         const auto &bytecodes = method->getBytecodes();
+        const auto &literals = method->getLiterals();
 
-        // Check for bounds
-        if (offset + 3 >= bytecodes.size())
+        // Set up execution state using context-based stack
+        MethodContext *savedContext = activeContext;
+        activeContext = context;
+
+        // Main bytecode execution loop - process one instruction at a time
+        // Use context->instructionPointer instead of local variable
+        while (context->instructionPointer < bytecodes.size())
         {
-            throw std::runtime_error("Attempt to read beyond bytecode bounds");
+            uint8_t opcode = bytecodes[context->instructionPointer];
+            Bytecode instruction = static_cast<Bytecode>(opcode);
+
+            switch (instruction)
+            {
+            case Bytecode::PUSH_LITERAL:
+            {
+                context->instructionPointer++; // Skip opcode
+                if (context->instructionPointer + 3 >= bytecodes.size())
+                {
+                    throw std::runtime_error("Invalid PUSH_LITERAL: not enough bytes for operand");
+                }
+
+                uint32_t literalIndex =
+                    static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
+                context->instructionPointer += 4;
+
+                if (literalIndex >= literals.size())
+                {
+                    throw std::runtime_error("Invalid literal index: " + std::to_string(literalIndex));
+                }
+
+                // Push TaggedValue directly
+                TaggedValue literal = literals[literalIndex];
+                push(literal);
+                break;
+            }
+
+            case Bytecode::SEND_MESSAGE:
+            {
+                context->instructionPointer++; // Skip opcode
+                if (context->instructionPointer + 7 >= bytecodes.size())
+                {
+                    throw std::runtime_error("Invalid SEND_MESSAGE: not enough bytes for operands");
+                }
+
+                // Read selector index
+                uint32_t selectorIndex =
+                    static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
+                context->instructionPointer += 4;
+
+                // Read argument count
+                uint32_t argCount =
+                    static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
+                context->instructionPointer += 4;
+
+                if (selectorIndex >= literals.size())
+                {
+                    throw std::runtime_error("Invalid selector index: " + std::to_string(selectorIndex));
+                }
+
+                // Get the selector from literals
+                TaggedValue selectorValue = literals[selectorIndex];
+                if (!selectorValue.isPointer())
+                {
+                    throw std::runtime_error("Selector is not a pointer");
+                }
+
+                // Try to get the selector as a Symbol
+                Symbol *selector;
+                try
+                {
+                    selector = selectorValue.asSymbol();
+                }
+                catch (const std::exception &)
+                {
+                    throw std::runtime_error("Selector is not a symbol");
+                }
+
+                std::string selectorString = selector->getName();
+
+                // Pop arguments from stack
+                std::vector<TaggedValue> args;
+                args.reserve(argCount);
+                for (uint32_t i = 0; i < argCount; i++)
+                {
+                    args.push_back(pop());
+                }
+
+                // Pop receiver from stack
+                TaggedValue receiver = pop();
+
+                // Send the message
+                TaggedValue result = sendMessage(receiver, selectorString, args);
+
+                // Push result directly
+                push(result);
+                break;
+            }
+
+            case Bytecode::CREATE_BLOCK:
+            {
+                context->instructionPointer++; // Skip opcode
+                if (context->instructionPointer + 11 >= bytecodes.size())
+                {
+                    throw std::runtime_error("Invalid CREATE_BLOCK: not enough bytes for operands");
+                }
+
+                // Read block parameters (little-endian)
+                uint32_t bytecodeSize = static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
+                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
+                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
+                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
+                context->instructionPointer += 4;
+                uint32_t literalCount = static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
+                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
+                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
+                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
+                context->instructionPointer += 4;
+                uint32_t tempVarCount = static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
+                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
+                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
+                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
+                context->instructionPointer += 4;
+
+                // Execute CREATE_BLOCK handler using context-based stack
+                handleCreateBlock(bytecodeSize, literalCount, tempVarCount);
+                break;
+            }
+
+            case Bytecode::PUSH_TEMPORARY_VARIABLE:
+            {
+                context->instructionPointer++; // Skip opcode
+                if (context->instructionPointer + 3 >= bytecodes.size())
+                {
+                    throw std::runtime_error("Invalid PUSH_TEMPORARY_VARIABLE: not enough bytes for operand");
+                }
+
+                uint32_t tempIndex =
+                    static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
+                context->instructionPointer += 4;
+
+                // Use context-based temporary variable access
+                handlePushTemporaryVariable(tempIndex);
+                break;
+            }
+
+            case Bytecode::STORE_TEMPORARY_VARIABLE:
+            {
+                context->instructionPointer++; // Skip opcode
+                if (context->instructionPointer + 3 >= bytecodes.size())
+                {
+                    throw std::runtime_error("Invalid STORE_TEMPORARY_VARIABLE: not enough bytes for operand");
+                }
+
+                uint32_t tempIndex =
+                    static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
+                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
+                context->instructionPointer += 4;
+
+                // Use context-based temporary variable storage
+                handleStoreTemporaryVariable(tempIndex);
+                break;
+            }
+
+            case Bytecode::POP:
+            {
+                context->instructionPointer++; // Skip opcode - POP is single-byte instruction
+                // Use context-based pop
+                handlePop();
+                break;
+            }
+
+            case Bytecode::DUPLICATE:
+            {
+                context->instructionPointer++; // Skip opcode - DUPLICATE is single-byte instruction
+                // Use context-based duplicate
+                handleDuplicate();
+                break;
+            }
+
+            case Bytecode::RETURN_STACK_TOP:
+            {
+                // Pop the return value from context-based stack
+                TaggedValue returnValue = pop();
+
+                // Restore the previous context
+                activeContext = savedContext;
+                // Return the TaggedValue directly
+                return returnValue;
+            }
+
+            default:
+                throw std::runtime_error("Unknown bytecode: " + std::to_string(static_cast<int>(instruction)));
+            }
         }
 
-        // Read the 32-bit value
-        return static_cast<uint32_t>(bytecodes[offset]) |
-               (static_cast<uint32_t>(bytecodes[offset + 1]) << 8) |
-               (static_cast<uint32_t>(bytecodes[offset + 2]) << 16) |
-               (static_cast<uint32_t>(bytecodes[offset + 3]) << 24);
+        // If we reach here without explicit return, restore context and return nil
+        activeContext = savedContext;
+        return TaggedValue::nil();
     }
 
     void Interpreter::push(TaggedValue value)
@@ -864,15 +970,12 @@ namespace smalltalk
         newContext->stackPointer = initialStackPos;
         newContext->instructionPointer = 0; // Start at the beginning of the block's bytecodes
 
-        // Execute the block by making it the current context and running its bytecode
-        activeContext = newContext;
+        // Execute the block's bytecode until it returns using unified method
+        // The executeMethodContext will run until RETURN_STACK_TOP is encountered
+        TaggedValue blockResult = executeMethodContext(newContext);
         
-        // Execute the block's bytecode until it returns
-        // The executeLoop will run until RETURN_STACK_TOP is encountered
-        executeLoop();
-        
-        // At this point, the block has returned and activeContext should be restored
-        // The return value should be on top of the caller's stack (pushed by RETURN_STACK_TOP)
+        // Push the block result onto the caller's stack
+        push(blockResult);
     }
 
     Object *Interpreter::sendMessage(Object *receiver, Object *selector, std::vector<Object *> &args)
