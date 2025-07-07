@@ -10,13 +10,6 @@ namespace smalltalk {
 class Interpreter;
 
 /**
- * Primitive numbers for Block operations.
- */
-namespace PrimitiveNumbers {
-    constexpr int BLOCK_VALUE = 81;
-} // namespace PrimitiveNumbers
-
-/**
  * Primitive method implementations for the Block class.
  */
 namespace BlockPrimitives {

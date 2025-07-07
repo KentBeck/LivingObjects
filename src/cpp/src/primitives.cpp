@@ -81,6 +81,7 @@ namespace smalltalk
         extern void registerStringPrimitives();
 
         // Register all core primitive groups
+        // this shouldn't happen here. when a method with a primitive is added to a class, it should register itself
         registerObjectPrimitives();
         registerArrayPrimitives();
         registerIntegerPrimitives();
@@ -180,6 +181,7 @@ namespace smalltalk
     {
         auto &registry = PrimitiveRegistry::getInstance();
         registry.registerPrimitive(PrimitiveNumbers::BLOCK_VALUE, BlockPrimitives::value);
+        registry.registerPrimitive(PrimitiveNumbers::BLOCK_VALUE_ARG, BlockPrimitives::value);
     }
 
 } // namespace smalltalk

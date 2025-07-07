@@ -105,8 +105,8 @@ namespace smalltalk
 
     void SimpleCompiler::compileBlock(const BlockNode &node, CompiledMethod &method)
     {
-        // Create a separate compiled method for the block
-        CompiledMethod blockMethod;
+        // Create a separate compiled method for the block on the heap
+        auto blockMethod = std::make_unique<CompiledMethod>();
 
         // Create a separate compiler instance for the block with its own temp var context
         SimpleCompiler blockCompiler;
@@ -117,27 +117,28 @@ namespace smalltalk
         // Add block parameters as temporary variables to the block method
         for (const auto &param : node.getParameters())
         {
-            blockMethod.addTempVar(param);
+            blockMethod->addTempVar(param);
         }
 
         // Compile the block body using the block compiler
-        blockCompiler.compileNode(*node.getBody(), blockMethod);
+        blockCompiler.compileNode(*node.getBody(), *blockMethod);
 
         // Add return instruction if not already present
-        if (blockMethod.getBytecodes().empty() ||
-            blockMethod.getBytecodes().back() != static_cast<uint8_t>(Bytecode::RETURN_STACK_TOP))
+        if (blockMethod->getBytecodes().empty() ||
+            blockMethod->getBytecodes().back() != static_cast<uint8_t>(Bytecode::RETURN_STACK_TOP))
         {
-            blockMethod.addBytecode(static_cast<uint8_t>(Bytecode::RETURN_STACK_TOP));
+            blockMethod->addBytecode(static_cast<uint8_t>(Bytecode::RETURN_STACK_TOP));
         }
 
         // Store the block method as a literal in the main method
-        int blockMethodIndex = method.addLiteral(TaggedValue(reinterpret_cast<Object *>(&blockMethod)));
+        // The pointer will be valid as long as the parent method exists
+        CompiledMethod* blockMethodPtr = blockMethod.release();
+        int blockMethodIndex = method.addLiteral(TaggedValue::fromObject(reinterpret_cast<Object*>(blockMethodPtr)));
 
-        // Generate CREATE_BLOCK bytecode with actual parameters
+        // Generate CREATE_BLOCK bytecode with the literal index
         method.addBytecode(static_cast<uint8_t>(Bytecode::CREATE_BLOCK));
-        method.addOperand(static_cast<uint32_t>(blockMethod.getBytecodes().size())); // bytecode size
-        method.addOperand(static_cast<uint32_t>(blockMethod.getLiterals().size()));  // literal count
-        method.addOperand(static_cast<uint32_t>(node.getParameters().size()));       // temp var count (parameters)
+        method.addOperand(blockMethodIndex); // index of the block method in literals
+        method.addOperand(static_cast<uint32_t>(node.getParameters().size())); // parameter count
     }
 
     void SimpleCompiler::compileSequence(const SequenceNode &node, CompiledMethod &method)

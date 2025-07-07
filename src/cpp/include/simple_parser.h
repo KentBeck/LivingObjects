@@ -51,6 +51,7 @@ namespace smalltalk
         ASTNodePtr parseVariable();
         ASTNodePtr parseBlock();
         std::string parseIdentifier();
+        ASTNodePtr parseKeywordMessage();
 
         // Temporary variable parsing
         std::vector<std::string> parseTemporaryVariables();

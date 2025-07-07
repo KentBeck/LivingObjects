@@ -48,19 +48,18 @@ void testExpressionWithExecuteMethod(const ExpressionTest &test)
 
         SimpleCompiler compiler;
         auto compiledMethod = compiler.compile(*methodAST);
-        CompiledMethod* rawCompiledMethod = compiledMethod.get();
+        CompiledMethod *rawCompiledMethod = compiledMethod.get();
 
         image.addCompiledMethod(std::move(compiledMethod));
         Interpreter interpreter(memoryManager, image);
-        
+
         // Create a dummy receiver and arguments
-        Object* receiver = memoryManager.allocateObject(ObjectType::OBJECT, 0);
-        std::vector<Object*> args;
+        Object *receiver = memoryManager.allocateObject(ObjectType::OBJECT, 0);
+        std::vector<Object *> args;
 
         // Execute the method
-        Object* resultObj = interpreter.executeMethod(rawCompiledMethod, receiver, args);
+        Object *resultObj = interpreter.executeMethod(rawCompiledMethod, receiver, args);
         TaggedValue result = TaggedValue::fromObject(resultObj);
-
 
         // Convert result to string for comparison
         std::string resultStr;
@@ -112,7 +111,8 @@ void testExpressionWithExecuteMethod(const ExpressionTest &test)
     }
 }
 
-void testInstanceVariables() {
+void testInstanceVariables()
+{
     std::cout << "✅ Instance variable implementations completed:" << std::endl;
     std::cout << "  - handlePushInstanceVariable: reads from Object* slots after Object header" << std::endl;
     std::cout << "  - handleStoreInstanceVariable: writes to Object* slots after Object header" << std::endl;
@@ -121,35 +121,41 @@ void testInstanceVariables() {
     std::cout << "  - Conversion between Object* slots and TaggedValue implemented" << std::endl;
 }
 
-void testBlockExecution() {
+void testBlockExecution()
+{
     std::cout << "Testing block execution..." << std::endl;
-    
-    try {
+
+    try
+    {
         MemoryManager memoryManager;
         SmalltalkImage image;
-        
+
         // Test that the parser can handle blocks
-        try {
+        try
+        {
             SimpleParser parser("[3 + 4]");
             auto methodNode = parser.parseMethod();
             std::cout << "✅ Block expression can be parsed as method body" << std::endl;
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception &e)
+        {
             std::cout << "❌ Failed to parse block: " << e.what() << std::endl;
         }
-        
+
         // Test that blocks can be created and compiled
         std::cout << "✅ handleExecuteBlock implementation updated to execute block bytecode" << std::endl;
         std::cout << "  - Now retrieves compiled method from image" << std::endl;
         std::cout << "  - Creates proper context with temporaries and arguments" << std::endl;
         std::cout << "  - Executes block bytecode until RETURN_STACK_TOP" << std::endl;
-        
+
         std::cout << "✅ BlockPrimitives::value now implemented: executes block bytecode" << std::endl;
         std::cout << "  - Retrieves block method from home method literals" << std::endl;
         std::cout << "  - Creates context with proper temporaries and arguments" << std::endl;
         std::cout << "  - Executes block bytecode and returns result" << std::endl;
         std::cout << "  - (Infrastructure issues may prevent testing in current framework)" << std::endl;
-        
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception &e)
+    {
         std::cout << "❌ Exception during block test: " << e.what() << std::endl;
     }
 }
@@ -169,7 +175,7 @@ void testExpression(const ExpressionTest &test)
 
         SimpleCompiler compiler;
         auto compiledMethod = compiler.compile(*methodAST);
-        CompiledMethod* rawCompiledMethod = compiledMethod.get();
+        CompiledMethod *rawCompiledMethod = compiledMethod.get();
 
         image.addCompiledMethod(std::move(compiledMethod));
         Interpreter interpreter(memoryManager, image);
@@ -370,7 +376,7 @@ void runAllTests();
 int main()
 {
     runAllTests();
-    
+
     // Test implemented and fake functions
     testInstanceVariables();
     testBlockExecution();
@@ -379,7 +385,7 @@ int main()
     SmalltalkVM::initialize();
 
     // Add primitive methods to Integer class
-    Class* integerClass = ClassUtils::getIntegerClass();
+    Class *integerClass = ClassUtils::getIntegerClass();
     IntegerClassSetup::addPrimitiveMethods(integerClass);
 
     std::vector<ExpressionTest> tests = {
@@ -389,13 +395,13 @@ int main()
         {"'hello' at: 10", "IndexError", false, "exceptions"},
         {"Object new unknownMethod", "MessageNotUnderstood", false, "exceptions"},
         {"Array new: -1", "ArgumentError", false, "exceptions"},
-        
+
         // Exception handling expressions - SHOULD FAIL (not implemented yet)
         {"[10 / 0] ensure: [42]", "42", false, "exception_handling"},
         {"[10 / 0] on: ZeroDivisionError do: [:ex | 'caught']", "caught", false, "exception_handling"},
         {"[1 + 2] ensure: [3 + 4]", "2", false, "exception_handling"},
         {"ZeroDivisionError signal: 'test error'", "ZeroDivisionError", false, "exception_handling"},
-        
+
         // Basic arithmetic - SHOULD PASS
         {"3 + 4", "7", true, "arithmetic"},
         {"5 - 2", "3", true, "arithmetic"},
@@ -446,8 +452,8 @@ int main()
 
         // Blocks - Now implemented!
         {"[3 + 4] value", "7", true, "blocks"},
-        {"[:x | x + 1] value: 5", "6", false, "blocks"},
-        {" [| x | x := 5. x + 1] value", "6", false, "blocks"},
+        {"[:x | x + 1] value: 5", "6", true, "blocks"},
+        {" [| x | x := 5. x + 1] value", "6", true, "blocks"},
         {"| y | y := 3. [| x | x := 5. x + y] value", "8", false, "blocks"},
         {"| z y | y := 3. z := 2. [z + y] value", "5", false, "blocks"},
 
@@ -464,10 +470,10 @@ int main()
 
         // Class creation - SHOULD FAIL (not implemented)
         {"Object subclass: #Point", "<Class: Point>", false, "class_creation"},
-        
+
         // executeMethod tests
         {"^ 42", "42", true, "executeMethod"},
-        };
+    };
 
     std::cout << "=== Smalltalk Expression Test Suite ===" << std::endl;
     std::cout << "Testing " << tests.size() << " expressions..." << std::endl
@@ -489,9 +495,12 @@ int main()
                       << "=== " << currentCategory << " ===" << std::endl;
         }
 
-        if (test.category == "executeMethod") {
+        if (test.category == "executeMethod")
+        {
             testExpressionWithExecuteMethod(test);
-        } else {
+        }
+        else
+        {
             testExpression(test);
         }
 
@@ -502,16 +511,19 @@ int main()
             auto methodAST = parser.parseMethod();
             SimpleCompiler compiler;
             auto compiledMethod = compiler.compile(*methodAST);
-            CompiledMethod* rawCompiledMethod = compiledMethod.get();
+            CompiledMethod *rawCompiledMethod = compiledMethod.get();
             imageForSummary.addCompiledMethod(std::move(compiledMethod));
             Interpreter interpreter(memoryManagerForSummary, imageForSummary);
             TaggedValue result;
-            if (test.category == "executeMethod") {
-                Object* receiver = memoryManagerForSummary.allocateObject(ObjectType::OBJECT, 0);
-                std::vector<Object*> args;
-                Object* resultObj = interpreter.executeMethod(rawCompiledMethod, receiver, args);
+            if (test.category == "executeMethod")
+            {
+                Object *receiver = memoryManagerForSummary.allocateObject(ObjectType::OBJECT, 0);
+                std::vector<Object *> args;
+                Object *resultObj = interpreter.executeMethod(rawCompiledMethod, receiver, args);
                 result = TaggedValue::fromObject(resultObj);
-            } else {
+            }
+            else
+            {
                 result = interpreter.executeCompiledMethod(*rawCompiledMethod);
             }
 
@@ -584,16 +596,19 @@ int main()
                     auto methodAST = parser.parseMethod();
                     SimpleCompiler compiler;
                     auto compiledMethod = compiler.compile(*methodAST);
-                    CompiledMethod* rawCompiledMethod = compiledMethod.get();
+                    CompiledMethod *rawCompiledMethod = compiledMethod.get();
                     imageForSummary.addCompiledMethod(std::move(compiledMethod));
                     Interpreter interpreter(memoryManagerForSummary, imageForSummary);
                     TaggedValue result;
-                    if (test.category == "executeMethod") {
-                        Object* receiver = memoryManagerForSummary.allocateObject(ObjectType::OBJECT, 0);
-                        std::vector<Object*> args;
-                        Object* resultObj = interpreter.executeMethod(rawCompiledMethod, receiver, args);
+                    if (test.category == "executeMethod")
+                    {
+                        Object *receiver = memoryManagerForSummary.allocateObject(ObjectType::OBJECT, 0);
+                        std::vector<Object *> args;
+                        Object *resultObj = interpreter.executeMethod(rawCompiledMethod, receiver, args);
                         result = TaggedValue::fromObject(resultObj);
-                    } else {
+                    }
+                    else
+                    {
                         result = interpreter.executeCompiledMethod(*rawCompiledMethod);
                     }
 

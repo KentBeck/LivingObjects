@@ -204,7 +204,7 @@ namespace smalltalk
 
     ASTNodePtr SimpleParser::parseBinaryMessage()
     {
-        auto left = parseUnary();
+        auto left = parseKeywordMessage();
 
         while (!isAtEnd())
         {
@@ -214,7 +214,7 @@ namespace smalltalk
             {
                 std::string selector = parseBinarySelector();
                 skipWhitespace();
-                auto right = parseUnary();
+                auto right = parseKeywordMessage();
 
                 std::vector<ASTNodePtr> args;
                 args.push_back(std::move(right));
@@ -266,8 +266,15 @@ namespace smalltalk
                 skipWhitespace();
                 char next = isAtEnd() ? '\0' : peek();
 
+                // If followed by colon, it's a keyword message, not unary
+                if (next == ':')
+                {
+                    // Not a unary message, restore position
+                    pos_ = savedPos;
+                    break;
+                }
                 // If followed by operators or end of input, it's a unary message
-                if (next == '\0' || next == '+' || next == '-' || next == '*' || next == '/' ||
+                else if (next == '\0' || next == '+' || next == '-' || next == '*' || next == '/' ||
                     next == '<' || next == '>' || next == '=' || next == '~' ||
                     next == ')' || next == ']' || next == '.')
                 {
@@ -639,6 +646,100 @@ namespace smalltalk
         }
 
         return identifier;
+    }
+
+    ASTNodePtr SimpleParser::parseKeywordMessage()
+    {
+        auto receiver = parseUnary();
+
+        // Check for keyword messages
+        while (!isAtEnd())
+        {
+            skipWhitespace();
+
+            // Check if we have a keyword selector (identifier followed by colon)
+            if (isAlpha(peek()))
+            {
+                size_t savedPos = pos_;
+                std::string keyword;
+                
+                // Parse identifier part
+                while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek())))
+                {
+                    keyword += consume();
+                }
+                
+                skipWhitespace();
+                
+                // Check if followed by colon
+                if (!isAtEnd() && peek() == ':')
+                {
+                    consume(); // consume ':'
+                    keyword += ':';
+                    
+                    std::string fullSelector = keyword;
+                    std::vector<ASTNodePtr> args;
+                    
+                    // Parse first argument
+                    skipWhitespace();
+                    args.push_back(parseUnary());
+                    
+                    // Parse additional keyword parts
+                    while (!isAtEnd())
+                    {
+                        skipWhitespace();
+                        
+                        // Check for another keyword part
+                        if (isAlpha(peek()))
+                        {
+                            size_t nextKeywordPos = pos_;
+                            std::string nextKeyword;
+                            
+                            while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek())))
+                            {
+                                nextKeyword += consume();
+                            }
+                            
+                            skipWhitespace();
+                            
+                            if (!isAtEnd() && peek() == ':')
+                            {
+                                consume(); // consume ':'
+                                nextKeyword += ':';
+                                fullSelector += nextKeyword;
+                                
+                                skipWhitespace();
+                                args.push_back(parseUnary());
+                            }
+                            else
+                            {
+                                // Not a keyword, restore position
+                                pos_ = nextKeywordPos;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    
+                    receiver = std::make_unique<MessageSendNode>(std::move(receiver), fullSelector, std::move(args));
+                }
+                else
+                {
+                    // Not a keyword message, restore position
+                    pos_ = savedPos;
+                    break;
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+        
+        return receiver;
     }
 
 } // namespace smalltalk

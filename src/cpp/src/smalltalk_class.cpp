@@ -450,6 +450,7 @@ namespace smalltalk
 
             // Add primitive methods to Block class
             addPrimitiveMethod(blockClass, "value", PrimitiveNumbers::BLOCK_VALUE); // Block value
+            addPrimitiveMethod(blockClass, "value:", PrimitiveNumbers::BLOCK_VALUE_ARG); // Block value:
         }
 
         Class *getObjectClass() { return CoreClasses::getInstance().objectClass; }

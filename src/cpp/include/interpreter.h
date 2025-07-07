@@ -47,7 +47,7 @@ namespace smalltalk
         void handleJumpIfFalse(uint32_t target);
         void handlePop();
         void handleDuplicate();
-        void handleCreateBlock(uint32_t bytecodeSize, uint32_t literalCount, uint32_t tempVarCount);
+        void handleCreateBlock(uint32_t literalIndex, uint32_t parameterCount);
         void handleExecuteBlock(uint32_t argCount);
 
         // Stack operations
