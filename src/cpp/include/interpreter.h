@@ -32,6 +32,9 @@ namespace smalltalk
 
         // Unified method context execution (replaces executeLoop + dispatch)
         TaggedValue executeMethodContext(MethodContext *context);
+        
+        // Direct method execution without hash lookup (fixes architectural issue)
+        TaggedValue executeMethodContext(MethodContext *context, CompiledMethod *method);
 
         // Bytecode handlers
         void handlePushLiteral(uint32_t index);
@@ -58,6 +61,9 @@ namespace smalltalk
         // Context access
         MethodContext *getCurrentContext() const { return activeContext; }
         void setCurrentContext(MethodContext *context) { activeContext = context; }
+        
+        // Current method access (for block execution)
+        CompiledMethod *getCurrentMethod() const { return currentMethod; }
 
         // Memory manager access
         MemoryManager &getMemoryManager() { return memoryManager; }
@@ -79,6 +85,9 @@ namespace smalltalk
         // Current context and chunk
         MethodContext *activeContext = nullptr;
         StackChunk *currentChunk = nullptr;
+        
+        // Current method being executed (eliminates hash lookup)
+        CompiledMethod *currentMethod = nullptr;
 
         // Internal state
         bool executing = false;

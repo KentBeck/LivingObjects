@@ -2,6 +2,7 @@
 
 #include "tagged_value.h"
 #include "symbol.h"
+#include "object.h"
 
 #include <cstdint>
 #include <string>
@@ -12,11 +13,13 @@ namespace smalltalk
 
     /**
      * A compiled method containing bytecode and literal values
+     * Now properly inherits from Object to be a real Smalltalk object
      */
-    class CompiledMethod
+    class CompiledMethod : public Object
     {
     public:
-        CompiledMethod() = default;
+        // Constructor that properly initializes Object base class
+        CompiledMethod() : Object(ObjectType::METHOD, sizeof(CompiledMethod)) {}
         virtual ~CompiledMethod() = default;
 
         // Primitive number (0 if no primitive)

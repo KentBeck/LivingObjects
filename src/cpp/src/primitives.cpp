@@ -81,7 +81,6 @@ namespace smalltalk
         extern void registerStringPrimitives();
 
         // Register all core primitive groups
-        // this shouldn't happen here. when a method with a primitive is added to a class, it should register itself
         registerObjectPrimitives();
         registerArrayPrimitives();
         registerIntegerPrimitives();

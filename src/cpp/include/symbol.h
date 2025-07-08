@@ -1,5 +1,6 @@
 #pragma once
 
+#include "object.h"
 #include <string>
 #include <unordered_map>
 #include <memory>
@@ -11,7 +12,7 @@ namespace smalltalk
      * Symbol represents an interned string used for selectors and identifiers.
      * Symbols with the same string content are guaranteed to be identical objects.
      */
-    class Symbol
+    class Symbol : public Object
     {
     public:
         // Get or create a symbol with the given name
@@ -44,7 +45,9 @@ namespace smalltalk
         }
 
     private:
-        explicit Symbol(std::string name) : name_(std::move(name)) {}
+        explicit Symbol(std::string name) 
+            : Object(ObjectType::SYMBOL, sizeof(Symbol)), 
+              name_(std::move(name)) {}
 
         std::string name_;
 

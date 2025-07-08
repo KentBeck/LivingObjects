@@ -111,13 +111,25 @@ namespace smalltalk
         // Create a separate compiler instance for the block with its own temp var context
         SimpleCompiler blockCompiler;
 
-        // Set up the block compiler's temporary variables (parameters)
+        // Set up the block compiler's temporary variables (parameters first, then temporaries)
         blockCompiler.tempVars_ = node.getParameters();
+        
+        // Add block temporaries to the compiler's temp var list
+        for (const auto &temp : node.getTemporaries())
+        {
+            blockCompiler.tempVars_.push_back(temp);
+        }
 
         // Add block parameters as temporary variables to the block method
         for (const auto &param : node.getParameters())
         {
             blockMethod->addTempVar(param);
+        }
+        
+        // Add block temporaries as temporary variables to the block method
+        for (const auto &temp : node.getTemporaries())
+        {
+            blockMethod->addTempVar(temp);
         }
 
         // Compile the block body using the block compiler
@@ -131,8 +143,12 @@ namespace smalltalk
         }
 
         // Store the block method as a literal in the main method
-        // The pointer will be valid as long as the parent method exists
+        // The pointer will be valid as long as the parent method exists  
         CompiledMethod* blockMethodPtr = blockMethod.release();
+        
+        // IMPORTANT: We also need to add the block method to the image so it can be found during execution
+        // For now, we'll store the pointer directly as a literal
+        // TODO: Add proper block method registration to image
         int blockMethodIndex = method.addLiteral(TaggedValue::fromObject(reinterpret_cast<Object*>(blockMethodPtr)));
 
         // Generate CREATE_BLOCK bytecode with the literal index
