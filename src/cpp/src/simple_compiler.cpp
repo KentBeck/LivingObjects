@@ -1,6 +1,7 @@
 #include "simple_compiler.h"
 #include "symbol.h"
 #include "smalltalk_exception.h"
+#include "smalltalk_class.h"
 
 #include <stdexcept>
 
@@ -13,6 +14,11 @@ namespace smalltalk
 
         // Set up temporary variables (may be empty)
         tempVars_ = method.getTempVars();
+        
+        // Add temp vars to the compiled method
+        for (const auto& tempVar : tempVars_) {
+            compiledMethod->addTempVar(tempVar);
+        }
 
         // Compile the method body
         compileNode(*method.getBody(), *compiledMethod);
@@ -50,6 +56,10 @@ namespace smalltalk
         else if (const auto *variable = dynamic_cast<const VariableNode *>(&node))
         {
             compileVariable(*variable, method);
+        }
+        else if (const auto *self = dynamic_cast<const SelfNode *>(&node))
+        {
+            compileSelf(*self, method);
         }
         else if (const auto *assignment = dynamic_cast<const AssignmentNode *>(&node))
         {
@@ -191,9 +201,26 @@ namespace smalltalk
             }
         }
 
+        // Check if it's a global class name
+        Class* globalClass = ClassRegistry::getInstance().getClass(varName);
+        if (globalClass != nullptr)
+        {
+            // Add the class as a literal and push it
+            uint32_t literalIndex = method.addLiteral(TaggedValue::fromObject(globalClass));
+            method.addBytecode(static_cast<uint8_t>(Bytecode::PUSH_LITERAL));
+            method.addOperand(literalIndex);
+            return;
+        }
+
         // Variable not found - this is an error
         // Throw proper Smalltalk exception
         ExceptionHandler::throwException(std::make_unique<NameError>(varName));
+    }
+
+    void SimpleCompiler::compileSelf(const SelfNode &node, CompiledMethod &method)
+    {
+        // Generate PUSH_SELF bytecode
+        method.addBytecode(static_cast<uint8_t>(Bytecode::PUSH_SELF));
     }
 
     void SimpleCompiler::compileAssignment(const AssignmentNode &node, CompiledMethod &method)

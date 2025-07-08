@@ -328,6 +328,7 @@ namespace smalltalk
             Class *booleanClass = nullptr;
             Class *symbolClass = nullptr;
             Class *stringClass = nullptr;
+            Class *blockClass = nullptr;
             
             static CoreClasses& getInstance() {
                 static CoreClasses instance;
@@ -411,11 +412,11 @@ namespace smalltalk
             registry.registerClass("ByteArray", byteArrayClass);
 
             // Create Block class
-            Class *blockClass = new Class("Block", core.objectClass, nullptr);
-            blockClass->setInstanceSize(0); // No named instance variables
-            blockClass->setFormat(ObjectFormat::POINTER_OBJECTS);
-            blockClass->setClass(core.classClass);
-            registry.registerClass("Block", blockClass);
+            core.blockClass = new Class("Block", core.objectClass, nullptr);
+            core.blockClass->setInstanceSize(0); // No named instance variables
+            core.blockClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+            core.blockClass->setClass(core.classClass);
+            registry.registerClass("Block", core.blockClass);
 
             // Add primitive methods to Object class
             addPrimitiveMethod(core.objectClass, "new", 70);          // Object new
@@ -445,12 +446,13 @@ namespace smalltalk
             addPrimitiveMethod(core.integerClass, ">=", PrimitiveNumbers::SMALL_INT_GE); // Integer >=
 
             // Add primitive methods to String class
+            addPrimitiveMethod(core.stringClass, "at:", PrimitiveNumbers::STRING_AT);    // String at:
             addPrimitiveMethod(core.stringClass, ",", PrimitiveNumbers::STRING_CONCAT);  // String ,
             addPrimitiveMethod(core.stringClass, "size", PrimitiveNumbers::STRING_SIZE); // String size
 
             // Add primitive methods to Block class
-            addPrimitiveMethod(blockClass, "value", PrimitiveNumbers::BLOCK_VALUE); // Block value
-            addPrimitiveMethod(blockClass, "value:", PrimitiveNumbers::BLOCK_VALUE_ARG); // Block value:
+            addPrimitiveMethod(core.blockClass, "value", PrimitiveNumbers::BLOCK_VALUE); // Block value
+            addPrimitiveMethod(core.blockClass, "value:", PrimitiveNumbers::BLOCK_VALUE_ARG); // Block value:
         }
 
         Class *getObjectClass() { return CoreClasses::getInstance().objectClass; }
@@ -460,6 +462,7 @@ namespace smalltalk
         Class *getBooleanClass() { return CoreClasses::getInstance().booleanClass; }
         Class *getSymbolClass() { return CoreClasses::getInstance().symbolClass; }
         Class *getStringClass() { return CoreClasses::getInstance().stringClass; }
+        Class *getBlockClass() { return CoreClasses::getInstance().blockClass; }
 
         void addPrimitiveMethod(Class *clazz, const std::string &selector, int primitiveNumber);
 

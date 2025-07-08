@@ -1,7 +1,9 @@
 #include "../../include/primitives.h"
 #include "../../include/smalltalk_string.h"
 #include "../../include/smalltalk_class.h"
+#include "../../include/smalltalk_exception.h"
 #include <stdexcept>
+#include <memory>
 
 namespace smalltalk
 {
@@ -17,6 +19,44 @@ namespace smalltalk
                 throw std::runtime_error("Wrong number of arguments: expected " +
                                          std::to_string(expected) + ", got " + std::to_string(args.size()));
             }
+        }
+
+        /**
+         * String at: primitive - returns character at given index (1-based)
+         */
+        TaggedValue at(TaggedValue receiver, const std::vector<TaggedValue> &args, Interpreter &interpreter)
+        {
+            checkArgumentCount(args, 1);
+            
+            // Check that receiver is a string
+            if (!StringUtils::isString(receiver)) {
+                throw std::runtime_error("Receiver must be a string");
+            }
+            
+            // Check that argument is an integer
+            if (!args[0].isInteger()) {
+                throw std::runtime_error("Index must be an integer");
+            }
+            
+            int32_t index = args[0].asInteger();
+            
+            // Get string content
+            String* str = static_cast<String*>(receiver.asObject());
+            std::string content = str->getContent();
+            
+            // Smalltalk uses 1-based indexing
+            if (index < 1 || index > static_cast<int32_t>(content.length())) {
+                // Throw proper IndexError
+                auto exception = std::make_unique<IndexError>("Index " + std::to_string(index) + " out of bounds for string of size " + std::to_string(content.length()));
+                ExceptionHandler::throwException(std::move(exception));
+            }
+            
+            // Return character at index (convert to Character object)
+            char character = content[index - 1]; // Convert to 0-based
+            
+            // For now, return as integer (character code)
+            // In full Smalltalk, this would be a Character object
+            return TaggedValue(static_cast<int32_t>(character));
         }
 
         void checkStringReceiver(TaggedValue receiver)
@@ -98,6 +138,7 @@ namespace smalltalk
         auto &registry = PrimitiveRegistry::getInstance();
 
         // Register String primitives using standard Smalltalk primitive numbers
+        registry.registerPrimitive(PrimitiveNumbers::STRING_AT, StringPrimitives::at);
         registry.registerPrimitive(PrimitiveNumbers::STRING_CONCAT, StringPrimitives::concatenate);
         registry.registerPrimitive(PrimitiveNumbers::STRING_SIZE, StringPrimitives::size);
     }

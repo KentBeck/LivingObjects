@@ -118,7 +118,7 @@ namespace smalltalk
     };
 
     /**
-     * Block node for expressions like [3 + 4] or [:x | x + 1]
+     * Block node for expressions like [3 + 4] or [:x | x + 1] or [| x | x := 5. x]
      */
     class BlockNode : public ASTNode
     {
@@ -129,7 +129,10 @@ namespace smalltalk
             : parameters_(std::move(parameters)), body_(std::move(body)) {}
 
         const std::vector<std::string> &getParameters() const { return parameters_; }
+        const std::vector<std::string> &getTemporaries() const { return temporaries_; }
         const ASTNode *getBody() const { return body_.get(); }
+        
+        void addTemporary(const std::string& temp) { temporaries_.push_back(temp); }
 
         std::string toString() const override
         {
@@ -145,12 +148,24 @@ namespace smalltalk
                 }
                 result += " | ";
             }
+            if (!temporaries_.empty())
+            {
+                result += "| ";
+                for (size_t i = 0; i < temporaries_.size(); i++)
+                {
+                    if (i > 0)
+                        result += " ";
+                    result += temporaries_[i];
+                }
+                result += " | ";
+            }
             result += body_->toString() + "]";
             return result;
         }
 
     private:
         std::vector<std::string> parameters_;
+        std::vector<std::string> temporaries_;
         ASTNodePtr body_;
     };
 
@@ -234,6 +249,20 @@ namespace smalltalk
 
     private:
         std::string name_;
+    };
+
+    /**
+     * Self node for "self" keyword
+     */
+    class SelfNode : public ASTNode
+    {
+    public:
+        SelfNode() = default;
+
+        std::string toString() const override
+        {
+            return "self";
+        }
     };
 
     /**

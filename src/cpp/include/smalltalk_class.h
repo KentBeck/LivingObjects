@@ -228,6 +228,7 @@ namespace ClassUtils {
     Class* getBooleanClass();
     Class* getSymbolClass();
     Class* getStringClass();
+    Class* getBlockClass();
     
     // Create a new class
     Class* createClass(const std::string& name, Class* superclass = nullptr);

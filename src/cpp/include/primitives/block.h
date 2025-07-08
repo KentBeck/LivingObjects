@@ -19,6 +19,7 @@ namespace BlockPrimitives {
      */
     TaggedValue value(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter);
 
+
 } // namespace BlockPrimitives
 
 } // namespace smalltalk

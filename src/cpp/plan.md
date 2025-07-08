@@ -5,6 +5,39 @@ A comprehensive 5-phase plan to transform the VM from a fundamentally flawed arc
 ## Phase 1: Foundation Cleanup and Core Infrastructure
 **Goal: Establish consistent object model and fix critical architectural issues**
 
+### 🚨 CRITICAL ARCHITECTURAL FIX: Method Storage and Lookup System
+
+#### Current Broken System:
+- Methods stored in global `SmalltalkImage` registry by hash
+- Method lookup: `executeMethodContext` → `image.getCompiledMethod(hash)` → global lookup
+- Classes have `MethodDictionary` but it's not used for actual method execution
+- Object → Class → Method lookup chain is completely bypassed
+- Blocks fail because their methods aren't in the global registry
+
+#### Target Object Model (Smalltalk-80 Standard):
+```
+Instance Object
+    ↓ (class field)
+Class Object  
+    ↓ (methodDictionary field)
+MethodDictionary
+    ↓ (selector → method mapping)
+CompiledMethod Objects
+```
+
+#### Implementation Plan:
+1. **Fix Message Sending**: Replace hash-based lookup with proper class hierarchy lookup
+2. **Fix Method Storage**: Store methods in class method dictionaries, not global registry  
+3. **Fix Block Execution**: Blocks retrieve methods from parent method literals, not global lookup
+4. **Fix Context Execution**: Contexts should execute methods directly, not look them up by hash
+
+#### Required Changes:
+- [ ] **CRITICAL**: Replace `executeMethodContext(context)` hash lookup with direct method execution
+- [ ] **CRITICAL**: Implement proper `sendMessage(receiver, selector, args)` with class hierarchy lookup  
+- [ ] **CRITICAL**: Fix block execution to use method from literals, not global lookup
+- [ ] **CRITICAL**: Remove dependency on `SmalltalkImage::getCompiledMethod(hash)`
+- [ ] **CRITICAL**: Make `Class::methodDictionary` the authoritative source of methods
+
 ### Object Model Unification ✅ COMPLETE
 - [x] Remove all Object* vs TaggedValue inconsistencies
 - [x] Standardize on TaggedValue throughout the VM

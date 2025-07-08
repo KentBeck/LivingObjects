@@ -28,6 +28,7 @@ namespace smalltalk
         void compileBlock(const BlockNode &node, CompiledMethod &method);
         void compileSequence(const SequenceNode &node, CompiledMethod &method);
         void compileVariable(const VariableNode &node, CompiledMethod &method);
+        void compileSelf(const SelfNode &node, CompiledMethod &method);
         void compileAssignment(const AssignmentNode &node, CompiledMethod &method);
         void compileReturn(const ReturnNode &node, CompiledMethod &method);
 

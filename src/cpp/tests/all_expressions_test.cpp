@@ -9,6 +9,7 @@
 #include "primitive_methods.h"
 #include "bytecode.h"
 #include "smalltalk_image.h"
+#include "method_compiler.h"
 
 #include <iostream>
 #include <string>
@@ -387,6 +388,18 @@ int main()
     // Add primitive methods to Integer class
     Class *integerClass = ClassUtils::getIntegerClass();
     IntegerClassSetup::addPrimitiveMethods(integerClass);
+    
+    // Add Smalltalk methods to Block class
+    Class *blockClass = ClassUtils::getBlockClass();
+    
+    // Add ensure: method - proper implementation
+    std::string ensureMethod = R"(ensure: aBlock
+    | result |
+    result := self value.
+    aBlock value.
+    ^ result)";
+    
+    MethodCompiler::addSmalltalkMethod(blockClass, ensureMethod);
 
     std::vector<ExpressionTest> tests = {
         // Exception handling - SHOULD FAIL with proper exceptions
@@ -454,6 +467,7 @@ int main()
         {"[3 + 4] value", "7", true, "blocks"},
         {"[:x | x + 1] value: 5", "6", true, "blocks"},
         {" [| x | x := 5. x + 1] value", "6", true, "blocks"},
+        {" [:y || x | x := 5. x + 7] value: 3", "12", true, "blocks"},
         {"| y | y := 3. [| x | x := 5. x + y] value", "8", false, "blocks"},
         {"| z y | y := 3. z := 2. [z + y] value", "5", false, "blocks"},
 

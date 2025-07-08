@@ -76,16 +76,18 @@ namespace smalltalk
         // Forward declarations for primitive registration functions
         extern void registerObjectPrimitives();
         extern void registerArrayPrimitives();
-        extern void registerIntegerPrimitives();
-        extern void registerBlockPrimitives();
         extern void registerStringPrimitives();
+        void registerIntegerPrimitives();
+        void registerBlockPrimitives();
 
         // Register all core primitive groups
         registerObjectPrimitives();
         registerArrayPrimitives();
+        registerStringPrimitives();
+        
+        // Register integer and block primitives directly here
         registerIntegerPrimitives();
         registerBlockPrimitives();
-        registerStringPrimitives();
     }
 
     // Primitives namespace implementation

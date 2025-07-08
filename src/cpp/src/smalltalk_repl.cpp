@@ -5,7 +5,7 @@
 #include "simple_compiler.h"
 #include "simple_parser.h"
 #include "tagged_value.h"
-#include "primitive_methods.h"
+#include "primitives.h"
 #include "primitives/block.h"
 #include "smalltalk_class.h"
 #include "smalltalk_string.h"

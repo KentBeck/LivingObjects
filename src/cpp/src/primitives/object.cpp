@@ -2,7 +2,9 @@
 #include "../include/interpreter.h"
 #include "../include/smalltalk_class.h"
 #include "../include/memory_manager.h"
+#include "../include/smalltalk_exception.h"
 #include "../include/object.h"
+#include <memory>
 
 namespace smalltalk {
 
@@ -71,7 +73,9 @@ TaggedValue primitive_basic_new_size(TaggedValue receiver, const std::vector<Tag
     
     int32_t size = sizeValue.getSmallInteger();
     if (size < 0) {
-        throw PrimitiveFailure("Size must be non-negative");
+        // Throw proper ArgumentError for negative sizes
+        auto exception = std::make_unique<ArgumentError>("Size must be non-negative: " + std::to_string(size));
+        ExceptionHandler::throwException(std::move(exception));
     }
     
     // Allocate new indexable instance

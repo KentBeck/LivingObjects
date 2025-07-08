@@ -4,6 +4,7 @@
 #include "../../include/compiled_method.h"
 #include "../../include/smalltalk_exception.h"
 #include <stdexcept>
+#include <memory>
 
 namespace smalltalk
 {
@@ -79,8 +80,9 @@ namespace smalltalk
             int32_t divisor = args[0].asInteger();
             if (divisor == 0)
             {
-                // Throw proper Smalltalk exception directly
-                throw std::runtime_error("ZeroDivisionError");
+                // Create and throw proper Smalltalk ZeroDivisionError
+                auto exception = std::make_unique<ZeroDivisionError>("Division by zero");
+                ExceptionHandler::throwException(std::move(exception));
             }
 
             int32_t result = receiver.asInteger() / divisor;

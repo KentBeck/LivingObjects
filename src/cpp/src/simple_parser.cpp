@@ -325,6 +325,20 @@ namespace smalltalk
         {
             return parseInteger();
         }
+        else if (peek() == '-' && pos_ + 1 < input_.size() && isDigit(input_[pos_ + 1]))
+        {
+            // Negative number
+            consume(); // consume '-'
+            auto result = parseInteger();
+            // Negate the value
+            if (auto* literal = dynamic_cast<LiteralNode*>(result.get())) {
+                if (literal->getValue().isInteger()) {
+                    int32_t value = literal->getValue().asInteger();
+                    return std::make_unique<LiteralNode>(TaggedValue(-value));
+                }
+            }
+            return result;
+        }
         else if (isAlpha(peek()))
         {
             return parseIdentifierOrLiteral();
@@ -392,6 +406,10 @@ namespace smalltalk
         else if (identifier == "nil")
         {
             return std::make_unique<LiteralNode>(TaggedValue::nil());
+        }
+        else if (identifier == "self")
+        {
+            return std::make_unique<SelfNode>();
         }
 
         // Check for global class names
@@ -505,7 +523,7 @@ namespace smalltalk
 
     bool SimpleParser::isAlpha(char c) const
     {
-        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
     }
 
     ASTNodePtr SimpleParser::parseBlock()
@@ -514,6 +532,7 @@ namespace smalltalk
         skipWhitespace();
 
         std::vector<std::string> parameters;
+        std::vector<std::string> temporaries;
 
         // Check for block parameters starting with ':'
         if (peek() == ':')
@@ -546,6 +565,38 @@ namespace smalltalk
             consume(); // consume '|'
             skipWhitespace();
         }
+        
+        // Check for block temporary variables starting with '|'
+        if (peek() == '|')
+        {
+            consume(); // consume '|'
+            skipWhitespace();
+            
+            // Parse temporary variable names
+            while (!isAtEnd() && peek() != '|')
+            {
+                if (!isAlpha(peek()))
+                {
+                    error("Expected variable name in block temporary variable declaration");
+                }
+                
+                std::string varName;
+                while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek())))
+                {
+                    varName += consume();
+                }
+                
+                temporaries.push_back(varName);
+                skipWhitespace();
+            }
+            
+            if (peek() != '|')
+            {
+                error("Expected '|' to end block temporary variable declaration");
+            }
+            consume(); // consume '|'
+            skipWhitespace();
+        }
 
         // Parse block body
         auto body = parseStatements();
@@ -557,14 +608,16 @@ namespace smalltalk
         }
         consume(); // consume ']'
 
-        if (parameters.empty())
+        // Create block node with parameters and temporaries
+        auto blockNode = std::make_unique<BlockNode>(std::move(parameters), std::move(body));
+        
+        // Add temporaries to the block node
+        for (const auto& temp : temporaries)
         {
-            return std::make_unique<BlockNode>(std::move(body));
+            blockNode->addTemporary(temp);
         }
-        else
-        {
-            return std::make_unique<BlockNode>(std::move(parameters), std::move(body));
-        }
+        
+        return blockNode;
     }
 
     void SimpleParser::error(const std::string &message)

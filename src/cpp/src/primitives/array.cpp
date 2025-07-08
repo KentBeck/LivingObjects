@@ -2,7 +2,9 @@
 #include "../include/interpreter.h"
 #include "../include/smalltalk_class.h"
 #include "../include/memory_manager.h"
+#include "../include/smalltalk_exception.h"
 #include "../include/object.h"
+#include <memory>
 
 namespace smalltalk {
 
@@ -27,7 +29,9 @@ TaggedValue primitive_new_size(TaggedValue receiver, const std::vector<TaggedVal
     
     int32_t size = sizeValue.getSmallInteger();
     if (size < 0) {
-        throw PrimitiveFailure("Size must be non-negative");
+        // Throw proper ArgumentError for negative sizes
+        auto exception = std::make_unique<ArgumentError>("Size must be non-negative: " + std::to_string(size));
+        ExceptionHandler::throwException(std::move(exception));
     }
     
     // Allocate new indexable instance (Array)
@@ -138,10 +142,15 @@ TaggedValue primitive_at_put(TaggedValue receiver, const std::vector<TaggedValue
         valueObject = nullptr; // nil is stored as nullptr
     } else if (value.isPointer()) {
         valueObject = value.asObject();
+    } else if (value.isSmallInteger()) {
+        // Box integer immediate value
+        valueObject = interpreter.getMemoryManager().allocateInteger(value.getSmallInteger());
+    } else if (value.isBoolean()) {
+        // Box boolean immediate value
+        valueObject = interpreter.getMemoryManager().allocateBoolean(value.getBoolean());
     } else {
-        // For immediate values, we'd need to box them
-        // For now, throw an error as this is a simplified implementation
-        throw PrimitiveFailure("Cannot store immediate values in arrays yet");
+        // Handle other immediate value types (e.g., float)
+        throw PrimitiveFailure("Unsupported immediate value type for array storage");
     }
     
     // Set the element
