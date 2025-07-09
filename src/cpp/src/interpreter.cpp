@@ -6,6 +6,8 @@
 #include "simple_parser.h"
 #include "smalltalk_image.h"
 #include "smalltalk_exception.h"
+#include "logger.h"
+#include "vm_debugger.h"
 
 #include <cstring>
 #include <stdexcept>
@@ -375,6 +377,14 @@ namespace smalltalk
         {
             uint8_t opcode = bytecodes[context->instructionPointer];
             Bytecode instruction = static_cast<Bytecode>(opcode);
+
+            // Debug bytecode tracing
+            if (Logger::getInstance().getLevel() <= LogLevel::DEBUG_LEVEL) {
+                std::vector<TaggedValue> stack;
+                // Add current stack contents for debugging (simplified)
+                VM_DEBUG_BYTECODE(std::to_string(static_cast<int>(instruction)), 
+                                context->instructionPointer, stack);
+            }
 
             switch (instruction)
             {
@@ -1054,9 +1064,12 @@ namespace smalltalk
         Class *receiverClass = getObjectClass(receiver);
         if (receiverClass == nullptr)
         {
+            VM_DEBUG_EXCEPTION("MessageSend", "Cannot determine receiver class", selector);
             throw std::runtime_error("Cannot determine receiver class");
         }
 
+        // Debug tracing
+        VM_DEBUG_METHOD_ENTRY(selector, receiverClass->getName(), args);
 
         // Create selector symbol
         Symbol *selectorSymbol = Symbol::intern(selector);
@@ -1071,10 +1084,14 @@ namespace smalltalk
                 // Try primitive first
                 try
                 {
-                    return Primitives::callPrimitive(method->primitiveNumber, receiver, args, *this);
+                    LOG_VM_DEBUG("Calling primitive " + std::to_string(method->primitiveNumber) + " for " + selector);
+                    TaggedValue result = Primitives::callPrimitive(method->primitiveNumber, receiver, args, *this);
+                    VM_DEBUG_METHOD_EXIT(selector, receiverClass->getName(), result);
+                    return result;
                 }
                 catch (const PrimitiveFailure &e)
                 {
+                    LOG_VM_DEBUG("Primitive " + std::to_string(method->primitiveNumber) + " failed, falling back to Smalltalk code");
                     // Fall back to Smalltalk code below
                 }
             }
@@ -1112,10 +1129,16 @@ namespace smalltalk
             newContext->stackPointer = slots + method->getTempVars().size();
             
             // Execute the method directly with the compiled method object
-            return executeCompiledMethod(*method, newContext);
+            TaggedValue result = executeCompiledMethod(*method, newContext);
+            
+            // Debug tracing
+            VM_DEBUG_METHOD_EXIT(selector, receiverClass->getName(), result);
+            
+            return result;
         }
 
         // No method found - throw proper exception
+        VM_DEBUG_EXCEPTION("MessageNotUnderstood", "Method not found: " + selector, receiverClass->getName());
         throw std::runtime_error("Method not found: " + selector);
     }
 

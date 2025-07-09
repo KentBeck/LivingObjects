@@ -1,11 +1,14 @@
 #include "memory_manager.h"
 #include "smalltalk_class.h"
 #include "smalltalk_string.h" // Required for StringUtils if used elsewhere, good to have for completeness
+#include "logger.h"
+#include "vm_debugger.h"
 
 #include <algorithm>
 #include <cstring>
 #include <memory>
 #include <stdexcept>
+#include <chrono>
 
 namespace smalltalk {
 
@@ -58,6 +61,10 @@ Object* MemoryManager::allocateObject(ObjectType type, size_t size) {
     
     // Update allocation pointer
     currentAllocation = static_cast<char*>(currentAllocation) + requiredBytes;
+    
+    // Debug tracing
+    VM_DEBUG_ALLOC("Object(" + std::to_string(static_cast<int>(type)) + ")", 
+                   requiredBytes, obj);
     
     return obj;
 }
@@ -336,6 +343,9 @@ StackChunk* MemoryManager::allocateStackChunk(size_t size) {
 void MemoryManager::collectGarbage() {
     // Simple implementation of a stop & copy garbage collector
     
+    auto start = std::chrono::high_resolution_clock::now();
+    LOG_GC_DEBUG("Starting garbage collection");
+    
     // Reset toSpace
     memset(toSpace, 0, spaceSize);
     
@@ -377,6 +387,12 @@ void MemoryManager::collectGarbage() {
     
     // Reset allocation pointer
     currentAllocation = fromSpace;
+    
+    // Calculate GC duration and log
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    VM_DEBUG_PERF("GC", duration.count() / 1000.0); // Convert to milliseconds
+    LOG_GC_DEBUG("Garbage collection completed");
 }
 
 Object* MemoryManager::forwardObject(Object* obj) {
