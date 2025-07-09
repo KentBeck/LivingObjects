@@ -30,9 +30,6 @@ namespace smalltalk
         // Execute compiled method with specific context
         TaggedValue executeCompiledMethod(const CompiledMethod &method, MethodContext *context);
 
-        // Execute context
-        Object *executeContext(MethodContext *context);
-
         // Unified method context execution (replaces executeLoop + dispatch)
         TaggedValue executeMethodContext(MethodContext *context);
         

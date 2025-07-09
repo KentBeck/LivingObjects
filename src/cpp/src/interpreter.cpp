@@ -94,35 +94,6 @@ namespace smalltalk
         return resultObj;
     }
 
-    Object *Interpreter::executeContext(MethodContext *context)
-    {
-        // Execute bytecodes until context returns using unified method
-        TaggedValue result = executeMethodContext(context);
-
-        // Convert TaggedValue result to Object* for legacy compatibility
-        if (result.isPointer())
-        {
-            return result.asObject();
-        }
-        else if (result.isInteger())
-        {
-            return memoryManager.allocateInteger(result.asInteger());
-        }
-        else if (result.isBoolean())
-        {
-            return memoryManager.allocateBoolean(result.asBoolean());
-        }
-        else if (result.isNil())
-        {
-            // Nil is a special object, not an immediate value that needs boxing
-            return ClassRegistry::getInstance().getClass("UndefinedObject");
-        }
-        else
-        {
-            // Should not happen for now, but handle other immediate types if they arise
-            throw std::runtime_error("Unhandled immediate value type in executeContext");
-        }
-    }
 
     TaggedValue Interpreter::executeCompiledMethod(const CompiledMethod &method)
     {
@@ -154,11 +125,12 @@ namespace smalltalk
 
     TaggedValue Interpreter::executeMethodContext(MethodContext *context)
     {
-        // Get the compiled method from the context
-        CompiledMethod *method = image.getCompiledMethod(context->header.hash);
+        // ARCHITECTURAL FIX: Use currentMethod instead of hash lookup
+        // This eliminates dependency on global SmalltalkImage method registry
+        CompiledMethod *method = currentMethod;
         if (!method)
         {
-            throw std::runtime_error("Could not find compiled method for context");
+            throw std::runtime_error("No current method available for context execution");
         }
         
         const auto &bytecodes = method->getBytecodes();
