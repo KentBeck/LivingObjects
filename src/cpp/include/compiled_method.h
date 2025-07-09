@@ -24,6 +24,9 @@ namespace smalltalk
 
         // Primitive number (0 if no primitive)
         int primitiveNumber = 0;
+        
+        // For block methods: number of variables from home context (for lexical scoping)
+        size_t homeVarCount = 0;
 
         // Bytecodes, literals, and temporary variables (public for easy access)
         std::vector<uint8_t> bytecodes;

@@ -110,10 +110,20 @@ namespace smalltalk
             senderValue  // sender as TaggedValue
         );
 
-        // Initialize the stack pointer properly
+        // Initialize the stack pointer properly - start after temporary variables
         char *contextEnd = reinterpret_cast<char *>(methodContext) + sizeof(MethodContext);
         TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
-        methodContext->stackPointer = slots;
+        
+        // Get the number of temporary variables to ensure stack starts after them
+        size_t tempVarCount = method.getTempVars().size();
+        
+        // Initialize temporary variables to nil
+        for (size_t i = 0; i < tempVarCount; i++) {
+            slots[i] = TaggedValue::nil();
+        }
+        
+        // Set stack pointer to start after temporary variables
+        methodContext->stackPointer = slots + tempVarCount;
 
         // Use the new architectural approach - direct method execution with currentMethod set
         return executeMethodContext(methodContext, const_cast<CompiledMethod*>(&method));

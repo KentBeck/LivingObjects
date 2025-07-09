@@ -521,9 +521,10 @@ aBlock value.
         {"[:x | x + 1] value: 5", "6", true, "blocks"},
         {" [| x | x := 5. x + 1] value", "6", true, "blocks"},
         {" [:y || x | x := 5. x + 7] value: 3", "12", true, "blocks"},
-        {"| y | y := 3. [| x | x := 5. x + y] value", "8", false, "blocks"},
-        {"| z y | y := 3. z := 2. [z + y] value", "5", false, "blocks"},
+        {"| y | y := 3. [| x | x := 5. x + y] value", "8", true, "blocks"},
+        {"| z y | y := 3. z := 2. [z + y] value", "5", true, "blocks"},
         {"[self] value", "Object", true, "blocks"},
+        {"[| x | [| y | y := 5. x := y] value. x] value", "5", true, "blocks"},
 
         // Block methods - test that blocks can call their own methods
         {"[42] identity", "Object", true, "block_methods"},

@@ -70,14 +70,34 @@ namespace smalltalk
             char* methodContextEnd = reinterpret_cast<char*>(blockMethodContext) + sizeof(MethodContext);
             TaggedValue* methodSlots = reinterpret_cast<TaggedValue*>(methodContextEnd);
             
-            // Copy block arguments to temporary variable slots
-            // In Smalltalk, block parameters become the first temporary variables
-            for (size_t i = 0; i < argCount && i < tempVarCount; i++) {
-                methodSlots[i] = args[i];
+            // LEXICAL SCOPING: Get home context's temporary variables for copying
+            char* homeContextEnd = reinterpret_cast<char*>(homeContext) + sizeof(MethodContext);
+            TaggedValue* homeSlots = reinterpret_cast<TaggedValue*>(homeContextEnd);
+            
+            // Get the home context's method to know how many home variables there are
+            // We need to find the home method's CompiledMethod to get its temp var count
+            // For now, let's use a simple approach: copy all home context variables
+            // and let the compiler indexing handle the rest
+            
+            // LEXICAL SCOPING: The block's temp vars are structured as: [home vars][block params][block temps]
+            // We need to copy the home context's variables to the first slots
+            
+            // Get the number of home variables from the compiled method
+            size_t homeVarCount = blockMethod->homeVarCount;
+            
+            // Copy home context variables to the first slots
+            for (size_t i = 0; i < homeVarCount && i < tempVarCount; i++) {
+                methodSlots[i] = homeSlots[i];
+            }
+            
+            // Copy block arguments to temporary variable slots after home variables
+            // In Smalltalk, block parameters become temporary variables after outer scope vars
+            for (size_t i = 0; i < argCount && (homeVarCount + i) < tempVarCount; i++) {
+                methodSlots[homeVarCount + i] = args[i];
             }
             
             // Initialize remaining temporary variables to nil
-            for (size_t i = argCount; i < tempVarCount; i++) {
+            for (size_t i = homeVarCount + argCount; i < tempVarCount; i++) {
                 methodSlots[i] = TaggedValue::nil();
             }
             

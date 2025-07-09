@@ -121,8 +121,15 @@ namespace smalltalk
         // Create a separate compiler instance for the block with its own temp var context
         SimpleCompiler blockCompiler;
 
-        // Set up the block compiler's temporary variables (parameters first, then temporaries)
-        blockCompiler.tempVars_ = node.getParameters();
+        // LEXICAL SCOPING: Include outer method's temporary variables first
+        // This allows blocks to access variables from their lexical environment
+        blockCompiler.tempVars_ = tempVars_;  // Copy outer method's temp vars
+        
+        // Add block parameters to the compiler's temp var list
+        for (const auto &param : node.getParameters())
+        {
+            blockCompiler.tempVars_.push_back(param);
+        }
         
         // Add block temporaries to the compiler's temp var list
         for (const auto &temp : node.getTemporaries())
@@ -130,6 +137,16 @@ namespace smalltalk
             blockCompiler.tempVars_.push_back(temp);
         }
 
+        // LEXICAL SCOPING: Add outer method's temporary variables first
+        // This allows blocks to access variables from their lexical environment
+        for (const auto &outerVar : tempVars_)
+        {
+            blockMethod->addTempVar(outerVar);
+        }
+        
+        // Store the count of home variables for runtime lexical scoping
+        blockMethod->homeVarCount = tempVars_.size();
+        
         // Add block parameters as temporary variables to the block method
         for (const auto &param : node.getParameters())
         {
