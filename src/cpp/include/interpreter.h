@@ -26,6 +26,9 @@ namespace smalltalk
 
         // Execute compiled method directly
         TaggedValue executeCompiledMethod(const CompiledMethod &method);
+        
+        // Execute compiled method with specific context
+        TaggedValue executeCompiledMethod(const CompiledMethod &method, MethodContext *context);
 
         // Execute context
         Object *executeContext(MethodContext *context);

@@ -145,6 +145,12 @@ namespace smalltalk
         // Use the new architectural approach - direct method execution with currentMethod set
         return executeMethodContext(methodContext, const_cast<CompiledMethod*>(&method));
     }
+    
+    TaggedValue Interpreter::executeCompiledMethod(const CompiledMethod &method, MethodContext *context)
+    {
+        // Execute the method context directly with the provided context and method
+        return executeMethodContext(context, const_cast<CompiledMethod*>(&method));
+    }
 
     TaggedValue Interpreter::executeMethodContext(MethodContext *context)
     {
@@ -196,6 +202,14 @@ namespace smalltalk
                 // Push TaggedValue directly
                 TaggedValue literal = literals[literalIndex];
                 push(literal);
+                break;
+            }
+            
+            case Bytecode::PUSH_SELF:
+            {
+                context->instructionPointer++; // Skip opcode - PUSH_SELF is single-byte
+                // Push self from context
+                push(context->self);
                 break;
             }
 
@@ -415,6 +429,14 @@ namespace smalltalk
                 // Push TaggedValue directly
                 TaggedValue literal = literals[literalIndex];
                 push(literal);
+                break;
+            }
+            
+            case Bytecode::PUSH_SELF:
+            {
+                context->instructionPointer++; // Skip opcode - PUSH_SELF is single-byte
+                // Push self from context
+                push(context->self);
                 break;
             }
 
@@ -975,49 +997,52 @@ namespace smalltalk
         // Get the home context (block->home is now TaggedValue)
         MethodContext *home = static_cast<MethodContext *>(block->home.asObject());
 
-        // Get block's compiled method from the image using the reference in the block
-        uint32_t methodRef = block->header.hash;
-        CompiledMethod* compiledBlock = image.getCompiledMethod(methodRef);
+        // Get block's compiled method from the stored method in the block context
+        char* contextEnd = reinterpret_cast<char*>(block) + sizeof(BlockContext);
+        TaggedValue* slots = reinterpret_cast<TaggedValue*>(contextEnd);
+        CompiledMethod* compiledBlock = reinterpret_cast<CompiledMethod*>(slots[0].asObject());
+        
         if (!compiledBlock) {
             throw std::runtime_error("Could not find compiled method for block");
         }
 
-        // A block executes in the scope of its home context, so it uses the home's receiver
-        TaggedValue receiverValue = home->self;  // Already TaggedValue now
+        // CRITICAL FIX: Block execution uses home context's receiver for 'self'
+        // This is correct for block evaluation - the block sees the same 'self' as where it was created
+        TaggedValue receiverValue = home->self;  // Home context's receiver for lexical scoping
 
-        // The sender of the new context is the currently active context
+        // The sender of the new context is the currently active context (calling context)
         TaggedValue senderValue = TaggedValue::fromObject(activeContext);
 
         // Allocate a new context for the block with space for temporaries and stack
         size_t tempCount = compiledBlock->tempVars.size();
         size_t stackSize = 16; // Default stack size
         MethodContext *newContext = memoryManager.allocateMethodContext(
-            tempCount + stackSize, methodRef, receiverValue, senderValue);
+            tempCount + stackSize, compiledBlock->getHash(), receiverValue, senderValue);
         
         // Get the variable-sized storage area for temporaries and arguments
-        char *contextEnd = reinterpret_cast<char *>(newContext) + sizeof(MethodContext);
-        TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
+        char *contextEnd2 = reinterpret_cast<char *>(newContext) + sizeof(MethodContext);
+        TaggedValue *contextSlots = reinterpret_cast<TaggedValue *>(contextEnd2);
         
         // Copy arguments to the context's temporary variables
         for (size_t i = 0; i < args.size() && i < tempCount; i++)
         {
-            slots[i] = args[i];
+            contextSlots[i] = args[i];
         }
         
         // Initialize remaining temporaries to nil
         for (size_t i = args.size(); i < tempCount; i++)
         {
-            slots[i] = TaggedValue::nil();
+            contextSlots[i] = TaggedValue::nil();
         }
         
         // Set up stack pointer to point to the first available slot after temporaries
-        TaggedValue *initialStackPos = slots + tempCount;
+        TaggedValue *initialStackPos = contextSlots + tempCount;
         newContext->stackPointer = initialStackPos;
         newContext->instructionPointer = 0; // Start at the beginning of the block's bytecodes
 
         // Execute the block's bytecode until it returns using unified method
         // The executeMethodContext will run until RETURN_STACK_TOP is encountered
-        TaggedValue blockResult = executeMethodContext(newContext);
+        TaggedValue blockResult = executeMethodContext(newContext, compiledBlock);
         
         // Push the block result onto the caller's stack
         push(blockResult);
@@ -1078,16 +1103,47 @@ namespace smalltalk
                 }
                 catch (const PrimitiveFailure &e)
                 {
-                    // Fall back to Smalltalk code (not implemented yet)
-                    throw std::runtime_error("Primitive failed and fallback not implemented: " + std::string(e.what()));
+                    // Fall back to Smalltalk code below
                 }
             }
-        }
-        else
-        {
+            
+            // Execute the compiled method (either non-primitive or primitive fallback)
+            // Create a new context for the method execution
+            MethodContext *newContext = memoryManager.allocateMethodContext(
+                16 + method->getTempVars().size(),  // stack size + temp vars
+                method->getHash(),                  // method hash (stored in header)
+                receiver,                           // self
+                TaggedValue::fromObject(activeContext)  // sender
+            );
+            
+            // Set up the new context
+            newContext->instructionPointer = 0;
+            
+            // Initialize stack pointer and temporary variables
+            char *contextEnd = reinterpret_cast<char *>(newContext) + sizeof(MethodContext);
+            TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
+            
+            // Store arguments as temporary variables (method parameters come first)
+            // In Smalltalk, method parameters are the first temporary variables
+            for (size_t i = 0; i < args.size(); i++)
+            {
+                slots[i] = args[i];  // Store in correct order, not reversed
+            }
+            
+            // Initialize remaining temp vars to nil
+            for (size_t i = args.size(); i < method->getTempVars().size(); i++)
+            {
+                slots[i] = TaggedValue::nil();
+            }
+            
+            // Set stack pointer to start after all temporary variables
+            newContext->stackPointer = slots + method->getTempVars().size();
+            
+            // Execute the method directly with the compiled method object
+            return executeCompiledMethod(*method, newContext);
         }
 
-        // No method found or no primitive - error for now
+        // No method found - throw proper exception
         throw std::runtime_error("Method not found: " + selector);
     }
 
