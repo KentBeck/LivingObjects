@@ -400,58 +400,58 @@ aBlock value.
 ^ result)";
 
     MethodCompiler::addSmalltalkMethod(blockClass, ensureMethod);
-    
+
     // Add identity method to test block self
     std::string identityMethod = R"(identity
     ^ self)";
-    
+
     MethodCompiler::addSmalltalkMethod(blockClass, identityMethod);
-    
+
     // Add simple test method
     std::string testMethod = R"(test
     ^ 999)";
-    
+
     MethodCompiler::addSmalltalkMethod(blockClass, testMethod);
-    
+
     // Add method that calls test
     std::string callTestMethod = R"(callTest
     ^ self test)";
-    
+
     MethodCompiler::addSmalltalkMethod(blockClass, callTestMethod);
-    
+
     // Add method that calls value
     std::string callValueMethod = R"(callValue
     ^ self value)";
-    
+
     MethodCompiler::addSmalltalkMethod(blockClass, callValueMethod);
-    
+
     // Add simpler ensure for testing
     std::string ensureSimpleMethod = R"(ensureSimple: aBlock
     ^ self value)";
-    
+
     MethodCompiler::addSmalltalkMethod(blockClass, ensureSimpleMethod);
-    
+
     // Test method with temp var
     std::string testTempMethod = R"(testTemp: aBlock
     | unused |
     ^ self value)";
-    
+
     MethodCompiler::addSmalltalkMethod(blockClass, testTempMethod);
-    
+
     // Test method with assignment
     std::string testAssignMethod = R"(testAssign: aBlock
     | result |
     result := 777.
     ^ self value)";
-    
+
     MethodCompiler::addSmalltalkMethod(blockClass, testAssignMethod);
-    
+
     // Test method with self value assignment
     std::string testSelfValueAssignMethod = R"(testSelfValueAssign: aBlock
     | result |
     result := self value.
     ^ result)";
-    
+
     MethodCompiler::addSmalltalkMethod(blockClass, testSelfValueAssignMethod);
 
     std::vector<ExpressionTest> tests = {
@@ -523,7 +523,7 @@ aBlock value.
         {" [:y || x | x := 5. x + 7] value: 3", "12", true, "blocks"},
         {"| y | y := 3. [| x | x := 5. x + y] value", "8", false, "blocks"},
         {"| z y | y := 3. z := 2. [z + y] value", "5", false, "blocks"},
-        {"[self] value", "<Object>", true, "blocks"},
+        {"[self] value", "Object", true, "blocks"},
 
         // Block methods - test that blocks can call their own methods
         {"[42] identity", "Object", true, "block_methods"},
@@ -535,7 +535,7 @@ aBlock value.
         {"[100] testAssign: [200]", "100", true, "block_methods"},
         {"[100] testSelfValueAssign: [200]", "100", true, "block_methods"},
         {"[100] ensure: [200]", "100", true, "block_methods"},
-        
+
         // Conditionals - SHOULD FAIL (not implemented)
         {"3 < 4) ifTrue: [10] ifFalse: [20]", "10", false, "conditionals"},
         {"true ifTrue: [42]", "42", false, "conditionals"},
