@@ -2,6 +2,8 @@
 #include "symbol.h"
 #include "smalltalk_exception.h"
 #include "smalltalk_class.h"
+#include "memory_manager.h"
+#include "interpreter.h"
 
 #include <stdexcept>
 
@@ -68,6 +70,10 @@ namespace smalltalk
         else if (const auto *ret = dynamic_cast<const ReturnNode *>(&node))
         {
             compileReturn(*ret, method);
+        }
+        else if (const auto *arrayLiteral = dynamic_cast<const ArrayLiteralNode *>(&node))
+        {
+            compileArrayLiteral(*arrayLiteral, method);
         }
         else
         {
@@ -265,6 +271,58 @@ namespace smalltalk
         // Variable not found - this is an error
         // Throw proper Smalltalk exception
         ExceptionHandler::throwException(std::make_unique<NameError>(varName));
+    }
+
+    void SimpleCompiler::compileArrayLiteral(const ArrayLiteralNode &node, CompiledMethod &method)
+    {
+        // Simple approach: just store the array elements and generate runtime array creation
+        const auto& elements = node.getElements();
+        
+        // Push Array class
+        Class* arrayClass = ClassRegistry::getInstance().getClass("Array");
+        if (!arrayClass) {
+            throw std::runtime_error("Array class not found");
+        }
+        uint32_t classIndex = method.addLiteral(TaggedValue::fromObject(arrayClass));
+        method.addBytecode(static_cast<uint8_t>(Bytecode::PUSH_LITERAL));
+        method.addOperand(classIndex);
+        
+        // Push size
+        method.addBytecode(static_cast<uint8_t>(Bytecode::PUSH_LITERAL));
+        method.addOperand(method.addLiteral(TaggedValue::fromSmallInteger(static_cast<int32_t>(elements.size()))));
+        
+        // Send new: message
+        Symbol* newSymbol = Symbol::intern("new:");
+        uint32_t newIndex = method.addLiteral(TaggedValue::fromObject(newSymbol));
+        method.addBytecode(static_cast<uint8_t>(Bytecode::SEND_MESSAGE));
+        method.addOperand(newIndex);
+        method.addOperand(1); // 1 argument
+        
+        // Now populate the array with at:put: messages
+        for (size_t i = 0; i < elements.size(); i++) {
+            // Duplicate the array on the stack
+            method.addBytecode(static_cast<uint8_t>(Bytecode::DUPLICATE));
+            
+            // Push index (1-based)
+            method.addBytecode(static_cast<uint8_t>(Bytecode::PUSH_LITERAL));
+            method.addOperand(method.addLiteral(TaggedValue::fromSmallInteger(static_cast<int32_t>(i + 1))));
+            
+            // Push the element from literals
+            method.addBytecode(static_cast<uint8_t>(Bytecode::PUSH_LITERAL));
+            method.addOperand(method.addLiteral(elements[i]));
+            
+            // Send at:put: message
+            Symbol* atPutSymbol = Symbol::intern("at:put:");
+            uint32_t atPutIndex = method.addLiteral(TaggedValue::fromObject(atPutSymbol));
+            method.addBytecode(static_cast<uint8_t>(Bytecode::SEND_MESSAGE));
+            method.addOperand(atPutIndex);
+            method.addOperand(2); // 2 arguments
+            
+            // Pop the result (at:put: returns the value)
+            method.addBytecode(static_cast<uint8_t>(Bytecode::POP));
+        }
+        
+        // The array is left on the stack
     }
 
 } // namespace smalltalk

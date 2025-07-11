@@ -31,6 +31,7 @@ namespace smalltalk
         void compileSelf(const SelfNode &node, CompiledMethod &method);
         void compileAssignment(const AssignmentNode &node, CompiledMethod &method);
         void compileReturn(const ReturnNode &node, CompiledMethod &method);
+        void compileArrayLiteral(const ArrayLiteralNode &node, CompiledMethod &method);
 
         // Temporary variables for the current method being compiled
         std::vector<std::string> tempVars_;

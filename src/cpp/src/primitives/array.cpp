@@ -82,16 +82,16 @@ TaggedValue primitive_at(TaggedValue receiver, const std::vector<TaggedValue>& a
         throw PrimitiveFailure("Array index out of bounds");
     }
     
-    // Get the element pointer
-    Object** elements = reinterpret_cast<Object**>(reinterpret_cast<char*>(obj) + sizeof(Object));
-    Object* element = elements[arrayIndex];
+    // Get the element pointer - arrays store TaggedValue elements after instance variables
+    // Need to skip instance variable slots first
+    Class* arrayClass = obj->getClass();
+    size_t instanceVarCount = arrayClass ? arrayClass->getInstanceSize() : 0;
     
-    // If element is nullptr (uninitialized), return nil
-    if (element == nullptr) {
-        return TaggedValue::nil();
-    }
+    TaggedValue* slots = reinterpret_cast<TaggedValue*>(reinterpret_cast<char*>(obj) + sizeof(Object));
+    TaggedValue* elements = slots + instanceVarCount;  // Skip instance variables
+    TaggedValue element = elements[arrayIndex];
     
-    return TaggedValue::fromObject(element);
+    return element;
 }
 
 /**
@@ -135,27 +135,15 @@ TaggedValue primitive_at_put(TaggedValue receiver, const std::vector<TaggedValue
     
     // Get value argument
     TaggedValue value = args[1];
-    Object* valueObject = nullptr;
     
-    // Convert TaggedValue to Object*
-    if (value.isNil()) {
-        valueObject = nullptr; // nil is stored as nullptr
-    } else if (value.isPointer()) {
-        valueObject = value.asObject();
-    } else if (value.isSmallInteger()) {
-        // Box integer immediate value
-        valueObject = interpreter.getMemoryManager().allocateInteger(value.getSmallInteger());
-    } else if (value.isBoolean()) {
-        // Box boolean immediate value
-        valueObject = interpreter.getMemoryManager().allocateBoolean(value.getBoolean());
-    } else {
-        // Handle other immediate value types (e.g., float)
-        throw PrimitiveFailure("Unsupported immediate value type for array storage");
-    }
+    // Set the element directly - arrays store TaggedValue elements after instance variables
+    // Need to skip instance variable slots first
+    Class* arrayClass = obj->getClass();
+    size_t instanceVarCount = arrayClass ? arrayClass->getInstanceSize() : 0;
     
-    // Set the element
-    Object** elements = reinterpret_cast<Object**>(reinterpret_cast<char*>(obj) + sizeof(Object));
-    elements[arrayIndex] = valueObject;
+    TaggedValue* slots = reinterpret_cast<TaggedValue*>(reinterpret_cast<char*>(obj) + sizeof(Object));
+    TaggedValue* elements = slots + instanceVarCount;  // Skip instance variables
+    elements[arrayIndex] = value;
     
     // Return the value that was stored
     return value;
@@ -179,7 +167,7 @@ TaggedValue primitive_size(TaggedValue receiver, const std::vector<TaggedValue>&
         throw PrimitiveFailure("size can only be sent to arrays");
     }
     
-    // Get array size from header
+    // Get array size from header - this is the indexed size, not including instance variables
     size_t arraySize = obj->header.size;
     
     // Return as SmallInteger

@@ -69,7 +69,7 @@ namespace PrimitiveNumbers {
     // String primitives
     const int STRING_AT = 63;         // String at:
     const int STRING_AT_PUT = 64;     // String at:put:
-    const int STRING_SIZE = 62;       // String size (same as Array)
+    const int STRING_SIZE = 66;       // String size
     const int STRING_CONCAT = 65;     // String ,
 }
 

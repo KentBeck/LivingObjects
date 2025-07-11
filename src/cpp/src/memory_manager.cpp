@@ -142,7 +142,8 @@ Object* MemoryManager::allocateIndexableInstance(Class* clazz, size_t indexedSiz
     
     // Allocate the object
     Object* obj = static_cast<Object*>(currentAllocation);
-    new (obj) Object(ObjectType::ARRAY, totalSlots, clazz);
+    // For arrays, store the indexed size (number of elements) in the header, not total slots
+    new (obj) Object(ObjectType::ARRAY, indexedSize, clazz);
     
     // Initialize all slots to nil (TaggedValue)
     if (totalSlots > 0) {

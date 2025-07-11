@@ -496,8 +496,7 @@ namespace smalltalk
         // Check if this is an array literal #(...)
         if (peek() == '(')
         {
-            error("Array literals not yet implemented");
-            return nullptr;
+            return parseArrayLiteral();
         }
         
         // Parse the symbol name - can be an identifier or a keyword selector
@@ -544,6 +543,84 @@ namespace smalltalk
         // Create a Symbol and wrap it in a TaggedValue
         Symbol* symbol = Symbol::intern(name);
         return std::make_unique<LiteralNode>(TaggedValue::fromObject(symbol));
+    }
+
+    ASTNodePtr SimpleParser::parseArrayLiteral()
+    {
+        consume(); // consume '('
+        skipWhitespace();
+        
+        std::vector<TaggedValue> elementValues;
+        
+        while (!isAtEnd() && peek() != ')')
+        {
+            // Parse array elements and extract their literal values
+            ASTNodePtr element;
+            
+            if (isDigit(peek()) || (peek() == '-' && pos_ + 1 < input_.size() && isDigit(input_[pos_ + 1])))
+            {
+                element = parseInteger();
+            }
+            else if (peek() == '\'')
+            {
+                element = parseString();
+            }
+            else if (peek() == '#')
+            {
+                element = parseSymbol();
+            }
+            else if (isAlpha(peek()))
+            {
+                // Parse identifiers as symbols in array literals
+                std::string name = parseIdentifier();
+                
+                // Check for special literals
+                if (name == "true")
+                {
+                    element = std::make_unique<LiteralNode>(TaggedValue::fromBoolean(true));
+                }
+                else if (name == "false")
+                {
+                    element = std::make_unique<LiteralNode>(TaggedValue::fromBoolean(false));
+                }
+                else if (name == "nil")
+                {
+                    element = std::make_unique<LiteralNode>(TaggedValue::nil());
+                }
+                else
+                {
+                    // Convert identifier to symbol
+                    Symbol* symbol = Symbol::intern(name);
+                    element = std::make_unique<LiteralNode>(TaggedValue::fromObject(symbol));
+                }
+            }
+            else
+            {
+                error("Invalid array element");
+            }
+            
+            // Extract the literal value from the element
+            if (auto* literal = dynamic_cast<LiteralNode*>(element.get()))
+            {
+                elementValues.push_back(literal->getValue());
+            }
+            else
+            {
+                error("Array elements must be literals");
+            }
+            
+            skipWhitespace();
+        }
+        
+        if (peek() != ')')
+        {
+            error("Expected ')' to close array literal");
+        }
+        consume(); // consume ')'
+        
+        // Create an ArrayLiteralNode that stores the literal values
+        // The compiler will need to create the actual array object
+        return std::make_unique<ArrayLiteralNode>(std::move(elementValues));
     }
 
     void SimpleParser::skipWhitespace()

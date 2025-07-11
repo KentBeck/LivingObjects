@@ -543,8 +543,8 @@ aBlock value.
         {"true ifTrue: [42]", "42", false, "conditionals"},
 
         // Collections - SHOULD FAIL (not implemented)
-        {"#(1 2 3) at: 2", "2", false, "collections"},
-        {"#(1 2 3) size", "3", false, "collections"},
+        {"#(1 2 3) at: 2", "2", true, "collections"},
+        {"#(1 2 3) size", "3", true, "collections"},
 
         // Dictionary operations - SHOULD FAIL (not implemented)
         {"Dictionary new", "<Dictionary>", false, "dictionaries"},
@@ -711,6 +711,10 @@ aBlock value.
                         String *str = StringUtils::asString(result);
                         resultStr = str->getContent(); // Get content without quotes for comparison
                     }
+                    else if (result.isSmallInteger())
+                    {
+                        resultStr = std::to_string(result.getSmallInteger());
+                    }
                     else if (result.isPointer())
                     {
                         // Check if it's a symbol
@@ -736,6 +740,21 @@ aBlock value.
                         resultStr = "Object";
                     }
 
+                    // Debug output for array tests
+                    if (test.expression.find("#(") != std::string::npos && resultStr != test.expectedResult) {
+                        std::cout << "\nDEBUG Array test: " << test.expression 
+                                 << " expected: " << test.expectedResult 
+                                 << " got: " << resultStr;
+                        if (result.isSmallInteger()) {
+                            std::cout << " (SmallInteger: " << result.getSmallInteger() << ")";
+                        } else if (result.isInteger()) {
+                            std::cout << " (Integer: " << result.asInteger() << ")";
+                        } else if (result.isPointer()) {
+                            std::cout << " (Pointer/Object)";
+                        }
+                        std::cout << std::endl;
+                    }
+                    
                     if (test.shouldPass && resultStr == test.expectedResult)
                     {
                         actuallyPassed = true;

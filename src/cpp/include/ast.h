@@ -82,6 +82,43 @@ namespace smalltalk
     };
 
     /**
+     * Array literal node for #(1 2 3) syntax
+     */
+    class ArrayLiteralNode : public ASTNode
+    {
+    public:
+        explicit ArrayLiteralNode(std::vector<TaggedValue> elements)
+            : elements_(std::move(elements)) {}
+
+        const std::vector<TaggedValue> &getElements() const { return elements_; }
+
+        std::string toString() const override
+        {
+            std::string result = "#(";
+            for (size_t i = 0; i < elements_.size(); i++)
+            {
+                if (i > 0)
+                    result += " ";
+                // Convert TaggedValue to string representation
+                if (elements_[i].isInteger()) {
+                    result += std::to_string(elements_[i].asInteger());
+                } else if (elements_[i].isBoolean()) {
+                    result += elements_[i].asBoolean() ? "true" : "false";
+                } else if (elements_[i].isNil()) {
+                    result += "nil";
+                } else {
+                    result += "object";
+                }
+            }
+            result += ")";
+            return result;
+        }
+
+    private:
+        std::vector<TaggedValue> elements_;
+    };
+
+    /**
      * Method node - represents a complete method with optional temporary variables and an expression body
      */
     class MethodNode : public ASTNode
