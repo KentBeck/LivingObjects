@@ -3,6 +3,9 @@
 #include <cmath>
 #include <cstdint>
 #include <iostream>
+#include "object.h"
+#include "symbol.h"
+
 namespace smalltalk
 {
 
@@ -265,7 +268,18 @@ namespace smalltalk
         }
         else if (tv.isPointer())
         {
-            os << "Object@" << tv.asPointer();
+            // Check if it's a symbol
+            try {
+                Object* obj = tv.asObject();
+                if (obj && obj->header.getType() == ObjectType::SYMBOL) {
+                    Symbol* sym = static_cast<Symbol*>(obj);
+                    os << sym->toString();
+                } else {
+                    os << "Object@" << tv.asPointer();
+                }
+            } catch (...) {
+                os << "Object@" << tv.asPointer();
+            }
         }
         else
         {

@@ -39,9 +39,9 @@ namespace smalltalk
         }
 
         // String representation
-        std::string toString() const
+        virtual std::string toString() const override
         {
-            return "#" + name_;
+            return "Symbol(" + name_ + ")";
         }
 
     private:

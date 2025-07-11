@@ -511,6 +511,7 @@ aBlock value.
         {"true", "true", true, "literals"},
         {"false", "false", true, "literals"},
         {"nil", "nil", true, "literals"},
+        {"#abc", "Symbol(abc)", true, "literals"},
 
         // Variable assignment - SHOULD PASS (now implemented!)
         {"| x | x := 42. x", "42", true, "variables"},
@@ -709,6 +710,26 @@ aBlock value.
                     {
                         String *str = StringUtils::asString(result);
                         resultStr = str->getContent(); // Get content without quotes for comparison
+                    }
+                    else if (result.isPointer())
+                    {
+                        // Check if it's a symbol
+                        try {
+                            Object* obj = result.asObject();
+                            if (obj && obj->header.getType() == ObjectType::SYMBOL) {
+                                Symbol* sym = static_cast<Symbol*>(obj);
+                                resultStr = sym->toString();
+                                // Keep debug for symbol test
+                                if (test.expression == "#abc" && resultStr != "Symbol(abc)") {
+                                    std::cout << "\nDEBUG: Symbol toString returned '" << resultStr 
+                                             << "' instead of 'Symbol(abc)'" << std::endl;
+                                }
+                            } else {
+                                resultStr = "Object";
+                            }
+                        } catch (...) {
+                            resultStr = "Object";
+                        }
                     }
                     else
                     {

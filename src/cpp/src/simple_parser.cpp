@@ -347,6 +347,10 @@ namespace smalltalk
         {
             return parseString();
         }
+        else if (peek() == '#')
+        {
+            return parseSymbol();
+        }
         else
         {
             error(std::string("Unexpected character: ") + peek());
@@ -483,6 +487,63 @@ namespace smalltalk
         // Create a String object and wrap it in a TaggedValue
         TaggedValue stringValue = StringUtils::createTaggedString(content);
         return std::make_unique<LiteralNode>(stringValue);
+    }
+
+    ASTNodePtr SimpleParser::parseSymbol()
+    {
+        consume(); // consume '#'
+        
+        // Check if this is an array literal #(...)
+        if (peek() == '(')
+        {
+            error("Array literals not yet implemented");
+            return nullptr;
+        }
+        
+        // Parse the symbol name - can be an identifier or a keyword selector
+        std::string name;
+        
+        if (isAlpha(peek()) || peek() == '_')
+        {
+            // Parse identifier-style symbol (e.g., #abc, #mySymbol)
+            while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek()) || peek() == '_'))
+            {
+                name += consume();
+            }
+            
+            // Check if this is a keyword selector (ends with ':')
+            while (peek() == ':')
+            {
+                name += consume(); // consume ':'
+                
+                // Continue parsing if it's a multi-part keyword selector
+                if (isAlpha(peek()))
+                {
+                    while (!isAtEnd() && (isAlpha(peek()) || isDigit(peek()) || peek() == '_'))
+                    {
+                        name += consume();
+                    }
+                }
+            }
+        }
+        else if (isBinarySelector())
+        {
+            // Parse binary selector symbol (e.g., #+, #-, #<=)
+            name = parseBinarySelector();
+        }
+        else
+        {
+            error("Invalid symbol literal");
+        }
+        
+        if (name.empty())
+        {
+            error("Empty symbol literal");
+        }
+        
+        // Create a Symbol and wrap it in a TaggedValue
+        Symbol* symbol = Symbol::intern(name);
+        return std::make_unique<LiteralNode>(TaggedValue::fromObject(symbol));
     }
 
     void SimpleParser::skipWhitespace()
