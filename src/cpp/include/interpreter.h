@@ -76,6 +76,10 @@ namespace smalltalk
 
         // Get object class for TaggedValue
         Class *getObjectClass(TaggedValue value);
+        
+        // Exception handling
+        bool findExceptionHandler(const std::string& exceptionClass, MethodContext*& handlerContext, int& handlerPC);
+        void unwindToContext(MethodContext* targetContext);
 
     private:
         // Memory manager

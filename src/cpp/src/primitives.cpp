@@ -77,6 +77,7 @@ namespace smalltalk
         extern void registerObjectPrimitives();
         extern void registerArrayPrimitives();
         extern void registerStringPrimitives();
+        extern void registerExceptionPrimitives();
         void registerIntegerPrimitives();
         void registerBlockPrimitives();
 
@@ -84,6 +85,7 @@ namespace smalltalk
         registerObjectPrimitives();
         registerArrayPrimitives();
         registerStringPrimitives();
+        registerExceptionPrimitives();
         
         // Register integer and block primitives directly here
         registerIntegerPrimitives();

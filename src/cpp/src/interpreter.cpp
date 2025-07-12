@@ -156,8 +156,9 @@ namespace smalltalk
 
         // Main bytecode execution loop - process one instruction at a time
         // Use context->instructionPointer instead of local variable
-        while (context->instructionPointer < bytecodes.size())
-        {
+        try {
+            while (context->instructionPointer < bytecodes.size())
+            {
             uint8_t opcode = bytecodes[context->instructionPointer];
             Bytecode instruction = static_cast<Bytecode>(opcode);
 
@@ -367,6 +368,12 @@ namespace smalltalk
         activeContext = savedContext;
         currentMethod = savedMethod;
         return TaggedValue::nil();
+        } catch (const std::exception& e) {
+            // Restore context on exception
+            activeContext = savedContext;
+            currentMethod = savedMethod;
+            throw;
+        }
     }
 
     TaggedValue Interpreter::executeMethodContext(MethodContext *context, CompiledMethod *method)
@@ -1240,6 +1247,60 @@ namespace smalltalk
         if (stackPointer > stackEnd)
         {
             throw std::runtime_error("Stack pointer above stack end");
+        }
+    }
+
+    bool Interpreter::findExceptionHandler(const std::string& exceptionClass, MethodContext*& handlerContext, int& handlerPC) {
+        // Walk up the context chain looking for exception handlers
+        MethodContext* context = activeContext;
+        
+        while (context != nullptr) {
+            // Get the compiled method for this context
+            CompiledMethod* method = nullptr;
+            
+            // Try to find the method from the image using the context's method hash
+            if (context->header.getHash() != 0) {
+                method = image.getCompiledMethod(context->header.getHash());
+            }
+            
+            if (method && method->primitiveNumber == PrimitiveNumbers::EXCEPTION_MARK) {
+                // This method has an exception handler marker
+                // The handler starts right after the primitive failure
+                handlerContext = context;
+                handlerPC = 0; // Start from beginning since primitive failed
+                return true;
+            }
+            
+            // Move to sender context
+            if (context->sender.isPointer()) {
+                context = static_cast<MethodContext*>(context->sender.asObject());
+            } else {
+                break;
+            }
+        }
+        
+        return false;
+    }
+    
+    void Interpreter::unwindToContext(MethodContext* targetContext) {
+        // Unwind the stack to the target context
+        while (activeContext != targetContext && activeContext != nullptr) {
+            // Get sender before we potentially invalidate the context
+            TaggedValue sender = activeContext->sender;
+            
+            // TODO: In a full implementation, we would run unwind blocks here
+            // For now, just move to the sender
+            
+            if (sender.isPointer()) {
+                activeContext = static_cast<MethodContext*>(sender.asObject());
+            } else {
+                activeContext = nullptr;
+            }
+        }
+        
+        if (activeContext == nullptr && targetContext != nullptr) {
+            // We couldn't reach the target context - this is an error
+            throw std::runtime_error("Failed to unwind to exception handler context");
         }
     }
 

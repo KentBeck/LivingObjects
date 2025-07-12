@@ -71,6 +71,10 @@ namespace PrimitiveNumbers {
     const int STRING_AT_PUT = 64;     // String at:put:
     const int STRING_SIZE = 66;       // String size
     const int STRING_CONCAT = 65;     // String ,
+    
+    // Exception handling primitives
+    const int EXCEPTION_MARK = 1000;  // Special marker for exception handlers (always fails)
+    const int EXCEPTION_SIGNAL = 1001; // Signal (throw) an exception
 }
 
 /**

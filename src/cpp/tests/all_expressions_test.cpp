@@ -81,6 +81,21 @@ void testExpressionWithExecuteMethod(const ExpressionTest &test)
             String *str = StringUtils::asString(result);
             resultStr = str->getContent(); // Get content without quotes for comparison
         }
+        else if (result.isPointer())
+        {
+            try {
+                Object* obj = result.asObject();
+                if (obj && obj->header.getType() == ObjectType::ARRAY) {
+                    // Format array as <Array size: N>
+                    size_t arraySize = obj->header.size;
+                    resultStr = "<Array size: " + std::to_string(arraySize) + ">";
+                } else {
+                    resultStr = "Object";
+                }
+            } catch (...) {
+                resultStr = "Object";
+            }
+        }
         else
         {
             resultStr = "Object";
@@ -200,6 +215,21 @@ void testExpression(const ExpressionTest &test)
         {
             String *str = StringUtils::asString(result);
             resultStr = str->getContent(); // Get content without quotes for comparison
+        }
+        else if (result.isPointer())
+        {
+            try {
+                Object* obj = result.asObject();
+                if (obj && obj->header.getType() == ObjectType::ARRAY) {
+                    // Format array as <Array size: N>
+                    size_t arraySize = obj->header.size;
+                    resultStr = "<Array size: " + std::to_string(arraySize) + ">";
+                } else {
+                    resultStr = "Object";
+                }
+            } catch (...) {
+                resultStr = "Object";
+            }
         }
         else
         {
@@ -497,7 +527,7 @@ aBlock value.
 
         // Basic object creation - SHOULD PASS (now implemented!)
         {"Object new", "Object", true, "object_creation"},
-        {"Array new: 3", "<Array size: 3>", false, "object_creation"},
+        {"Array new: 3", "<Array size: 3>", true, "object_creation"},
 
         // String literals - SHOULD PASS (basic string parsing)
         {"'hello'", "hello", true, "strings"},
@@ -717,7 +747,7 @@ aBlock value.
                     }
                     else if (result.isPointer())
                     {
-                        // Check if it's a symbol
+                        // Check if it's a symbol or array
                         try {
                             Object* obj = result.asObject();
                             if (obj && obj->header.getType() == ObjectType::SYMBOL) {
@@ -728,6 +758,10 @@ aBlock value.
                                     std::cout << "\nDEBUG: Symbol toString returned '" << resultStr 
                                              << "' instead of 'Symbol(abc)'" << std::endl;
                                 }
+                            } else if (obj && obj->header.getType() == ObjectType::ARRAY) {
+                                // Format array as <Array size: N>
+                                size_t arraySize = obj->header.size;
+                                resultStr = "<Array size: " + std::to_string(arraySize) + ">";
                             } else {
                                 resultStr = "Object";
                             }
