@@ -912,6 +912,7 @@ namespace smalltalk
 
     void Interpreter::handleCreateBlock(uint32_t literalIndex, uint32_t parameterCount)
     {
+        (void)parameterCount; // Suppress unused parameter warning
         // The block's compiled method should be in the current method's literals
         // ARCHITECTURAL FIX: Use currentMethod instead of hash lookup
         if (!currentMethod) {
@@ -1251,6 +1252,7 @@ namespace smalltalk
     }
 
     bool Interpreter::findExceptionHandler(const std::string& exceptionClass, MethodContext*& handlerContext, int& handlerPC) {
+        (void)exceptionClass; // Suppress unused parameter warning
         // Walk up the context chain looking for exception handlers
         MethodContext* context = activeContext;
         

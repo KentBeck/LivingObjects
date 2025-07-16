@@ -9,21 +9,25 @@ namespace smalltalk
 {
 
     /**
-     * Simple recursive descent parser for basic expressions and unary messages
-     * Supports: integers, booleans, nil, +, -, *, /, <, >, =, ~=, <=, >=, (, ), unary messages
-     *
-     * Grammar:
-     *   expression := comparison
-     *   comparison := arithmetic (('<' | '>' | '=' | '~=' | '<=' | '>=') arithmetic)*
-     *   arithmetic := term (('+' | '-') term)*
-     *   term       := factor (('*' | '/') factor)*
-     *   factor     := unary
-     *   unary      := primary (identifier)*
-     *   primary    := integer | literal | string | identifier | '(' expression ')'
-     *   integer    := [0-9]+
-     *   literal    := 'true' | 'false' | 'nil'
-     *   string     := "'" [^']* "'"
-     *   identifier := [a-zA-Z][a-zA-Z0-9]*
+     * Recursive descent parser for Smalltalk expressions following proper precedence
+     * 
+     * Grammar (following Smalltalk-80 specification):
+     *   method := temporaries? statements
+     *   temporaries := '|' identifier* '|'
+     *   statements := statement ('.' statement)* '.'?
+     *   statement := expression | '^' expression
+     *   expression := assignment | keywordExpression
+     *   assignment := identifier ':=' expression
+     *   keywordExpression := binaryExpression (keyword binaryExpression)*
+     *   binaryExpression := unaryExpression (binarySelector unaryExpression)*
+     *   unaryExpression := primary unarySelector*
+     *   primary := identifier | literal | block | '(' expression ')' | arrayLiteral
+     *   keyword := identifier ':'
+     *   binarySelector := '+' | '-' | '*' | '/' | '=' | '~=' | '<' | '>' | '<=' | '>=' | ','
+     *   unarySelector := identifier
+     *   literal := integer | string | symbol | 'true' | 'false' | 'nil'
+     *   block := '[' blockBody ']'
+     *   arrayLiteral := '#(' literalElement* ')'
      */
     class SimpleParser
     {

@@ -242,6 +242,7 @@ namespace smalltalk
 
     void SimpleCompiler::compileSelf(const SelfNode &node, CompiledMethod &method)
     {
+        (void)node; // Suppress unused parameter warning
         // Generate PUSH_SELF bytecode
         method.addBytecode(static_cast<uint8_t>(Bytecode::PUSH_SELF));
     }

@@ -94,6 +94,7 @@ TaggedValue primitive_basic_new_size(TaggedValue receiver, const std::vector<Tag
  * Returns the identity hash of the receiver
  */
 TaggedValue primitive_identity_hash(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+    (void)interpreter; // Suppress unused parameter warning
     // Check argument count
     Primitives::checkArgumentCount(args, 0, "identityHash");
     
@@ -128,6 +129,7 @@ TaggedValue primitive_identity_hash(TaggedValue receiver, const std::vector<Tagg
  * Returns the class of the receiver
  */
 TaggedValue primitive_class(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter) {
+    (void)interpreter; // Suppress unused parameter warning
     // Check argument count
     Primitives::checkArgumentCount(args, 0, "class");
     

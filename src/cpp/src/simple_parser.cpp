@@ -129,9 +129,9 @@ namespace smalltalk
             }
         }
 
-        // Not an assignment, restore position and parse binary messages
+        // Not an assignment, restore position and parse keyword messages
         pos_ = savedPos;
-        return parseBinaryMessage();
+        return parseKeywordMessage();
     }
 
     // Helper to check if current position starts a binary selector
@@ -204,7 +204,7 @@ namespace smalltalk
 
     ASTNodePtr SimpleParser::parseBinaryMessage()
     {
-        auto left = parseKeywordMessage();
+        auto left = parseUnary();
 
         while (!isAtEnd())
         {
@@ -214,7 +214,7 @@ namespace smalltalk
             {
                 std::string selector = parseBinarySelector();
                 skipWhitespace();
-                auto right = parseKeywordMessage();
+                auto right = parseUnary();
 
                 std::vector<ASTNodePtr> args;
                 args.push_back(std::move(right));
@@ -841,7 +841,7 @@ namespace smalltalk
 
     ASTNodePtr SimpleParser::parseKeywordMessage()
     {
-        auto receiver = parseUnary();
+        auto receiver = parseBinaryMessage();
 
         // Check for keyword messages
         while (!isAtEnd())
@@ -873,7 +873,7 @@ namespace smalltalk
                     
                     // Parse first argument
                     skipWhitespace();
-                    args.push_back(parseUnary());
+                    args.push_back(parseBinaryMessage());
                     
                     // Parse additional keyword parts
                     while (!isAtEnd())
@@ -900,7 +900,7 @@ namespace smalltalk
                                 fullSelector += nextKeyword;
                                 
                                 skipWhitespace();
-                                args.push_back(parseUnary());
+                                args.push_back(parseBinaryMessage());
                             }
                             else
                             {

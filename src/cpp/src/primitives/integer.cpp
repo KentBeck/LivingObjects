@@ -73,6 +73,7 @@ namespace smalltalk
 
         TaggedValue divide(TaggedValue receiver, const std::vector<TaggedValue> &args, Interpreter &interpreter)
         {
+            (void)interpreter; // Suppress unused parameter warning
             checkArgumentCount(args, 1);
             checkIntegerReceiver(receiver);
             checkIntegerArgument(args[0], 0);

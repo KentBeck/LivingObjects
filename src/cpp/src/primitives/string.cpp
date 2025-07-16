@@ -26,6 +26,7 @@ namespace smalltalk
          */
         TaggedValue at(TaggedValue receiver, const std::vector<TaggedValue> &args, Interpreter &interpreter)
         {
+            (void)interpreter; // Suppress unused parameter warning
             checkArgumentCount(args, 1);
             
             // Check that receiver is a string

@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "Pre-commit Quality Check",
+  "description": "When ready to commit & push, first check for test failures and run clang-tidy to fix all warnings before proceeding",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/cpp/**/*.cpp",
+      "src/cpp/**/*.h",
+      "src/cpp/tests/**/*.cpp"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "I'm ready to commit and push changes. Please help me:\n\n1. First, run all tests to check for any new test failures. If there are failures, I need to fix them before proceeding.\n2. Run clang-tidy on the C++ codebase and fix all warnings that are reported.\n3. Only after tests pass and clang-tidy warnings are resolved should I proceed with the commit and push.\n\nPlease guide me through this pre-commit quality check process step by step."
+  }
+}

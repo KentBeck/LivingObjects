@@ -443,7 +443,7 @@ Object* MemoryManager::copyObject(Object* obj) {
     
     // Copy object to toSpace
     Object* newObj = static_cast<Object*>(currentAllocation);
-    memcpy(newObj, obj, objSize);
+    memcpy(static_cast<void*>(newObj), static_cast<const void*>(obj), objSize);
     
     // Clear forwarded flag in copy
     newObj->header.clearFlag(ObjectFlag::FORWARDED);
