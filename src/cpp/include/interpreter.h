@@ -100,6 +100,9 @@ namespace smalltalk
         Object **getStackEnd(MethodContext *context);
         Object **getCurrentStackPointer(MethodContext *context);
         void validateStackBounds(MethodContext *context, Object **stackPointer);
+        
+        // Bytecode reading helper
+        uint32_t readUint32FromBytecode(const std::vector<uint8_t>& bytecodes, MethodContext* context);
     };
 
 } // namespace smalltalk

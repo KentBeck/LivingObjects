@@ -184,17 +184,7 @@ namespace smalltalk
             {
             case Bytecode::PUSH_LITERAL:
             {
-                if (context->instructionPointer + 3 >= bytecodes.size())
-                {
-                    throw std::runtime_error("Invalid PUSH_LITERAL: not enough bytes for operand");
-                }
-
-                uint32_t literalIndex =
-                    static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
-                context->instructionPointer += 4;
+            uint32_t literalIndex = readUint32FromBytecode(bytecodes, context);
 
                 if (literalIndex >= literals.size())
                 {
@@ -222,20 +212,10 @@ namespace smalltalk
                 }
 
                 // Read selector index
-                uint32_t selectorIndex =
-                    static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
-                context->instructionPointer += 4;
+                uint32_t selectorIndex = readUint32FromBytecode(bytecodes, context);
 
                 // Read argument count
-                uint32_t argCount =
-                    static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
-                context->instructionPointer += 4;
+                uint32_t argCount = readUint32FromBytecode(bytecodes, context);
 
                 if (selectorIndex >= literals.size())
                 {
@@ -289,16 +269,8 @@ namespace smalltalk
                 }
 
                 // Read block parameters (little-endian)
-                uint32_t literalIndex = static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
-                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
-                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
-                                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
-                context->instructionPointer += 4;
-                uint32_t parameterCount = static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
-                                          (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
-                                          (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
-                                          (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
-                context->instructionPointer += 4;
+                uint32_t literalIndex = readUint32FromBytecode(bytecodes, context);
+                uint32_t parameterCount = readUint32FromBytecode(bytecodes, context);
 
                 // Execute CREATE_BLOCK handler using context-based stack
                 handleCreateBlock(literalIndex, parameterCount);
@@ -307,17 +279,7 @@ namespace smalltalk
 
             case Bytecode::PUSH_TEMPORARY_VARIABLE:
             {
-                if (context->instructionPointer + 3 >= bytecodes.size())
-                {
-                    throw std::runtime_error("Invalid PUSH_TEMPORARY_VARIABLE: not enough bytes for operand");
-                }
-
-                uint32_t tempIndex =
-                    static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
-                context->instructionPointer += 4;
+                uint32_t tempIndex = readUint32FromBytecode(bytecodes, context);
 
                 // Use context-based temporary variable access
                 handlePushTemporaryVariable(tempIndex);
@@ -326,17 +288,7 @@ namespace smalltalk
 
             case Bytecode::STORE_TEMPORARY_VARIABLE:
             {
-                if (context->instructionPointer + 3 >= bytecodes.size())
-                {
-                    throw std::runtime_error("Invalid STORE_TEMPORARY_VARIABLE: not enough bytes for operand");
-                }
-
-                uint32_t tempIndex =
-                    static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
-                    (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
-                context->instructionPointer += 4;
+                uint32_t tempIndex = readUint32FromBytecode(bytecodes, context);
 
                 // Use context-based temporary variable storage
                 handleStoreTemporaryVariable(tempIndex);
@@ -830,6 +782,21 @@ namespace smalltalk
             // We couldn't reach the target context - this is an error
             throw std::runtime_error("Failed to unwind to exception handler context");
         }
+    }
+
+    uint32_t Interpreter::readUint32FromBytecode(const std::vector<uint8_t>& bytecodes, MethodContext* context)
+    {
+        if (context->instructionPointer + 3 >= bytecodes.size())
+        {
+            throw std::runtime_error("Invalid bytecode: not enough bytes for 32-bit operand");
+        }
+        
+        uint32_t value = static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
+                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
+                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
+                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
+        context->instructionPointer += 4;
+        return value;
     }
 
 } // namespace smalltalk
