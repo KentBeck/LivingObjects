@@ -274,7 +274,7 @@ namespace smalltalk
                     break;
                 }
                 // If followed by operators or end of input, it's a unary message
-                else if (next == '\0' || next == '+' || next == '-' || next == '*' || next == '/' ||
+                else if (next == '\0' || next == '+' || next == '-' || next == '*' || next == '/' || next == ',' ||
                     next == '<' || next == '>' || next == '=' || next == '~' ||
                     next == ')' || next == ']' || next == '.')
                 {

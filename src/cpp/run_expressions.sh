@@ -29,6 +29,18 @@ run_expr() {
     local expr="$1"
     echo -e "\n${BLUE}Expression:${NC} ${YELLOW}$expr${NC}"
 
+    # Show parse tree if requested
+    if [[ "${SHOW_PARSE_TREE:-}" == "1" ]]; then
+        echo -e "${CYAN}Parse Tree:${NC}"
+        if parse_output=$(./build/smalltalk-vm --parse-tree --no-run "$expr" 2>&1); then
+            echo "$parse_output" | grep -A 20 "=== Parse Tree ==="
+        else
+            echo -e "${RED}Parse Error:${NC}"
+            echo "$parse_output"
+            return
+        fi
+    fi
+
     if output=$(./build/smalltalk-vm "$expr" 2>&1); then
         result=$(echo "$output" | grep 'Result:' | sed 's/Result: //')
         echo -e "${GREEN}✓ Result:${NC} $result"
