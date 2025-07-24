@@ -31,6 +31,9 @@ namespace smalltalk
         TaggedValue executeMethodContext(MethodContext *context);
         TaggedValue executeMethodContext(MethodContext *context, CompiledMethod *method);
 
+        // Core bytecode execution engine
+        TaggedValue execute();
+
         // Bytecode handlers
         void handlePushTemporaryVariable(uint32_t offset);
         void handleStoreTemporaryVariable(uint32_t offset);
