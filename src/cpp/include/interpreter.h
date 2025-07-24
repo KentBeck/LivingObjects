@@ -45,12 +45,6 @@ namespace smalltalk
         void duplicate();
         void returnStackTop();
 
-        // Legacy bytecode handlers (deprecated)
-        void handlePushTemporaryVariable(uint32_t offset);
-        void handleStoreTemporaryVariable(uint32_t offset);
-        void handlePop();
-        void handleDuplicate();
-        void handleCreateBlock(uint32_t literalIndex);
 
         // Stack operations
         void push(TaggedValue value);

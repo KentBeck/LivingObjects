@@ -178,6 +178,7 @@ namespace smalltalk
         while (activeContext != nullptr)
         {
             // Check if we've reached the end of the current method's bytecodes
+            // There should be no such thing as an implict return--maybe just from blocks?
             if (activeContext->instructionPointer >= activeContext->method->getBytecodes().size())
             {
                 // Implicit return - if stack is empty, return self; otherwise return top of stack
@@ -185,18 +186,18 @@ namespace smalltalk
                 TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
                 TaggedValue *stackStart = slots + activeContext->method->getTempVars().size(); // Stack starts after temp vars
                 TaggedValue *currentSP = activeContext->stackPointer;
-                
+
                 if (currentSP <= stackStart)
                 {
                     // Stack is empty - return self
                     push(activeContext->self);
                 }
                 // else: there's already a value on stack to return
-                
+
                 returnStackTop();
                 continue;
             }
-            
+
             uint8_t opcode = activeContext->method->getBytecodes()[activeContext->instructionPointer];
             Bytecode instruction = static_cast<Bytecode>(opcode);
 
@@ -277,7 +278,6 @@ namespace smalltalk
 
     void Interpreter::pushSelf()
     {
-        // Push self from context
         push(activeContext->self);
     }
 
@@ -348,43 +348,98 @@ namespace smalltalk
         uint32_t literalIndex = readUint32FromBytecode(activeContext->method->getBytecodes(), activeContext);
         readUint32FromBytecode(activeContext->method->getBytecodes(), activeContext); // Skip parameter count (not used)
 
-        // Execute CREATE_BLOCK handler using context-based stack
-        handleCreateBlock(literalIndex);
+        // The block's compiled method should be in the current method's literals
+        if (!activeContext || !activeContext->method)
+        {
+            throw std::runtime_error("No current method for block creation");
+        }
+
+        // Get the block's compiled method directly from the literal
+        if (literalIndex >= activeContext->method->getLiterals().size())
+        {
+            throw std::runtime_error("Invalid literal index for block: " + std::to_string(literalIndex));
+        }
+
+        TaggedValue blockMethodValue = activeContext->method->getLiterals()[literalIndex];
+        if (!blockMethodValue.isPointer())
+        {
+            throw std::runtime_error("Block method literal is not a pointer");
+        }
+
+        // Cast to CompiledMethod
+        CompiledMethod *blockMethod = reinterpret_cast<CompiledMethod *>(blockMethodValue.asObject());
+
+        // Create a simple block context that can be used with the Block class
+        MethodContext *homeContext = activeContext;
+        if (homeContext == nullptr)
+        {
+            throw std::runtime_error("Cannot create block without an active context");
+        }
+
+        // Create block object that stores the compiled method directly
+        TaggedValue receiverValue = homeContext->self;
+        TaggedValue senderValue = TaggedValue::nil();
+        TaggedValue homeValue = TaggedValue::fromObject(homeContext);
+
+        // Allocate space for block context plus one slot for the compiled method
+        BlockContext *blockContext = memoryManager.allocateBlockContext(
+            8,             // context size (includes space for method pointer)
+            0,             // hash not used anymore
+            receiverValue, // receiver (same as home context)
+            senderValue,   // sender (will be set when block is executed)
+            homeValue      // home context
+        );
+
+        // Store the compiled method directly in the block context's variable area
+        char *contextEnd = reinterpret_cast<char *>(blockContext) + sizeof(BlockContext);
+        TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
+        slots[0] = TaggedValue::fromObject(reinterpret_cast<Object *>(blockMethod));
+
+        // Set the block's class to Block class
+        Class *blockClass = ClassRegistry::getInstance().getClass("Block");
+        if (blockClass != nullptr)
+        {
+            blockContext->setClass(blockClass);
+        }
+
+        // Push the block context onto the stack
+        push(TaggedValue::fromObject(blockContext));
     }
 
     void Interpreter::pushTemporaryVariable()
     {
         uint32_t tempIndex = readUint32FromBytecode(activeContext->method->getBytecodes(), activeContext);
-
-        // Use context-based temporary variable access
-        handlePushTemporaryVariable(tempIndex);
+        TaggedValue *slots = reinterpret_cast<TaggedValue *>(reinterpret_cast<char *>(activeContext) + sizeof(MethodContext));
+        push(slots[tempIndex]);
     }
 
     void Interpreter::storeTemporaryVariable()
     {
         uint32_t tempIndex = readUint32FromBytecode(activeContext->method->getBytecodes(), activeContext);
-
-        // Use context-based temporary variable storage
-        handleStoreTemporaryVariable(tempIndex);
+        TaggedValue value = pop();
+        TaggedValue *slots = reinterpret_cast<TaggedValue *>(reinterpret_cast<char *>(activeContext) + sizeof(MethodContext));
+        slots[tempIndex] = value;
+        push(value); // Leave the value on the stack
     }
 
     void Interpreter::popStack()
     {
-        // Use context-based pop
-        handlePop();
+        // Pop the top value from the stack
+        pop();
     }
 
     void Interpreter::duplicate()
     {
-        // Use context-based duplicate
-        handleDuplicate();
+        // Duplicate the top value on the stack
+        TaggedValue value = top();
+        push(value);
     }
 
     void Interpreter::returnStackTop()
     {
         // Pop the return value from current context's stack
         TaggedValue returnValue = pop();
-        
+
         // Get the sender context
         if (!activeContext->sender.isPointer())
         {
@@ -393,11 +448,11 @@ namespace smalltalk
             activeContext = nullptr;
             return;
         }
-        
+
         // Switch to sender context
-        MethodContext* senderContext = static_cast<MethodContext*>(activeContext->sender.asObject());
+        MethodContext *senderContext = static_cast<MethodContext *>(activeContext->sender.asObject());
         activeContext = senderContext;
-        
+
         // Push return value onto sender's stack
         push(returnValue);
     }
@@ -479,97 +534,8 @@ namespace smalltalk
         return *(currentSP - 1);
     }
 
-    // Bytecode handler implementations
 
-    void Interpreter::handlePushTemporaryVariable(uint32_t offset)
-    {
-        // Get the temporary variable at the given offset
-        TaggedValue *slots = reinterpret_cast<TaggedValue *>(reinterpret_cast<char *>(activeContext) + sizeof(MethodContext));
-        push(slots[offset]);
-    }
 
-    void Interpreter::handleStoreTemporaryVariable(uint32_t offset)
-    {
-        // Store the top of the stack into the temporary variable at the given offset
-        TaggedValue value = pop();
-        TaggedValue *slots = reinterpret_cast<TaggedValue *>(reinterpret_cast<char *>(activeContext) + sizeof(MethodContext));
-        slots[offset] = value;
-        push(value); // Leave the value on the stack
-    }
-
-    void Interpreter::handlePop()
-    {
-        // Pop the top value from the stack
-        pop();
-    }
-
-    void Interpreter::handleDuplicate()
-    {
-        // Duplicate the top value on the stack
-        TaggedValue value = top();
-        push(value);
-    }
-
-    void Interpreter::handleCreateBlock(uint32_t literalIndex)
-    {
-        // The block's compiled method should be in the current method's literals
-        // Use the current context's method
-        if (!activeContext || !activeContext->method)
-        {
-            throw std::runtime_error("No current method for block creation");
-        }
-
-        // Get the block's compiled method directly from the literal
-        if (literalIndex >= activeContext->method->getLiterals().size())
-        {
-            throw std::runtime_error("Invalid literal index for block: " + std::to_string(literalIndex));
-        }
-
-        TaggedValue blockMethodValue = activeContext->method->getLiterals()[literalIndex];
-        if (!blockMethodValue.isPointer())
-        {
-            throw std::runtime_error("Block method literal is not a pointer");
-        }
-
-        // Cast to CompiledMethod
-        CompiledMethod *blockMethod = reinterpret_cast<CompiledMethod *>(blockMethodValue.asObject());
-
-        // Create a simple block context that can be used with the Block class
-        MethodContext *homeContext = activeContext;
-        if (homeContext == nullptr)
-        {
-            throw std::runtime_error("Cannot create block without an active context");
-        }
-
-        // Create block object that stores the compiled method directly
-        TaggedValue receiverValue = homeContext->self;
-        TaggedValue senderValue = TaggedValue::nil();
-        TaggedValue homeValue = TaggedValue::fromObject(homeContext);
-
-        // Allocate space for block context plus one slot for the compiled method
-        BlockContext *blockContext = memoryManager.allocateBlockContext(
-            8,             // context size (includes space for method pointer)
-            0,             // hash not used anymore
-            receiverValue, // receiver (same as home context)
-            senderValue,   // sender (will be set when block is executed)
-            homeValue      // home context
-        );
-
-        // Store the compiled method directly in the block context's variable area
-        char *contextEnd = reinterpret_cast<char *>(blockContext) + sizeof(BlockContext);
-        TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
-        slots[0] = TaggedValue::fromObject(reinterpret_cast<Object *>(blockMethod));
-
-        // Set the block's class to Block class
-        Class *blockClass = ClassRegistry::getInstance().getClass("Block");
-        if (blockClass != nullptr)
-        {
-            blockContext->setClass(blockClass);
-        }
-
-        // Push the block context onto the stack
-        push(TaggedValue::fromObject(blockContext));
-    }
 
     Object *Interpreter::sendMessage(Object *receiver, Object *selector, std::vector<Object *> &args)
     {
