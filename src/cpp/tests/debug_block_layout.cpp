@@ -33,7 +33,9 @@ void testBlockContextCreation() {
     assert(blockClass != nullptr);
     
     // Create a parent context (simulating where the block was created)
-    auto* parentContext = new MethodContext(256, 0, nullptr, nullptr);
+    // Note: This test creates invalid context without CompiledMethod - only for layout testing
+    auto* parentContext = reinterpret_cast<MethodContext*>(malloc(sizeof(MethodContext) + 256 * sizeof(TaggedValue)));
+    new (parentContext) Object(ObjectType::CONTEXT, 256, 0);
     
     // Create a method context class
     Class* methodContextClass = ClassUtils::createClass("MethodContext", ClassUtils::getObjectClass());
@@ -94,7 +96,7 @@ void testBlockContextHierarchy() {
     std::vector<std::string> dummyTempVars;
     auto dummyMethod = std::make_unique<CompiledMethod>(dummyBytecodes, dummyLiterals, dummyTempVars, 0);
     
-    auto* methodContext = new MethodContext(256, 0, TaggedValue::nil(), TaggedValue::nil(), dummyMethod.get());
+    auto* methodContext = new MethodContext(256, TaggedValue::nil(), TaggedValue::nil(), dummyMethod.get());
     methodContext->setClass(methodContextClass);
     
     auto* blockContext = new BlockContext(256, 0, nullptr, nullptr, nullptr);

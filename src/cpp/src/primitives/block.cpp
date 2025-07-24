@@ -61,7 +61,6 @@ namespace smalltalk
             
             MethodContext* blockMethodContext = interpreter.getMemoryManager().allocateMethodContext(
                 contextSize,
-                0, // No hash needed for direct execution
                 selfValue,
                 senderValue,
                 blockMethod // Pass the compiled method

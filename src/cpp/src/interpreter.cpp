@@ -38,7 +38,7 @@ namespace smalltalk
         // Create a new method context - convert Object* to TaggedValue
         TaggedValue receiverValue = TaggedValue::fromObject(receiver);
         TaggedValue senderValue = previousContext ? TaggedValue::fromObject(previousContext) : TaggedValue::nil();
-        MethodContext *context = memoryManager.allocateMethodContext(10 + args.size(), method->getHash(), receiverValue, senderValue, method);
+        MethodContext *context = memoryManager.allocateMethodContext(10 + args.size(), receiverValue, senderValue, method);
 
         // Get the variable-sized storage area safely
         // Memory layout: [MethodContext][TaggedValue slots...]
@@ -104,7 +104,6 @@ namespace smalltalk
         TaggedValue senderValue = TaggedValue::nil(); // No sender
         MethodContext *methodContext = memoryManager.allocateMethodContext(
             16,                                   // context size (enough for stack and temporaries)
-            method.getHash(),                     // method reference
             selfValue,                            // self as TaggedValue
             senderValue,                          // sender as TaggedValue
             const_cast<CompiledMethod *>(&method) // compiled method pointer
@@ -384,7 +383,6 @@ namespace smalltalk
         // Allocate space for block context plus one slot for the compiled method
         BlockContext *blockContext = memoryManager.allocateBlockContext(
             8,             // context size (includes space for method pointer)
-            0,             // hash not used anymore
             receiverValue, // receiver (same as home context)
             senderValue,   // sender (will be set when block is executed)
             homeValue      // home context
@@ -607,7 +605,6 @@ namespace smalltalk
             // Create a new context for the method execution
             MethodContext *newContext = memoryManager.allocateMethodContext(
                 16 + method->getTempVars().size(),      // stack size + temp vars
-                method->getHash(),                      // method hash (stored in header)
                 receiver,                               // self
                 TaggedValue::fromObject(activeContext), // sender
                 method.get()                            // compiled method pointer

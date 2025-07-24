@@ -36,8 +36,8 @@ namespace smalltalk
         // Variable-sized temporaries and stack follow
 
         // Constructor
-        MethodContext(size_t contextSize, uint32_t methodRef, TaggedValue receiver, TaggedValue senderContext, CompiledMethod* compiledMethod)
-            : Object(ObjectType::CONTEXT, contextSize, methodRef),
+        MethodContext(size_t contextSize, TaggedValue receiver, TaggedValue senderContext, CompiledMethod* compiledMethod)
+            : Object(ObjectType::CONTEXT, contextSize, static_cast<uint32_t>(0)),
               sender(senderContext),
               self(receiver),
               method(compiledMethod)
@@ -54,8 +54,8 @@ namespace smalltalk
         TaggedValue home; // Home context (method context) - TaggedValue for consistency
 
         // Constructor
-        BlockContext(size_t contextSize, uint32_t methodRef, TaggedValue receiver, TaggedValue senderContext, TaggedValue homeContext)
-            : Object(ObjectType::CONTEXT, contextSize, methodRef),
+        BlockContext(size_t contextSize, TaggedValue receiver, TaggedValue senderContext, TaggedValue homeContext)
+            : Object(ObjectType::CONTEXT, contextSize, static_cast<uint32_t>(0)),
               home(homeContext)
         {
             header.setFlag(ObjectFlag::CONTAINS_POINTERS);
