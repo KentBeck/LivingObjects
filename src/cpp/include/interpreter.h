@@ -41,7 +41,7 @@ namespace smalltalk
         void handleStoreTemporaryVariable(uint32_t offset);
         void handlePop();
         void handleDuplicate();
-        void handleCreateBlock(uint32_t literalIndex, uint32_t parameterCount);
+        void handleCreateBlock(uint32_t literalIndex);
 
         // Stack operations
         void push(TaggedValue value);
@@ -68,7 +68,7 @@ namespace smalltalk
         Class *getObjectClass(TaggedValue value);
         
         // Exception handling
-        bool findExceptionHandler(const std::string& exceptionClass, MethodContext*& handlerContext, int& handlerPC);
+        bool findExceptionHandler(MethodContext*& handlerContext, int& handlerPC);
         void unwindToContext(MethodContext* targetContext);
 
     private:
@@ -83,9 +83,6 @@ namespace smalltalk
         // Current method being executed (eliminates hash lookup)
         CompiledMethod *currentMethod = nullptr;
 
-        // Internal state
-        bool executing = false;
-
         // Helper for message sending
         Object *sendMessage(Object *receiver, Object *selector, std::vector<Object *> &args);
 
@@ -95,11 +92,6 @@ namespace smalltalk
         // Context switching
         void switchContext(MethodContext *newContext);
 
-        // Stack bounds checking helpers
-        Object **getStackStart(MethodContext *context);
-        Object **getStackEnd(MethodContext *context);
-        Object **getCurrentStackPointer(MethodContext *context);
-        void validateStackBounds(MethodContext *context, Object **stackPointer);
         
         // Bytecode reading helper
         uint32_t readUint32FromBytecode(const std::vector<uint8_t>& bytecodes, MethodContext* context);

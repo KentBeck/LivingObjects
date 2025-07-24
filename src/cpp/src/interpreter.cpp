@@ -270,10 +270,10 @@ namespace smalltalk
 
                 // Read block parameters (little-endian)
                 uint32_t literalIndex = readUint32FromBytecode(bytecodes, context);
-                uint32_t parameterCount = readUint32FromBytecode(bytecodes, context);
+                readUint32FromBytecode(bytecodes, context); // Skip parameter count (not used)
 
                 // Execute CREATE_BLOCK handler using context-based stack
-                handleCreateBlock(literalIndex, parameterCount);
+                handleCreateBlock(literalIndex);
                 break;
             }
 
@@ -440,9 +440,8 @@ namespace smalltalk
         push(value);
     }
 
-    void Interpreter::handleCreateBlock(uint32_t literalIndex, uint32_t parameterCount)
+    void Interpreter::handleCreateBlock(uint32_t literalIndex)
     {
-        (void)parameterCount; // Suppress unused parameter warning
         // The block's compiled method should be in the current method's literals
         // ARCHITECTURAL FIX: Use currentMethod instead of hash lookup
         if (!currentMethod)
@@ -644,70 +643,8 @@ namespace smalltalk
         activeContext = newContext;
     }
 
-    // Stack bounds checking helper methods
-    Object **Interpreter::getStackStart(MethodContext *context)
+    bool Interpreter::findExceptionHandler(MethodContext *&handlerContext, int &handlerPC)
     {
-        if (context == nullptr)
-        {
-            throw std::runtime_error("Cannot get stack start for null context");
-        }
-        char *contextStart = reinterpret_cast<char *>(context) + sizeof(MethodContext);
-        return reinterpret_cast<Object **>(contextStart);
-    }
-
-    Object **Interpreter::getStackEnd(MethodContext *context)
-    {
-        if (context == nullptr)
-        {
-            throw std::runtime_error("Cannot get stack end for null context");
-        }
-        Object **stackStart = getStackStart(context);
-        return stackStart + context->header.size;
-    }
-
-    Object **Interpreter::getCurrentStackPointer(MethodContext *context)
-    {
-        if (context == nullptr)
-        {
-            throw std::runtime_error("Cannot get stack pointer for null context");
-        }
-
-        // Convert stored Object* back to Object** with validation
-        Object **stackPointer = reinterpret_cast<Object **>(context->stackPointer);
-
-        // Validate alignment
-        if (reinterpret_cast<uintptr_t>(stackPointer) % alignof(Object *) != 0)
-        {
-            throw std::runtime_error("Stack pointer is not properly aligned");
-        }
-
-        return stackPointer;
-    }
-
-    void Interpreter::validateStackBounds(MethodContext *context, Object **stackPointer)
-    {
-        if (context == nullptr)
-        {
-            throw std::runtime_error("Cannot validate bounds for null context");
-        }
-
-        Object **stackStart = getStackStart(context);
-        Object **stackEnd = getStackEnd(context);
-
-        if (stackPointer < stackStart)
-        {
-            throw std::runtime_error("Stack pointer below stack start");
-        }
-
-        if (stackPointer > stackEnd)
-        {
-            throw std::runtime_error("Stack pointer above stack end");
-        }
-    }
-
-    bool Interpreter::findExceptionHandler(const std::string &exceptionClass, MethodContext *&handlerContext, int &handlerPC)
-    {
-        (void)exceptionClass; // Suppress unused parameter warning
         // Walk up the context chain looking for exception handlers
         MethodContext *context = activeContext;
 
