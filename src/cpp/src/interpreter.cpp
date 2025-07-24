@@ -167,7 +167,7 @@ namespace smalltalk
         {
             uint8_t opcode = bytecodes[context->instructionPointer];
             Bytecode instruction = static_cast<Bytecode>(opcode);
-            
+
             // Skip opcode - move to first operand byte
             context->instructionPointer++;
 
@@ -184,7 +184,7 @@ namespace smalltalk
             {
             case Bytecode::PUSH_LITERAL:
             {
-            uint32_t literalIndex = readUint32FromBytecode(bytecodes, context);
+                uint32_t literalIndex = readUint32FromBytecode(bytecodes, context);
 
                 if (literalIndex >= literals.size())
                 {
@@ -411,19 +411,12 @@ namespace smalltalk
 
     // Bytecode handler implementations
 
-
-
-
     void Interpreter::handlePushTemporaryVariable(uint32_t offset)
     {
         // Get the temporary variable at the given offset
         TaggedValue *slots = reinterpret_cast<TaggedValue *>(reinterpret_cast<char *>(activeContext) + sizeof(MethodContext));
         push(slots[offset]);
     }
-
-
-
-
 
     void Interpreter::handleStoreTemporaryVariable(uint32_t offset)
     {
@@ -433,8 +426,6 @@ namespace smalltalk
         slots[offset] = value;
         push(value); // Leave the value on the stack
     }
-
-
 
     void Interpreter::handlePop()
     {
@@ -510,8 +501,6 @@ namespace smalltalk
         // Push the block context onto the stack
         push(TaggedValue::fromObject(blockContext));
     }
-
-
 
     Object *Interpreter::sendMessage(Object *receiver, Object *selector, std::vector<Object *> &args)
     {
@@ -784,17 +773,17 @@ namespace smalltalk
         }
     }
 
-    uint32_t Interpreter::readUint32FromBytecode(const std::vector<uint8_t>& bytecodes, MethodContext* context)
+    uint32_t Interpreter::readUint32FromBytecode(const std::vector<uint8_t> &bytecodes, MethodContext *context)
     {
         if (context->instructionPointer + 3 >= bytecodes.size())
         {
             throw std::runtime_error("Invalid bytecode: not enough bytes for 32-bit operand");
         }
-        
+
         uint32_t value = static_cast<uint32_t>(bytecodes[context->instructionPointer]) |
-                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
-                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
-                        (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
+                         (static_cast<uint32_t>(bytecodes[context->instructionPointer + 1]) << 8) |
+                         (static_cast<uint32_t>(bytecodes[context->instructionPointer + 2]) << 16) |
+                         (static_cast<uint32_t>(bytecodes[context->instructionPointer + 3]) << 24);
         context->instructionPointer += 4;
         return value;
     }
