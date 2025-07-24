@@ -613,9 +613,6 @@ namespace smalltalk
                 method.get()                            // compiled method pointer
             );
 
-            // Set up the new context
-            newContext->instructionPointer = 0;
-
             // Initialize stack pointer and temporary variables
             char *contextEnd = reinterpret_cast<char *>(newContext) + sizeof(MethodContext);
             TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
