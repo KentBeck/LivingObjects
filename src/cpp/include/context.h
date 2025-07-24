@@ -4,6 +4,7 @@
 #include "tagged_value.h"
 
 #include <cstdint>
+#include <cassert>
 
 namespace smalltalk
 {
@@ -21,6 +22,9 @@ namespace smalltalk
         RESERVED_7 = 7            // Reserved
     };
 
+    // Forward declaration
+    class CompiledMethod;
+
     // Method context structure
     struct MethodContext : public Object
     {
@@ -28,14 +32,17 @@ namespace smalltalk
         TaggedValue sender;                   // Sender context (TaggedValue for consistency)
         TaggedValue self;                     // Receiver (TaggedValue for consistency)
         uint64_t instructionPointer = 0;     // Current IP
+        CompiledMethod* method;                // Direct pointer to the compiled method (required)
         // Variable-sized temporaries and stack follow
 
         // Constructor
-        MethodContext(size_t contextSize, uint32_t methodRef, TaggedValue receiver, TaggedValue senderContext)
+        MethodContext(size_t contextSize, uint32_t methodRef, TaggedValue receiver, TaggedValue senderContext, CompiledMethod* compiledMethod)
             : Object(ObjectType::CONTEXT, contextSize, methodRef),
               sender(senderContext),
-              self(receiver)
+              self(receiver),
+              method(compiledMethod)
         {
+            assert(compiledMethod != nullptr && "CompiledMethod is required for MethodContext");
             header.setFlag(ObjectFlag::CONTAINS_POINTERS);
             header.setContextType(static_cast<uint8_t>(ContextType::METHOD_CONTEXT));
         }

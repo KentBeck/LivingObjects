@@ -260,7 +260,10 @@ Object* MemoryManager::allocateBoolean(bool value) {
     return obj;
 }
 
-MethodContext* MemoryManager::allocateMethodContext(size_t size, uint32_t method, TaggedValue self, TaggedValue sender) {
+MethodContext* MemoryManager::allocateMethodContext(size_t size, uint32_t method, TaggedValue self, TaggedValue sender, CompiledMethod* compiledMethod) {
+    if (!compiledMethod) {
+        throw std::runtime_error("CompiledMethod is required for MethodContext creation");
+    }
     // Check if there's enough space  
     size_t requiredBytes = sizeof(MethodContext) + (size * sizeof(TaggedValue));
     size_t remainingSpace = static_cast<size_t>(
@@ -283,7 +286,7 @@ MethodContext* MemoryManager::allocateMethodContext(size_t size, uint32_t method
     
     // Allocate the context
     MethodContext* context = static_cast<MethodContext*>(currentAllocation);
-    new (context) MethodContext(size, method, self, sender);
+    new (context) MethodContext(size, method, self, sender, compiledMethod);
     
     // Update allocation pointer
     currentAllocation = static_cast<char*>(currentAllocation) + requiredBytes;

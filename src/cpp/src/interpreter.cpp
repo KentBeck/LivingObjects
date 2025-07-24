@@ -38,7 +38,7 @@ namespace smalltalk
         // Create a new method context - convert Object* to TaggedValue
         TaggedValue receiverValue = TaggedValue::fromObject(receiver);
         TaggedValue senderValue = previousContext ? TaggedValue::fromObject(previousContext) : TaggedValue::nil();
-        MethodContext *context = memoryManager.allocateMethodContext(10 + args.size(), method->getHash(), receiverValue, senderValue);
+        MethodContext *context = memoryManager.allocateMethodContext(10 + args.size(), method->getHash(), receiverValue, senderValue, method);
 
         // Get the variable-sized storage area safely
         // Memory layout: [MethodContext][TaggedValue slots...]
@@ -104,9 +104,10 @@ namespace smalltalk
         TaggedValue senderValue = TaggedValue::nil(); // No sender
         MethodContext *methodContext = memoryManager.allocateMethodContext(
             16,         // context size (enough for stack and temporaries)
-            0,          // method reference (placeholder)
+            method.getHash(), // method reference
             selfValue,  // self as TaggedValue
-            senderValue // sender as TaggedValue
+            senderValue, // sender as TaggedValue
+            const_cast<CompiledMethod*>(&method) // compiled method pointer
         );
 
         // Initialize the stack pointer properly - start after temporary variables
@@ -137,25 +138,21 @@ namespace smalltalk
 
     TaggedValue Interpreter::executeMethodContext(MethodContext *context)
     {
-        // ARCHITECTURAL FIX: Use currentMethod instead of hash lookup
-        // This eliminates dependency on global SmalltalkImage method registry
-        CompiledMethod *method = currentMethod;
-        if (!method)
+        if (!context->method)
         {
-            throw std::runtime_error("No current method available for context execution");
+            throw std::runtime_error("No method associated with context");
         }
 
         // Delegate to the main execution method
-        return executeMethodContext(context, method);
+        return executeMethodContext(context, context->method);
     }
 
     TaggedValue Interpreter::executeMethodContext(MethodContext *context, CompiledMethod *method)
     {
         // Set up execution state using context-based stack
         MethodContext *savedContext = activeContext;
-        CompiledMethod *savedMethod = currentMethod;
         activeContext = context;
-        currentMethod = method;
+        context->method = method;
 
         // Main bytecode execution loop - process one instruction at a time
         // Use context->instructionPointer instead of local variable
@@ -310,9 +307,8 @@ namespace smalltalk
                 // Pop the return value from context-based stack
                 TaggedValue returnValue = pop();
 
-                // Restore the previous context and method
+                // Restore the previous context
                 activeContext = savedContext;
-                currentMethod = savedMethod;
                 // Return the TaggedValue directly
                 return returnValue;
             }
@@ -322,9 +318,8 @@ namespace smalltalk
             }
         }
 
-        // If we reach here without explicit return, restore context and method
+        // If we reach here without explicit return, restore context
         activeContext = savedContext;
-        currentMethod = savedMethod;
         return TaggedValue::nil();
     }
 
@@ -439,19 +434,19 @@ namespace smalltalk
     void Interpreter::handleCreateBlock(uint32_t literalIndex)
     {
         // The block's compiled method should be in the current method's literals
-        // ARCHITECTURAL FIX: Use currentMethod instead of hash lookup
-        if (!currentMethod)
+        // Use the current context's method
+        if (!activeContext || !activeContext->method)
         {
             throw std::runtime_error("No current method for block creation");
         }
 
         // Get the block's compiled method directly from the literal
-        if (literalIndex >= currentMethod->getLiterals().size())
+        if (literalIndex >= activeContext->method->getLiterals().size())
         {
             throw std::runtime_error("Invalid literal index for block: " + std::to_string(literalIndex));
         }
 
-        TaggedValue blockMethodValue = currentMethod->getLiterals()[literalIndex];
+        TaggedValue blockMethodValue = activeContext->method->getLiterals()[literalIndex];
         if (!blockMethodValue.isPointer())
         {
             throw std::runtime_error("Block method literal is not a pointer");
@@ -569,7 +564,8 @@ namespace smalltalk
                 16 + method->getTempVars().size(),     // stack size + temp vars
                 method->getHash(),                     // method hash (stored in header)
                 receiver,                              // self
-                TaggedValue::fromObject(activeContext) // sender
+                TaggedValue::fromObject(activeContext), // sender
+                method.get()                           // compiled method pointer
             );
 
             // Set up the new context
@@ -646,14 +642,8 @@ namespace smalltalk
 
         while (context != nullptr)
         {
-            // Get the compiled method for this context
-            CompiledMethod *method = nullptr;
-
-            // Try to find the method from the image using the context's method hash
-            if (context->header.getHash() != 0)
-            {
-                method = image.getCompiledMethod(context->header.getHash());
-            }
+            // Get the compiled method directly from the context
+            CompiledMethod *method = context->method;
 
             if (method && method->primitiveNumber == PrimitiveNumbers::EXCEPTION_MARK)
             {

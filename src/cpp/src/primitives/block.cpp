@@ -63,7 +63,8 @@ namespace smalltalk
                 contextSize,
                 0, // No hash needed for direct execution
                 selfValue,
-                senderValue
+                senderValue,
+                blockMethod // Pass the compiled method
             );
             
             // Set up temporary variable and argument slots

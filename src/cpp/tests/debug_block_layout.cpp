@@ -88,7 +88,13 @@ void testBlockContextHierarchy() {
     Class* blockClass = ClassUtils::createClass("Block", ClassUtils::getObjectClass());
     
     // Create contexts of different types
-    auto* methodContext = new MethodContext(256, 0, nullptr, nullptr);
+    // Create a dummy compiled method for the test
+    std::vector<uint8_t> dummyBytecodes = {static_cast<uint8_t>(Bytecode::RETURN_STACK_TOP)};
+    std::vector<TaggedValue> dummyLiterals;
+    std::vector<std::string> dummyTempVars;
+    auto dummyMethod = std::make_unique<CompiledMethod>(dummyBytecodes, dummyLiterals, dummyTempVars, 0);
+    
+    auto* methodContext = new MethodContext(256, 0, TaggedValue::nil(), TaggedValue::nil(), dummyMethod.get());
     methodContext->setClass(methodContextClass);
     
     auto* blockContext = new BlockContext(256, 0, nullptr, nullptr, nullptr);
@@ -104,6 +110,7 @@ void testBlockContextHierarchy() {
     // Clean up
     delete methodContext;
     delete blockContext;
+    // dummyMethod will be automatically destroyed by unique_ptr
 }
 
 void testManualBlockSetup() {

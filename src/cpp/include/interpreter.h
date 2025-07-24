@@ -47,9 +47,6 @@ namespace smalltalk
         MethodContext *getCurrentContext() const { return activeContext; }
         void setCurrentContext(MethodContext *context) { activeContext = context; }
 
-        // Current method access (for block execution)
-        CompiledMethod *getCurrentMethod() const { return currentMethod; }
-
         // Memory manager access
         MemoryManager &getMemoryManager() { return memoryManager; }
 
@@ -75,8 +72,6 @@ namespace smalltalk
         MethodContext *activeContext = nullptr;
         StackChunk *currentChunk = nullptr;
 
-        // Current method being executed (eliminates hash lookup)
-        CompiledMethod *currentMethod = nullptr;
 
         // Helper for message sending
         Object *sendMessage(Object *receiver, Object *selector, std::vector<Object *> &args);

@@ -109,7 +109,7 @@ public:
      * @param sender The sender context.
      * @return A pointer to the allocated method context.
      */
-    MethodContext* allocateMethodContext(size_t size, uint32_t method, TaggedValue self, TaggedValue sender);
+    MethodContext* allocateMethodContext(size_t size, uint32_t method, TaggedValue self, TaggedValue sender, CompiledMethod* compiledMethod);
     
     /**
      * Allocates a block context.
