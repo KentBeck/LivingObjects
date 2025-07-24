@@ -167,6 +167,9 @@ namespace smalltalk
         {
             uint8_t opcode = bytecodes[context->instructionPointer];
             Bytecode instruction = static_cast<Bytecode>(opcode);
+            
+            // Skip opcode - move to first operand byte
+            context->instructionPointer++;
 
             // Debug bytecode tracing
             if (Logger::getInstance().getLevel() <= LogLevel::DEBUG_LEVEL)
@@ -181,7 +184,6 @@ namespace smalltalk
             {
             case Bytecode::PUSH_LITERAL:
             {
-                context->instructionPointer++; // Skip opcode
                 if (context->instructionPointer + 3 >= bytecodes.size())
                 {
                     throw std::runtime_error("Invalid PUSH_LITERAL: not enough bytes for operand");
@@ -207,7 +209,6 @@ namespace smalltalk
 
             case Bytecode::PUSH_SELF:
             {
-                context->instructionPointer++; // Skip opcode
                 // Push self from context
                 push(context->self);
                 break;
@@ -215,7 +216,6 @@ namespace smalltalk
 
             case Bytecode::SEND_MESSAGE:
             {
-                context->instructionPointer++; // Skip opcode
                 if (context->instructionPointer + 7 >= bytecodes.size())
                 {
                     throw std::runtime_error("Invalid SEND_MESSAGE: not enough bytes for operands");
@@ -283,7 +283,6 @@ namespace smalltalk
 
             case Bytecode::CREATE_BLOCK:
             {
-                context->instructionPointer++; // Skip opcode
                 if (context->instructionPointer + 7 >= bytecodes.size())
                 {
                     throw std::runtime_error("Invalid CREATE_BLOCK: not enough bytes for operands");
@@ -308,7 +307,6 @@ namespace smalltalk
 
             case Bytecode::PUSH_TEMPORARY_VARIABLE:
             {
-                context->instructionPointer++; // Skip opcode
                 if (context->instructionPointer + 3 >= bytecodes.size())
                 {
                     throw std::runtime_error("Invalid PUSH_TEMPORARY_VARIABLE: not enough bytes for operand");
@@ -328,7 +326,6 @@ namespace smalltalk
 
             case Bytecode::STORE_TEMPORARY_VARIABLE:
             {
-                context->instructionPointer++; // Skip opcode
                 if (context->instructionPointer + 3 >= bytecodes.size())
                 {
                     throw std::runtime_error("Invalid STORE_TEMPORARY_VARIABLE: not enough bytes for operand");
@@ -348,7 +345,6 @@ namespace smalltalk
 
             case Bytecode::POP:
             {
-                context->instructionPointer++; // Skip opcode
                 // Use context-based pop
                 handlePop();
                 break;
@@ -356,7 +352,6 @@ namespace smalltalk
 
             case Bytecode::DUPLICATE:
             {
-                context->instructionPointer++; // Skip opcode
                 // Use context-based duplicate
                 handleDuplicate();
                 break;
@@ -463,47 +458,9 @@ namespace smalltalk
     }
 
     // Bytecode handler implementations
-    void Interpreter::handlePushLiteral(uint32_t index)
-    {
-        // ARCHITECTURAL FIX: Use direct method reference instead of hash lookup
-        if (!currentMethod)
-        {
-            throw std::runtime_error("No current method for literal access");
-        }
-        TaggedValue literal = currentMethod->getLiteral(index);
-        push(literal);
-    }
 
-    void Interpreter::handlePushInstanceVariable(uint32_t offset)
-    {
-        // Get the instance variable from the receiver at the given offset
-        if (!activeContext)
-        {
-            throw std::runtime_error("No active context for instance variable access");
-        }
 
-        // Get receiver from TaggedValue (context->self is now TaggedValue)
-        if (activeContext->self.isNil())
-        {
-            throw std::runtime_error("No receiver in current context");
-        }
-        Object *receiver = activeContext->self.asObject();
 
-        // Calculate the instance variable slot location
-        // Instance variables are now stored after the Object header as TaggedValue
-        TaggedValue *instanceVarSlots = reinterpret_cast<TaggedValue *>(
-            reinterpret_cast<char *>(receiver) + sizeof(Object));
-
-        // Check bounds - we need to validate the offset is within the object's instance variables
-        if (offset >= receiver->header.size)
-        {
-            throw std::runtime_error("Instance variable offset out of bounds");
-        }
-
-        // Get TaggedValue directly - no conversion needed
-        TaggedValue value = instanceVarSlots[offset];
-        push(value);
-    }
 
     void Interpreter::handlePushTemporaryVariable(uint32_t offset)
     {
@@ -512,47 +469,9 @@ namespace smalltalk
         push(slots[offset]);
     }
 
-    void Interpreter::handlePushSelf()
-    {
-        // Push the receiver onto the stack
-        push(TaggedValue(activeContext->self));
-    }
 
-    void Interpreter::handleStoreInstanceVariable(uint32_t offset)
-    {
-        // Store the top of the stack into the instance variable at the given offset
-        if (!activeContext)
-        {
-            throw std::runtime_error("No active context for instance variable access");
-        }
 
-        // Get receiver from TaggedValue (context->self is now TaggedValue)
-        if (activeContext->self.isNil())
-        {
-            throw std::runtime_error("No receiver in current context");
-        }
-        Object *receiver = activeContext->self.asObject();
 
-        // Get the value to store
-        TaggedValue value = pop();
-
-        // Calculate the instance variable slot location
-        // Instance variables are now stored after the Object header as TaggedValue
-        TaggedValue *instanceVarSlots = reinterpret_cast<TaggedValue *>(
-            reinterpret_cast<char *>(receiver) + sizeof(Object));
-
-        // Check bounds - we need to validate the offset is within the object's instance variables
-        if (offset >= receiver->header.size)
-        {
-            throw std::runtime_error("Instance variable offset out of bounds");
-        }
-
-        // Store TaggedValue directly - supports all value types (immediate and pointer)
-        instanceVarSlots[offset] = value;
-
-        // Leave the value on the stack (Smalltalk assignment returns the assigned value)
-        push(value);
-    }
 
     void Interpreter::handleStoreTemporaryVariable(uint32_t offset)
     {
@@ -563,117 +482,7 @@ namespace smalltalk
         push(value); // Leave the value on the stack
     }
 
-    void Interpreter::handleSendMessage(uint32_t selectorIndex, uint32_t argCount)
-    {
-        // ARCHITECTURAL FIX: Use direct method reference instead of hash lookup
-        if (!currentMethod)
-        {
-            throw std::runtime_error("No current method for message send");
-        }
 
-        // Get the selector from literals
-        TaggedValue selectorValue = currentMethod->getLiteral(selectorIndex);
-        if (!selectorValue.isPointer())
-        {
-            throw std::runtime_error("Selector is not a pointer");
-        }
-
-        // Try to get the selector as a Symbol
-        Symbol *selector;
-        try
-        {
-            selector = selectorValue.asSymbol();
-        }
-        catch (const std::exception &)
-        {
-            throw std::runtime_error("Selector is not a symbol");
-        }
-
-        std::string selectorString = selector->getName();
-
-        // Pop arguments from stack
-        std::vector<TaggedValue> args;
-        args.reserve(argCount);
-        for (uint32_t i = 0; i < argCount; i++)
-        {
-            args.push_back(pop());
-        }
-
-        // Pop receiver from stack
-        TaggedValue receiver = pop();
-
-        // Send the message
-        TaggedValue result = sendMessage(receiver, selectorString, args);
-
-        // Push result directly
-        push(result);
-    }
-
-    void Interpreter::handleReturnStackTop()
-    {
-        // Get the return value from the stack
-        TaggedValue returnValue = pop();
-
-        // Get the sender context (activeContext->sender is now TaggedValue)
-        MethodContext *sender = nullptr;
-        if (!activeContext->sender.isNil())
-        {
-            sender = static_cast<MethodContext *>(activeContext->sender.asObject());
-        }
-
-        if (sender)
-        {
-            // Restore the sender context
-            activeContext = sender;
-
-            // Push the return value onto the sender's stack
-            push(returnValue);
-        }
-        else
-        {
-            // No sender - we're at the top level, so stop execution
-            executing = false;
-
-            // Push the value back for the top-level to retrieve
-            push(returnValue);
-        }
-    }
-
-    void Interpreter::handleJump(uint32_t target)
-    {
-        // Jump to the target instruction
-        activeContext->instructionPointer = target;
-    }
-
-    void Interpreter::handleJumpIfTrue(uint32_t target)
-    {
-        // Pop the condition
-        TaggedValue condition = pop();
-
-        // Check if the condition is true (simplified)
-        bool isTrue = (!condition.isNil() && !condition.isFalse());
-
-        // Jump if true
-        if (isTrue)
-        {
-            activeContext->instructionPointer = target;
-        }
-    }
-
-    void Interpreter::handleJumpIfFalse(uint32_t target)
-    {
-        // Pop the condition
-        TaggedValue condition = pop();
-
-        // Check if the condition is false (simplified)
-        bool isFalse = (condition.isNil() || condition.isFalse());
-
-        // Jump if false
-        if (isFalse)
-        {
-            activeContext->instructionPointer = target;
-        }
-    }
 
     void Interpreter::handlePop()
     {
@@ -750,85 +559,7 @@ namespace smalltalk
         push(TaggedValue::fromObject(blockContext));
     }
 
-    void Interpreter::handleExecuteBlock(uint32_t argCount)
-    {
-        // Pop arguments from the stack (in reverse order)
-        std::vector<TaggedValue> args;
-        args.reserve(argCount);
-        for (uint32_t i = 0; i < argCount; i++)
-        {
-            args.push_back(pop());
-        }
-        std::reverse(args.begin(), args.end());
 
-        // Pop the block context from the stack
-        TaggedValue blockValue = pop();
-        if (!blockValue.isPointer())
-        {
-            throw std::runtime_error("Block value is not a pointer for EXECUTE_BLOCK");
-        }
-        Object *blockObj = blockValue.asObject();
-        if (blockObj->header.getType() != ObjectType::CONTEXT ||
-            blockObj->header.getContextType() != static_cast<uint8_t>(ContextType::BLOCK_CONTEXT))
-        {
-            throw std::runtime_error("Object on stack is not a block for EXECUTE_BLOCK");
-        }
-        BlockContext *block = static_cast<BlockContext *>(blockObj);
-
-        // Get the home context (block->home is now TaggedValue)
-        MethodContext *home = static_cast<MethodContext *>(block->home.asObject());
-
-        // Get block's compiled method from the stored method in the block context
-        char *contextEnd = reinterpret_cast<char *>(block) + sizeof(BlockContext);
-        TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
-        CompiledMethod *compiledBlock = reinterpret_cast<CompiledMethod *>(slots[0].asObject());
-
-        if (!compiledBlock)
-        {
-            throw std::runtime_error("Could not find compiled method for block");
-        }
-
-        // CRITICAL FIX: Block execution uses home context's receiver for 'self'
-        // This is correct for block evaluation - the block sees the same 'self' as where it was created
-        TaggedValue receiverValue = home->self; // Home context's receiver for lexical scoping
-
-        // The sender of the new context is the currently active context (calling context)
-        TaggedValue senderValue = TaggedValue::fromObject(activeContext);
-
-        // Allocate a new context for the block with space for temporaries and stack
-        size_t tempCount = compiledBlock->tempVars.size();
-        size_t stackSize = 16; // Default stack size
-        MethodContext *newContext = memoryManager.allocateMethodContext(
-            tempCount + stackSize, compiledBlock->getHash(), receiverValue, senderValue);
-
-        // Get the variable-sized storage area for temporaries and arguments
-        char *contextEnd2 = reinterpret_cast<char *>(newContext) + sizeof(MethodContext);
-        TaggedValue *contextSlots = reinterpret_cast<TaggedValue *>(contextEnd2);
-
-        // Copy arguments to the context's temporary variables
-        for (size_t i = 0; i < args.size() && i < tempCount; i++)
-        {
-            contextSlots[i] = args[i];
-        }
-
-        // Initialize remaining temporaries to nil
-        for (size_t i = args.size(); i < tempCount; i++)
-        {
-            contextSlots[i] = TaggedValue::nil();
-        }
-
-        // Set up stack pointer to point to the first available slot after temporaries
-        TaggedValue *initialStackPos = contextSlots + tempCount;
-        newContext->stackPointer = initialStackPos;
-        newContext->instructionPointer = 0; // Start at the beginning of the block's bytecodes
-
-        // Execute the block's bytecode until it returns using unified method
-        // The executeMethodContext will run until RETURN_STACK_TOP is encountered
-        TaggedValue blockResult = executeMethodContext(newContext, compiledBlock);
-
-        // Push the block result onto the caller's stack
-        push(blockResult);
-    }
 
     Object *Interpreter::sendMessage(Object *receiver, Object *selector, std::vector<Object *> &args)
     {

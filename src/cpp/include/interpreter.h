@@ -37,21 +37,11 @@ namespace smalltalk
         TaggedValue executeMethodContext(MethodContext *context, CompiledMethod *method);
 
         // Bytecode handlers
-        void handlePushLiteral(uint32_t index);
-        void handlePushInstanceVariable(uint32_t offset);
         void handlePushTemporaryVariable(uint32_t offset);
-        void handlePushSelf();
-        void handleStoreInstanceVariable(uint32_t offset);
         void handleStoreTemporaryVariable(uint32_t offset);
-        void handleSendMessage(uint32_t selectorIndex, uint32_t argCount);
-        void handleReturnStackTop();
-        void handleJump(uint32_t target);
-        void handleJumpIfTrue(uint32_t target);
-        void handleJumpIfFalse(uint32_t target);
         void handlePop();
         void handleDuplicate();
         void handleCreateBlock(uint32_t literalIndex, uint32_t parameterCount);
-        void handleExecuteBlock(uint32_t argCount);
 
         // Stack operations
         void push(TaggedValue value);
