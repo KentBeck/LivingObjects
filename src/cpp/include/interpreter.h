@@ -43,7 +43,7 @@ namespace smalltalk
         void storeTemporaryVariable();
         void popStack();
         void duplicate();
-        TaggedValue returnStackTop();
+        void returnStackTop();
 
         // Legacy bytecode handlers (deprecated)
         void handlePushTemporaryVariable(uint32_t offset);
@@ -85,6 +85,9 @@ namespace smalltalk
         // Current context and chunk
         MethodContext *activeContext = nullptr;
         StackChunk *currentChunk = nullptr;
+        
+        // Storage for final return value
+        TaggedValue lastReturnValue = TaggedValue::nil();
 
 
         // Helper for message sending

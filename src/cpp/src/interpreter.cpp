@@ -174,9 +174,29 @@ namespace smalltalk
             throw std::runtime_error("Active context must have a method to execute");
         }
 
-        // Main bytecode execution loop - process one instruction at a time
-        while (activeContext->instructionPointer < activeContext->method->getBytecodes().size())
+        // Main bytecode execution loop - continue until no more contexts
+        while (activeContext != nullptr)
         {
+            // Check if we've reached the end of the current method's bytecodes
+            if (activeContext->instructionPointer >= activeContext->method->getBytecodes().size())
+            {
+                // Implicit return - if stack is empty, return self; otherwise return top of stack
+                char *contextEnd = reinterpret_cast<char *>(activeContext) + sizeof(MethodContext);
+                TaggedValue *slots = reinterpret_cast<TaggedValue *>(contextEnd);
+                TaggedValue *stackStart = slots + activeContext->method->getTempVars().size(); // Stack starts after temp vars
+                TaggedValue *currentSP = activeContext->stackPointer;
+                
+                if (currentSP <= stackStart)
+                {
+                    // Stack is empty - return self
+                    push(activeContext->self);
+                }
+                // else: there's already a value on stack to return
+                
+                returnStackTop();
+                continue;
+            }
+            
             uint8_t opcode = activeContext->method->getBytecodes()[activeContext->instructionPointer];
             Bytecode instruction = static_cast<Bytecode>(opcode);
 
@@ -227,15 +247,16 @@ namespace smalltalk
                 break;
 
             case Bytecode::RETURN_STACK_TOP:
-                return returnStackTop();
+                returnStackTop();
+                break;
 
             default:
                 throw std::runtime_error("Unknown bytecode: " + std::to_string(static_cast<int>(instruction)));
             }
         }
 
-        // If we reach here without explicit return, return nil
-        return TaggedValue::nil();
+        // Execution completed - return the last return value
+        return lastReturnValue;
     }
 
     // Bytecode operation helpers
@@ -359,11 +380,26 @@ namespace smalltalk
         handleDuplicate();
     }
 
-    TaggedValue Interpreter::returnStackTop()
+    void Interpreter::returnStackTop()
     {
-        // Pop the return value from context-based stack
+        // Pop the return value from current context's stack
         TaggedValue returnValue = pop();
-        return returnValue;
+        
+        // Get the sender context
+        if (!activeContext->sender.isPointer())
+        {
+            // No sender - this is the top-level method, end execution with result
+            lastReturnValue = returnValue;
+            activeContext = nullptr;
+            return;
+        }
+        
+        // Switch to sender context
+        MethodContext* senderContext = static_cast<MethodContext*>(activeContext->sender.asObject());
+        activeContext = senderContext;
+        
+        // Push return value onto sender's stack
+        push(returnValue);
     }
 
     void Interpreter::push(TaggedValue value)
