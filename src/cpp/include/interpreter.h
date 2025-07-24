@@ -34,7 +34,18 @@ namespace smalltalk
         // Core bytecode execution engine
         TaggedValue execute();
 
-        // Bytecode handlers
+        // Bytecode operation helpers
+        void pushLiteral();
+        void pushSelf();
+        void sendMessageBytecode();
+        void createBlock();
+        void pushTemporaryVariable();
+        void storeTemporaryVariable();
+        void popStack();
+        void duplicate();
+        TaggedValue returnStackTop();
+
+        // Legacy bytecode handlers (deprecated)
         void handlePushTemporaryVariable(uint32_t offset);
         void handleStoreTemporaryVariable(uint32_t offset);
         void handlePop();
