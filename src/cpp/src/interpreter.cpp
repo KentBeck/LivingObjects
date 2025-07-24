@@ -151,10 +151,6 @@ namespace smalltalk
 
     TaggedValue Interpreter::executeMethodContext(MethodContext *context, CompiledMethod *method)
     {
-        // Direct method execution without hash lookup - fixes architectural issue
-        const auto &bytecodes = method->getBytecodes();
-        const auto &literals = method->getLiterals();
-
         // Set up execution state using context-based stack
         MethodContext *savedContext = activeContext;
         CompiledMethod *savedMethod = currentMethod;
@@ -163,9 +159,9 @@ namespace smalltalk
 
         // Main bytecode execution loop - process one instruction at a time
         // Use context->instructionPointer instead of local variable
-        while (context->instructionPointer < bytecodes.size())
+        while (context->instructionPointer < method->getBytecodes().size())
         {
-            uint8_t opcode = bytecodes[context->instructionPointer];
+            uint8_t opcode = method->getBytecodes()[context->instructionPointer];
             Bytecode instruction = static_cast<Bytecode>(opcode);
 
             // Skip opcode - move to first operand byte
@@ -184,15 +180,15 @@ namespace smalltalk
             {
             case Bytecode::PUSH_LITERAL:
             {
-                uint32_t literalIndex = readUint32FromBytecode(bytecodes, context);
+                uint32_t literalIndex = readUint32FromBytecode(method->getBytecodes(), context);
 
-                if (literalIndex >= literals.size())
+                if (literalIndex >= method->getLiterals().size())
                 {
                     throw std::runtime_error("Invalid literal index: " + std::to_string(literalIndex));
                 }
 
                 // Push TaggedValue directly
-                TaggedValue literal = literals[literalIndex];
+                TaggedValue literal = method->getLiterals()[literalIndex];
                 push(literal);
                 break;
             }
@@ -206,24 +202,24 @@ namespace smalltalk
 
             case Bytecode::SEND_MESSAGE:
             {
-                if (context->instructionPointer + 7 >= bytecodes.size())
+                if (context->instructionPointer + 7 >= method->getBytecodes().size())
                 {
                     throw std::runtime_error("Invalid SEND_MESSAGE: not enough bytes for operands");
                 }
 
                 // Read selector index
-                uint32_t selectorIndex = readUint32FromBytecode(bytecodes, context);
+                uint32_t selectorIndex = readUint32FromBytecode(method->getBytecodes(), context);
 
                 // Read argument count
-                uint32_t argCount = readUint32FromBytecode(bytecodes, context);
+                uint32_t argCount = readUint32FromBytecode(method->getBytecodes(), context);
 
-                if (selectorIndex >= literals.size())
+                if (selectorIndex >= method->getLiterals().size())
                 {
                     throw std::runtime_error("Invalid selector index: " + std::to_string(selectorIndex));
                 }
 
                 // Get the selector from literals
-                TaggedValue selectorValue = literals[selectorIndex];
+                TaggedValue selectorValue = method->getLiterals()[selectorIndex];
                 if (!selectorValue.isPointer())
                 {
                     throw std::runtime_error("Selector is not a pointer");
@@ -263,14 +259,14 @@ namespace smalltalk
 
             case Bytecode::CREATE_BLOCK:
             {
-                if (context->instructionPointer + 7 >= bytecodes.size())
+                if (context->instructionPointer + 7 >= method->getBytecodes().size())
                 {
                     throw std::runtime_error("Invalid CREATE_BLOCK: not enough bytes for operands");
                 }
 
                 // Read block parameters (little-endian)
-                uint32_t literalIndex = readUint32FromBytecode(bytecodes, context);
-                readUint32FromBytecode(bytecodes, context); // Skip parameter count (not used)
+                uint32_t literalIndex = readUint32FromBytecode(method->getBytecodes(), context);
+                readUint32FromBytecode(method->getBytecodes(), context); // Skip parameter count (not used)
 
                 // Execute CREATE_BLOCK handler using context-based stack
                 handleCreateBlock(literalIndex);
@@ -279,7 +275,7 @@ namespace smalltalk
 
             case Bytecode::PUSH_TEMPORARY_VARIABLE:
             {
-                uint32_t tempIndex = readUint32FromBytecode(bytecodes, context);
+                uint32_t tempIndex = readUint32FromBytecode(method->getBytecodes(), context);
 
                 // Use context-based temporary variable access
                 handlePushTemporaryVariable(tempIndex);
@@ -288,7 +284,7 @@ namespace smalltalk
 
             case Bytecode::STORE_TEMPORARY_VARIABLE:
             {
-                uint32_t tempIndex = readUint32FromBytecode(bytecodes, context);
+                uint32_t tempIndex = readUint32FromBytecode(method->getBytecodes(), context);
 
                 // Use context-based temporary variable storage
                 handleStoreTemporaryVariable(tempIndex);
