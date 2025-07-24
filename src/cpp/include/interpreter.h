@@ -19,21 +19,16 @@ namespace smalltalk
     {
     public:
         // Constructor
-        Interpreter(MemoryManager &memory, SmalltalkImage& image);
+        Interpreter(MemoryManager &memory, SmalltalkImage &image);
 
         // Execute method
         Object *executeMethod(CompiledMethod *method, Object *receiver, std::vector<Object *> &args);
 
         // Execute compiled method directly
+        // Suspicious that these are all so close
         TaggedValue executeCompiledMethod(const CompiledMethod &method);
-        
-        // Execute compiled method with specific context
         TaggedValue executeCompiledMethod(const CompiledMethod &method, MethodContext *context);
-
-        // Unified method context execution (replaces executeLoop + dispatch)
         TaggedValue executeMethodContext(MethodContext *context);
-        
-        // Direct method execution without hash lookup (fixes architectural issue)
         TaggedValue executeMethodContext(MethodContext *context, CompiledMethod *method);
 
         // Bytecode handlers
@@ -51,35 +46,35 @@ namespace smalltalk
         // Context access
         MethodContext *getCurrentContext() const { return activeContext; }
         void setCurrentContext(MethodContext *context) { activeContext = context; }
-        
+
         // Current method access (for block execution)
         CompiledMethod *getCurrentMethod() const { return currentMethod; }
 
         // Memory manager access
         MemoryManager &getMemoryManager() { return memoryManager; }
-        
+
         // Image access
-        SmalltalkImage& getImage() { return image; }
+        SmalltalkImage &getImage() { return image; }
 
         // TaggedValue message sending
         TaggedValue sendMessage(TaggedValue receiver, const std::string &selector, const std::vector<TaggedValue> &args);
 
         // Get object class for TaggedValue
         Class *getObjectClass(TaggedValue value);
-        
+
         // Exception handling
-        bool findExceptionHandler(MethodContext*& handlerContext, int& handlerPC);
-        void unwindToContext(MethodContext* targetContext);
+        bool findExceptionHandler(MethodContext *&handlerContext, int &handlerPC);
+        void unwindToContext(MethodContext *targetContext);
 
     private:
         // Memory manager
         MemoryManager &memoryManager;
-        SmalltalkImage& image;
+        SmalltalkImage &image;
 
         // Current context and chunk
         MethodContext *activeContext = nullptr;
         StackChunk *currentChunk = nullptr;
-        
+
         // Current method being executed (eliminates hash lookup)
         CompiledMethod *currentMethod = nullptr;
 
@@ -92,9 +87,8 @@ namespace smalltalk
         // Context switching
         void switchContext(MethodContext *newContext);
 
-        
         // Bytecode reading helper
-        uint32_t readUint32FromBytecode(const std::vector<uint8_t>& bytecodes, MethodContext* context);
+        uint32_t readUint32FromBytecode(const std::vector<uint8_t> &bytecodes, MethodContext *context);
     };
 
 } // namespace smalltalk
