@@ -66,29 +66,7 @@ namespace smalltalk
         TaggedValue result = executeMethodContext(context, method);
 
         // Convert TaggedValue result to Object* for legacy compatibility
-        Object *resultObj;
-        if (result.isPointer())
-        {
-            resultObj = result.asObject();
-        }
-        else if (result.isInteger())
-        {
-            resultObj = memoryManager.allocateInteger(result.asInteger());
-        }
-        else if (result.isBoolean())
-        {
-            resultObj = memoryManager.allocateBoolean(result.asBoolean());
-        }
-        else if (result.isNil())
-        {
-            // Nil is a special object, not an immediate value that needs boxing
-            resultObj = ClassRegistry::getInstance().getClass("UndefinedObject");
-        }
-        else
-        {
-            // Should not happen for now, but handle other immediate types if they arise
-            throw std::runtime_error("Unhandled immediate value type in executeMethod");
-        }
+        Object *resultObj = result.toObject(memoryManager);
 
         // Restore previous context
         activeContext = previousContext;
@@ -560,7 +538,7 @@ namespace smalltalk
         }
 
         TaggedValue result = sendMessage(tvReceiver, selectorString, tvArgs);
-        return result.asObject();
+        return result.toObject(memoryManager);
     }
 
     TaggedValue Interpreter::sendMessage(TaggedValue receiver, const std::string &selector, const std::vector<TaggedValue> &args)

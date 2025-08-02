@@ -13,6 +13,7 @@ namespace smalltalk
     class Symbol;
     struct Object;
     class Class;
+    class MemoryManager;
 
     /**
      * TaggedValue provides an efficient representation for Smalltalk values.
@@ -220,6 +221,9 @@ namespace smalltalk
 
         // Get the class of this object (for tagged values that represent objects)
         Class *getClass() const;
+
+        // Convert TaggedValue to Object* (utility for legacy compatibility)
+        Object* toObject(MemoryManager& memoryManager) const;
 
         // Comparison
         bool operator==(const TaggedValue &other) const
