@@ -124,16 +124,24 @@ namespace smalltalk
     class MethodNode : public ASTNode
     {
     public:
-        explicit MethodNode(ASTNodePtr body) : tempVars_(), body_(std::move(body)) {}
+        explicit MethodNode(ASTNodePtr body) : tempVars_(), body_(std::move(body)), primitiveNumber_(-1) {}
         MethodNode(std::vector<std::string> tempVars, ASTNodePtr body)
-            : tempVars_(std::move(tempVars)), body_(std::move(body)) {}
+            : tempVars_(std::move(tempVars)), body_(std::move(body)), primitiveNumber_(-1) {}
+        MethodNode(std::vector<std::string> tempVars, ASTNodePtr body, int primitiveNumber)
+            : tempVars_(std::move(tempVars)), body_(std::move(body)), primitiveNumber_(primitiveNumber) {}
 
         const std::vector<std::string> &getTempVars() const { return tempVars_; }
         const ASTNode *getBody() const { return body_.get(); }
+        int getPrimitiveNumber() const { return primitiveNumber_; }
+        bool hasPrimitive() const { return primitiveNumber_ >= 0; }
 
         std::string toString() const override
         {
             std::string result = "method ";
+            if (primitiveNumber_ >= 0)
+            {
+                result += "<primitive: " + std::to_string(primitiveNumber_) + "> ";
+            }
             if (!tempVars_.empty())
             {
                 result += "| ";
@@ -152,6 +160,7 @@ namespace smalltalk
     private:
         std::vector<std::string> tempVars_;
         ASTNodePtr body_;
+        int primitiveNumber_;
     };
 
     /**

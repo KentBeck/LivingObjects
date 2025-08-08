@@ -18,6 +18,14 @@ namespace smalltalk
     {
         skipWhitespace();
 
+        // Check for primitive declaration
+        int primitiveNumber = -1;
+        if (peek() == '<')
+        {
+            primitiveNumber = parsePrimitive();
+            skipWhitespace();
+        }
+
         // Check for temporary variable declarations
         std::vector<std::string> tempVars;
         if (isTemporaryVariableDeclaration())
@@ -35,7 +43,14 @@ namespace smalltalk
         }
 
         // Always return a MethodNode, with empty tempVars if none were declared
-        return std::make_unique<MethodNode>(std::move(tempVars), std::move(body));
+        if (primitiveNumber >= 0)
+        {
+            return std::make_unique<MethodNode>(std::move(tempVars), std::move(body), primitiveNumber);
+        }
+        else
+        {
+            return std::make_unique<MethodNode>(std::move(tempVars), std::move(body));
+        }
     }
 
     ASTNodePtr SimpleParser::parseExpression()
@@ -805,6 +820,56 @@ namespace smalltalk
     bool SimpleParser::isTemporaryVariableDeclaration()
     {
         return !isAtEnd() && peek() == '|';
+    }
+
+    int SimpleParser::parsePrimitive()
+    {
+        // Parse <primitive: N> syntax
+        if (peek() != '<')
+        {
+            return -1;
+        }
+        consume(); // consume '<'
+        
+        skipWhitespace();
+        
+        // Parse "primitive:"
+        std::string keyword = parseIdentifier();
+        if (keyword != "primitive")
+        {
+            error("Expected 'primitive' keyword after '<'");
+        }
+        
+        skipWhitespace();
+        if (peek() != ':')
+        {
+            error("Expected ':' after 'primitive'");
+        }
+        consume(); // consume ':'
+        
+        skipWhitespace();
+        
+        // Parse the primitive number
+        if (!isDigit(peek()))
+        {
+            error("Expected primitive number");
+        }
+        
+        int primitiveNumber = 0;
+        while (!isAtEnd() && isDigit(peek()))
+        {
+            primitiveNumber = primitiveNumber * 10 + (consume() - '0');
+        }
+        
+        skipWhitespace();
+        
+        if (peek() != '>')
+        {
+            error("Expected '>' to close primitive declaration");
+        }
+        consume(); // consume '>'
+        
+        return primitiveNumber;
     }
 
     ASTNodePtr SimpleParser::parseVariable()

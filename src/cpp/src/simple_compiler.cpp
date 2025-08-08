@@ -14,6 +14,12 @@ namespace smalltalk
     {
         auto compiledMethod = std::make_unique<CompiledMethod>();
 
+        // Set primitive number if present
+        if (method.hasPrimitive())
+        {
+            compiledMethod->primitiveNumber = method.getPrimitiveNumber();
+        }
+
         // Set up temporary variables (may be empty)
         tempVars_ = method.getTempVars();
         

@@ -62,6 +62,9 @@ namespace smalltalk
         // Temporary variable parsing
         std::vector<std::string> parseTemporaryVariables();
         bool isTemporaryVariableDeclaration();
+        
+        // Primitive parsing
+        int parsePrimitive();
 
         // Tokenization
         void skipWhitespace();
