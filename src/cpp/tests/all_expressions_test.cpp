@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 #include <cassert>
+#include <cstring>
+#include "symbol.h"
 
 // Simple test framework
 #define TEST(name) void name()
@@ -89,11 +91,23 @@ void testExpressionWithExecuteMethod(const ExpressionTest &test)
                     // Format array as <Array size: N>
                     size_t arraySize = obj->header.size;
                     resultStr = "<Array size: " + std::to_string(arraySize) + ">";
+                } else if (obj && obj->header.getType() == ObjectType::SYMBOL) {
+                    // Format symbol as Symbol(content) - try direct symbol access
+                    try {
+                        Symbol* symbol = result.asSymbol();
+                        resultStr = "Symbol(" + symbol->getName() + ")";
+                    } catch (...) {
+                        Symbol* symbol = static_cast<Symbol*>(obj);
+                        resultStr = "Symbol(" + symbol->getName() + ")";
+                    }
                 } else {
-                    resultStr = "Object";
+                    // Debug: show actual object type
+                    resultStr = "Object(type=" + std::to_string(static_cast<int>(obj->header.getType())) + ")";
                 }
+            } catch (const std::exception& e) {
+                resultStr = "Object(exception:" + std::string(e.what()) + ")";
             } catch (...) {
-                resultStr = "Object";
+                resultStr = "Object(unknown_exception)";
             }
         }
         else
@@ -224,6 +238,10 @@ void testExpression(const ExpressionTest &test)
                     // Format array as <Array size: N>
                     size_t arraySize = obj->header.size;
                     resultStr = "<Array size: " + std::to_string(arraySize) + ">";
+                } else if (obj && obj->header.getType() == ObjectType::SYMBOL) {
+                    // Format symbol as Symbol(content)
+                    Symbol* symbol = static_cast<Symbol*>(obj);
+                    resultStr = "Symbol(" + symbol->getName() + ")";
                 } else {
                     resultStr = "Object";
                 }
@@ -753,11 +771,6 @@ aBlock value.
                             if (obj && obj->header.getType() == ObjectType::SYMBOL) {
                                 Symbol* sym = static_cast<Symbol*>(obj);
                                 resultStr = sym->toString();
-                                // Keep debug for symbol test
-                                if (test.expression == "#abc" && resultStr != "Symbol(abc)") {
-                                    std::cout << "\nDEBUG: Symbol toString returned '" << resultStr 
-                                             << "' instead of 'Symbol(abc)'" << std::endl;
-                                }
                             } else if (obj && obj->header.getType() == ObjectType::ARRAY) {
                                 // Format array as <Array size: N>
                                 size_t arraySize = obj->header.size;
