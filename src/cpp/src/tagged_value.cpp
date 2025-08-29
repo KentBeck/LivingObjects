@@ -31,11 +31,6 @@ Class *TaggedValue::getClass() const {
     return ClassUtils::getUndefinedObjectClass();
   } else if (isPointer()) {
     try {
-      // Strings are byte-indexable and detected via utility
-      if (StringUtils::isString(*this)) {
-        return ClassUtils::getStringClass();
-      }
-      // Otherwise use the object's class directly
       Object *obj = asObject();
       return obj ? obj->getClass() : nullptr;
     } catch (...) {
