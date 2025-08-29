@@ -151,7 +151,21 @@ void SimpleCompiler::compileBlock(const BlockNode &node,
   }
 
   // Compile the block body using the block compiler
-  blockCompiler.compileNode(*node.getBody(), *blockMethod);
+  // Special-case empty block bodies to return nil
+  if (const auto *seq = dynamic_cast<const SequenceNode *>(node.getBody())) {
+    if (seq->getStatements().empty()) {
+      // Push nil so RETURN_STACK_TOP has a value
+      blockMethod->addBytecode(static_cast<uint8_t>(Bytecode::PUSH_LITERAL));
+      blockMethod->addOperand(blockMethod->addLiteral(TaggedValue::nil()));
+    } else {
+      blockCompiler.compileNode(*node.getBody(), *blockMethod);
+    }
+  } else if (dynamic_cast<const LiteralNode *>(node.getBody()) != nullptr) {
+    // If parser produced a literal nil for empty body
+    blockCompiler.compileNode(*node.getBody(), *blockMethod);
+  } else {
+    blockCompiler.compileNode(*node.getBody(), *blockMethod);
+  }
 
   // Add return instruction if not already present
   if (blockMethod->getBytecodes().empty() ||

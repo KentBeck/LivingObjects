@@ -607,14 +607,20 @@ ASTNodePtr SimpleParser::parseBlock() {
     skipWhitespace();
   }
 
-  // Parse block body
-  auto body = parseStatements();
-  skipWhitespace();
-
-  if (peek() != ']') {
-    error("Expected ']' after block expression");
+  // Parse block body, allowing empty block
+  ASTNodePtr body;
+  if (peek() == ']') {
+    // Empty block => body is literal nil
+    body = std::make_unique<LiteralNode>(TaggedValue::nil());
+    consume(); // consume ']'
+  } else {
+    body = parseStatements();
+    skipWhitespace();
+    if (peek() != ']') {
+      error("Expected ']' after block expression");
+    }
+    consume(); // consume ']'
   }
-  consume(); // consume ']'
 
   // Create block node with parameters and temporaries
   auto blockNode =

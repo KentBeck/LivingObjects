@@ -65,10 +65,9 @@ void testBlockCompilation() {
               << std::endl;
   }
 
-  // Test 3: Empty-like block [nil] (empty blocks are not currently supported by
-  // the parser)
+  // Test 3: Empty block [] compiles correctly
   {
-    SimpleParser parser("[nil]");
+    SimpleParser parser("[]");
     auto method = parser.parseMethod();
     assert(method != nullptr);
 
@@ -87,9 +86,7 @@ void testBlockCompilation() {
     }
 
     assert(foundCreateBlock);
-    std::cout
-        << "  ✓ Block [nil] compiles correctly (placeholder for empty block)"
-        << std::endl;
+    std::cout << "  ✓ Empty block [] compiles correctly" << std::endl;
   }
 }
 
