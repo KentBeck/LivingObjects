@@ -574,7 +574,8 @@ aBlock value.
 
       // Conditionals - SHOULD FAIL (not implemented)
       {"3 < 4) ifTrue: [10] ifFalse: [20]", "10", false, "conditionals"},
-      {"true ifTrue: [42]", "42", false, "conditionals"},
+      {"true ifTrue: [42]", "42", true, "conditionals"},
+      {"false ifTrue: [1] ifFalse: [7]", "7", true, "conditionals"},
 
       // Collections - SHOULD FAIL (not implemented)
       {"#(1 2 3) at: 2", "2", true, "collections"},

@@ -154,7 +154,8 @@ TaggedValue primitive_class(TaggedValue receiver,
   if (receiver.isSmallInteger()) {
     receiverClass = ClassUtils::getIntegerClass();
   } else if (receiver.isBoolean()) {
-    receiverClass = ClassUtils::getBooleanClass();
+    receiverClass = receiver.getBoolean() ? ClassUtils::getTrueClass()
+                                          : ClassUtils::getFalseClass();
   } else if (receiver.isNil()) {
     // UndefinedObject class for nil
     receiverClass = ClassRegistry::getInstance().getClass("UndefinedObject");

@@ -123,7 +123,7 @@ run_expression "(2 + 3) * 4" "Nested Expression"
 # 2. Test block parsing
 echo -e "\n${YELLOW}=== BLOCK PARSING TESTS ===${NC}"
 
-build_test "tests/minimal_parse_test.cpp" "minimal_parse_test" "$PARSER_DEPS"
+build_test "tests/minimal_parse_test.cpp" "minimal_parse_test" "$COMPILER_DEPS"
 run_test "Block Parsing" "./build/minimal_parse_test | grep -q 'Test completed successfully'"
 
 build_test "tests/simple_block_test.cpp" "simple_block_test" "$COMPILER_DEPS"

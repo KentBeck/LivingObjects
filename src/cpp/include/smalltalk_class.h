@@ -234,6 +234,8 @@ Class *getClassClass();
 Class *getMetaclassClass();
 Class *getIntegerClass();
 Class *getBooleanClass();
+Class *getTrueClass();
+Class *getFalseClass();
 Class *getSymbolClass();
 Class *getStringClass();
 Class *getBlockClass();

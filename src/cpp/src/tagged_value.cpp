@@ -24,7 +24,8 @@ Class *TaggedValue::getClass() const {
   if (isInteger()) {
     return ClassUtils::getIntegerClass();
   } else if (isBoolean()) {
-    return ClassUtils::getBooleanClass();
+    return getBoolean() ? ClassUtils::getTrueClass()
+                        : ClassUtils::getFalseClass();
   } else if (isNil()) {
     // nil is a special case - it's the sole instance of UndefinedObject
     // For now, we'll return Object class
@@ -65,7 +66,9 @@ TaggedValue TaggedValue::fromObject(Object *object) {
       return *valueSlot;
     }
     // Check if it's a boxed boolean
-    if (object->getClass() == ClassUtils::getBooleanClass()) {
+    if (object->getClass() == ClassUtils::getBooleanClass() ||
+        object->getClass() == ClassUtils::getTrueClass() ||
+        object->getClass() == ClassUtils::getFalseClass()) {
       TaggedValue *valueSlot = reinterpret_cast<TaggedValue *>(
           reinterpret_cast<char *>(object) + sizeof(Object));
       return *valueSlot;

@@ -71,8 +71,7 @@ std::string MethodCompiler::parseMethodSignature(std::string &methodBody) {
 
     std::string fullSelector;
     for (; iter != end; ++iter) {
-      if (!fullSelector.empty())
-        fullSelector += ":";
+      // Append keyword part with trailing colon, no extra separator
       fullSelector += iter->str(1) + ":";
       parameters.push_back(iter->str(2));
     }

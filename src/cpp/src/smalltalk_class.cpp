@@ -1,4 +1,5 @@
 #include "smalltalk_class.h"
+#include "method_compiler.h"
 #include "primitives.h"
 #include <algorithm>
 #include <iostream>
@@ -264,6 +265,8 @@ struct CoreClasses {
   Metaclass *metaclassClass = nullptr;
   Class *integerClass = nullptr;
   Class *booleanClass = nullptr;
+  Class *trueClass = nullptr;
+  Class *falseClass = nullptr;
   Class *symbolClass = nullptr;
   Class *stringClass = nullptr;
   Class *blockClass = nullptr;
@@ -315,12 +318,25 @@ void initializeCoreClasses() {
   core.integerClass->setClass(core.classClass);
   registry.registerClass("Integer", core.integerClass);
 
-  // Create Boolean class
+  // Create Boolean hierarchy
   core.booleanClass = new Class("Boolean", core.objectClass, nullptr);
   core.booleanClass->setInstanceSize(0); // Booleans are immediate values
   core.booleanClass->setFormat(ObjectFormat::POINTER_OBJECTS);
   core.booleanClass->setClass(core.classClass);
   registry.registerClass("Boolean", core.booleanClass);
+
+  // Create True/False as subclasses of Boolean
+  core.trueClass = new Class("True", core.booleanClass, nullptr);
+  core.trueClass->setInstanceSize(0);
+  core.trueClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+  core.trueClass->setClass(core.classClass);
+  registry.registerClass("True", core.trueClass);
+
+  core.falseClass = new Class("False", core.booleanClass, nullptr);
+  core.falseClass->setInstanceSize(0);
+  core.falseClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+  core.falseClass->setClass(core.classClass);
+  registry.registerClass("False", core.falseClass);
 
   // Create Symbol class
   core.symbolClass = new Class("Symbol", core.objectClass, nullptr);
@@ -415,6 +431,24 @@ void initializeCoreClasses() {
   addPrimitiveMethod(core.blockClass, "value:",
                      PrimitiveNumbers::BLOCK_VALUE_ARG); // Block value:
 
+  // Install minimal boolean control-flow methods in True and False
+  // True
+  MethodCompiler::addSmalltalkMethod(core.trueClass,
+                                     "ifTrue: block\n^ block value");
+  MethodCompiler::addSmalltalkMethod(core.trueClass, "ifFalse: block\n^ nil");
+  MethodCompiler::addSmalltalkMethod(core.trueClass,
+                                     "ifTrue: t ifFalse: f\n^ t value");
+  MethodCompiler::addSmalltalkMethod(core.trueClass,
+                                     "ifFalse: f ifTrue: t\n^ t value");
+  // False
+  MethodCompiler::addSmalltalkMethod(core.falseClass, "ifTrue: block\n^ nil");
+  MethodCompiler::addSmalltalkMethod(core.falseClass,
+                                     "ifFalse: block\n^ block value");
+  MethodCompiler::addSmalltalkMethod(core.falseClass,
+                                     "ifTrue: t ifFalse: f\n^ f value");
+  MethodCompiler::addSmalltalkMethod(core.falseClass,
+                                     "ifFalse: f ifTrue: t\n^ f value");
+
   // Create SystemLoader class and add minimal start: primitive
   Class *systemLoaderClass =
       new Class("SystemLoader", core.objectClass, nullptr);
@@ -440,6 +474,8 @@ Class *getClassClass() { return CoreClasses::getInstance().classClass; }
 Class *getMetaclassClass() { return CoreClasses::getInstance().metaclassClass; }
 Class *getIntegerClass() { return CoreClasses::getInstance().integerClass; }
 Class *getBooleanClass() { return CoreClasses::getInstance().booleanClass; }
+Class *getTrueClass() { return CoreClasses::getInstance().trueClass; }
+Class *getFalseClass() { return CoreClasses::getInstance().falseClass; }
 Class *getSymbolClass() { return CoreClasses::getInstance().symbolClass; }
 Class *getStringClass() { return CoreClasses::getInstance().stringClass; }
 Class *getBlockClass() { return CoreClasses::getInstance().blockClass; }

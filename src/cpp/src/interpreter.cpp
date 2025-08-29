@@ -291,12 +291,13 @@ void Interpreter::sendMessageBytecode() {
     throw std::runtime_error("Selector is not a symbol");
   }
 
-  // Pop arguments from stack (in reverse order)
+  // Pop arguments from stack (LIFO), then restore source order
   std::vector<TaggedValue> args;
   args.reserve(argCount);
   for (uint32_t i = 0; i < argCount; i++) {
     args.push_back(pop());
   }
+  std::reverse(args.begin(), args.end());
 
   // Pop receiver from stack
   TaggedValue receiver = pop();
@@ -610,7 +611,8 @@ Class *Interpreter::getObjectClass(TaggedValue value) {
     return ClassUtils::getIntegerClass();
   }
   if (value.isBoolean()) {
-    return ClassUtils::getBooleanClass();
+    return value.getBoolean() ? ClassUtils::getTrueClass()
+                              : ClassUtils::getFalseClass();
   }
   if (value.isNil()) {
     return ClassRegistry::getInstance().getClass("UndefinedObject");
