@@ -610,8 +610,8 @@ ASTNodePtr SimpleParser::parseBlock() {
   // Parse block body, allowing empty block
   ASTNodePtr body;
   if (peek() == ']') {
-    // Empty block => body is literal nil
-    body = std::make_unique<LiteralNode>(TaggedValue::nil());
+    // Empty block => represent as an empty sequence (no statements)
+    body = std::make_unique<SequenceNode>();
     consume(); // consume ']'
   } else {
     body = parseStatements();
