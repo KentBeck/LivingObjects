@@ -607,21 +607,11 @@ TaggedValue Interpreter::sendMessage(TaggedValue receiver,
 }
 
 Class *Interpreter::getObjectClass(TaggedValue value) {
-  if (value.isSmallInteger()) {
-    return ClassUtils::getIntegerClass();
+  Class *cls = value.getClass();
+  if (!cls) {
+    throw std::runtime_error("Unknown value type");
   }
-  if (value.isBoolean()) {
-    return value.getBoolean() ? ClassUtils::getTrueClass()
-                              : ClassUtils::getFalseClass();
-  }
-  if (value.isNil()) {
-    return ClassRegistry::getInstance().getClass("UndefinedObject");
-  }
-  if (value.isPointer()) {
-    return value.asObject()->getClass();
-  }
-
-  throw std::runtime_error("Unknown value type");
+  return cls;
 }
 
 // Temporarily removed - will implement proper message send parsing later

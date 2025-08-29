@@ -32,21 +32,15 @@ Class *TaggedValue::getClass() const {
     return ClassUtils::getObjectClass();
   } else if (isPointer()) {
     try {
-      // Try as Symbol first
-      asSymbol(); // Just check if it's a symbol
-      return ClassUtils::getSymbolClass();
-    } catch (...) {
-      try {
-        // Try as String
-        Object *obj = asObject();
-        if (StringUtils::isString(*this)) {
-          return ClassUtils::getStringClass();
-        }
-        // Try as generic Object
-        return obj->getClass();
-      } catch (...) {
-        return nullptr;
+      // Strings are byte-indexable and detected via utility
+      if (StringUtils::isString(*this)) {
+        return ClassUtils::getStringClass();
       }
+      // Otherwise use the object's class directly
+      Object *obj = asObject();
+      return obj ? obj->getClass() : nullptr;
+    } catch (...) {
+      return nullptr;
     }
   }
   return nullptr;

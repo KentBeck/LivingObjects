@@ -148,27 +148,8 @@ TaggedValue primitive_class(TaggedValue receiver,
   // Check argument count
   Primitives::checkArgumentCount(args, 0, "class");
 
-  Class *receiverClass = nullptr;
-
-  // Handle immediate values
-  if (receiver.isSmallInteger()) {
-    receiverClass = ClassUtils::getIntegerClass();
-  } else if (receiver.isBoolean()) {
-    receiverClass = receiver.getBoolean() ? ClassUtils::getTrueClass()
-                                          : ClassUtils::getFalseClass();
-  } else if (receiver.isNil()) {
-    // UndefinedObject class for nil
-    receiverClass = ClassRegistry::getInstance().getClass("UndefinedObject");
-    if (receiverClass == nullptr) {
-      throw PrimitiveFailure("UndefinedObject class not found");
-    }
-  } else if (receiver.isPointer()) {
-    Object *obj = receiver.asObject();
-    receiverClass = obj->getClass();
-    if (receiverClass == nullptr) {
-      throw PrimitiveFailure("Object has no class");
-    }
-  } else {
+  Class *receiverClass = receiver.getClass();
+  if (receiverClass == nullptr) {
     throw PrimitiveFailure("Unknown receiver type");
   }
 
