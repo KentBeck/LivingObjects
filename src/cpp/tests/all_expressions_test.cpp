@@ -121,7 +121,7 @@ void testExpressionWithExecuteMethod(const ExpressionTest &test) {
     if (test.shouldPass) {
       std::cout << " ❌ FAIL (exception: " << e.what() << ")" << std::endl;
     } else {
-      std::cout << " ✅ EXPECTED FAIL (" << e.what() << ")" << std::endl;
+      std::cout << " ✅ EXPECTED EXCEPTION (" << e.what() << ")" << std::endl;
     }
   }
 }
@@ -254,7 +254,7 @@ void testExpression(const ExpressionTest &test) {
     if (test.shouldPass) {
       std::cout << " ❌ FAIL (exception: " << e.what() << ")" << std::endl;
     } else {
-      std::cout << " ✅ EXPECTED FAIL (" << e.what() << ")" << std::endl;
+      std::cout << " ✅ EXPECTED EXCEPTION (" << e.what() << ")" << std::endl;
     }
   }
 }
@@ -504,7 +504,8 @@ aBlock value.
       {"[10 / 0] ensure: [42]", "42", false, "exception_handling"},
       {"[10 / 0] on: ZeroDivisionError do: [:ex | 'caught']", "caught", false,
        "exception_handling"},
-      {"[1 + 2] ensure: [3 + 4]", "3", false, "exception_handling"},
+      // ensure: with non-erroring receiver should return receiver; this passes
+      {"[1 + 2] ensure: [3 + 4]", "3", true, "exception_handling"},
       {"ZeroDivisionError signal: 'test error'", "ZeroDivisionError", false,
        "exception_handling"},
 
@@ -670,8 +671,8 @@ aBlock value.
       testExpression(test);
     }
 
-    // Count as pass if result matches expectation (either should pass and did,
-    // or should fail and did)
+    // Count as pass if result matches expectation (shouldPass true),
+    // or if an exception occurred and shouldPass is false
     try {
       SimpleParser parser(test.expression);
       auto methodAST = parser.parseMethod();
@@ -701,20 +702,37 @@ aBlock value.
         resultStr = "nil";
       } else if (StringUtils::isString(result)) {
         String *str = StringUtils::asString(result);
-        resultStr =
-            str->getContent(); // Get content without quotes for comparison
+        resultStr = str->getContent();
+      } else if (result.isSmallInteger()) {
+        resultStr = std::to_string(result.getSmallInteger());
+      } else if (result.isPointer()) {
+        try {
+          Object *obj = result.asObject();
+          if (obj && obj->header.getType() == ObjectType::SYMBOL) {
+            Symbol *sym = static_cast<Symbol *>(obj);
+            resultStr = sym->toString();
+          } else if (obj && obj->header.getType() == ObjectType::CLASS) {
+            Class *cls = static_cast<Class *>(obj);
+            resultStr = cls->getName();
+          } else if (obj && obj->header.getType() == ObjectType::ARRAY) {
+            size_t arraySize = obj->header.size;
+            resultStr = "<Array size: " + std::to_string(arraySize) + ">";
+          } else {
+            resultStr = "Object";
+          }
+        } catch (...) {
+          resultStr = "Object";
+        }
       } else {
         resultStr = "Object";
       }
 
       if (test.shouldPass && resultStr == test.expectedResult) {
         passCount++;
-      } else if (!test.shouldPass) {
-        // This should have failed but didn't - that's actually bad
       }
     } catch (const std::exception &) {
       if (!test.shouldPass) {
-        passCount++; // Expected to fail and did fail
+        passCount++;
       }
     }
     totalCount++;
