@@ -551,6 +551,7 @@ aBlock value.
       {"| x | (x := 5) + 1", "6", true, "variables"},
 
       // Blocks - Now implemented!
+      {"[] value", "nil", true, "blocks"},
       {"[3 + 4] value", "7", true, "blocks"},
       {"[:x | x + 1] value: 5", "6", true, "blocks"},
       {" [| x | x := 5. x + 1] value", "6", true, "blocks"},
