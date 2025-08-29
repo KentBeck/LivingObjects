@@ -24,3 +24,31 @@ claude-flow
 claude-flow.bat
 claude-flow.ps1
 hive-mind-prompt-*.txt
+
+# Ignore C++ binaries and debug symbols in this tree
+# Specific executables at repo root
+debug_array_size
+debug_parser
+debug_simple
+test_blocks_final
+test_exact
+test_logging
+test_parse_compile_execute
+test_parse_only
+test_simple_object_model
+test_symbol_debug
+verify_parsing
+smalltalk-vm
+
+# Test executables in tests/
+tests/expression_test_runner
+tests/smalltalk_repl
+tests/test_expressions
+tests/test_interpreter
+tests/test_tagged
+
+# Debug symbol bundles
+*.dSYM/
+
+# Generated images
+*.image
