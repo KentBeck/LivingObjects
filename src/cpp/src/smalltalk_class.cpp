@@ -346,6 +346,17 @@ void initializeCoreClasses() {
   core.undefinedObjectClass->setFormat(ObjectFormat::POINTER_OBJECTS);
   core.undefinedObjectClass->setClass(core.classClass);
   registry.registerClass("UndefinedObject", core.undefinedObjectClass);
+  // Minimal methods for UndefinedObject
+  MethodCompiler::addSmalltalkMethod(core.undefinedObjectClass,
+                                     "printString\n^ 'nil'");
+  MethodCompiler::addSmalltalkMethod(core.undefinedObjectClass,
+                                     "asString\n^ 'nil'");
+  MethodCompiler::addSmalltalkMethod(core.undefinedObjectClass,
+                                     "isNil\n^ true");
+  MethodCompiler::addSmalltalkMethod(core.undefinedObjectClass,
+                                     "ifNil: block\n^ block value");
+  MethodCompiler::addSmalltalkMethod(core.undefinedObjectClass,
+                                     "ifNotNil: block\n^ nil");
 
   // Create Symbol class
   core.symbolClass = new Class("Symbol", core.objectClass, nullptr);
