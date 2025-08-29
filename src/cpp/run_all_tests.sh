@@ -9,6 +9,10 @@ echo "=================================================="
 echo "           SMALLTALK VM TEST SUITE"
 echo "=================================================="
 
+# Ensure we run from the script directory (src/cpp)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -82,6 +86,7 @@ build_test() {
 }
 
 echo "Building main project..."
+make clean > /dev/null 2>&1 || true
 make all > /dev/null 2>&1
 
 echo -e "\n${YELLOW}Building and running tests...${NC}"
@@ -91,10 +96,10 @@ mkdir -p build
 
 # Common dependencies
 BASIC_DEPS="build/object.o build/tagged_value.o build/symbol.o"
-PARSER_DEPS="$BASIC_DEPS build/simple_parser.o build/smalltalk_string.o build/smalltalk_class.o"
+PARSER_DEPS="$BASIC_DEPS build/simple_parser.o build/smalltalk_string.o build/smalltalk_class.o build/memory_manager.o"
 COMPILER_DEPS="$PARSER_DEPS build/simple_compiler.o build/smalltalk_exception.o build/method_compiler.o"
 VM_DEPS="$COMPILER_DEPS \
-  build/interpreter.o build/memory_manager.o \
+  build/interpreter.o \
   build/primitives.o build/primitives/object.o build/primitives/block.o build/primitives/array.o build/primitives/string.o build/primitives/integer.o build/primitives/exception.o \
   build/smalltalk_image.o build/smalltalk_image_interpreter.o \
   build/smalltalk_vm.o \
