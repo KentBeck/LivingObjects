@@ -28,15 +28,18 @@ struct MethodContext : public Object {
   TaggedValue *stackPointer = nullptr; // Current stack top
   TaggedValue sender; // Sender context (TaggedValue for consistency)
   TaggedValue self;   // Receiver (TaggedValue for consistency)
+  TaggedValue home;   // Home context for blocks (nil for regular methods)
   uint64_t instructionPointer = 0; // Current IP
   CompiledMethod *method; // Direct pointer to the compiled method (required)
   // Variable-sized temporaries and stack follow
 
   // Constructor
   MethodContext(size_t contextSize, TaggedValue receiver,
-                TaggedValue senderContext, CompiledMethod *compiledMethod)
+                TaggedValue senderContext, TaggedValue homeContext,
+                CompiledMethod *compiledMethod)
       : Object(ObjectType::CONTEXT, contextSize, static_cast<uint32_t>(0)),
-        sender(senderContext), self(receiver), method(compiledMethod) {
+        sender(senderContext), self(receiver), home(homeContext),
+        method(compiledMethod) {
     assert(compiledMethod != nullptr &&
            "CompiledMethod is required for MethodContext");
     header.setFlag(ObjectFlag::CONTAINS_POINTERS);

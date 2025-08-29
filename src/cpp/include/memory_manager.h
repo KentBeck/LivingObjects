@@ -111,7 +111,7 @@ public:
    * @return A pointer to the allocated method context.
    */
   MethodContext *allocateMethodContext(size_t size, TaggedValue self,
-                                       TaggedValue sender,
+                                       TaggedValue sender, TaggedValue home,
                                        CompiledMethod *compiledMethod);
 
   /**

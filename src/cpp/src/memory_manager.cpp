@@ -275,7 +275,7 @@ Object *MemoryManager::allocateBoolean(bool value) {
 
 MethodContext *
 MemoryManager::allocateMethodContext(size_t size, TaggedValue self,
-                                     TaggedValue sender,
+                                     TaggedValue sender, TaggedValue home,
                                      CompiledMethod *compiledMethod) {
   if (!compiledMethod) {
     throw std::runtime_error(
@@ -303,7 +303,7 @@ MemoryManager::allocateMethodContext(size_t size, TaggedValue self,
 
   // Allocate the context
   MethodContext *context = static_cast<MethodContext *>(currentAllocation);
-  new (context) MethodContext(size, self, sender, compiledMethod);
+  new (context) MethodContext(size, self, sender, home, compiledMethod);
 
   // Update allocation pointer
   currentAllocation = static_cast<char *>(currentAllocation) + requiredBytes;
