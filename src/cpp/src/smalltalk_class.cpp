@@ -402,6 +402,13 @@ void initializeCoreClasses() {
                      75);                             // Object identityHash
   addPrimitiveMethod(core.objectClass, "class", 111); // Object class
 
+  // Default nil-testing and conditional behavior on Object (non-nil)
+  // isNil -> false; ifNil: -> nil; ifNotNil: -> evaluate block
+  MethodCompiler::addSmalltalkMethod(core.objectClass, "isNil\n^ false");
+  MethodCompiler::addSmalltalkMethod(core.objectClass, "ifNil: block\n^ nil");
+  MethodCompiler::addSmalltalkMethod(core.objectClass,
+                                     "ifNotNil: block\n^ block value");
+
   // Add class methods to Class class (for all classes)
   addPrimitiveMethod(core.classClass, "new",
                      PrimitiveNumbers::NEW); // Class new
