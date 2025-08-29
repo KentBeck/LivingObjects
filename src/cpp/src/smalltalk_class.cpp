@@ -426,6 +426,7 @@ namespace smalltalk
             addPrimitiveMethod(core.objectClass, "class", 111);       // Object class
 
             // Add class methods to Class class (for all classes)
+            addPrimitiveMethod(core.classClass, "new", PrimitiveNumbers::NEW);   // Class new
             addPrimitiveMethod(core.classClass, "new:", 72); // Class new: size (for Array new:, etc.)
 
             // Add primitive methods to Array class (instance methods)
@@ -449,10 +450,27 @@ namespace smalltalk
             addPrimitiveMethod(core.stringClass, "at:", PrimitiveNumbers::STRING_AT);    // String at:
             addPrimitiveMethod(core.stringClass, ",", PrimitiveNumbers::STRING_CONCAT);  // String ,
             addPrimitiveMethod(core.stringClass, "size", PrimitiveNumbers::STRING_SIZE); // String size
+            addPrimitiveMethod(core.stringClass, "asSymbol", PrimitiveNumbers::STRING_AS_SYMBOL); // String asSymbol
 
             // Add primitive methods to Block class
             addPrimitiveMethod(core.blockClass, "value", PrimitiveNumbers::BLOCK_VALUE); // Block value
             addPrimitiveMethod(core.blockClass, "value:", PrimitiveNumbers::BLOCK_VALUE_ARG); // Block value:
+
+            // Create SystemLoader class and add minimal start: primitive
+            Class* systemLoaderClass = new Class("SystemLoader", core.objectClass, nullptr);
+            systemLoaderClass->setInstanceSize(0);
+            systemLoaderClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+            systemLoaderClass->setClass(core.classClass);
+            registry.registerClass("SystemLoader", systemLoaderClass);
+            addPrimitiveMethod(systemLoaderClass, "start:", PrimitiveNumbers::SYSTEM_LOADER_START);
+
+            // Create Compiler class and add compile:in: bridge primitive
+            Class* compilerClass = new Class("Compiler", core.objectClass, nullptr);
+            compilerClass->setInstanceSize(0);
+            compilerClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+            compilerClass->setClass(core.classClass);
+            registry.registerClass("Compiler", compilerClass);
+            addPrimitiveMethod(compilerClass, "compile:in:", PrimitiveNumbers::COMPILER_COMPILE_IN);
         }
 
         Class *getObjectClass() { return CoreClasses::getInstance().objectClass; }

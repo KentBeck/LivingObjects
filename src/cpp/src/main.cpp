@@ -22,18 +22,22 @@ struct Options {
     bool showBytecode = false;
     bool showMethod = false;
     bool runExpression = true;
+    bool runLoaderOnImage = true;
+    std::string imagePath;
     std::string expression;
 };
 
 void printUsage() {
     std::cout << "Usage:" << '\n';
-    std::cout << "  smalltalk-vm [options] <expression>" << '\n';
+    std::cout << "  smalltalk-vm [options] [<expression>]" << '\n';
     std::cout << '\n';
     std::cout << "Options:" << '\n';
     std::cout << "  --parse-tree     Show the parsed AST" << '\n';
     std::cout << "  --bytecode       Show detailed bytecode analysis" << '\n';
     std::cout << "  --method         Show compiled method details" << '\n';
     std::cout << "  --no-run         Don't execute the expression" << '\n';
+    std::cout << "  --image <file>   Load a Smalltalk image file and bootstrap" << '\n';
+    std::cout << "  --no-loader      When used with --image, skip SystemLoader start:" << '\n';
     std::cout << "  --help, -h       Show this help message" << '\n';
     std::cout << '\n';
     std::cout << "Examples:" << '\n';
@@ -41,6 +45,7 @@ void printUsage() {
     std::cout << "  smalltalk-vm --parse-tree \"3 + 4\"" << '\n';
     std::cout << "  smalltalk-vm --bytecode --method \"(10 - 2) * 3\"" << '\n';
     std::cout << "  smalltalk-vm --parse-tree --no-run \"ensure: aBlock | result | result := self value\"" << '\n';
+    std::cout << "  smalltalk-vm --image build/core.image" << '\n';
 }
 
 Options parseArguments(int argc, char** argv) {
@@ -57,6 +62,15 @@ Options parseArguments(int argc, char** argv) {
             opts.showMethod = true;
         } else if (arg == "--no-run") {
             opts.runExpression = false;
+        } else if (arg == "--no-loader") {
+            opts.runLoaderOnImage = false;
+        } else if (arg == "--image") {
+            if (i + 1 >= argc) {
+                std::cerr << "--image requires a file argument" << '\n';
+                printUsage();
+                exit(1);
+            }
+            opts.imagePath = argv[++i];
         } else if (arg == "--help" || arg == "-h") {
             printUsage();
             exit(0);
@@ -73,13 +87,13 @@ Options parseArguments(int argc, char** argv) {
             opts.expression = arg;
         }
     }
-    
-    if (opts.expression.empty()) {
-        std::cerr << "No expression provided." << '\n';
+    // Allow running with only --image
+    if (opts.expression.empty() && opts.imagePath.empty()) {
+        std::cerr << "No expression or --image provided." << '\n';
         printUsage();
         exit(1);
     }
-    
+
     return opts;
 }
 
@@ -202,89 +216,79 @@ int main(int argc, char** argv) {
     Options opts = parseArguments(argc, argv);
     
     try {
-        // Step 1: Initialize class system and primitives before parsing
+        // Step 1: Initialize class system and primitives
         ClassUtils::initializeCoreClasses();
-        
-        // Initialize primitive registry
         auto& primitiveRegistry = PrimitiveRegistry::getInstance();
         primitiveRegistry.initializeCorePrimitives();
-        
-        // Add primitive methods to Integer class
+        // Add integer primitives (legacy path maintains consistency)
         Class* integerClass = ClassUtils::getIntegerClass();
         IntegerClassSetup::addPrimitiveMethods(integerClass);
-        
-        // Register block primitive
         primitiveRegistry.registerPrimitive(PrimitiveNumbers::BLOCK_VALUE, BlockPrimitives::value);
-        
-        // Step 2: Parse the expression
-        SimpleParser parser(opts.expression);
-        auto methodAST = parser.parseMethod();
-        
-        if (opts.showParseTree) {
-            std::cout << "\n=== Parse Tree ===" << std::endl;
-            std::cout << methodAST->toString() << std::endl;
+
+        // If an image is provided, load it and optionally call the loader
+        std::unique_ptr<SmalltalkImage> ownedImage;
+        SmalltalkImage* imagePtr = nullptr;
+        if (!opts.imagePath.empty()) {
+            auto& manager = ImageManager::getInstance();
+            if (!manager.loadImageFromFile(opts.imagePath)) {
+                std::cerr << "Failed to load image: " << opts.imagePath << "\n";
+                return 1;
+            }
+            imagePtr = manager.getCurrentImage();
+            if (!imagePtr) {
+                std::cerr << "Image failed to initialize after load" << '\n';
+                return 1;
+            }
+
+            if (opts.runLoaderOnImage) {
+                // Call minimal bootstrap entry
+                TaggedValue started = imagePtr->evaluate("SystemLoader new start: 'cli'");
+                (void)started; // We don't require a true result to proceed
+            }
         }
-        
-        // Step 3: Compile to bytecode
-        SimpleCompiler compiler;
-        auto compiledMethod = compiler.compile(*methodAST);
-        
-        if (opts.showMethod) {
-            std::cout << "\n=== Compiled Method ===" << std::endl;
-            std::cout << "Primitive number: " << compiledMethod->primitiveNumber << std::endl;
-            
-            // Print literals
-            const auto& literals = compiledMethod->getLiterals();
-            std::cout << "Literals (" << literals.size() << "):" << std::endl;
-            for (size_t i = 0; i < literals.size(); i++) {
-                std::cout << "  [" << i << "]: ";
-                if (literals[i].isInteger()) {
-                    std::cout << "Integer(" << literals[i].asInteger() << ")";
-                } else if (literals[i].isNil()) {
-                    std::cout << "nil";
-                } else if (literals[i].isTrue()) {
-                    std::cout << "true";
-                } else if (literals[i].isFalse()) {
-                    std::cout << "false";
-                } else if (literals[i].isPointer()) {
-                    std::cout << "Object@" << std::hex << literals[i].asObject() << std::dec;
+
+        // If expression provided, evaluate it (within image if loaded)
+        if (!opts.expression.empty()) {
+            if (imagePtr) {
+                TaggedValue result = imagePtr->evaluate(opts.expression);
+                std::cout << "\n=== Result ===" << std::endl;
+                if (StringUtils::isString(result)) {
+                    String* str = StringUtils::asString(result);
+                    std::cout << str->toString() << std::endl;
                 } else {
-                    std::cout << "Unknown";
+                    std::cout << result << std::endl;
                 }
-                std::cout << std::endl;
-            }
-            
-            // Print temp vars
-            const auto& tempVars = compiledMethod->getTempVars();
-            std::cout << "Temp vars (" << tempVars.size() << "):" << std::endl;
-            for (size_t i = 0; i < tempVars.size(); i++) {
-                std::cout << "  [" << i << "]: " << tempVars[i] << std::endl;
-            }
-        }
-        
-        if (opts.showBytecode) {
-            printBytecodeAnalysis(compiledMethod->getBytecodes());
-        }
-        
-        // Step 4: Execute if requested
-        if (opts.runExpression) {
-            MemoryManager memoryManager;
-            SmalltalkImage image;
-            Interpreter interpreter(memoryManager, image);
-            
-            // Register block primitive
-            primitiveRegistry.registerPrimitive(PrimitiveNumbers::BLOCK_VALUE, BlockPrimitives::value);
-            
-            // Execute the compiled method
-            TaggedValue result = interpreter.executeCompiledMethod(*compiledMethod);
-            
-            // Step 5: Print the result
-            std::cout << "\n=== Result ===" << std::endl;
-            if (StringUtils::isString(result)) {
-                String* str = StringUtils::asString(result);
-                std::cout << str->toString() << std::endl;
             } else {
-                std::cout << result << std::endl;
+                // Legacy compile-and-execute path without an image
+                SimpleParser parser(opts.expression);
+                auto methodAST = parser.parseMethod();
+                if (opts.showParseTree) {
+                    std::cout << "\n=== Parse Tree ===" << std::endl;
+                    std::cout << methodAST->toString() << std::endl;
+                }
+                SimpleCompiler compiler;
+                auto compiledMethod = compiler.compile(*methodAST);
+                if (opts.showMethod) {
+                    std::cout << "\n=== Compiled Method ===" << std::endl;
+                    std::cout << "Primitive number: " << compiledMethod->primitiveNumber << std::endl;
+                }
+                if (opts.showBytecode) {
+                    printBytecodeAnalysis(compiledMethod->getBytecodes());
+                }
+                if (opts.runExpression) {
+                    MemoryManager memoryManager;
+                    SmalltalkImage image;
+                    Interpreter interpreter(memoryManager, image);
+                    primitiveRegistry.registerPrimitive(PrimitiveNumbers::BLOCK_VALUE, BlockPrimitives::value);
+                    TaggedValue result = interpreter.executeCompiledMethod(*compiledMethod);
+                    std::cout << "\n=== Result ===" << std::endl;
+                    if (StringUtils::isString(result)) {
+                        String* str = StringUtils::asString(result);
+                        std::cout << str->toString() << std::endl;
+                    } else {
+                        std::cout << result << std::endl;
+                    }
+                }
             }
         }
         

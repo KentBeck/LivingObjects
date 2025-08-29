@@ -11,6 +11,18 @@ CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -I$(INCLUDE_DIR)
 LDFLAGS =
 
+# Detect host OS/arch to avoid mismatched architectures on macOS
+UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
+
+# On Apple Silicon, force arm64 for both compile and link
+ifeq ($(UNAME_S),Darwin)
+  ifeq ($(UNAME_M),arm64)
+    CXXFLAGS += -arch arm64
+    LDFLAGS += -arch arm64
+  endif
+endif
+
 # Debug build flags
 DEBUG_FLAGS = -g -O0 -DDEBUG
 

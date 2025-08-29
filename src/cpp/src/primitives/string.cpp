@@ -1,5 +1,6 @@
 #include "../../include/primitives.h"
 #include "../../include/smalltalk_string.h"
+#include "../../include/symbol.h"
 #include "../../include/smalltalk_class.h"
 #include "../../include/smalltalk_exception.h"
 #include <stdexcept>
@@ -131,6 +132,22 @@ namespace smalltalk
             int32_t size = static_cast<int32_t>(receiverStr->size());
             return TaggedValue(size);
         }
+
+        /**
+         * String asSymbol primitive - returns interned Symbol for receiver content
+         */
+        TaggedValue asSymbol(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter)
+        {
+            (void)interpreter;
+            checkArgumentCount(args, 0);
+
+            if (!StringUtils::isString(receiver)) {
+                throw std::runtime_error("Receiver must be a string");
+            }
+            String* str = static_cast<String*>(receiver.asObject());
+            Symbol* sym = Symbol::intern(str->getContent());
+            return TaggedValue::fromObject(sym);
+        }
     }
 
     // Register string primitives
@@ -142,6 +159,7 @@ namespace smalltalk
         registry.registerPrimitive(PrimitiveNumbers::STRING_AT, StringPrimitives::at);
         registry.registerPrimitive(PrimitiveNumbers::STRING_CONCAT, StringPrimitives::concatenate);
         registry.registerPrimitive(PrimitiveNumbers::STRING_SIZE, StringPrimitives::size);
+        registry.registerPrimitive(PrimitiveNumbers::STRING_AS_SYMBOL, StringPrimitives::asSymbol);
     }
 
 } // namespace smalltalk

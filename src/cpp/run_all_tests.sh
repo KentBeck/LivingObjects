@@ -91,8 +91,8 @@ mkdir -p build
 
 # Common dependencies
 BASIC_DEPS="build/object.o build/tagged_value.o build/symbol.o"
-PARSER_DEPS="$BASIC_DEPS build/simple_parser.o build/smalltalk_string.o build/smalltalk_class.o"
-COMPILER_DEPS="$PARSER_DEPS build/simple_compiler.o"
+PARSER_DEPS="$BASIC_DEPS build/simple_parser.o build/smalltalk_string.o build/smalltalk_class.o build/memory_manager.o"
+COMPILER_DEPS="$PARSER_DEPS build/simple_compiler.o build/smalltalk_exception.o"
 VM_DEPS="$COMPILER_DEPS build/memory_manager.o build/interpreter.o build/primitives.o build/primitives/object.o build/primitives/block.o build/primitives/array.o build/smalltalk_image.o build/simple_object.o"
 
 # 1. Test basic VM functionality with live expressions

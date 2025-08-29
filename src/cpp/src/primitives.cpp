@@ -2,6 +2,8 @@
 #include "../include/interpreter.h"
 #include "../include/smalltalk_class.h"
 #include "../include/object.h"
+#include "../include/smalltalk_string.h"
+#include "../include/method_compiler.h"
 
 // Forward declarations for primitive functions
 namespace smalltalk
@@ -80,6 +82,8 @@ namespace smalltalk
         extern void registerExceptionPrimitives();
         void registerIntegerPrimitives();
         void registerBlockPrimitives();
+        void registerSystemLoaderPrimitives();
+        void registerCompilerPrimitives();
 
         // Register all core primitive groups
         registerObjectPrimitives();
@@ -90,6 +94,8 @@ namespace smalltalk
         // Register integer and block primitives directly here
         registerIntegerPrimitives();
         registerBlockPrimitives();
+        registerSystemLoaderPrimitives();
+        registerCompilerPrimitives();
     }
 
     // Primitives namespace implementation
@@ -188,3 +194,63 @@ namespace smalltalk
     }
 
 } // namespace smalltalk
+
+// ---- SystemLoader primitives ----
+namespace smalltalk {
+namespace SystemLoaderPrimitives {
+    // Primitive 5000: SystemLoader>>start:
+    // Minimal bootstrap hook; currently returns true to signal success.
+    TaggedValue start(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter)
+    {
+        (void)receiver;
+        (void)interpreter;
+        Primitives::checkArgumentCount(args, 1, "SystemLoader>>start:");
+        return TaggedValue::trueValue();
+    }
+}
+
+void registerSystemLoaderPrimitives()
+{
+    PrimitiveRegistry& registry = PrimitiveRegistry::getInstance();
+    registry.registerPrimitive(PrimitiveNumbers::SYSTEM_LOADER_START, SystemLoaderPrimitives::start);
+}
+}
+
+// ---- Compiler bridge primitives ----
+namespace smalltalk {
+namespace CompilerPrimitives {
+
+    // Primitive 5100: Compiler>>compile:in:
+    // Uses the C++ MethodCompiler to compile and install a method from source into a class
+    TaggedValue compileIn(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter)
+    {
+        (void)receiver;
+        (void)interpreter;
+        Primitives::checkArgumentCount(args, 2, "Compiler>>compile:in:");
+
+        // arg0: String source
+        if (!StringUtils::isString(args[0])) {
+            throw PrimitiveFailure("First argument must be a String containing method source");
+        }
+        String* str = StringUtils::asString(args[0]);
+        const std::string& source = str->getContent();
+
+        // arg1: Class
+        if (!args[1].isPointer() || args[1].asObject()->header.getType() != ObjectType::CLASS) {
+            throw PrimitiveFailure("Second argument must be a Class");
+        }
+        Class* clazz = static_cast<Class*>(args[1].asObject());
+
+        // Use C++ MethodCompiler to compile and install
+        MethodCompiler::addSmalltalkMethod(clazz, source);
+
+        return TaggedValue::trueValue();
+    }
+}
+
+void registerCompilerPrimitives()
+{
+    PrimitiveRegistry& registry = PrimitiveRegistry::getInstance();
+    registry.registerPrimitive(PrimitiveNumbers::COMPILER_COMPILE_IN, CompilerPrimitives::compileIn);
+}
+}
