@@ -77,6 +77,12 @@ const int STRING_SIZE = 66;      // String size
 const int STRING_CONCAT = 65;    // String ,
 const int STRING_AS_SYMBOL = 67; // String asSymbol
 
+// Dictionary primitives
+const int DICT_AT = 700;     // Dictionary at:
+const int DICT_AT_PUT = 701; // Dictionary at:put:
+const int DICT_KEYS = 702;   // Dictionary keys
+const int DICT_SIZE = 703;   // Dictionary size
+
 // Exception handling primitives
 const int EXCEPTION_MARK =
     1000; // Special marker for exception handlers (always fails)

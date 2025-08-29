@@ -86,6 +86,7 @@ void PrimitiveRegistry::initializeCorePrimitives() {
   extern void registerExceptionPrimitives();
   void registerIntegerPrimitives();
   void registerBlockPrimitives();
+  void registerDictionaryPrimitives();
   void registerSystemLoaderPrimitives();
   void registerCompilerPrimitives();
 
@@ -98,6 +99,7 @@ void PrimitiveRegistry::initializeCorePrimitives() {
   // Register integer and block primitives directly here
   registerIntegerPrimitives();
   registerBlockPrimitives();
+  registerDictionaryPrimitives();
   registerSystemLoaderPrimitives();
   registerCompilerPrimitives();
 }
