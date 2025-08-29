@@ -236,6 +236,7 @@ Class *getIntegerClass();
 Class *getBooleanClass();
 Class *getTrueClass();
 Class *getFalseClass();
+Class *getUndefinedObjectClass();
 Class *getSymbolClass();
 Class *getStringClass();
 Class *getBlockClass();

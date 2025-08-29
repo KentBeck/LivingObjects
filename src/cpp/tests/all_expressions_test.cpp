@@ -91,6 +91,9 @@ void testExpressionWithExecuteMethod(const ExpressionTest &test) {
             Symbol *symbol = static_cast<Symbol *>(obj);
             resultStr = "Symbol(" + symbol->getName() + ")";
           }
+        } else if (obj && obj->header.getType() == ObjectType::CLASS) {
+          Class *cls = static_cast<Class *>(obj);
+          resultStr = cls->getName();
         } else {
           // Debug: show actual object type
           resultStr = "Object(type=" +
@@ -545,6 +548,9 @@ aBlock value.
       {"false", "false", true, "literals"},
       {"nil", "nil", true, "literals"},
       {"#abc", "Symbol(abc)", true, "literals"},
+      {"true class", "True", true, "literals"},
+      {"false class", "False", true, "literals"},
+      {"nil class", "UndefinedObject", true, "literals"},
 
       // Variable assignment - SHOULD PASS (now implemented!)
       {"| x | x := 42. x", "42", true, "variables"},
@@ -726,6 +732,9 @@ aBlock value.
               if (obj && obj->header.getType() == ObjectType::SYMBOL) {
                 Symbol *sym = static_cast<Symbol *>(obj);
                 resultStr = sym->toString();
+              } else if (obj && obj->header.getType() == ObjectType::CLASS) {
+                Class *cls = static_cast<Class *>(obj);
+                resultStr = cls->getName();
               } else if (obj && obj->header.getType() == ObjectType::ARRAY) {
                 // Format array as <Array size: N>
                 size_t arraySize = obj->header.size;

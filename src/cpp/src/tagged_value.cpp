@@ -27,9 +27,8 @@ Class *TaggedValue::getClass() const {
     return getBoolean() ? ClassUtils::getTrueClass()
                         : ClassUtils::getFalseClass();
   } else if (isNil()) {
-    // nil is a special case - it's the sole instance of UndefinedObject
-    // For now, we'll return Object class
-    return ClassUtils::getObjectClass();
+    // nil's class is UndefinedObject
+    return ClassUtils::getUndefinedObjectClass();
   } else if (isPointer()) {
     try {
       // Strings are byte-indexable and detected via utility

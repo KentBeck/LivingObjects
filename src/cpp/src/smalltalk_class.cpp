@@ -267,6 +267,7 @@ struct CoreClasses {
   Class *booleanClass = nullptr;
   Class *trueClass = nullptr;
   Class *falseClass = nullptr;
+  Class *undefinedObjectClass = nullptr;
   Class *symbolClass = nullptr;
   Class *stringClass = nullptr;
   Class *blockClass = nullptr;
@@ -337,6 +338,14 @@ void initializeCoreClasses() {
   core.falseClass->setFormat(ObjectFormat::POINTER_OBJECTS);
   core.falseClass->setClass(core.classClass);
   registry.registerClass("False", core.falseClass);
+
+  // Create UndefinedObject class (class of nil)
+  core.undefinedObjectClass =
+      new Class("UndefinedObject", core.objectClass, nullptr);
+  core.undefinedObjectClass->setInstanceSize(0);
+  core.undefinedObjectClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+  core.undefinedObjectClass->setClass(core.classClass);
+  registry.registerClass("UndefinedObject", core.undefinedObjectClass);
 
   // Create Symbol class
   core.symbolClass = new Class("Symbol", core.objectClass, nullptr);
@@ -476,6 +485,9 @@ Class *getIntegerClass() { return CoreClasses::getInstance().integerClass; }
 Class *getBooleanClass() { return CoreClasses::getInstance().booleanClass; }
 Class *getTrueClass() { return CoreClasses::getInstance().trueClass; }
 Class *getFalseClass() { return CoreClasses::getInstance().falseClass; }
+Class *getUndefinedObjectClass() {
+  return CoreClasses::getInstance().undefinedObjectClass;
+}
 Class *getSymbolClass() { return CoreClasses::getInstance().symbolClass; }
 Class *getStringClass() { return CoreClasses::getInstance().stringClass; }
 Class *getBlockClass() { return CoreClasses::getInstance().blockClass; }
