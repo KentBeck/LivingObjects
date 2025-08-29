@@ -57,8 +57,7 @@ TaggedValue value(TaggedValue receiver, const std::vector<TaggedValue> &args,
   // Set up execution context for the block
   size_t tempVarCount = blockMethod->getTempVars().size();
   size_t argCount = args.size();
-  size_t contextSize =
-      std::max(tempVarCount, argCount) + 20; // temp vars + args + stack space
+  size_t contextSize = tempVarCount + 20; // temp vars + some stack space
 
   TaggedValue selfValue =
       homeContext->self; // Block executes with home context's self
@@ -68,6 +67,7 @@ TaggedValue value(TaggedValue receiver, const std::vector<TaggedValue> &args,
   MethodContext *blockMethodContext =
       interpreter.getMemoryManager().allocateMethodContext(
           contextSize, selfValue, senderValue,
+          TaggedValue::fromObject(homeContext),
           blockMethod // Pass the compiled method
       );
 
@@ -76,38 +76,15 @@ TaggedValue value(TaggedValue receiver, const std::vector<TaggedValue> &args,
       reinterpret_cast<char *>(blockMethodContext) + sizeof(MethodContext);
   TaggedValue *methodSlots = reinterpret_cast<TaggedValue *>(methodContextEnd);
 
-  // LEXICAL SCOPING: Get home context's temporary variables for copying
-  char *homeContextEnd =
-      reinterpret_cast<char *>(homeContext) + sizeof(MethodContext);
-  TaggedValue *homeSlots = reinterpret_cast<TaggedValue *>(homeContextEnd);
-
-  // Get the home context's method to know how many home variables there are
-  // We need to find the home method's CompiledMethod to get its temp var count
-  // For now, let's use a simple approach: copy all home context variables
-  // and let the compiler indexing handle the rest
-
-  // LEXICAL SCOPING: The block's temp vars are structured as: [home vars][block
-  // params][block temps] We need to copy the home context's variables to the
-  // first slots
-
-  // Get the number of home variables from the compiled method
-  size_t homeVarCount = blockMethod->homeVarCount;
-
-  // Copy home context variables to the first slots
-  for (size_t i = 0; i < homeVarCount && i < tempVarCount; i++) {
-    methodSlots[i] = homeSlots[i];
+  // Initialize all temps to nil; we do not copy home vars into local slots.
+  for (size_t i = 0; i < tempVarCount; i++) {
+    methodSlots[i] = TaggedValue::nil();
   }
 
-  // Copy block arguments to temporary variable slots after home variables
-  // In Smalltalk, block parameters become temporary variables after outer scope
-  // vars
+  // Place block arguments immediately after home variables
+  size_t homeVarCount = blockMethod->homeVarCount;
   for (size_t i = 0; i < argCount && (homeVarCount + i) < tempVarCount; i++) {
     methodSlots[homeVarCount + i] = args[i];
-  }
-
-  // Initialize remaining temporary variables to nil
-  for (size_t i = homeVarCount + argCount; i < tempVarCount; i++) {
-    methodSlots[i] = TaggedValue::nil();
   }
 
   // Set stack pointer to start after temporary variables

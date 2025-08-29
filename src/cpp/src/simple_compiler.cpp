@@ -214,12 +214,13 @@ void SimpleCompiler::compileVariable(const VariableNode &node,
   const std::string &varName = node.getName();
 
   // Find the variable in temporary variables
-  for (size_t i = 0; i < tempVars_.size(); i++) {
-    if (tempVars_[i] == varName) {
+  // Search from innermost to outermost to respect shadowing
+  for (size_t ri = tempVars_.size(); ri-- > 0;) {
+    if (tempVars_[ri] == varName) {
       // Generate PUSH_TEMPORARY_VARIABLE bytecode
       method.addBytecode(
           static_cast<uint8_t>(Bytecode::PUSH_TEMPORARY_VARIABLE));
-      method.addOperand(static_cast<uint32_t>(i));
+      method.addOperand(static_cast<uint32_t>(ri));
       return;
     }
   }
@@ -254,15 +255,16 @@ void SimpleCompiler::compileAssignment(const AssignmentNode &node,
   compileNode(*node.getValue(), method);
 
   // Find the variable in temporary variables
-  for (size_t i = 0; i < tempVars_.size(); i++) {
-    if (tempVars_[i] == varName) {
+  // Search from innermost to outermost to respect shadowing
+  for (size_t ri = tempVars_.size(); ri-- > 0;) {
+    if (tempVars_[ri] == varName) {
       // Duplicate the value so assignment returns the assigned value
       method.addBytecode(static_cast<uint8_t>(Bytecode::DUPLICATE));
 
       // Generate STORE_TEMPORARY_VARIABLE bytecode (this will pop one copy)
       method.addBytecode(
           static_cast<uint8_t>(Bytecode::STORE_TEMPORARY_VARIABLE));
-      method.addOperand(static_cast<uint32_t>(i));
+      method.addOperand(static_cast<uint32_t>(ri));
       return;
     }
   }

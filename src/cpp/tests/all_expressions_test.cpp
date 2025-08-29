@@ -228,6 +228,10 @@ void testExpression(const ExpressionTest &test) {
           // Format symbol as Symbol(content)
           Symbol *symbol = static_cast<Symbol *>(obj);
           resultStr = "Symbol(" + symbol->getName() + ")";
+        } else if (obj && obj->header.getType() == ObjectType::CLASS) {
+          // For class objects, return their name
+          Class *cls = static_cast<Class *>(obj);
+          resultStr = cls->getName();
         } else {
           resultStr = "Object";
         }
@@ -566,6 +570,48 @@ aBlock value.
       {"| z y | y := 3. z := 2. [z + y] value", "5", true, "blocks"},
       {"[self] value", "Object", true, "blocks"},
       {"[| x | [| y | y := 5. x := y] value. x] value", "5", true, "blocks"},
+      {"[ | x | [| y | [| z | x := 'x'. y := 'y'. z:= 'z'] value. x , y] "
+       "value] value",
+       "xy", true, "blocks"},
+
+      // Shadowing and scope resolution
+      // Param shadows outer temp; outer remains unchanged
+      {"| x | x := 'outer'. [:x | x := 'inner'. x] value: 'param'. x", "outer",
+       true, "shadowing"},
+      // Block temp shadows outer temp; outer remains unchanged
+      {"| x | x := 'outer'. [| x | x := 'inner'. x] value. x", "outer", true,
+       "shadowing"},
+      // Inner read chooses nearest (param) over outer
+      {"| x | x := 'outer'. [:x | [| z | x] value] value: 'param'", "param",
+       true, "shadowing"},
+      // Deep inner write chooses nearest (param), not outer
+      {"| x | x := 'outer'. [:x | [| z | x := 'deep'. x] value. x] value: "
+       "'param'. x",
+       "outer", true, "shadowing"},
+      // Deep inner write to uniquely named outer succeeds through home chain
+      {"| x | x := 'outer'. [| y | [| z | x := 'changed'] value. y] value. x",
+       "changed", true, "shadowing"},
+
+      // Sibling blocks capture same outer and apply sequential mutations
+      {"| x | x := 'O'. [x := x , '1'] value. [x := x , '2'] value. x", "O12",
+       true, "shadowing"},
+
+      // Deep capture with unrelated middle temp; result uses outer+middle
+      {"| a | a := 'A'. [| y | [| z | a := a , '1'. y := 'Y'. z := 'Z'] value. "
+       "a , y] value",
+       "A1Y", true, "shadowing"},
+
+      // Triple shadow chain; return inner-most value; outer unchanged
+      {"| x | x := 'O'. [| x | x := 'M'. [| x | x := 'I'. x] value] value", "I",
+       true, "shadowing"},
+
+      // Inner block reads outer and param; ensure lexical read of outer
+      {"| x | x := 'o'. [:y | [| z | x , y] value] value: 'mid'", "omid", true,
+       "shadowing"},
+
+      // Middle shadows outer; inner writes/reads nearest shadow, not outer
+      {"| a | a := 'A'. [| a | a := 'M'. [| b | a := a , 'i'. a] value] value",
+       "Mi", true, "shadowing"},
 
       // Block methods - test that blocks can call their own methods
       {"[42] identity", "Object", true, "block_methods"},

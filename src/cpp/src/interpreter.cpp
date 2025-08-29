@@ -38,7 +38,7 @@ Object *Interpreter::executeMethod(CompiledMethod *method, Object *receiver,
                                 ? TaggedValue::fromObject(previousContext)
                                 : TaggedValue::nil();
   MethodContext *context = memoryManager.allocateMethodContext(
-      10 + args.size(), receiverValue, senderValue, method);
+      10 + args.size(), receiverValue, senderValue, TaggedValue::nil(), method);
 
   // Get the variable-sized storage area safely
   // Memory layout: [MethodContext][TaggedValue slots...]
@@ -80,9 +80,10 @@ TaggedValue Interpreter::executeCompiledMethod(const CompiledMethod &method) {
   TaggedValue selfValue = TaggedValue::fromObject(self);
   TaggedValue senderValue = TaggedValue::nil(); // No sender
   MethodContext *methodContext = memoryManager.allocateMethodContext(
-      16,          // context size (enough for stack and temporaries)
-      selfValue,   // self as TaggedValue
-      senderValue, // sender as TaggedValue
+      16,                 // context size (enough for stack and temporaries)
+      selfValue,          // self as TaggedValue
+      senderValue,        // sender as TaggedValue
+      TaggedValue::nil(), // home (none)
       const_cast<CompiledMethod *>(&method) // compiled method pointer
   );
 
@@ -381,19 +382,119 @@ void Interpreter::createBlock() {
 void Interpreter::pushTemporaryVariable() {
   uint32_t tempIndex = readUint32FromBytecode(
       activeContext->method->getBytecodes(), activeContext);
-  TaggedValue *slots = reinterpret_cast<TaggedValue *>(
-      reinterpret_cast<char *>(activeContext) + sizeof(MethodContext));
-  push(slots[tempIndex]);
+  CompiledMethod *m = activeContext->method;
+  size_t homeCount = m->homeVarCount;
+
+  // Access own context slots helper
+  auto ownSlots = [&](MethodContext *ctx) -> TaggedValue * {
+    return reinterpret_cast<TaggedValue *>(reinterpret_cast<char *>(ctx) +
+                                           sizeof(MethodContext));
+  };
+
+  if (homeCount > 0 && tempIndex < homeCount) {
+    // Resolve variable by name through the home chain to support nested blocks
+    const std::vector<std::string> &temps = m->getTempVars();
+    if (tempIndex >= temps.size()) {
+      throw std::runtime_error("Temp index out of bounds");
+    }
+    const std::string &varName = temps[tempIndex];
+
+    // Walk home chain to find the owning context that actually defines varName
+    MethodContext *ctx = nullptr;
+    if (activeContext->home.isPointer()) {
+      ctx = static_cast<MethodContext *>(activeContext->home.asObject());
+    }
+
+    while (ctx) {
+      CompiledMethod *ownerMethod = ctx->method;
+      const auto &ownerTemps = ownerMethod->getTempVars();
+      size_t ownerHomeCount = ownerMethod->homeVarCount;
+      // Search from innermost in this context to respect shadowing/order
+      for (size_t i = ownerTemps.size(); i-- > 0;) {
+        if (ownerTemps[i] == varName) {
+          // Only read actual locals/params in this context; skip home-var
+          // placeholders
+          if (i >= ownerHomeCount) {
+            push(ownSlots(ctx)[i]);
+            return;
+          } else {
+            // Found a placeholder; ignore and search outward
+            break;
+          }
+        }
+      }
+      // Walk further out if not found here
+      if (ctx->home.isPointer()) {
+        ctx = static_cast<MethodContext *>(ctx->home.asObject());
+      } else {
+        ctx = nullptr;
+      }
+    }
+
+    // If not found in any home, this is an error
+    throw std::runtime_error("Variable not found in home chain: " + varName);
+  } else {
+    // Regular local/param in this context
+    push(ownSlots(activeContext)[tempIndex]);
+  }
 }
 
 void Interpreter::storeTemporaryVariable() {
   uint32_t tempIndex = readUint32FromBytecode(
       activeContext->method->getBytecodes(), activeContext);
   TaggedValue value = pop();
-  TaggedValue *slots = reinterpret_cast<TaggedValue *>(
-      reinterpret_cast<char *>(activeContext) + sizeof(MethodContext));
-  slots[tempIndex] = value;
-  push(value); // Leave the value on the stack
+  CompiledMethod *m = activeContext->method;
+  size_t homeCount = m->homeVarCount;
+
+  auto slotsOf = [&](MethodContext *ctx) -> TaggedValue * {
+    return reinterpret_cast<TaggedValue *>(reinterpret_cast<char *>(ctx) +
+                                           sizeof(MethodContext));
+  };
+
+  if (homeCount > 0 && tempIndex < homeCount) {
+    // Resolve by name through home chain and write to the owning context
+    const std::vector<std::string> &temps = m->getTempVars();
+    if (tempIndex >= temps.size()) {
+      throw std::runtime_error("Temp index out of bounds");
+    }
+    const std::string &varName = temps[tempIndex];
+
+    MethodContext *ctx = nullptr;
+    if (activeContext->home.isPointer()) {
+      ctx = static_cast<MethodContext *>(activeContext->home.asObject());
+    }
+
+    while (ctx) {
+      CompiledMethod *ownerMethod = ctx->method;
+      const auto &ownerTemps = ownerMethod->getTempVars();
+      size_t ownerHomeCount = ownerMethod->homeVarCount;
+      // Search from innermost in this context to respect shadowing/order
+      for (size_t i = ownerTemps.size(); i-- > 0;) {
+        if (ownerTemps[i] == varName) {
+          if (i >= ownerHomeCount) {
+            // Real local/param in this context
+            slotsOf(ctx)[i] = value;
+            push(value); // Leave value on stack
+            return;
+          } else {
+            // Placeholder for an outer home var; skip writing here, go outward
+            break;
+          }
+        }
+      }
+      if (ctx->home.isPointer()) {
+        ctx = static_cast<MethodContext *>(ctx->home.asObject());
+      } else {
+        ctx = nullptr;
+      }
+    }
+
+    throw std::runtime_error("Variable not found in home chain: " + varName);
+  } else {
+    // Local/param in current context
+    slotsOf(activeContext)[tempIndex] = value;
+    push(value);
+  }
 }
 
 void Interpreter::popStack() {
@@ -568,6 +669,7 @@ TaggedValue Interpreter::sendMessage(TaggedValue receiver,
         16 + method->getTempVars().size(),      // stack size + temp vars
         receiver,                               // self
         TaggedValue::fromObject(activeContext), // sender
+        TaggedValue::nil(),                     // home (none)
         method.get()                            // compiled method pointer
     );
 
