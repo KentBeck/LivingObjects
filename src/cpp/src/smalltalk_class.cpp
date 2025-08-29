@@ -393,6 +393,13 @@ void initializeCoreClasses() {
   core.blockClass->setClass(core.classClass);
   registry.registerClass("Block", core.blockClass);
 
+  // Create Dictionary class
+  Class *dictionaryClass = new Class("Dictionary", core.objectClass, nullptr);
+  dictionaryClass->setInstanceSize(0);
+  dictionaryClass->setFormat(ObjectFormat::POINTER_OBJECTS);
+  dictionaryClass->setClass(core.classClass);
+  registry.registerClass("Dictionary", dictionaryClass);
+
   // Add primitive methods to Object class
   addPrimitiveMethod(core.objectClass, "new", 70);      // Object new
   addPrimitiveMethod(core.objectClass, "basicNew", 71); // Object basicNew
@@ -457,6 +464,12 @@ void initializeCoreClasses() {
                      PrimitiveNumbers::BLOCK_VALUE); // Block value
   addPrimitiveMethod(core.blockClass, "value:",
                      PrimitiveNumbers::BLOCK_VALUE_ARG); // Block value:
+
+  // Add primitive methods to Dictionary class
+  addPrimitiveMethod(dictionaryClass, "at:", PrimitiveNumbers::DICT_AT);
+  addPrimitiveMethod(dictionaryClass, "at:put:", PrimitiveNumbers::DICT_AT_PUT);
+  addPrimitiveMethod(dictionaryClass, "keys", PrimitiveNumbers::DICT_KEYS);
+  addPrimitiveMethod(dictionaryClass, "size", PrimitiveNumbers::DICT_SIZE);
 
   // Install minimal boolean control-flow methods in True and False
   // True

@@ -232,6 +232,14 @@ void testExpression(const ExpressionTest &test) {
           // For class objects, return their name
           Class *cls = static_cast<Class *>(obj);
           resultStr = cls->getName();
+        } else if (obj) {
+          // Show dictionaries nicely by class name
+          Class *cls = obj->getClass();
+          if (cls && cls->getName() == std::string("Dictionary")) {
+            resultStr = "<Dictionary>";
+          } else {
+            resultStr = "Object";
+          }
         } else {
           resultStr = "Object";
         }
@@ -638,7 +646,7 @@ aBlock value.
       {"#(1 2 3) size", "3", true, "collections"},
 
       // Dictionary operations - SHOULD FAIL (not implemented)
-      {"Dictionary new", "<Dictionary>", false, "dictionaries"},
+      {"Dictionary new", "<Dictionary>", true, "dictionaries"},
 
       // Class creation - SHOULD FAIL (not implemented)
       {"Object subclass: #Point", "<Class: Point>", false, "class_creation"},
@@ -717,6 +725,18 @@ aBlock value.
           } else if (obj && obj->header.getType() == ObjectType::ARRAY) {
             size_t arraySize = obj->header.size;
             resultStr = "<Array size: " + std::to_string(arraySize) + ">";
+          } else if (obj) {
+            // Pretty-print Dictionary instances
+            try {
+              Class *cls = obj->getClass();
+              if (cls && cls->getName() == std::string("Dictionary")) {
+                resultStr = "<Dictionary>";
+              } else {
+                resultStr = "Object";
+              }
+            } catch (...) {
+              resultStr = "Object";
+            }
           } else {
             resultStr = "Object";
           }

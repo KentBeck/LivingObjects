@@ -97,10 +97,10 @@ mkdir -p build
 # Common dependencies
 BASIC_DEPS="build/object.o build/tagged_value.o build/symbol.o"
 PARSER_DEPS="$BASIC_DEPS build/simple_parser.o build/smalltalk_string.o build/smalltalk_class.o build/memory_manager.o"
-COMPILER_DEPS="$PARSER_DEPS build/simple_compiler.o build/smalltalk_exception.o build/method_compiler.o"
+COMPILER_DEPS="$PARSER_DEPS build/simple_compiler.o build/smalltalk_exception.o build/method_compiler.o build/globals.o"
 VM_DEPS="$COMPILER_DEPS \
   build/interpreter.o \
-  build/primitives.o build/primitives/object.o build/primitives/block.o build/primitives/array.o build/primitives/string.o build/primitives/integer.o build/primitives/exception.o \
+  build/primitives.o build/primitives/object.o build/primitives/block.o build/primitives/array.o build/primitives/string.o build/primitives/integer.o build/primitives/exception.o build/primitives/dictionary.o \
   build/smalltalk_image.o build/smalltalk_image_interpreter.o \
   build/smalltalk_vm.o \
   build/simple_object.o"

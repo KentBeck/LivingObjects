@@ -1,4 +1,5 @@
 #include "simple_compiler.h"
+#include "globals.h"
 #include "interpreter.h"
 #include "memory_manager.h"
 #include "smalltalk_class.h"
@@ -225,15 +226,26 @@ void SimpleCompiler::compileVariable(const VariableNode &node,
     }
   }
 
-  // Check if it's a global class name
-  Class *globalClass = ClassRegistry::getInstance().getClass(varName);
-  if (globalClass != nullptr) {
-    // Add the class as a literal and push it
-    uint32_t literalIndex =
-        method.addLiteral(TaggedValue::fromObject(globalClass));
-    method.addBytecode(static_cast<uint8_t>(Bytecode::PUSH_LITERAL));
-    method.addOperand(literalIndex);
-    return;
+  // Check if it's a global in Smalltalk dictionary
+  if (Globals::isInitialized()) {
+    Object *global = Globals::get(varName);
+    if (global != nullptr) {
+      uint32_t literalIndex =
+          method.addLiteral(TaggedValue::fromObject(global));
+      method.addBytecode(static_cast<uint8_t>(Bytecode::PUSH_LITERAL));
+      method.addOperand(literalIndex);
+      return;
+    }
+  } else {
+    // Fallback to class registry during early bootstrap
+    Class *globalClass = ClassRegistry::getInstance().getClass(varName);
+    if (globalClass != nullptr) {
+      uint32_t literalIndex =
+          method.addLiteral(TaggedValue::fromObject(globalClass));
+      method.addBytecode(static_cast<uint8_t>(Bytecode::PUSH_LITERAL));
+      method.addOperand(literalIndex);
+      return;
+    }
   }
 
   // Variable not found - this is an error
