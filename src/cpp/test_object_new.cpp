@@ -4,13 +4,13 @@
 using namespace smalltalk;
 
 int main() {
-    try {
-        std::cout << "Testing 'Object new' parsing..." << std::endl;
-        SimpleParser parser("Object new");
-        auto method = parser.parseMethod();
-        std::cout << "✓ Parse successful!" << std::endl;
-    } catch (const std::exception& e) {
-        std::cout << "✗ Parse error: " << e.what() << std::endl;
-    }
-    return 0;
+  try {
+    std::cout << "Testing 'Object new' parsing..." << std::endl;
+    SimpleParser parser("Object new");
+    auto method = parser.parseMethod();
+    std::cout << "✓ Parse successful!" << std::endl;
+  } catch (const std::exception &e) {
+    std::cout << "✗ Parse error: " << e.what() << std::endl;
+  }
+  return 0;
 }

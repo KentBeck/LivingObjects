@@ -1,100 +1,102 @@
 #pragma once
 
 #include "bytecode.h"
+#include "compiled_method.h"
 #include "context.h"
 #include "memory_manager.h"
 #include "object.h"
 #include "tagged_value.h"
-#include "compiled_method.h"
 
 #include <cstdint>
 #include <vector>
 
-namespace smalltalk
-{
+namespace smalltalk {
 
-    class SmalltalkImage; // Forward declaration
+class SmalltalkImage; // Forward declaration
 
-    class Interpreter
-    {
-    public:
-        // Constructor
-        Interpreter(MemoryManager &memory, SmalltalkImage &image);
+class Interpreter {
+public:
+  // Constructor
+  Interpreter(MemoryManager &memory, SmalltalkImage &image);
 
-        // Execute method
-        Object *executeMethod(CompiledMethod *method, Object *receiver, std::vector<Object *> &args);
+  // Execute method
+  Object *executeMethod(CompiledMethod *method, Object *receiver,
+                        std::vector<Object *> &args);
 
-        // Execute compiled method directly
-        // Suspicious that these are all so close
-        TaggedValue executeCompiledMethod(const CompiledMethod &method);
-        TaggedValue executeCompiledMethod(const CompiledMethod &method, MethodContext *context);
-        TaggedValue executeMethodContext(MethodContext *context);
-        TaggedValue executeMethodContext(MethodContext *context, CompiledMethod *method);
+  // Execute compiled method directly
+  // Suspicious that these are all so close
+  TaggedValue executeCompiledMethod(const CompiledMethod &method);
+  TaggedValue executeCompiledMethod(const CompiledMethod &method,
+                                    MethodContext *context);
+  TaggedValue executeMethodContext(MethodContext *context);
+  TaggedValue executeMethodContext(MethodContext *context,
+                                   CompiledMethod *method);
 
-        // Core bytecode execution engine
-        TaggedValue execute();
+  // Core bytecode execution engine
+  TaggedValue execute();
 
-        // Bytecode operation helpers
-        void pushLiteral();
-        void pushSelf();
-        void sendMessageBytecode();
-        void createBlock();
-        void pushTemporaryVariable();
-        void storeTemporaryVariable();
-        void popStack();
-        void duplicate();
-        void returnStackTop();
+  // Bytecode operation helpers
+  void pushLiteral();
+  void pushSelf();
+  void sendMessageBytecode();
+  void createBlock();
+  void pushTemporaryVariable();
+  void storeTemporaryVariable();
+  void popStack();
+  void duplicate();
+  void returnStackTop();
 
+  // Stack operations
+  void push(TaggedValue value);
+  TaggedValue pop();
+  TaggedValue top();
 
-        // Stack operations
-        void push(TaggedValue value);
-        TaggedValue pop();
-        TaggedValue top();
+  // Context access
+  MethodContext *getCurrentContext() const { return activeContext; }
+  void setCurrentContext(MethodContext *context) { activeContext = context; }
 
-        // Context access
-        MethodContext *getCurrentContext() const { return activeContext; }
-        void setCurrentContext(MethodContext *context) { activeContext = context; }
+  // Memory manager access
+  MemoryManager &getMemoryManager() { return memoryManager; }
 
-        // Memory manager access
-        MemoryManager &getMemoryManager() { return memoryManager; }
+  // Image access
+  SmalltalkImage &getImage() { return image; }
 
-        // Image access
-        SmalltalkImage &getImage() { return image; }
+  // TaggedValue message sending
+  TaggedValue sendMessage(TaggedValue receiver, const std::string &selector,
+                          const std::vector<TaggedValue> &args);
 
-        // TaggedValue message sending
-        TaggedValue sendMessage(TaggedValue receiver, const std::string &selector, const std::vector<TaggedValue> &args);
+  // Get object class for TaggedValue
+  Class *getObjectClass(TaggedValue value);
 
-        // Get object class for TaggedValue
-        Class *getObjectClass(TaggedValue value);
+  // Exception handling
+  bool findExceptionHandler(MethodContext *&handlerContext, int &handlerPC);
+  void unwindToContext(MethodContext *targetContext);
 
-        // Exception handling
-        bool findExceptionHandler(MethodContext *&handlerContext, int &handlerPC);
-        void unwindToContext(MethodContext *targetContext);
+private:
+  // Memory manager
+  MemoryManager &memoryManager;
+  SmalltalkImage &image;
 
-    private:
-        // Memory manager
-        MemoryManager &memoryManager;
-        SmalltalkImage &image;
+  // Current context and chunk
+  MethodContext *activeContext = nullptr;
+  StackChunk *currentChunk = nullptr;
 
-        // Current context and chunk
-        MethodContext *activeContext = nullptr;
-        StackChunk *currentChunk = nullptr;
-        
-        // Storage for final return value
-        TaggedValue lastReturnValue = TaggedValue::nil();
+  // Storage for final return value
+  TaggedValue lastReturnValue = TaggedValue::nil();
 
+  // Helper for message sending
+  Object *sendMessage(Object *receiver, Object *selector,
+                      std::vector<Object *> &args);
 
-        // Helper for message sending
-        Object *sendMessage(Object *receiver, Object *selector, std::vector<Object *> &args);
+  // Simple evaluation method for testing (temporarily disabled)
+  // TaggedValue evaluate(const std::string& expression);
 
-        // Simple evaluation method for testing (temporarily disabled)
-        // TaggedValue evaluate(const std::string& expression);
+  // Context switching
+  void switchContext(MethodContext *newContext);
 
-        // Context switching
-        void switchContext(MethodContext *newContext);
-
-        // Bytecode reading helper
-        uint32_t readUint32FromBytecode(const std::vector<uint8_t> &bytecodes, MethodContext *context);
-    };
+  // Bytecode reading helper
+  uint32_t readUint32FromBytecode(const std::vector<uint8_t> &bytecodes,
+                                  MethodContext *context);
+};
 
 } // namespace smalltalk

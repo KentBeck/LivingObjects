@@ -14,11 +14,11 @@ class Interpreter;
  */
 namespace BlockPrimitives {
 
-    /**
-     * Implements Block>>value.
-     */
-    TaggedValue value(TaggedValue receiver, const std::vector<TaggedValue>& args, Interpreter& interpreter);
-
+/**
+ * Implements Block>>value.
+ */
+TaggedValue value(TaggedValue receiver, const std::vector<TaggedValue> &args,
+                  Interpreter &interpreter);
 
 } // namespace BlockPrimitives
 

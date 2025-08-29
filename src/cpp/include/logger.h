@@ -1,121 +1,124 @@
 #pragma once
 
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <memory>
 #include <chrono>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
 
 namespace smalltalk {
 
 enum class LogLevel {
-    DEBUG_LEVEL = 0,
-    INFO = 1,
-    WARN = 2,
-    ERROR = 3,
-    FATAL = 4
+  DEBUG_LEVEL = 0,
+  INFO = 1,
+  WARN = 2,
+  ERROR = 3,
+  FATAL = 4
 };
 
 class Logger {
 public:
-    static Logger& getInstance() {
-        static Logger instance;
-        return instance;
+  static Logger &getInstance() {
+    static Logger instance;
+    return instance;
+  }
+
+  void setLevel(LogLevel level) { currentLevel = level; }
+
+  LogLevel getLevel() const { return currentLevel; }
+
+  void setOutput(const std::string &filename) {
+    logFile = std::make_unique<std::ofstream>(filename, std::ios::app);
+    useFile = true;
+  }
+
+  void setConsoleOutput(bool enabled) { useConsole = enabled; }
+
+  void log(LogLevel level, const std::string &message,
+           const std::string &context = "") {
+    if (level < currentLevel)
+      return;
+
+    std::string levelStr = getLevelString(level);
+    std::string timestamp = getCurrentTimestamp();
+    std::string formattedMessage = timestamp + " [" + levelStr + "]";
+
+    if (!context.empty()) {
+      formattedMessage += " (" + context + ")";
     }
 
-    void setLevel(LogLevel level) {
-        currentLevel = level;
+    formattedMessage += ": " + message;
+
+    if (useConsole) {
+      std::cout << formattedMessage << std::endl;
     }
 
-    LogLevel getLevel() const {
-        return currentLevel;
+    if (useFile && logFile) {
+      *logFile << formattedMessage << std::endl;
+      logFile->flush();
     }
+  }
 
-    void setOutput(const std::string& filename) {
-        logFile = std::make_unique<std::ofstream>(filename, std::ios::app);
-        useFile = true;
-    }
+  // Convenience methods
+  void debug(const std::string &message, const std::string &context = "") {
+    log(LogLevel::DEBUG_LEVEL, message, context);
+  }
 
-    void setConsoleOutput(bool enabled) {
-        useConsole = enabled;
-    }
+  void info(const std::string &message, const std::string &context = "") {
+    log(LogLevel::INFO, message, context);
+  }
 
-    void log(LogLevel level, const std::string& message, const std::string& context = "") {
-        if (level < currentLevel) return;
+  void warn(const std::string &message, const std::string &context = "") {
+    log(LogLevel::WARN, message, context);
+  }
 
-        std::string levelStr = getLevelString(level);
-        std::string timestamp = getCurrentTimestamp();
-        std::string formattedMessage = timestamp + " [" + levelStr + "]";
-        
-        if (!context.empty()) {
-            formattedMessage += " (" + context + ")";
-        }
-        
-        formattedMessage += ": " + message;
+  void error(const std::string &message, const std::string &context = "") {
+    log(LogLevel::ERROR, message, context);
+  }
 
-        if (useConsole) {
-            std::cout << formattedMessage << std::endl;
-        }
-
-        if (useFile && logFile) {
-            *logFile << formattedMessage << std::endl;
-            logFile->flush();
-        }
-    }
-
-    // Convenience methods
-    void debug(const std::string& message, const std::string& context = "") {
-        log(LogLevel::DEBUG_LEVEL, message, context);
-    }
-
-    void info(const std::string& message, const std::string& context = "") {
-        log(LogLevel::INFO, message, context);
-    }
-
-    void warn(const std::string& message, const std::string& context = "") {
-        log(LogLevel::WARN, message, context);
-    }
-
-    void error(const std::string& message, const std::string& context = "") {
-        log(LogLevel::ERROR, message, context);
-    }
-
-    void fatal(const std::string& message, const std::string& context = "") {
-        log(LogLevel::FATAL, message, context);
-    }
+  void fatal(const std::string &message, const std::string &context = "") {
+    log(LogLevel::FATAL, message, context);
+  }
 
 private:
-    Logger() : currentLevel(LogLevel::INFO), useConsole(true), useFile(false) {}
+  Logger() : currentLevel(LogLevel::INFO), useConsole(true), useFile(false) {}
 
-    std::string getLevelString(LogLevel level) {
-        switch (level) {
-            case LogLevel::DEBUG_LEVEL: return "DEBUG";
-            case LogLevel::INFO:  return "INFO";
-            case LogLevel::WARN:  return "WARN";
-            case LogLevel::ERROR: return "ERROR";
-            case LogLevel::FATAL: return "FATAL";
-            default: return "UNKNOWN";
-        }
+  std::string getLevelString(LogLevel level) {
+    switch (level) {
+    case LogLevel::DEBUG_LEVEL:
+      return "DEBUG";
+    case LogLevel::INFO:
+      return "INFO";
+    case LogLevel::WARN:
+      return "WARN";
+    case LogLevel::ERROR:
+      return "ERROR";
+    case LogLevel::FATAL:
+      return "FATAL";
+    default:
+      return "UNKNOWN";
     }
+  }
 
-    std::string getCurrentTimestamp() {
-        auto now = std::chrono::system_clock::now();
-        auto time_t = std::chrono::system_clock::to_time_t(now);
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-            now.time_since_epoch()) % 1000;
+  std::string getCurrentTimestamp() {
+    auto now = std::chrono::system_clock::now();
+    auto time_t = std::chrono::system_clock::to_time_t(now);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                  now.time_since_epoch()) %
+              1000;
 
-        std::stringstream ss;
-        ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
-        ss << '.' << std::setfill('0') << std::setw(3) << ms.count();
-        return ss.str();
-    }
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
+    ss << '.' << std::setfill('0') << std::setw(3) << ms.count();
+    return ss.str();
+  }
 
-    LogLevel currentLevel;
-    bool useConsole;
-    bool useFile;
-    std::unique_ptr<std::ofstream> logFile;
+  LogLevel currentLevel;
+  bool useConsole;
+  bool useFile;
+  std::unique_ptr<std::ofstream> logFile;
 };
 
 // Convenient macros for logging
