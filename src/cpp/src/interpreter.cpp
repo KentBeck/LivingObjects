@@ -1,4 +1,5 @@
 #include "interpreter.h"
+#include "globals.h"
 #include "logger.h"
 #include "primitives.h"
 #include "simple_parser.h"
@@ -128,7 +129,7 @@ TaggedValue Interpreter::executeMethodContext(MethodContext *context,
                                               CompiledMethod *method) {
   // Set up execution state using context-based stack
   MethodContext *savedContext = activeContext;
-  activeContext = context;
+  switchContext(context);
   context->method = method;
 
   // Execute bytecode using the core execution engine
@@ -523,7 +524,7 @@ void Interpreter::returnStackTop() {
   // Switch to sender context
   MethodContext *senderContext =
       static_cast<MethodContext *>(activeContext->sender.asObject());
-  activeContext = senderContext;
+  switchContext(senderContext);
 
   // Push return value onto sender's stack
   push(returnValue);
@@ -721,6 +722,22 @@ Class *Interpreter::getObjectClass(TaggedValue value) {
 void Interpreter::switchContext(MethodContext *newContext) {
   // Set the new active context
   activeContext = newContext;
+  // Reflect active context into Smalltalk globals if available
+  if (newContext && Globals::isInitialized()) {
+    Object *smalltalk = Globals::getSmalltalk();
+    if (smalltalk) {
+      Symbol *key = Symbol::intern("ActiveContext");
+      std::vector<TaggedValue> args;
+      args.push_back(TaggedValue::fromObject(key));
+      args.push_back(TaggedValue::fromObject(newContext));
+      try {
+        Primitives::callPrimitive(PrimitiveNumbers::DICT_AT_PUT,
+                                  TaggedValue::fromObject(smalltalk), args,
+                                  *this);
+      } catch (...) {
+      }
+    }
+  }
 }
 
 bool Interpreter::findExceptionHandler(MethodContext *&handlerContext,

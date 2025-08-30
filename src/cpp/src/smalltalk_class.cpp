@@ -393,9 +393,9 @@ void initializeCoreClasses() {
   core.blockClass->setClass(core.classClass);
   registry.registerClass("Block", core.blockClass);
 
-  // Create Dictionary class
+  // Create Dictionary class (two named instance variables: keys, values)
   Class *dictionaryClass = new Class("Dictionary", core.objectClass, nullptr);
-  dictionaryClass->setInstanceSize(0);
+  dictionaryClass->setInstanceSize(2);
   dictionaryClass->setFormat(ObjectFormat::POINTER_OBJECTS);
   dictionaryClass->setClass(core.classClass);
   registry.registerClass("Dictionary", dictionaryClass);
