@@ -1,4 +1,5 @@
 #include "smalltalk_class.h"
+#include "memory_manager.h"
 #include "method_compiler.h"
 #include "primitives.h"
 #include <algorithm>
@@ -155,6 +156,65 @@ bool Class::isSuperclassOf(const Class *other) const {
 }
 
 std::string Class::toString() const { return name_; }
+
+void Class::ensureSmalltalkMetadata(MemoryManager &mm) {
+  // Helper to allocate and fill an Array of Symbols from a vector<string>
+  auto makeSymbolArray = [&](const std::vector<std::string> &names,
+                             Object *&cache) {
+    if (cache)
+      return;
+    Class *arrayClass = ClassRegistry::getInstance().getClass("Array");
+    if (!arrayClass)
+      return;
+    cache = mm.allocateIndexableInstance(arrayClass, names.size());
+    Object **slots = reinterpret_cast<Object **>(
+        reinterpret_cast<char *>(cache) + sizeof(Object));
+    for (size_t i = 0; i < names.size(); ++i) {
+      Symbol *sym = Symbol::intern(names[i]);
+      slots[i] = sym;
+    }
+  };
+
+  makeSymbolArray(instanceVariables_, instanceVarNamesArray_);
+  makeSymbolArray(classVariables_, classVarNamesArray_);
+}
+
+void Class::ensureSmalltalkMethodDictionary(MemoryManager &mm) {
+  if (methodDictObject_)
+    return;
+  Class *dictClass = ClassRegistry::getInstance().getClass("Dictionary");
+  if (!dictClass)
+    return;
+  methodDictObject_ = dictClass->createInstance();
+
+  size_t count = methodDictionary_.size();
+  if (count == 0)
+    return;
+
+  // keys and values arrays
+  Object **slots = reinterpret_cast<Object **>(
+      reinterpret_cast<char *>(methodDictObject_) + sizeof(Object));
+  Class *arrayClass = ClassRegistry::getInstance().getClass("Array");
+  if (!arrayClass)
+    return;
+  Object *keysArr = mm.allocateIndexableInstance(arrayClass, count);
+  Object *valsArr = mm.allocateIndexableInstance(arrayClass, count);
+  slots[0] = keysArr;
+  slots[1] = valsArr;
+  Object **kSlots = reinterpret_cast<Object **>(
+      reinterpret_cast<char *>(keysArr) + sizeof(Object));
+  Object **vSlots = reinterpret_cast<Object **>(
+      reinterpret_cast<char *>(valsArr) + sizeof(Object));
+
+  auto selectors = methodDictionary_.getSelectors();
+  size_t i = 0;
+  for (auto *sel : selectors) {
+    kSlots[i] = sel;
+    auto m = methodDictionary_.lookupMethod(sel);
+    vSlots[i] = m ? static_cast<Object *>(m.get()) : nullptr;
+    ++i;
+  }
+}
 
 std::vector<Class *> Class::getSuperclasses() const {
   std::vector<Class *> superclasses;

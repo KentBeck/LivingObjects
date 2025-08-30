@@ -141,6 +141,14 @@ public:
   // String representation
   std::string toString() const override;
 
+  // Ensure Smalltalk metadata mirrors (Arrays of Symbols) are available
+  void ensureSmalltalkMetadata(class MemoryManager &mm);
+  void ensureSmalltalkMethodDictionary(class MemoryManager &mm);
+
+  // Accessors to Smalltalk-backed metadata (may be nullptr until ensured)
+  Object *getInstanceVarNamesArray() const { return instanceVarNamesArray_; }
+  Object *getClassVarNamesArray() const { return classVarNamesArray_; }
+
   // Class hierarchy utilities
   std::vector<Class *> getSuperclasses() const;
   std::vector<Class *> getAllSubclasses() const;
@@ -161,6 +169,12 @@ private:
 
   // Keep track of direct subclasses
   mutable std::vector<Class *> subclasses_;
+
+  // Smalltalk-backed mirrors for metadata
+  Object *instanceVarNamesArray_ = nullptr; // Array of Symbols
+  Object *classVarNamesArray_ = nullptr;    // Array of Symbols
+  Object *methodDictObject_ =
+      nullptr; // Dictionary mapping Symbol->CompiledMethod
 
   // Register/unregister subclass relationships
   void addSubclass(Class *subclass) const;

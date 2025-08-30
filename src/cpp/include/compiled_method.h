@@ -32,6 +32,17 @@ public:
   std::vector<TaggedValue> literals;
   std::vector<std::string> tempVars;
 
+  // Smalltalk object backings (lazy-populated)
+  // - bytecodesBytes: ByteArray holding the bytecodes
+  // - literalsArray: Array holding object references (boxed where needed)
+  // - tempNamesArray: Array of Symbols for temp var names
+  Object *bytecodesBytes = nullptr;
+  Object *literalsArray = nullptr;
+  Object *tempNamesArray = nullptr;
+
+  // Ensure Smalltalk backings are created based on the current vectors
+  void ensureSmalltalkBacking(class MemoryManager &mm);
+
   // Add bytecode
   void addBytecode(uint8_t bytecode) { bytecodes.push_back(bytecode); }
 

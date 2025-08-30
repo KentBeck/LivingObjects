@@ -309,6 +309,15 @@ void Interpreter::sendMessageBytecode() {
 
   // Push result directly
   push(result);
+
+  // Prepare Smalltalk method dictionary mirror for serializer/inspection
+  if (receiver.isPointer()) {
+    Object *recvObj = receiver.asObject();
+    Class *recvClass = recvObj->getClass();
+    if (recvClass) {
+      recvClass->ensureSmalltalkMethodDictionary(memoryManager);
+    }
+  }
 }
 
 void Interpreter::createBlock() {
