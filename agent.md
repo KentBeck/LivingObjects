@@ -15,3 +15,9 @@ Notes
   - Run the expression tests and fail if they do not pass.
   - Run the full test suite and fail if any test fails or emits warnings.
   - Block commits if disallowed temporary files are detected.
+
+Design principles
+
+- Represent everything possible as a Smalltalk object. This includes runtime constructs like MethodContext and BlockContext, not just user-visible classes and data structures.
+- Persist and restore execution state. The image should be able to serialize active contexts (stack frames), sender links, instruction pointers, and stack slots, and resume execution after loading.
+- Route global references through the Smalltalk dictionary. C++ helpers should use the same global mechanism as Smalltalk code for consistency.
