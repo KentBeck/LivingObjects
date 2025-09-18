@@ -1,3 +1,4 @@
+#include "bootstrap_api.h"
 #include "bytecode.h"
 #include "interpreter.h"
 #include "memory_manager.h"
@@ -28,21 +29,24 @@
 
 using namespace smalltalk;
 
-struct ExpressionTest {
+struct ExpressionTest
+{
   std::string expression;
   std::string expectedResult;
   bool shouldPass;
   std::string category;
 };
 
-void testExpressionWithExecuteMethod(const ExpressionTest &test) {
+void testExpressionWithExecuteMethod(const ExpressionTest &test)
+{
   std::cout << "Testing with executeMethod: " << test.expression << " -> "
             << test.expectedResult;
 
   MemoryManager memoryManager;
   SmalltalkImage image;
 
-  try {
+  try
+  {
     // Parse, compile, and execute the expression
     SimpleParser parser(test.expression);
     auto methodAST = parser.parseMethod();
@@ -65,68 +69,105 @@ void testExpressionWithExecuteMethod(const ExpressionTest &test) {
 
     // Convert result to string for comparison
     std::string resultStr;
-    if (result.isInteger()) {
+    if (result.isInteger())
+    {
       resultStr = std::to_string(result.asInteger());
-    } else if (result.isBoolean()) {
+    }
+    else if (result.isBoolean())
+    {
       resultStr = result.asBoolean() ? "true" : "false";
-    } else if (result.isNil()) {
+    }
+    else if (result.isNil())
+    {
       resultStr = "nil";
-    } else if (StringUtils::isString(result)) {
+    }
+    else if (StringUtils::isString(result))
+    {
       String *str = StringUtils::asString(result);
       resultStr =
           str->getContent(); // Get content without quotes for comparison
-    } else if (result.isPointer()) {
-      try {
+    }
+    else if (result.isPointer())
+    {
+      try
+      {
         Object *obj = result.asObject();
-        if (obj && obj->header.getType() == ObjectType::ARRAY) {
+        if (obj && obj->header.getType() == ObjectType::ARRAY)
+        {
           // Format array as <Array size: N>
           size_t arraySize = obj->header.size;
           resultStr = "<Array size: " + std::to_string(arraySize) + ">";
-        } else if (obj && obj->header.getType() == ObjectType::SYMBOL) {
+        }
+        else if (obj && obj->header.getType() == ObjectType::SYMBOL)
+        {
           // Format symbol as Symbol(content) - try direct symbol access
-          try {
+          try
+          {
             Symbol *symbol = result.asSymbol();
             resultStr = "Symbol(" + symbol->getName() + ")";
-          } catch (...) {
+          }
+          catch (...)
+          {
             Symbol *symbol = static_cast<Symbol *>(obj);
             resultStr = "Symbol(" + symbol->getName() + ")";
           }
-        } else if (obj && obj->header.getType() == ObjectType::CLASS) {
+        }
+        else if (obj && obj->header.getType() == ObjectType::CLASS)
+        {
           Class *cls = static_cast<Class *>(obj);
           resultStr = cls->getName();
-        } else {
+        }
+        else
+        {
           // Debug: show actual object type
           resultStr = "Object(type=" +
                       std::to_string(static_cast<int>(obj->header.getType())) +
                       ")";
         }
-      } catch (const std::exception &e) {
+      }
+      catch (const std::exception &e)
+      {
         resultStr = "Object(exception:" + std::string(e.what()) + ")";
-      } catch (...) {
+      }
+      catch (...)
+      {
         resultStr = "Object(unknown_exception)";
       }
-    } else {
+    }
+    else
+    {
       resultStr = "Object";
     }
 
-    if (test.shouldPass && resultStr == test.expectedResult) {
+    if (test.shouldPass && resultStr == test.expectedResult)
+    {
       std::cout << " ✅ PASS" << std::endl;
-    } else if (test.shouldPass) {
+    }
+    else if (test.shouldPass)
+    {
       std::cout << " ❌ FAIL (got: " << resultStr << ")" << std::endl;
-    } else {
+    }
+    else
+    {
       std::cout << " ❌ FAIL (should have failed but got: " << resultStr << ")"
                 << std::endl;
     }
-  } catch (const std::exception &e) {
-    if (test.shouldPass) {
+  }
+  catch (const std::exception &e)
+  {
+    if (test.shouldPass)
+    {
       std::cout << " ❌ FAIL (exception: " << e.what() << ")" << std::endl;
-    } else {
+    }
+    else
+    {
       std::cout << " ✅ EXPECTED EXCEPTION (" << e.what() << ")" << std::endl;
     }
   }
 }
 
-void testInstanceVariables() {
+void testInstanceVariables()
+{
   std::cout << "✅ Instance variable implementations completed:" << std::endl;
   std::cout << "  - handlePushInstanceVariable: reads from Object* slots after "
                "Object header"
@@ -143,20 +184,25 @@ void testInstanceVariables() {
       << std::endl;
 }
 
-void testBlockExecution() {
+void testBlockExecution()
+{
   std::cout << "Testing block execution..." << std::endl;
 
-  try {
+  try
+  {
     MemoryManager memoryManager;
     SmalltalkImage image;
 
     // Test that the parser can handle blocks
-    try {
+    try
+    {
       SimpleParser parser("[3 + 4]");
       auto methodNode = parser.parseMethod();
       std::cout << "✅ Block expression can be parsed as method body"
                 << std::endl;
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e)
+    {
       std::cout << "❌ Failed to parse block: " << e.what() << std::endl;
     }
 
@@ -181,18 +227,22 @@ void testBlockExecution() {
     std::cout << "  - (Infrastructure issues may prevent testing in current "
                  "framework)"
               << std::endl;
-  } catch (const std::exception &e) {
+  }
+  catch (const std::exception &e)
+  {
     std::cout << "❌ Exception during block test: " << e.what() << std::endl;
   }
 }
 
-void testExpression(const ExpressionTest &test) {
+void testExpression(const ExpressionTest &test)
+{
   std::cout << "Testing: " << test.expression << " -> " << test.expectedResult;
 
   MemoryManager memoryManager;
   SmalltalkImage image;
 
-  try {
+  try
+  {
     // Parse, compile, and execute the expression
     SimpleParser parser(test.expression);
     auto methodAST = parser.parseMethod();
@@ -207,67 +257,104 @@ void testExpression(const ExpressionTest &test) {
 
     // Convert result to string for comparison
     std::string resultStr;
-    if (result.isInteger()) {
+    if (result.isInteger())
+    {
       resultStr = std::to_string(result.asInteger());
-    } else if (result.isBoolean()) {
+    }
+    else if (result.isBoolean())
+    {
       resultStr = result.asBoolean() ? "true" : "false";
-    } else if (result.isNil()) {
+    }
+    else if (result.isNil())
+    {
       resultStr = "nil";
-    } else if (StringUtils::isString(result)) {
+    }
+    else if (StringUtils::isString(result))
+    {
       String *str = StringUtils::asString(result);
       resultStr =
           str->getContent(); // Get content without quotes for comparison
-    } else if (result.isPointer()) {
-      try {
+    }
+    else if (result.isPointer())
+    {
+      try
+      {
         Object *obj = result.asObject();
-        if (obj && obj->header.getType() == ObjectType::ARRAY) {
+        if (obj && obj->header.getType() == ObjectType::ARRAY)
+        {
           // Format array as <Array size: N>
           size_t arraySize = obj->header.size;
           resultStr = "<Array size: " + std::to_string(arraySize) + ">";
-        } else if (obj && obj->header.getType() == ObjectType::SYMBOL) {
+        }
+        else if (obj && obj->header.getType() == ObjectType::SYMBOL)
+        {
           // Format symbol as Symbol(content)
           Symbol *symbol = static_cast<Symbol *>(obj);
           resultStr = "Symbol(" + symbol->getName() + ")";
-        } else if (obj && obj->header.getType() == ObjectType::CLASS) {
+        }
+        else if (obj && obj->header.getType() == ObjectType::CLASS)
+        {
           // For class objects, return their name
           Class *cls = static_cast<Class *>(obj);
           resultStr = cls->getName();
-        } else if (obj) {
+        }
+        else if (obj)
+        {
           // Show dictionaries nicely by class name
           Class *cls = obj->getClass();
-          if (cls && cls->getName() == std::string("Dictionary")) {
+          if (cls && cls->getName() == std::string("Dictionary"))
+          {
             resultStr = "<Dictionary>";
-          } else {
+          }
+          else
+          {
             resultStr = "Object";
           }
-        } else {
+        }
+        else
+        {
           resultStr = "Object";
         }
-      } catch (...) {
+      }
+      catch (...)
+      {
         resultStr = "Object";
       }
-    } else {
+    }
+    else
+    {
       resultStr = "Object";
     }
 
-    if (test.shouldPass && resultStr == test.expectedResult) {
+    if (test.shouldPass && resultStr == test.expectedResult)
+    {
       std::cout << " ✅ PASS" << std::endl;
-    } else if (test.shouldPass) {
+    }
+    else if (test.shouldPass)
+    {
       std::cout << " ❌ FAIL (got: " << resultStr << ")" << std::endl;
-    } else {
+    }
+    else
+    {
       std::cout << " ❌ FAIL (should have failed but got: " << resultStr << ")"
                 << std::endl;
     }
-  } catch (const std::exception &e) {
-    if (test.shouldPass) {
+  }
+  catch (const std::exception &e)
+  {
+    if (test.shouldPass)
+    {
       std::cout << " ❌ FAIL (exception: " << e.what() << ")" << std::endl;
-    } else {
+    }
+    else
+    {
       std::cout << " ✅ EXPECTED EXCEPTION (" << e.what() << ")" << std::endl;
     }
   }
 }
 
-TEST(TestBytecodeInstructionSizes) {
+TEST(TestBytecodeInstructionSizes)
+{
   // Test instruction sizes match the Go implementation
   EXPECT_EQ(INSTRUCTION_SIZE_FOUR_BYTE_OPERAND,
             getInstructionSize(Bytecode::PUSH_LITERAL));
@@ -301,7 +388,8 @@ TEST(TestBytecodeInstructionSizes) {
             getInstructionSize(Bytecode::EXECUTE_BLOCK));
 }
 
-TEST(TestBytecodeNames) {
+TEST(TestBytecodeNames)
+{
   // Test bytecode names
   EXPECT_STREQ("PUSH_LITERAL", getBytecodeString(Bytecode::PUSH_LITERAL));
   EXPECT_STREQ("PUSH_INSTANCE_VARIABLE",
@@ -325,7 +413,8 @@ TEST(TestBytecodeNames) {
   EXPECT_STREQ("EXECUTE_BLOCK", getBytecodeString(Bytecode::EXECUTE_BLOCK));
 }
 
-TEST(TestBytecodeValues) {
+TEST(TestBytecodeValues)
+{
   // Test bytecode values match the Go implementation
   EXPECT_EQ(0, static_cast<uint8_t>(Bytecode::PUSH_LITERAL));
   EXPECT_EQ(1, static_cast<uint8_t>(Bytecode::PUSH_INSTANCE_VARIABLE));
@@ -344,7 +433,8 @@ TEST(TestBytecodeValues) {
   EXPECT_EQ(14, static_cast<uint8_t>(Bytecode::EXECUTE_BLOCK));
 }
 
-TEST(TestMemoryObjectAllocation) {
+TEST(TestMemoryObjectAllocation)
+{
   MemoryManager memory;
 
   // Test allocating a basic object
@@ -358,7 +448,8 @@ TEST(TestMemoryObjectAllocation) {
   EXPECT_GT(memory.getUsedSpace(), 0UL);
 }
 
-TEST(TestMemoryByteArrayAllocation) {
+TEST(TestMemoryByteArrayAllocation)
+{
   MemoryManager memory;
 
   // Test allocating a byte array
@@ -371,7 +462,8 @@ TEST(TestMemoryByteArrayAllocation) {
   EXPECT_EQ(alignedSize, bytes->header.size);
 }
 
-TEST(TestTaggedValueInteger) {
+TEST(TestTaggedValueInteger)
+{
   // Test creating integer 3
   TaggedValue three(3);
 
@@ -385,7 +477,8 @@ TEST(TestTaggedValueInteger) {
   EXPECT_EQ(3, three.asInteger());
 }
 
-TEST(TestTaggedValueIntegerRange) {
+TEST(TestTaggedValueIntegerRange)
+{
   // Test various integer values
   TaggedValue zero(0);
   TaggedValue positive(42);
@@ -404,7 +497,8 @@ TEST(TestTaggedValueIntegerRange) {
   EXPECT_EQ(true, large.isInteger());
 }
 
-TEST(TestTaggedValueSpecialValues) {
+TEST(TestTaggedValueSpecialValues)
+{
   // Test nil, true, false
   TaggedValue nil = TaggedValue::nil();
   TaggedValue trueVal = TaggedValue::trueValue();
@@ -421,7 +515,8 @@ TEST(TestTaggedValueSpecialValues) {
 
 void runAllTests();
 
-int main() {
+int main()
+{
   runAllTests();
 
   // Test implemented and fake functions
@@ -435,70 +530,74 @@ int main() {
   Class *integerClass = ClassUtils::getIntegerClass();
   IntegerClassSetup::addPrimitiveMethods(integerClass);
 
-  // Add Smalltalk methods to Block class
+  // Add Smalltalk methods to Block class using bootstrap system
   Class *blockClass = ClassUtils::getBlockClass();
 
-  // Add ensure: method - proper implementation
+  // Register ensure: method - proper implementation
   std::string ensureMethod = R"(ensure: aBlock
 | result |
 result := self value.
 aBlock value.
 ^ result)";
 
-  MethodCompiler::addSmalltalkMethod(blockClass, ensureMethod);
+  registerSmalltalkMethod(blockClass, ensureMethod);
 
-  // Add identity method to test block self
+  // Register identity method to test block self
   std::string identityMethod = R"(identity
     ^ self)";
 
-  MethodCompiler::addSmalltalkMethod(blockClass, identityMethod);
+  registerSmalltalkMethod(blockClass, identityMethod);
 
-  // Add simple test method
+  // Register simple test method
   std::string testMethod = R"(test
     ^ 999)";
 
-  MethodCompiler::addSmalltalkMethod(blockClass, testMethod);
+  registerSmalltalkMethod(blockClass, testMethod);
 
-  // Add method that calls test
+  // Register method that calls test
   std::string callTestMethod = R"(callTest
     ^ self test)";
 
-  MethodCompiler::addSmalltalkMethod(blockClass, callTestMethod);
+  registerSmalltalkMethod(blockClass, callTestMethod);
 
-  // Add method that calls value
+  // Register method that calls value
   std::string callValueMethod = R"(callValue
     ^ self value)";
 
-  MethodCompiler::addSmalltalkMethod(blockClass, callValueMethod);
+  registerSmalltalkMethod(blockClass, callValueMethod);
 
-  // Add simpler ensure for testing
+  // Register simpler ensure for testing
   std::string ensureSimpleMethod = R"(ensureSimple: aBlock
     ^ self value)";
 
-  MethodCompiler::addSmalltalkMethod(blockClass, ensureSimpleMethod);
+  registerSmalltalkMethod(blockClass, ensureSimpleMethod);
 
-  // Test method with temp var
+  // Register test method with temp var
   std::string testTempMethod = R"(testTemp: aBlock
     | unused |
     ^ self value)";
 
-  MethodCompiler::addSmalltalkMethod(blockClass, testTempMethod);
+  registerSmalltalkMethod(blockClass, testTempMethod);
 
-  // Test method with assignment
+  // Register test method with assignment
   std::string testAssignMethod = R"(testAssign: aBlock
     | result |
     result := 777.
     ^ self value)";
 
-  MethodCompiler::addSmalltalkMethod(blockClass, testAssignMethod);
+  registerSmalltalkMethod(blockClass, testAssignMethod);
 
-  // Test method with self value assignment
+  // Register test method with self value assignment
   std::string testSelfValueAssignMethod = R"(testSelfValueAssign: aBlock
     | result |
     result := self value.
     ^ result)";
 
-  MethodCompiler::addSmalltalkMethod(blockClass, testSelfValueAssignMethod);
+  registerSmalltalkMethod(blockClass, testSelfValueAssignMethod);
+
+  // Create a memory manager and prepare the image to install all registered methods
+  MemoryManager mm(20 * 1024 * 1024); // 20MB
+  prepareImage(mm);
 
   std::vector<ExpressionTest> tests = {
       // Exception handling - SHOULD FAIL with proper exceptions
@@ -666,22 +765,28 @@ aBlock value.
   MemoryManager memoryManagerForSummary;
   SmalltalkImage imageForSummary;
 
-  for (const auto &test : tests) {
-    if (test.category != currentCategory) {
+  for (const auto &test : tests)
+  {
+    if (test.category != currentCategory)
+    {
       currentCategory = test.category;
       std::cout << std::endl
                 << "=== " << currentCategory << " ===" << std::endl;
     }
 
-    if (test.category == "executeMethod") {
+    if (test.category == "executeMethod")
+    {
       testExpressionWithExecuteMethod(test);
-    } else {
+    }
+    else
+    {
       testExpression(test);
     }
 
     // Count as pass if result matches expectation (shouldPass true),
     // or if an exception occurred and shouldPass is false
-    try {
+    try
+    {
       SimpleParser parser(test.expression);
       auto methodAST = parser.parseMethod();
       SimpleCompiler compiler;
@@ -690,96 +795,140 @@ aBlock value.
       imageForSummary.addCompiledMethod(std::move(compiledMethod));
       Interpreter interpreter(memoryManagerForSummary, imageForSummary);
       TaggedValue result;
-      if (test.category == "executeMethod") {
+      if (test.category == "executeMethod")
+      {
         Object *receiver =
             memoryManagerForSummary.allocateObject(ObjectType::OBJECT, 0);
         std::vector<Object *> args;
         Object *resultObj =
             interpreter.executeMethod(rawCompiledMethod, receiver, args);
         result = TaggedValue::fromObject(resultObj);
-      } else {
+      }
+      else
+      {
         result = interpreter.executeCompiledMethod(*rawCompiledMethod);
       }
 
       std::string resultStr;
-      if (result.isInteger()) {
+      if (result.isInteger())
+      {
         resultStr = std::to_string(result.asInteger());
-      } else if (result.isBoolean()) {
+      }
+      else if (result.isBoolean())
+      {
         resultStr = result.asBoolean() ? "true" : "false";
-      } else if (result.isNil()) {
+      }
+      else if (result.isNil())
+      {
         resultStr = "nil";
-      } else if (StringUtils::isString(result)) {
+      }
+      else if (StringUtils::isString(result))
+      {
         String *str = StringUtils::asString(result);
         resultStr = str->getContent();
-      } else if (result.isSmallInteger()) {
+      }
+      else if (result.isSmallInteger())
+      {
         resultStr = std::to_string(result.getSmallInteger());
-      } else if (result.isPointer()) {
-        try {
+      }
+      else if (result.isPointer())
+      {
+        try
+        {
           Object *obj = result.asObject();
-          if (obj && obj->header.getType() == ObjectType::SYMBOL) {
+          if (obj && obj->header.getType() == ObjectType::SYMBOL)
+          {
             Symbol *sym = static_cast<Symbol *>(obj);
             resultStr = sym->toString();
-          } else if (obj && obj->header.getType() == ObjectType::CLASS) {
+          }
+          else if (obj && obj->header.getType() == ObjectType::CLASS)
+          {
             Class *cls = static_cast<Class *>(obj);
             resultStr = cls->getName();
-          } else if (obj && obj->header.getType() == ObjectType::ARRAY) {
+          }
+          else if (obj && obj->header.getType() == ObjectType::ARRAY)
+          {
             size_t arraySize = obj->header.size;
             resultStr = "<Array size: " + std::to_string(arraySize) + ">";
-          } else if (obj) {
+          }
+          else if (obj)
+          {
             // Pretty-print Dictionary instances
-            try {
+            try
+            {
               Class *cls = obj->getClass();
-              if (cls && cls->getName() == std::string("Dictionary")) {
+              if (cls && cls->getName() == std::string("Dictionary"))
+              {
                 resultStr = "<Dictionary>";
-              } else {
+              }
+              else
+              {
                 resultStr = "Object";
               }
-            } catch (...) {
+            }
+            catch (...)
+            {
               resultStr = "Object";
             }
-          } else {
+          }
+          else
+          {
             resultStr = "Object";
           }
-        } catch (...) {
+        }
+        catch (...)
+        {
           resultStr = "Object";
         }
-      } else {
+      }
+      else
+      {
         resultStr = "Object";
       }
 
-      if (test.shouldPass && resultStr == test.expectedResult) {
+      if (test.shouldPass && resultStr == test.expectedResult)
+      {
         passCount++;
       }
-    } catch (const std::exception &) {
-      if (!test.shouldPass) {
+    }
+    catch (const std::exception &)
+    {
+      if (!test.shouldPass)
+      {
         passCount++;
       }
     }
     totalCount++;
   }
 
-  std::cout << std::endl << "=== SUMMARY ===" << std::endl;
+  std::cout << std::endl
+            << "=== SUMMARY ===" << std::endl;
   std::cout << "Expressions that work correctly: " << passCount << "/"
             << totalCount << std::endl;
 
   // Count by category
-  std::cout << std::endl << "By category:" << std::endl;
+  std::cout << std::endl
+            << "By category:" << std::endl;
   std::vector<std::string> categories = {
-      "arithmetic",        "comparison",  "object_creation", "strings",
-      "string_operations", "literals",    "variables",       "blocks",
-      "conditionals",      "collections", "dictionaries",    "class_creation",
+      "arithmetic", "comparison", "object_creation", "strings",
+      "string_operations", "literals", "variables", "blocks",
+      "conditionals", "collections", "dictionaries", "class_creation",
       "executeMethod"};
 
-  for (const auto &category : categories) {
+  for (const auto &category : categories)
+  {
     int categoryPass = 0;
     int categoryTotal = 0;
 
-    for (const auto &test : tests) {
-      if (test.category == category) {
+    for (const auto &test : tests)
+    {
+      if (test.category == category)
+      {
         categoryTotal++;
 
         bool actuallyPassed = false;
-        try {
+        try
+        {
           SimpleParser parser(test.expression);
           auto methodAST = parser.parseMethod();
           SimpleCompiler compiler;
@@ -788,76 +937,112 @@ aBlock value.
           imageForSummary.addCompiledMethod(std::move(compiledMethod));
           Interpreter interpreter(memoryManagerForSummary, imageForSummary);
           TaggedValue result;
-          if (test.category == "executeMethod") {
+          if (test.category == "executeMethod")
+          {
             Object *receiver =
                 memoryManagerForSummary.allocateObject(ObjectType::OBJECT, 0);
             std::vector<Object *> args;
             Object *resultObj =
                 interpreter.executeMethod(rawCompiledMethod, receiver, args);
             result = TaggedValue::fromObject(resultObj);
-          } else {
+          }
+          else
+          {
             result = interpreter.executeCompiledMethod(*rawCompiledMethod);
           }
 
           std::string resultStr;
-          if (result.isInteger()) {
+          if (result.isInteger())
+          {
             resultStr = std::to_string(result.asInteger());
-          } else if (result.isBoolean()) {
+          }
+          else if (result.isBoolean())
+          {
             resultStr = result.asBoolean() ? "true" : "false";
-          } else if (result.isNil()) {
+          }
+          else if (result.isNil())
+          {
             resultStr = "nil";
-          } else if (StringUtils::isString(result)) {
+          }
+          else if (StringUtils::isString(result))
+          {
             String *str = StringUtils::asString(result);
             resultStr =
                 str->getContent(); // Get content without quotes for comparison
-          } else if (result.isSmallInteger()) {
+          }
+          else if (result.isSmallInteger())
+          {
             resultStr = std::to_string(result.getSmallInteger());
-          } else if (result.isPointer()) {
+          }
+          else if (result.isPointer())
+          {
             // Check if it's a symbol or array
-            try {
+            try
+            {
               Object *obj = result.asObject();
-              if (obj && obj->header.getType() == ObjectType::SYMBOL) {
+              if (obj && obj->header.getType() == ObjectType::SYMBOL)
+              {
                 Symbol *sym = static_cast<Symbol *>(obj);
                 resultStr = sym->toString();
-              } else if (obj && obj->header.getType() == ObjectType::CLASS) {
+              }
+              else if (obj && obj->header.getType() == ObjectType::CLASS)
+              {
                 Class *cls = static_cast<Class *>(obj);
                 resultStr = cls->getName();
-              } else if (obj && obj->header.getType() == ObjectType::ARRAY) {
+              }
+              else if (obj && obj->header.getType() == ObjectType::ARRAY)
+              {
                 // Format array as <Array size: N>
                 size_t arraySize = obj->header.size;
                 resultStr = "<Array size: " + std::to_string(arraySize) + ">";
-              } else {
+              }
+              else
+              {
                 resultStr = "Object";
               }
-            } catch (...) {
+            }
+            catch (...)
+            {
               resultStr = "Object";
             }
-          } else {
+          }
+          else
+          {
             resultStr = "Object";
           }
 
           // Debug output for array tests
           if (test.expression.find("#(") != std::string::npos &&
-              resultStr != test.expectedResult) {
+              resultStr != test.expectedResult)
+          {
             std::cout << "\nDEBUG Array test: " << test.expression
                       << " expected: " << test.expectedResult
                       << " got: " << resultStr;
-            if (result.isSmallInteger()) {
+            if (result.isSmallInteger())
+            {
               std::cout << " (SmallInteger: " << result.getSmallInteger()
                         << ")";
-            } else if (result.isInteger()) {
+            }
+            else if (result.isInteger())
+            {
               std::cout << " (Integer: " << result.asInteger() << ")";
-            } else if (result.isPointer()) {
+            }
+            else if (result.isPointer())
+            {
               std::cout << " (Pointer/Object)";
             }
             std::cout << std::endl;
           }
 
-          if (test.shouldPass && resultStr == test.expectedResult) {
+          if (test.shouldPass && resultStr == test.expectedResult)
+          {
             actuallyPassed = true;
           }
-        } catch (const std::exception &) {
-          if (!test.shouldPass) {
+        }
+        catch (const std::exception &)
+        {
+          if (!test.shouldPass)
+          {
             actuallyPassed = true;
           }
         }
@@ -867,12 +1052,16 @@ aBlock value.
       }
     }
 
-    if (categoryTotal > 0) {
+    if (categoryTotal > 0)
+    {
       std::cout << "  " << category << ": " << categoryPass << "/"
                 << categoryTotal;
-      if (categoryPass == categoryTotal) {
+      if (categoryPass == categoryTotal)
+      {
         std::cout << " ✅";
-      } else {
+      }
+      else
+      {
         std::cout << " ❌";
       }
       std::cout << std::endl;
@@ -882,7 +1071,8 @@ aBlock value.
   return 0;
 }
 
-void runAllTests() {
+void runAllTests()
+{
   std::cout << "Running tests..." << '\n';
 
   TestBytecodeInstructionSizes();

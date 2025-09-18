@@ -106,7 +106,7 @@ test: create_dirs $(TEST_EXECUTABLE)
 
 # Build the test executable
 $(TEST_EXECUTABLE): $(TEST_DIR)/all_expressions_test.cpp $(LIBRARY)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $< -o $@ -L$(BUILD_DIR)/lib -lsmalltalk_vm
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -arch arm64 $< -o $@ -L$(BUILD_DIR)/lib -lsmalltalk_vm
 
 # Build individual test executables
 $(BUILD_DIR)/minimal_parse_test: $(TEST_DIR)/minimal_parse_test.cpp $(LIBRARY)

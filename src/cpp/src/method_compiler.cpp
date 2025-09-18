@@ -54,13 +54,33 @@ namespace smalltalk
                                           const std::string &methodSource,
                                           MemoryManager &mm)
   {
-    // Compile the method
-    auto compiledMethod = compileMethod(methodSource);
+    // Compile the method to get bytecode and metadata
+    auto tempCompiledMethod = compileMethod(methodSource);
 
     // Create selector symbol
     std::string sourceCopy = methodSource;
     std::string selector = parseMethodSignature(sourceCopy);
     Symbol *selectorSymbol = Symbol::intern(selector);
+
+    // Get CompiledMethod class for allocation
+    Class *methodClass = ClassRegistry::getInstance().getClass("CompiledMethod");
+    if (!methodClass)
+      return;
+
+    // Allocate CompiledMethod in managed memory
+    Object *methodObj = mm.allocateInstance(methodClass);
+    CompiledMethod *method = static_cast<CompiledMethod *>(methodObj);
+
+    // Initialize the method using placement new
+    new (method) CompiledMethod();
+    method->primitiveNumber = tempCompiledMethod->primitiveNumber;
+    method->homeVarCount = tempCompiledMethod->homeVarCount;
+    method->bytecodes = tempCompiledMethod->bytecodes;
+    method->literals = tempCompiledMethod->literals;
+    method->tempVars = tempCompiledMethod->tempVars;
+
+    // Create a shared_ptr that doesn't delete (managed by GC)
+    std::shared_ptr<CompiledMethod> methodPtr(method, [](CompiledMethod *) {});
 
     // Ensure the class has a Smalltalk MethodDictionary instance
     clazz->ensureSmalltalkMethodDictionary(mm);
@@ -110,9 +130,9 @@ namespace smalltalk
     {
       if (kSlots[i] == selectorSymbol)
       {
-        vSlots[i] = compiledMethod.get();
+        vSlots[i] = method;
         // Keep C++ map in sync during transition
-        clazz->addMethod(selectorSymbol, compiledMethod);
+        clazz->addMethod(selectorSymbol, methodPtr);
         return;
       }
     }
@@ -128,12 +148,12 @@ namespace smalltalk
       nv[i] = vSlots[i];
     }
     nk[n] = selectorSymbol;
-    nv[n] = compiledMethod.get();
+    nv[n] = method;
     slots[0] = TaggedValue(newKeys);
     slots[1] = TaggedValue(newVals);
 
     // Keep C++ map in sync during transition
-    clazz->addMethod(selectorSymbol, compiledMethod);
+    clazz->addMethod(selectorSymbol, methodPtr);
   }
 
   std::string MethodCompiler::parseMethodSignature(std::string &methodBody)

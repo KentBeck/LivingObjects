@@ -168,11 +168,10 @@ namespace smalltalk
     }
 
     // Install pending Smalltalk methods (no sends)
-    // Temporarily disabled - bootstrap works, issue is in execution
-    // for (const auto &m : smalltalkQueue())
-    // {
-    //   MethodCompiler::addSmalltalkMethod(m.clazz, m.source, mm);
-    // }
+    for (const auto &m : smalltalkQueue())
+    {
+      MethodCompiler::addSmalltalkMethod(m.clazz, m.source, mm);
+    }
 
     // Clear queues after installation
     primitiveQueue().clear();
