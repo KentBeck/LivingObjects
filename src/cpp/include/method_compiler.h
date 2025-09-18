@@ -30,6 +30,10 @@ public:
    */
   static void addSmalltalkMethod(Class *clazz, const std::string &methodSource);
 
+  // Install method writing-through to Smalltalk MethodDictionary via MemoryManager
+  static void addSmalltalkMethod(Class *clazz, const std::string &methodSource,
+                                 class MemoryManager &mm);
+
 private:
   /**
    * Parse the method selector and parameters from source.

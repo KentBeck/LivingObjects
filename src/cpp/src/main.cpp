@@ -17,7 +17,8 @@
 
 using namespace smalltalk;
 
-struct Options {
+struct Options
+{
   bool showParseTree = false;
   bool showBytecode = false;
   bool showMethod = false;
@@ -27,7 +28,8 @@ struct Options {
   std::string expression;
 };
 
-void printUsage() {
+void printUsage()
+{
   std::cout << "Usage:" << '\n';
   std::cout << "  smalltalk-vm [options] [<expression>]" << '\n';
   std::cout << '\n';
@@ -53,38 +55,59 @@ void printUsage() {
   std::cout << "  smalltalk-vm --image build/core.image" << '\n';
 }
 
-Options parseArguments(int argc, char **argv) {
+Options parseArguments(int argc, char **argv)
+{
   Options opts;
 
-  for (int i = 1; i < argc; i++) {
+  for (int i = 1; i < argc; i++)
+  {
     std::string arg = argv[i];
 
-    if (arg == "--parse-tree") {
+    if (arg == "--parse-tree")
+    {
       opts.showParseTree = true;
-    } else if (arg == "--bytecode") {
+    }
+    else if (arg == "--bytecode")
+    {
       opts.showBytecode = true;
-    } else if (arg == "--method") {
+    }
+    else if (arg == "--method")
+    {
       opts.showMethod = true;
-    } else if (arg == "--no-run") {
+    }
+    else if (arg == "--no-run")
+    {
       opts.runExpression = false;
-    } else if (arg == "--no-loader") {
+    }
+    else if (arg == "--no-loader")
+    {
       opts.runLoaderOnImage = false;
-    } else if (arg == "--image") {
-      if (i + 1 >= argc) {
+    }
+    else if (arg == "--image")
+    {
+      if (i + 1 >= argc)
+      {
         std::cerr << "--image requires a file argument" << '\n';
         printUsage();
         exit(1);
       }
       opts.imagePath = argv[++i];
-    } else if (arg == "--help" || arg == "-h") {
+    }
+    else if (arg == "--help" || arg == "-h")
+    {
       printUsage();
       exit(0);
-    } else if (arg.substr(0, 2) == "--") {
+    }
+    else if (arg.substr(0, 2) == "--")
+    {
       std::cerr << "Unknown option: " << arg << '\n';
       printUsage();
       exit(1);
-    } else {
-      if (!opts.expression.empty()) {
+    }
+    else
+    {
+      if (!opts.expression.empty())
+      {
         std::cerr
             << "Multiple expressions provided. Only one expression allowed."
             << '\n';
@@ -95,7 +118,8 @@ Options parseArguments(int argc, char **argv) {
     }
   }
   // Allow running with only --image
-  if (opts.expression.empty() && opts.imagePath.empty()) {
+  if (opts.expression.empty() && opts.imagePath.empty())
+  {
     std::cerr << "No expression or --image provided." << '\n';
     printUsage();
     exit(1);
@@ -105,12 +129,14 @@ Options parseArguments(int argc, char **argv) {
 }
 
 // Helper function to decode and print bytecode instructions
-void printBytecodeAnalysis(const std::vector<uint8_t> &bytecodes) {
+void printBytecodeAnalysis(const std::vector<uint8_t> &bytecodes)
+{
   std::cout << "\n=== Bytecode Analysis ===" << std::endl;
 
   // Print raw bytecode
   std::cout << "Raw bytecode (" << bytecodes.size() << " bytes): ";
-  for (size_t i = 0; i < bytecodes.size(); i++) {
+  for (size_t i = 0; i < bytecodes.size(); i++)
+  {
     std::cout << std::hex << std::setw(2) << std::setfill('0')
               << static_cast<int>(bytecodes[i]);
     if (i < bytecodes.size() - 1)
@@ -120,19 +146,24 @@ void printBytecodeAnalysis(const std::vector<uint8_t> &bytecodes) {
 
   // Decode instructions
   std::cout << "\nDecoded instructions:" << std::endl;
-  for (size_t i = 0; i < bytecodes.size();) {
+  for (size_t i = 0; i < bytecodes.size();)
+  {
     uint8_t opcode = bytecodes[i];
     std::cout << "  " << std::setw(3) << i << ": ";
 
-    switch (static_cast<Bytecode>(opcode)) {
+    switch (static_cast<Bytecode>(opcode))
+    {
     case Bytecode::PUSH_LITERAL:
       std::cout << "PUSH_LITERAL ";
-      if (i + 4 < bytecodes.size()) {
+      if (i + 4 < bytecodes.size())
+      {
         uint32_t index = bytecodes[i + 1] | (bytecodes[i + 2] << 8) |
                          (bytecodes[i + 3] << 16) | (bytecodes[i + 4] << 24);
         std::cout << index;
         i += 5;
-      } else {
+      }
+      else
+      {
         std::cout << "(incomplete)";
         i++;
       }
@@ -145,12 +176,15 @@ void printBytecodeAnalysis(const std::vector<uint8_t> &bytecodes) {
 
     case Bytecode::PUSH_TEMPORARY_VARIABLE:
       std::cout << "PUSH_TEMPORARY_VARIABLE ";
-      if (i + 4 < bytecodes.size()) {
+      if (i + 4 < bytecodes.size())
+      {
         uint32_t index = bytecodes[i + 1] | (bytecodes[i + 2] << 8) |
                          (bytecodes[i + 3] << 16) | (bytecodes[i + 4] << 24);
         std::cout << index;
         i += 5;
-      } else {
+      }
+      else
+      {
         std::cout << "(incomplete)";
         i++;
       }
@@ -158,12 +192,15 @@ void printBytecodeAnalysis(const std::vector<uint8_t> &bytecodes) {
 
     case Bytecode::STORE_TEMPORARY_VARIABLE:
       std::cout << "STORE_TEMPORARY_VARIABLE ";
-      if (i + 4 < bytecodes.size()) {
+      if (i + 4 < bytecodes.size())
+      {
         uint32_t index = bytecodes[i + 1] | (bytecodes[i + 2] << 8) |
                          (bytecodes[i + 3] << 16) | (bytecodes[i + 4] << 24);
         std::cout << index;
         i += 5;
-      } else {
+      }
+      else
+      {
         std::cout << "(incomplete)";
         i++;
       }
@@ -171,14 +208,17 @@ void printBytecodeAnalysis(const std::vector<uint8_t> &bytecodes) {
 
     case Bytecode::SEND_MESSAGE:
       std::cout << "SEND_MESSAGE ";
-      if (i + 8 < bytecodes.size()) {
+      if (i + 8 < bytecodes.size())
+      {
         uint32_t selector = bytecodes[i + 1] | (bytecodes[i + 2] << 8) |
                             (bytecodes[i + 3] << 16) | (bytecodes[i + 4] << 24);
         uint32_t argCount = bytecodes[i + 5] | (bytecodes[i + 6] << 8) |
                             (bytecodes[i + 7] << 16) | (bytecodes[i + 8] << 24);
         std::cout << "selector=" << selector << " args=" << argCount;
         i += 9;
-      } else {
+      }
+      else
+      {
         std::cout << "(incomplete)";
         i++;
       }
@@ -196,7 +236,8 @@ void printBytecodeAnalysis(const std::vector<uint8_t> &bytecodes) {
 
     case Bytecode::CREATE_BLOCK:
       std::cout << "CREATE_BLOCK ";
-      if (i + 8 < bytecodes.size()) {
+      if (i + 8 < bytecodes.size())
+      {
         uint32_t methodIndex = bytecodes[i + 1] | (bytecodes[i + 2] << 8) |
                                (bytecodes[i + 3] << 16) |
                                (bytecodes[i + 4] << 24);
@@ -205,7 +246,9 @@ void printBytecodeAnalysis(const std::vector<uint8_t> &bytecodes) {
                               (bytecodes[i + 8] << 24);
         std::cout << "method=" << methodIndex << " params=" << paramCount;
         i += 9;
-      } else {
+      }
+      else
+      {
         std::cout << "(incomplete)";
         i++;
       }
@@ -225,41 +268,49 @@ void printBytecodeAnalysis(const std::vector<uint8_t> &bytecodes) {
   }
 }
 
-int main(int argc, char **argv) {
-  if (argc < 2) {
+int main(int argc, char **argv)
+{
+  if (argc < 2)
+  {
     printUsage();
     return 1;
   }
 
   Options opts = parseArguments(argc, argv);
 
-  try {
+  try
+  {
     // Step 1: Initialize class system and primitives
     ClassUtils::initializeCoreClasses();
     auto &primitiveRegistry = PrimitiveRegistry::getInstance();
     primitiveRegistry.initializeCorePrimitives();
     // Add integer primitives (legacy path maintains consistency)
-    Class *integerClass = ClassUtils::getIntegerClass();
-    IntegerClassSetup::addPrimitiveMethods(integerClass);
+    // Disabled - using new bootstrap system instead
+    // Class *integerClass = ClassUtils::getIntegerClass();
+    // IntegerClassSetup::addPrimitiveMethods(integerClass);
     primitiveRegistry.registerPrimitive(PrimitiveNumbers::BLOCK_VALUE,
                                         BlockPrimitives::value);
 
     // If an image is provided, load it and optionally call the loader
     std::unique_ptr<SmalltalkImage> ownedImage;
     SmalltalkImage *imagePtr = nullptr;
-    if (!opts.imagePath.empty()) {
+    if (!opts.imagePath.empty())
+    {
       auto &manager = ImageManager::getInstance();
-      if (!manager.loadImageFromFile(opts.imagePath)) {
+      if (!manager.loadImageFromFile(opts.imagePath))
+      {
         std::cerr << "Failed to load image: " << opts.imagePath << "\n";
         return 1;
       }
       imagePtr = manager.getCurrentImage();
-      if (!imagePtr) {
+      if (!imagePtr)
+      {
         std::cerr << "Image failed to initialize after load" << '\n';
         return 1;
       }
 
-      if (opts.runLoaderOnImage) {
+      if (opts.runLoaderOnImage)
+      {
         // Call minimal bootstrap entry
         TaggedValue started =
             imagePtr->evaluate("SystemLoader new start: 'cli'");
@@ -268,35 +319,46 @@ int main(int argc, char **argv) {
     }
 
     // If expression provided, evaluate it (within image if loaded)
-    if (!opts.expression.empty()) {
-      if (imagePtr) {
+    if (!opts.expression.empty())
+    {
+      if (imagePtr)
+      {
         TaggedValue result = imagePtr->evaluate(opts.expression);
         std::cout << "\n=== Result ===" << std::endl;
-        if (StringUtils::isString(result)) {
+        if (StringUtils::isString(result))
+        {
           String *str = StringUtils::asString(result);
           std::cout << str->toString() << std::endl;
-        } else {
+        }
+        else
+        {
           std::cout << result << std::endl;
         }
-      } else {
+      }
+      else
+      {
         // Legacy compile-and-execute path without an image
         SimpleParser parser(opts.expression);
         auto methodAST = parser.parseMethod();
-        if (opts.showParseTree) {
+        if (opts.showParseTree)
+        {
           std::cout << "\n=== Parse Tree ===" << std::endl;
           std::cout << methodAST->toString() << std::endl;
         }
         SimpleCompiler compiler;
         auto compiledMethod = compiler.compile(*methodAST);
-        if (opts.showMethod) {
+        if (opts.showMethod)
+        {
           std::cout << "\n=== Compiled Method ===" << std::endl;
           std::cout << "Primitive number: " << compiledMethod->primitiveNumber
                     << std::endl;
         }
-        if (opts.showBytecode) {
+        if (opts.showBytecode)
+        {
           printBytecodeAnalysis(compiledMethod->getBytecodes());
         }
-        if (opts.runExpression) {
+        if (opts.runExpression)
+        {
           MemoryManager memoryManager;
           SmalltalkImage image;
           Interpreter interpreter(memoryManager, image);
@@ -305,17 +367,21 @@ int main(int argc, char **argv) {
           TaggedValue result =
               interpreter.executeCompiledMethod(*compiledMethod);
           std::cout << "\n=== Result ===" << std::endl;
-          if (StringUtils::isString(result)) {
+          if (StringUtils::isString(result))
+          {
             String *str = StringUtils::asString(result);
             std::cout << str->toString() << std::endl;
-          } else {
+          }
+          else
+          {
             std::cout << result << std::endl;
           }
         }
       }
     }
-
-  } catch (const std::exception &e) {
+  }
+  catch (const std::exception &e)
+  {
     std::cerr << "Error: " << e.what() << '\n';
     return 1;
   }

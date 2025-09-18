@@ -23,6 +23,21 @@ NC='\033[0m' # No Color
 PASSED=0
 FAILED=0
 TOTAL=0
+TEST_TIMEOUT="${TEST_TIMEOUT:-1}"   # seconds per test/expression (default 1s)
+echo "Using per-test timeout: ${TEST_TIMEOUT}s"
+
+# Timeout wrapper using standard Unix timeout (or gtimeout on macOS). No custom watchdog.
+with_timeout() {
+    local seconds="$1"; shift
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "${seconds}" "$@"
+    elif command -v gtimeout >/dev/null 2>&1; then
+        gtimeout "${seconds}" "$@"
+    else
+        echo "Warning: 'timeout' not found; running without timeout" >&2
+        "$@"
+    fi
+}
 
 # Function to run a test
 run_test() {
@@ -32,14 +47,19 @@ run_test() {
     echo -e "\n${BLUE}--- Testing: $test_name ---${NC}"
     TOTAL=$((TOTAL + 1))
 
-    if eval "$test_command" > /tmp/test_output.log 2>&1; then
+    if with_timeout "$TEST_TIMEOUT" bash -lc "$test_command" > /tmp/test_output.log 2>&1; then
         echo -e "${GREEN}✓ PASSED${NC}: $test_name"
         PASSED=$((PASSED + 1))
         if [[ "${VERBOSE:-}" == "1" ]]; then
             cat /tmp/test_output.log
         fi
     else
-        echo -e "${RED}✗ FAILED${NC}: $test_name"
+        rc=$?
+        if [[ $rc -eq 124 ]]; then
+            echo -e "${YELLOW}⏱ TIMED OUT${NC}: $test_name (>${TEST_TIMEOUT}s)"
+        else
+            echo -e "${RED}✗ FAILED${NC}: $test_name (rc=$rc)"
+        fi
         FAILED=$((FAILED + 1))
         echo "Error output:"
         cat /tmp/test_output.log
@@ -56,7 +76,7 @@ run_expression() {
 
     TOTAL=$((TOTAL + 1))
 
-    if output=$(./build/smalltalk-vm "$expression" 2>&1); then
+    if output=$(with_timeout "$TEST_TIMEOUT" ./build/smalltalk-vm "$expression" 2>&1); then
         echo -e "${GREEN}✓ Result:${NC} $(echo "$output" | grep 'Result:' | sed 's/Result: //')"
         PASSED=$((PASSED + 1))
         if [[ "${VERBOSE:-}" == "1" ]]; then
@@ -64,7 +84,12 @@ run_expression() {
             echo "$output"
         fi
     else
-        echo -e "${RED}✗ FAILED${NC}"
+        rc=$?
+        if [[ $rc -eq 124 ]]; then
+            echo -e "${YELLOW}⏱ TIMED OUT${NC} (>${TEST_TIMEOUT}s)"
+        else
+            echo -e "${RED}✗ FAILED${NC} (rc=$rc)"
+        fi
         FAILED=$((FAILED + 1))
         echo "Error:"
         echo "$output"
@@ -100,6 +125,7 @@ PARSER_DEPS="$BASIC_DEPS build/simple_parser.o build/smalltalk_string.o build/sm
 COMPILER_DEPS="$PARSER_DEPS build/simple_compiler.o build/smalltalk_exception.o build/method_compiler.o build/globals.o"
 VM_DEPS="$COMPILER_DEPS \
   build/interpreter.o \
+  build/bootstrap_builder.o \
   build/primitives.o build/primitives/object.o build/primitives/block.o build/primitives/array.o build/primitives/string.o build/primitives/integer.o build/primitives/exception.o build/primitives/dictionary.o \
   build/smalltalk_image.o build/smalltalk_image_interpreter.o \
   build/smalltalk_vm.o \
@@ -151,19 +177,19 @@ echo -e "${BLUE}because the SimpleVM doesn't have full block execution context s
 
 echo -e "\n${BLUE}Block Expression Demo${NC}"
 echo -e "${YELLOW}Expression:${NC} [42]"
-./build/smalltalk-vm "[42]" 2>&1 | head -10
+with_timeout "$TEST_TIMEOUT" ./build/smalltalk-vm "[42]" 2>&1 | head -10 || true
 
 echo -e "\n${BLUE}Block with Arithmetic Demo${NC}"
 echo -e "${YELLOW}Expression:${NC} [3 + 4]"
-./build/smalltalk-vm "[3 + 4]" 2>&1 | head -10
+with_timeout "$TEST_TIMEOUT" ./build/smalltalk-vm "[3 + 4]" 2>&1 | head -10 || true
 
 echo -e "\n${BLUE}Multi-Statement Block Demo${NC}"
 echo -e "${YELLOW}Expression:${NC} [3 + 4. 5 * 6]"
-./build/smalltalk-vm "[3 + 4. 5 * 6]" 2>&1 | head -10
+with_timeout "$TEST_TIMEOUT" ./build/smalltalk-vm "[3 + 4. 5 * 6]" 2>&1 | head -10 || true
 
 echo -e "\n${BLUE}Three Statement Block Demo${NC}"
 echo -e "${YELLOW}Expression:${NC} [1 + 2. 3 * 4. 5 - 1]"
-./build/smalltalk-vm "[1 + 2. 3 * 4. 5 - 1]" 2>&1 | head -10
+with_timeout "$TEST_TIMEOUT" ./build/smalltalk-vm "[1 + 2. 3 * 4. 5 - 1]" 2>&1 | head -10 || true
 
 # 5. Test error handling
 echo -e "\n${YELLOW}=== ERROR HANDLING TESTS ===${NC}"

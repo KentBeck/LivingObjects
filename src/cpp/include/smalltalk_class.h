@@ -148,6 +148,7 @@ public:
   // Accessors to Smalltalk-backed metadata (may be nullptr until ensured)
   Object *getInstanceVarNamesArray() const { return instanceVarNamesArray_; }
   Object *getClassVarNamesArray() const { return classVarNamesArray_; }
+  Object *getMethodDictionaryObject() const { return methodDictObject_; }
 
   // Class hierarchy utilities
   std::vector<Class *> getSuperclasses() const;
@@ -265,6 +266,10 @@ Metaclass *createMetaclass(const std::string &name, Class *instanceClass,
 // Add a primitive method to a class
 void addPrimitiveMethod(Class *clazz, const std::string &selector,
                         int primitiveNumber);
+
+// Build Smalltalk-backed mirrors for all classes (no message sends)
+void buildAllMethodDictionaries(class MemoryManager &mm);
+void buildAllClassMetadata(class MemoryManager &mm);
 } // namespace ClassUtils
 
 } // namespace smalltalk

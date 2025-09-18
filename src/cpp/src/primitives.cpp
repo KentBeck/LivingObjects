@@ -261,8 +261,8 @@ TaggedValue compileIn(TaggedValue receiver,
   }
   Class *clazz = static_cast<Class *>(args[1].asObject());
 
-  // Use C++ MethodCompiler to compile and install
-  MethodCompiler::addSmalltalkMethod(clazz, source);
+  // Compile and install with write-through to Smalltalk dictionary
+  MethodCompiler::addSmalltalkMethod(clazz, source, interpreter.getMemoryManager());
 
   return TaggedValue::trueValue();
 }
