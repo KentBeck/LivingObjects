@@ -733,7 +733,7 @@ aBlock value.
       {"[100] ensure: [200]", "100", true, "block_methods"},
 
       // Conditionals - SHOULD FAIL (not implemented)
-      {"3 < 4) ifTrue: [10] ifFalse: [20]", "10", false, "conditionals"},
+      {"(3 < 4) ifTrue: [10] ifFalse: [20]", "10", true, "conditionals"},
       {"true ifTrue: [42]", "42", true, "conditionals"},
       {"false ifTrue: [1] ifFalse: [7]", "7", true, "conditionals"},
       {"42 isNil", "false", true, "conditionals"},
