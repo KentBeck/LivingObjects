@@ -1,0 +1,125 @@
+{
+  "primitive_number": 1,
+  "selector": "+",
+  "description": "Integer addition",
+  "receiver": {
+    "type": "SmallInteger",
+    "description": "The integer to add to"
+  },
+  "arguments": [
+    {
+      "name": "addend",
+      "type": "SmallInteger",
+      "description": "The integer to add"
+    }
+  ],
+  "returns": {
+    "type": "SmallInteger",
+    "description": "The sum of receiver and addend"
+  },
+  "stack_effect": {
+    "before": ["...", "receiver:SmallInteger", "addend:SmallInteger"],
+    "after": ["...", "result:SmallInteger"],
+    "pops": 2,
+    "pushes": 1
+  },
+  "operation": {
+    "pseudocode": "result = receiver + addend",
+    "steps": [
+      "Pop addend from stack",
+      "Pop receiver from stack",
+      "Compute sum = receiver + addend",
+      "Check for overflow",
+      "Push sum onto stack"
+    ]
+  },
+  "preconditions": [
+    "receiver is SmallInteger",
+    "addend is SmallInteger"
+  ],
+  "postconditions": [
+    "result is SmallInteger",
+    "result == receiver + addend (mathematically)",
+    "stack depth decreased by 1"
+  ],
+  "failures": [
+    {
+      "condition": "receiver is not SmallInteger",
+      "error": "TypeError",
+      "message": "Receiver must be SmallInteger"
+    },
+    {
+      "condition": "addend is not SmallInteger",
+      "error": "TypeError",
+      "message": "Argument must be SmallInteger"
+    },
+    {
+      "condition": "result overflows 31-bit signed integer",
+      "error": "OverflowError",
+      "message": "Integer overflow",
+      "fallback": "Execute Smalltalk implementation if available"
+    }
+  ],
+  "test_cases": [
+    {
+      "name": "basic_addition",
+      "receiver": 3,
+      "arguments": [4],
+      "expected": 7,
+      "stack_before": ["...", 3, 4],
+      "stack_after": ["...", 7]
+    },
+    {
+      "name": "zero_addition",
+      "receiver": 0,
+      "arguments": [0],
+      "expected": 0
+    },
+    {
+      "name": "negative_addition",
+      "receiver": -5,
+      "arguments": [3],
+      "expected": -2
+    },
+    {
+      "name": "large_numbers",
+      "receiver": 1000000,
+      "arguments": [2000000],
+      "expected": 3000000
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "string_receiver",
+      "receiver": "string",
+      "arguments": [4],
+      "expected_error": "TypeError"
+    },
+    {
+      "name": "string_argument",
+      "receiver": 3,
+      "arguments": ["string"],
+      "expected_error": "TypeError"
+    }
+  ],
+  "examples": [
+    {
+      "smalltalk": "3 + 4",
+      "result": "7",
+      "explanation": "Basic integer addition"
+    },
+    {
+      "smalltalk": "10 + (-3)",
+      "result": "7",
+      "explanation": "Addition with negative number"
+    }
+  ],
+  "notes": [
+    "Uses 31-bit signed integer arithmetic",
+    "Overflow causes primitive failure and fallback to Smalltalk",
+    "Result is always a SmallInteger if primitive succeeds"
+  ],
+  "related_primitives": [2, 9, 10],
+  "complexity": "O(1)",
+  "side_effects": "none"
+}

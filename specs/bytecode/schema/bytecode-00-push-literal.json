@@ -1,0 +1,133 @@
+{
+  "opcode": 0,
+  "mnemonic": "PUSH_LITERAL",
+  "description": "Push a literal value from the literals array onto the stack",
+  "format": {
+    "bytes": 5,
+    "encoding": "00 [index:uint32_le]",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 0
+      },
+      {
+        "name": "index",
+        "offset": 1,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Index into method's literals array"
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["..."],
+    "after": ["...", "literal"],
+    "pops": 0,
+    "pushes": 1,
+    "net_effect": "+1"
+  },
+  "operation": {
+    "pseudocode": "stack.push(method.literals[index])",
+    "steps": [
+      "Read 4-byte index from bytecode (little-endian)",
+      "Verify index < method.literals.length",
+      "Fetch literal = method.literals[index]",
+      "Push literal onto stack",
+      "Advance instruction pointer by 5"
+    ]
+  },
+  "preconditions": [
+    "index < method.literals.length",
+    "Stack has space for one more value"
+  ],
+  "postconditions": [
+    "Stack top == method.literals[index]",
+    "Stack depth increased by 1",
+    "Instruction pointer advanced by 5"
+  ],
+  "errors": [
+    {
+      "condition": "index >= method.literals.length",
+      "error": "IndexError",
+      "message": "Literal index out of bounds"
+    },
+    {
+      "condition": "Stack overflow",
+      "error": "StackOverflowError",
+      "message": "Stack full"
+    }
+  ],
+  "test_cases": [
+    {
+      "name": "push_integer",
+      "literals": [42, "hello", true],
+      "bytecode": [0, 0, 0, 0, 0],
+      "initial_stack": [],
+      "final_stack": [42],
+      "ip_before": 0,
+      "ip_after": 5
+    },
+    {
+      "name": "push_string",
+      "literals": [42, "hello", true],
+      "bytecode": [0, 1, 0, 0, 0],
+      "initial_stack": [],
+      "final_stack": ["hello"],
+      "ip_before": 0,
+      "ip_after": 5
+    },
+    {
+      "name": "push_boolean",
+      "literals": [42, "hello", true],
+      "bytecode": [0, 2, 0, 0, 0],
+      "initial_stack": [],
+      "final_stack": [true],
+      "ip_before": 0,
+      "ip_after": 5
+    },
+    {
+      "name": "push_onto_non_empty_stack",
+      "literals": [99],
+      "bytecode": [0, 0, 0, 0, 0],
+      "initial_stack": [1, 2, 3],
+      "final_stack": [1, 2, 3, 99],
+      "ip_before": 0,
+      "ip_after": 5
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "index_out_of_bounds",
+      "literals": [42, "hello"],
+      "bytecode": [0, 5, 0, 0, 0],
+      "initial_stack": [],
+      "expected_error": "IndexError"
+    }
+  ],
+  "examples": [
+    {
+      "smalltalk": "42",
+      "bytecode_hex": "00 00 00 00 00",
+      "explanation": "Push literal at index 0 (which is 42)"
+    },
+    {
+      "smalltalk": "'hello'",
+      "bytecode_hex": "00 01 00 00 00",
+      "explanation": "Push literal at index 1 (which is 'hello')"
+    }
+  ],
+  "notes": [
+    "Most common bytecode instruction",
+    "Literals include integers, strings, symbols, blocks",
+    "Index is 0-based",
+    "Little-endian encoding for index",
+    "Literal can be any TaggedValue type"
+  ],
+  "related_opcodes": [2, 3],
+  "frequency": "very high",
+  "complexity": "O(1)"
+}

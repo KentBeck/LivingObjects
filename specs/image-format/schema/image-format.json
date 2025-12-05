@@ -1,0 +1,345 @@
+{
+  "format_name": "Smalltalk Image Format",
+  "version": 1,
+  "magic_number": "0x53544C4B",
+  "magic_string": "STLK",
+  "endianness": "little",
+  "description": "Binary format for serializing Smalltalk object graphs",
+  
+  "header": {
+    "size_bytes": 64,
+    "fields": [
+      {
+        "name": "magic",
+        "offset": 0,
+        "size": 4,
+        "type": "uint32",
+        "value": "0x53544C4B",
+        "description": "Magic number for validation ('STLK')"
+      },
+      {
+        "name": "version",
+        "offset": 4,
+        "size": 4,
+        "type": "uint32",
+        "description": "Image format version (currently 1)"
+      },
+      {
+        "name": "creationTime",
+        "offset": 8,
+        "size": 8,
+        "type": "uint64",
+        "description": "Unix timestamp when image was created"
+      },
+      {
+        "name": "modificationTime",
+        "offset": 16,
+        "size": 8,
+        "type": "uint64",
+        "description": "Unix timestamp when image was last modified"
+      },
+      {
+        "name": "classCount",
+        "offset": 24,
+        "size": 4,
+        "type": "uint32",
+        "description": "Number of classes in image"
+      },
+      {
+        "name": "methodCount",
+        "offset": 28,
+        "size": 4,
+        "type": "uint32",
+        "description": "Number of methods in image"
+      },
+      {
+        "name": "globalCount",
+        "offset": 32,
+        "size": 4,
+        "type": "uint32",
+        "description": "Number of global variables"
+      },
+      {
+        "name": "metadataCount",
+        "offset": 36,
+        "size": 4,
+        "type": "uint32",
+        "description": "Number of metadata entries"
+      },
+      {
+        "name": "dataOffset",
+        "offset": 40,
+        "size": 8,
+        "type": "uint64",
+        "description": "Offset to start of object data section"
+      },
+      {
+        "name": "reserved",
+        "offset": 48,
+        "size": 16,
+        "type": "bytes",
+        "description": "Reserved for future use (must be zero)"
+      }
+    ]
+  },
+  
+  "sections": [
+    {
+      "name": "header",
+      "offset": 0,
+      "size": 64,
+      "required": true,
+      "description": "Image header with metadata"
+    },
+    {
+      "name": "class_table",
+      "offset": 64,
+      "size": "variable",
+      "required": true,
+      "description": "Class definitions and hierarchy"
+    },
+    {
+      "name": "global_dictionary",
+      "offset": "after class_table",
+      "size": "variable",
+      "required": true,
+      "description": "Global variable bindings"
+    },
+    {
+      "name": "metadata",
+      "offset": "after global_dictionary",
+      "size": "variable",
+      "required": false,
+      "description": "Key-value metadata pairs"
+    },
+    {
+      "name": "object_data",
+      "offset": "header.dataOffset",
+      "size": "variable",
+      "required": true,
+      "description": "Serialized object graph"
+    }
+  ],
+  
+  "class_table_entry": {
+    "description": "Entry for each class in the image",
+    "fields": [
+      {
+        "name": "nameLength",
+        "size": 4,
+        "type": "uint32",
+        "description": "Length of class name string"
+      },
+      {
+        "name": "className",
+        "size": "nameLength",
+        "type": "utf8_string",
+        "description": "Class name (UTF-8)"
+      },
+      {
+        "name": "superclassIndex",
+        "size": 4,
+        "type": "uint32",
+        "description": "Index of superclass (0xFFFFFFFF = no superclass)"
+      },
+      {
+        "name": "instanceVariableCount",
+        "size": 4,
+        "type": "uint32",
+        "description": "Number of instance variables"
+      },
+      {
+        "name": "instanceVariableNames",
+        "size": "variable",
+        "type": "string_array",
+        "description": "Array of instance variable names"
+      },
+      {
+        "name": "methodCount",
+        "size": 4,
+        "type": "uint32",
+        "description": "Number of methods in this class"
+      },
+      {
+        "name": "methodReferences",
+        "size": "variable",
+        "type": "method_ref_array",
+        "description": "Array of method references"
+      }
+    ]
+  },
+  
+  "global_entry": {
+    "description": "Entry for each global variable",
+    "fields": [
+      {
+        "name": "keyLength",
+        "size": 4,
+        "type": "uint32",
+        "description": "Length of key string"
+      },
+      {
+        "name": "key",
+        "size": "keyLength",
+        "type": "utf8_string",
+        "description": "Global variable name"
+      },
+      {
+        "name": "value",
+        "size": 8,
+        "type": "tagged_value",
+        "description": "Global variable value"
+      }
+    ]
+  },
+  
+  "metadata_entry": {
+    "description": "Key-value metadata pair",
+    "fields": [
+      {
+        "name": "keyLength",
+        "size": 4,
+        "type": "uint32"
+      },
+      {
+        "name": "key",
+        "size": "keyLength",
+        "type": "utf8_string"
+      },
+      {
+        "name": "valueLength",
+        "size": 4,
+        "type": "uint32"
+      },
+      {
+        "name": "value",
+        "size": "valueLength",
+        "type": "utf8_string"
+      }
+    ]
+  },
+  
+  "object_entry": {
+    "description": "Serialized object in object data section",
+    "fields": [
+      {
+        "name": "objectID",
+        "size": 4,
+        "type": "uint32",
+        "description": "Unique object identifier"
+      },
+      {
+        "name": "objectType",
+        "size": 1,
+        "type": "uint8",
+        "description": "Object type discriminator"
+      },
+      {
+        "name": "padding",
+        "size": 3,
+        "type": "bytes",
+        "description": "Padding for alignment"
+      },
+      {
+        "name": "objectData",
+        "size": "variable",
+        "type": "type_specific",
+        "description": "Object-specific data"
+      }
+    ]
+  },
+  
+  "object_types": {
+    "OBJECT": {
+      "value": 1,
+      "description": "General object with instance variables",
+      "data_format": [
+        {"name": "classIndex", "size": 4, "type": "uint32"},
+        {"name": "instanceVariableCount", "size": 4, "type": "uint32"},
+        {"name": "instanceVariables", "size": "variable", "type": "tagged_value_array"}
+      ]
+    },
+    "ARRAY": {
+      "value": 2,
+      "description": "Indexable collection",
+      "data_format": [
+        {"name": "classIndex", "size": 4, "type": "uint32"},
+        {"name": "elementCount", "size": 4, "type": "uint32"},
+        {"name": "elements", "size": "variable", "type": "tagged_value_array"}
+      ]
+    },
+    "BYTE_ARRAY": {
+      "value": 3,
+      "description": "Byte-indexed collection",
+      "data_format": [
+        {"name": "classIndex", "size": 4, "type": "uint32"},
+        {"name": "byteCount", "size": 4, "type": "uint32"},
+        {"name": "bytes", "size": "byteCount", "type": "uint8_array"}
+      ]
+    },
+    "SYMBOL": {
+      "value": 4,
+      "description": "Interned string",
+      "data_format": [
+        {"name": "stringLength", "size": 4, "type": "uint32"},
+        {"name": "stringData", "size": "stringLength", "type": "utf8_string"}
+      ]
+    },
+    "METHOD": {
+      "value": 7,
+      "description": "Compiled method",
+      "data_format": [
+        {"name": "primitiveNumber", "size": 4, "type": "uint32"},
+        {"name": "numArgs", "size": 4, "type": "uint32"},
+        {"name": "numTemps", "size": 4, "type": "uint32"},
+        {"name": "bytecodeSize", "size": 4, "type": "uint32"},
+        {"name": "literalCount", "size": 4, "type": "uint32"},
+        {"name": "bytecodes", "size": "bytecodeSize", "type": "uint8_array"},
+        {"name": "literals", "size": "variable", "type": "tagged_value_array"}
+      ]
+    }
+  },
+  
+  "validation_rules": [
+    "Magic number must be 0x53544C4B",
+    "Version must be 1",
+    "All counts must be non-negative",
+    "dataOffset must be >= 64",
+    "Class table must define classes before they are referenced",
+    "Object references must be valid object IDs",
+    "Circular references must be handled correctly",
+    "All strings must be valid UTF-8"
+  ],
+  
+  "loading_process": [
+    "Read and validate header",
+    "Load class table and build class hierarchy",
+    "Load global dictionary",
+    "Load metadata (optional)",
+    "Load object data section",
+    "Resolve object references",
+    "Reconnect primitive methods",
+    "Validate image integrity"
+  ],
+  
+  "saving_process": [
+    "Traverse object graph from roots",
+    "Assign object IDs",
+    "Topologically sort objects (dependencies first)",
+    "Write header",
+    "Write class table",
+    "Write global dictionary",
+    "Write metadata",
+    "Write object data",
+    "Update modification time"
+  ],
+  
+  "notes": [
+    "All multi-byte integers are little-endian",
+    "Strings are UTF-8 encoded",
+    "Object IDs are unique within an image",
+    "Circular references are supported",
+    "Symbols are interned during loading",
+    "Primitive methods must be reconnected after loading"
+  ]
+}

@@ -1,0 +1,175 @@
+{
+  "opcode": 6,
+  "mnemonic": "SEND_MESSAGE",
+  "description": "Send a message to a receiver with arguments",
+  "format": {
+    "bytes": 9,
+    "encoding": "06 [selector_index:uint32_le] [arg_count:uint32_le]",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 6
+      },
+      {
+        "name": "selector_index",
+        "offset": 1,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Index into literals array for selector symbol"
+      },
+      {
+        "name": "arg_count",
+        "offset": 5,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Number of arguments for this message"
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["...", "receiver", "arg1", "...", "argN"],
+    "after": ["...", "result"],
+    "pops": "1 + arg_count",
+    "pushes": 1,
+    "net_effect": "-arg_count"
+  },
+  "operation": {
+    "pseudocode": "result = receiver.send(selector, args)",
+    "steps": [
+      "Read 4-byte selector_index from bytecode",
+      "Read 4-byte arg_count from bytecode",
+      "Verify selector_index < method.literals.length",
+      "Get selector = method.literals[selector_index]",
+      "Pop arg_count arguments from stack (LIFO order)",
+      "Reverse arguments to restore source order",
+      "Pop receiver from stack",
+      "Look up method for selector in receiver's class",
+      "If method has primitive, try primitive first",
+      "If primitive fails or no primitive, execute method bytecode",
+      "Push result onto stack",
+      "Advance instruction pointer by 9"
+    ]
+  },
+  "preconditions": [
+    "selector_index < method.literals.length",
+    "method.literals[selector_index] is Symbol",
+    "Stack has at least (1 + arg_count) values",
+    "Receiver has method for selector (or doesNotUnderstand:)"
+  ],
+  "postconditions": [
+    "Stack depth decreased by arg_count",
+    "Top of stack is method result",
+    "Method has been executed",
+    "Instruction pointer advanced by 9"
+  ],
+  "errors": [
+    {
+      "condition": "selector_index >= method.literals.length",
+      "error": "IndexError",
+      "message": "Selector index out of bounds"
+    },
+    {
+      "condition": "Stack has fewer than (1 + arg_count) values",
+      "error": "StackUnderflowError",
+      "message": "Not enough values on stack"
+    },
+    {
+      "condition": "Method not found and no doesNotUnderstand:",
+      "error": "MessageNotUnderstood",
+      "message": "Method not found: {selector}"
+    },
+    {
+      "condition": "Method expects different number of arguments",
+      "error": "ArgumentError",
+      "message": "Wrong number of arguments"
+    }
+  ],
+  "test_cases": [
+    {
+      "name": "unary_message",
+      "literals": ["#size"],
+      "bytecode": [6, 0, 0, 0, 0, 0, 0, 0, 0],
+      "initial_stack": ["hello"],
+      "final_stack": [5],
+      "explanation": "'hello' size"
+    },
+    {
+      "name": "binary_message",
+      "literals": ["#+"],
+      "bytecode": [6, 0, 0, 0, 0, 1, 0, 0, 0],
+      "initial_stack": [3, 4],
+      "final_stack": [7],
+      "explanation": "3 + 4"
+    },
+    {
+      "name": "keyword_message_one_arg",
+      "literals": ["#at:"],
+      "bytecode": [6, 0, 0, 0, 0, 1, 0, 0, 0],
+      "initial_stack": [[10, 20, 30], 2],
+      "final_stack": [20],
+      "explanation": "#(10 20 30) at: 2"
+    },
+    {
+      "name": "keyword_message_two_args",
+      "literals": ["#at:put:"],
+      "bytecode": [6, 0, 0, 0, 0, 2, 0, 0, 0],
+      "initial_stack": [[10, 20, 30], 2, 99],
+      "final_stack": [99],
+      "explanation": "array at: 2 put: 99"
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "method_not_found",
+      "literals": ["#unknownMethod"],
+      "bytecode": [6, 0, 0, 0, 0, 0, 0, 0, 0],
+      "initial_stack": [42],
+      "expected_error": "MessageNotUnderstood"
+    },
+    {
+      "name": "stack_underflow",
+      "literals": ["#+"],
+      "bytecode": [6, 0, 0, 0, 0, 1, 0, 0, 0],
+      "initial_stack": [3],
+      "expected_error": "StackUnderflowError",
+      "explanation": "Need receiver + 1 arg, only have receiver"
+    }
+  ],
+  "examples": [
+    {
+      "smalltalk": "3 + 4",
+      "bytecode_sequence": [
+        "PUSH_LITERAL 0  ; push 3",
+        "PUSH_LITERAL 1  ; push 4",
+        "SEND_MESSAGE 2 1  ; send + with 1 arg"
+      ],
+      "explanation": "Binary message send"
+    },
+    {
+      "smalltalk": "array at: 2 put: 99",
+      "bytecode_sequence": [
+        "PUSH_LITERAL 0  ; push array",
+        "PUSH_LITERAL 1  ; push 2",
+        "PUSH_LITERAL 2  ; push 99",
+        "SEND_MESSAGE 3 2  ; send at:put: with 2 args"
+      ],
+      "explanation": "Keyword message with 2 arguments"
+    }
+  ],
+  "notes": [
+    "Most complex bytecode instruction",
+    "Arguments are popped in LIFO order, then reversed",
+    "Method lookup follows inheritance chain",
+    "Primitive methods tried first, then Smalltalk code",
+    "Creates new method context for execution",
+    "Selector must be a Symbol in literals array"
+  ],
+  "related_opcodes": [0, 7, 13, 14],
+  "frequency": "very high",
+  "complexity": "O(1) for method lookup (with caching), O(n) for method execution"
+}

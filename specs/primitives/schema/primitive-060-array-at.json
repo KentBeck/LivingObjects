@@ -1,0 +1,150 @@
+{
+  "primitive_number": 60,
+  "selector": "at:",
+  "description": "Array element access",
+  "receiver": {
+    "type": "Array",
+    "description": "The array to access"
+  },
+  "arguments": [
+    {
+      "name": "index",
+      "type": "SmallInteger",
+      "description": "1-based index of element to retrieve"
+    }
+  ],
+  "returns": {
+    "type": "Any",
+    "description": "The element at the specified index"
+  },
+  "stack_effect": {
+    "before": ["...", "receiver:Array", "index:SmallInteger"],
+    "after": ["...", "element:Any"],
+    "pops": 2,
+    "pushes": 1
+  },
+  "operation": {
+    "pseudocode": "result = receiver[index - 1]",
+    "steps": [
+      "Pop index from stack",
+      "Pop receiver from stack",
+      "Verify receiver is Array",
+      "Verify index is SmallInteger",
+      "Convert index to 0-based (index - 1)",
+      "Check bounds: 0 <= (index-1) < array.size",
+      "Retrieve element at (index-1)",
+      "Push element onto stack"
+    ]
+  },
+  "preconditions": [
+    "receiver is Array",
+    "index is SmallInteger",
+    "1 <= index <= receiver.size"
+  ],
+  "postconditions": [
+    "result == receiver[index - 1]",
+    "stack depth decreased by 1",
+    "receiver unchanged"
+  ],
+  "failures": [
+    {
+      "condition": "receiver is not Array",
+      "error": "TypeError",
+      "message": "Receiver must be Array"
+    },
+    {
+      "condition": "index is not SmallInteger",
+      "error": "TypeError",
+      "message": "Index must be SmallInteger"
+    },
+    {
+      "condition": "index < 1",
+      "error": "IndexError",
+      "message": "Index out of bounds (too small)"
+    },
+    {
+      "condition": "index > receiver.size",
+      "error": "IndexError",
+      "message": "Index out of bounds (too large)"
+    }
+  ],
+  "test_cases": [
+    {
+      "name": "first_element",
+      "receiver": [10, 20, 30],
+      "arguments": [1],
+      "expected": 10
+    },
+    {
+      "name": "middle_element",
+      "receiver": [10, 20, 30],
+      "arguments": [2],
+      "expected": 20
+    },
+    {
+      "name": "last_element",
+      "receiver": [10, 20, 30],
+      "arguments": [3],
+      "expected": 30
+    },
+    {
+      "name": "single_element",
+      "receiver": [42],
+      "arguments": [1],
+      "expected": 42
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "index_zero",
+      "receiver": [10, 20, 30],
+      "arguments": [0],
+      "expected_error": "IndexError"
+    },
+    {
+      "name": "index_too_large",
+      "receiver": [10, 20, 30],
+      "arguments": [4],
+      "expected_error": "IndexError"
+    },
+    {
+      "name": "negative_index",
+      "receiver": [10, 20, 30],
+      "arguments": [-1],
+      "expected_error": "IndexError"
+    },
+    {
+      "name": "non_array_receiver",
+      "receiver": "string",
+      "arguments": [1],
+      "expected_error": "TypeError"
+    },
+    {
+      "name": "non_integer_index",
+      "receiver": [10, 20, 30],
+      "arguments": ["two"],
+      "expected_error": "TypeError"
+    }
+  ],
+  "examples": [
+    {
+      "smalltalk": "#(10 20 30) at: 2",
+      "result": "20",
+      "explanation": "Access second element (1-based indexing)"
+    },
+    {
+      "smalltalk": "#(#a #b #c) at: 1",
+      "result": "#a",
+      "explanation": "Access first element"
+    }
+  ],
+  "notes": [
+    "Smalltalk uses 1-based indexing",
+    "Internal implementation uses 0-based indexing",
+    "Returns TaggedValue (can be any type)",
+    "Does not modify the array"
+  ],
+  "related_primitives": [61, 62, 63],
+  "complexity": "O(1)",
+  "side_effects": "none"
+}
