@@ -1,0 +1,143 @@
+{
+  "opcode": 1,
+  "mnemonic": "PUSH_INSTANCE_VARIABLE",
+  "description": "Push an instance variable from the receiver onto the stack",
+  "format": {
+    "bytes": 5,
+    "encoding": "01 [offset:uint32_le]",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 1
+      },
+      {
+        "name": "offset",
+        "offset": 1,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Offset of instance variable in receiver object"
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["..."],
+    "after": ["...", "value"],
+    "pops": 0,
+    "pushes": 1,
+    "net_effect": "+1"
+  },
+  "operation": {
+    "pseudocode": "stack.push(self.instanceVariables[offset])",
+    "steps": [
+      "Read 4-byte offset from bytecode",
+      "Get receiver (self) from current context",
+      "Verify receiver is an object (not immediate)",
+      "Verify offset < receiver.instanceVariableCount",
+      "Read instance variable at offset",
+      "Push value onto stack",
+      "Advance instruction pointer by 5"
+    ]
+  },
+  "preconditions": [
+    "Current context has valid receiver (self)",
+    "Receiver is an object (not SmallInteger, Boolean, nil)",
+    "offset < receiver.instanceVariableCount",
+    "Stack has space for one more value"
+  ],
+  "postconditions": [
+    "Stack top == receiver.instanceVariables[offset]",
+    "Stack depth increased by 1",
+    "Instruction pointer advanced by 5",
+    "Receiver unchanged"
+  ],
+  "errors": [
+    {
+      "condition": "offset >= receiver.instanceVariableCount",
+      "error": "IndexError",
+      "message": "Instance variable offset out of bounds"
+    },
+    {
+      "condition": "Receiver is immediate value",
+      "error": "TypeError",
+      "message": "Cannot access instance variables of immediate values"
+    },
+    {
+      "condition": "Stack overflow",
+      "error": "StackOverflowError",
+      "message": "Stack full"
+    }
+  ],
+  "test_cases": [
+    {
+      "name": "push_first_instance_variable",
+      "receiver": {"class": "Point", "x": 10, "y": 20},
+      "bytecode": [1, 0, 0, 0, 0],
+      "initial_stack": [],
+      "final_stack": [10],
+      "explanation": "Push x coordinate (offset 0)"
+    },
+    {
+      "name": "push_second_instance_variable",
+      "receiver": {"class": "Point", "x": 10, "y": 20},
+      "bytecode": [1, 1, 0, 0, 0],
+      "initial_stack": [],
+      "final_stack": [20],
+      "explanation": "Push y coordinate (offset 1)"
+    },
+    {
+      "name": "push_nil_instance_variable",
+      "receiver": {"class": "Object", "var1": null},
+      "bytecode": [1, 0, 0, 0, 0],
+      "initial_stack": [],
+      "final_stack": [null],
+      "explanation": "Instance variables can be nil"
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "offset_out_of_bounds",
+      "receiver": {"class": "Point", "x": 10, "y": 20},
+      "bytecode": [1, 5, 0, 0, 0],
+      "expected_error": "IndexError",
+      "explanation": "Point only has 2 instance variables"
+    },
+    {
+      "name": "immediate_receiver",
+      "receiver": 42,
+      "bytecode": [1, 0, 0, 0, 0],
+      "expected_error": "TypeError",
+      "explanation": "SmallInteger has no instance variables"
+    }
+  ],
+  "examples": [
+    {
+      "smalltalk": "x",
+      "context": "In method of class with instance variable x",
+      "bytecode_hex": "01 00 00 00 00",
+      "explanation": "Access first instance variable"
+    },
+    {
+      "smalltalk": "@x + @y",
+      "context": "Point class with x and y instance variables",
+      "bytecode_sequence": [
+        "PUSH_INSTANCE_VARIABLE 0  ; push x",
+        "PUSH_INSTANCE_VARIABLE 1  ; push y",
+        "SEND_MESSAGE + 1          ; send +"
+      ]
+    }
+  ],
+  "notes": [
+    "Offset is in TaggedValue slots, not bytes",
+    "First instance variable is at offset 0",
+    "Instance variables are initialized to nil",
+    "Immediate values (SmallInteger, Boolean, nil) have no instance variables",
+    "Receiver comes from current method context's self"
+  ],
+  "related_opcodes": [4, 3],
+  "frequency": "high",
+  "complexity": "O(1)"
+}

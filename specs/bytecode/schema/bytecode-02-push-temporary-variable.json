@@ -1,0 +1,78 @@
+{
+  "opcode": 2,
+  "mnemonic": "PUSH_TEMPORARY_VARIABLE",
+  "description": "Push a temporary variable or method parameter onto the stack",
+  "format": {
+    "bytes": 5,
+    "encoding": "02 [index:uint32_le]",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 2
+      },
+      {
+        "name": "index",
+        "offset": 1,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Index of temporary variable (0-based)"
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["..."],
+    "after": ["...", "value"],
+    "pops": 0,
+    "pushes": 1,
+    "net_effect": "+1"
+  },
+  "operation": {
+    "pseudocode": "stack.push(context.temporaries[index])",
+    "steps": [
+      "Read 4-byte index from bytecode",
+      "If index < method.homeVarCount, resolve through home context chain",
+      "Otherwise, access current context's temporary variables",
+      "Verify index < total temporary variable count",
+      "Read temporary variable at index",
+      "Push value onto stack",
+      "Advance instruction pointer by 5"
+    ]
+  },
+  "preconditions": [
+    "index < total temporary variable count",
+    "Current context is valid",
+    "Stack has space for one more value"
+  ],
+  "postconditions": [
+    "Stack top == temporaries[index]",
+    "Stack depth increased by 1",
+    "Instruction pointer advanced by 5",
+    "Temporary variables unchanged"
+  ],
+  "errors": [
+    {
+      "condition": "index >= temporary variable count",
+      "error": "IndexError",
+      "message": "Temporary variable index out of bounds"
+    },
+    {
+      "condition": "Stack overflow",
+      "error": "StackOverflowError",
+      "message": "Stack full"
+    }
+  ],
+  "notes": [
+    "Parameters and temporaries are both accessed via this instruction",
+    "Parameters have lower indices than local temporaries",
+    "Uninitialized temporaries contain nil",
+    "Blocks may access variables from outer scopes",
+    "Index resolution depends on context type (method vs block)"
+  ],
+  "related_opcodes": [5, 1, 3],
+  "frequency": "very high",
+  "complexity": "O(1) for method context, O(d) for block context (d = nesting depth)"
+}

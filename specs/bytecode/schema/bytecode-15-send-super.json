@@ -1,0 +1,65 @@
+{
+  "opcode": 15,
+  "mnemonic": "SEND_SUPER",
+  "description": "Send a message to super (superclass method lookup)",
+  "format": {
+    "bytes": 9,
+    "encoding": "0F [selectorIndex:uint32_le] [argCount:uint32_le]",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 15
+      },
+      {
+        "name": "selectorIndex",
+        "offset": 1,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Index into method's literal array for selector"
+      },
+      {
+        "name": "argCount",
+        "offset": 5,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Number of arguments (not including receiver)"
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["...", "arg1", "arg2", "...", "argN"],
+    "after": ["...", "result"],
+    "pops": "argCount",
+    "pushes": 1,
+    "net_effect": "1 - argCount"
+  },
+  "operation": {
+    "pseudocode": "selector = literals[selectorIndex]; method = lookupInSuperclass(selector); result = invoke(method, self, args); stack.push(result)",
+    "steps": [
+      "Read selectorIndex and argCount from bytecode",
+      "Get selector from literal array",
+      "Pop argCount arguments from stack",
+      "Get self from current context",
+      "Look up method in superclass (not self's class)",
+      "Create new context for method",
+      "Execute method with self and arguments",
+      "Push result onto stack",
+      "Advance instruction pointer by 9"
+    ]
+  },
+  "notes": [
+    "Receiver is still self (not super)",
+    "Method lookup starts in superclass",
+    "Used to call overridden methods",
+    "Super is compile-time concept, not runtime object",
+    "Common in method overrides"
+  ],
+  "related_opcodes": [6],
+  "frequency": "medium",
+  "complexity": "O(d) where d is inheritance depth"
+}

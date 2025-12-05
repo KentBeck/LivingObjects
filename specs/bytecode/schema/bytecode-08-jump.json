@@ -1,0 +1,53 @@
+{
+  "opcode": 8,
+  "mnemonic": "JUMP",
+  "description": "Unconditional jump to a bytecode offset",
+  "format": {
+    "bytes": 5,
+    "encoding": "08 [target:uint32_le]",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 8
+      },
+      {
+        "name": "target",
+        "offset": 1,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Absolute bytecode offset to jump to"
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["..."],
+    "after": ["..."],
+    "pops": 0,
+    "pushes": 0,
+    "net_effect": "0",
+    "note": "Stack unchanged, only instruction pointer changes"
+  },
+  "operation": {
+    "pseudocode": "instructionPointer = target",
+    "steps": [
+      "Read 4-byte target offset from bytecode",
+      "Verify target < method.bytecodeSize",
+      "Set instruction pointer to target",
+      "Continue execution at new location"
+    ]
+  },
+  "notes": [
+    "Used for loops and control flow",
+    "Can jump forward or backward",
+    "Target must be valid instruction boundary",
+    "Backward jumps create loops",
+    "Forward jumps skip code sections"
+  ],
+  "related_opcodes": [9, 10],
+  "frequency": "high",
+  "complexity": "O(1)"
+}

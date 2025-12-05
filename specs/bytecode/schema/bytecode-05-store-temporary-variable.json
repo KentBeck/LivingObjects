@@ -1,0 +1,58 @@
+{
+  "opcode": 5,
+  "mnemonic": "STORE_TEMPORARY_VARIABLE",
+  "description": "Store top of stack to a temporary variable or method parameter",
+  "format": {
+    "bytes": 5,
+    "encoding": "05 [index:uint32_le]",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 5
+      },
+      {
+        "name": "index",
+        "offset": 1,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Index of temporary variable (0-based)"
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["...", "value"],
+    "after": ["...", "value"],
+    "pops": 1,
+    "pushes": 1,
+    "net_effect": "0",
+    "note": "Value is popped then pushed back (assignment returns value)"
+  },
+  "operation": {
+    "pseudocode": "context.temporaries[index] = stack.top(); return stack.top()",
+    "steps": [
+      "Read 4-byte index from bytecode",
+      "Pop value from stack",
+      "If index < method.homeVarCount, resolve through home context chain",
+      "Otherwise, access current context's temporary variables",
+      "Verify index < total temporary variable count",
+      "Store value to temporary variable at index",
+      "Push value back onto stack (assignment returns value)",
+      "Advance instruction pointer by 5"
+    ]
+  },
+  "notes": [
+    "Assignment returns the assigned value (Smalltalk semantics)",
+    "Parameters and temporaries are both accessed via this instruction",
+    "Parameters can be modified (unlike some languages)",
+    "Blocks may write to variables from outer scopes",
+    "Index resolution depends on context type (method vs block)",
+    "Stack effect is neutral (pop 1, push 1)"
+  ],
+  "related_opcodes": [2, 4, 1],
+  "frequency": "very high",
+  "complexity": "O(1) for method context, O(d) for block context (d = nesting depth)"
+}

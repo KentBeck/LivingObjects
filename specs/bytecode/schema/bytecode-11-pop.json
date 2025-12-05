@@ -1,0 +1,81 @@
+{
+  "opcode": 11,
+  "mnemonic": "POP",
+  "description": "Remove and discard the top value from the stack",
+  "format": {
+    "bytes": 1,
+    "encoding": "0B",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 11
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["...", "value"],
+    "after": ["..."],
+    "pops": 1,
+    "pushes": 0,
+    "net_effect": "-1"
+  },
+  "operation": {
+    "pseudocode": "stack.pop()",
+    "steps": [
+      "Pop top value from stack",
+      "Discard the value",
+      "Advance instruction pointer by 1"
+    ]
+  },
+  "preconditions": [
+    "Stack has at least one value"
+  ],
+  "postconditions": [
+    "Stack depth decreased by 1",
+    "Instruction pointer advanced by 1"
+  ],
+  "errors": [
+    {
+      "condition": "Stack is empty",
+      "error": "StackUnderflowError",
+      "message": "Cannot pop from empty stack"
+    }
+  ],
+  "examples": [
+    {
+      "smalltalk": "x := 1. y := 2",
+      "bytecode_sequence": [
+        "PUSH_LITERAL 0               ; push 1",
+        "STORE_TEMPORARY_VARIABLE 0   ; store to x (returns 1)",
+        "POP                          ; discard assignment result",
+        "PUSH_LITERAL 1               ; push 2",
+        "STORE_TEMPORARY_VARIABLE 1   ; store to y"
+      ],
+      "explanation": "Discard intermediate assignment results"
+    },
+    {
+      "smalltalk": "self doSomething. self doOther",
+      "bytecode_sequence": [
+        "PUSH_SELF",
+        "SEND_MESSAGE doSomething 0",
+        "POP                          ; discard result",
+        "PUSH_SELF",
+        "SEND_MESSAGE doOther 0"
+      ],
+      "explanation": "Discard result of first message send"
+    }
+  ],
+  "notes": [
+    "Used to discard unwanted expression results",
+    "Common after assignments in statement sequences",
+    "Common after message sends when result not needed",
+    "Very simple and fast operation",
+    "One of the most frequent bytecodes"
+  ],
+  "related_opcodes": [0, 3],
+  "frequency": "very high",
+  "complexity": "O(1)"
+}

@@ -1,0 +1,59 @@
+{
+  "opcode": 4,
+  "mnemonic": "STORE_INSTANCE_VARIABLE",
+  "description": "Store top of stack to an instance variable of the receiver",
+  "format": {
+    "bytes": 5,
+    "encoding": "04 [offset:uint32_le]",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 4
+      },
+      {
+        "name": "offset",
+        "offset": 1,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Offset of instance variable in receiver object"
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["...", "value"],
+    "after": ["...", "value"],
+    "pops": 1,
+    "pushes": 1,
+    "net_effect": "0",
+    "note": "Value is popped then pushed back (assignment returns value)"
+  },
+  "operation": {
+    "pseudocode": "self.instanceVariables[offset] = stack.top(); return stack.top()",
+    "steps": [
+      "Read 4-byte offset from bytecode",
+      "Pop value from stack",
+      "Get receiver (self) from current context",
+      "Verify receiver is an object (not immediate)",
+      "Verify offset < receiver.instanceVariableCount",
+      "Verify receiver is not immutable",
+      "Store value to instance variable at offset",
+      "Push value back onto stack (assignment returns value)",
+      "Advance instruction pointer by 5"
+    ]
+  },
+  "notes": [
+    "Assignment returns the assigned value (Smalltalk semantics)",
+    "Offset is in TaggedValue slots, not bytes",
+    "First instance variable is at offset 0",
+    "Immediate values have no instance variables",
+    "Immutable objects cannot be modified",
+    "Stack effect is neutral (pop 1, push 1)"
+  ],
+  "related_opcodes": [1, 5, 2],
+  "frequency": "high",
+  "complexity": "O(1)"
+}

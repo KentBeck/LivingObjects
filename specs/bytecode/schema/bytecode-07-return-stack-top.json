@@ -1,0 +1,57 @@
+{
+  "opcode": 7,
+  "mnemonic": "RETURN_STACK_TOP",
+  "description": "Return the top of stack to the sender context",
+  "format": {
+    "bytes": 1,
+    "encoding": "07",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 7
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["...", "returnValue"],
+    "after": "(sender context) [..., returnValue]",
+    "pops": 1,
+    "pushes": "1 (to sender stack)",
+    "net_effect": "Context switch",
+    "note": "Pops from current context, pushes to sender context"
+  },
+  "operation": {
+    "pseudocode": "sender.stack.push(current.stack.pop()); switchTo(sender)",
+    "steps": [
+      "Pop return value from current stack",
+      "If no sender context, end execution with value",
+      "Otherwise, switch to sender context",
+      "Push return value onto sender's stack",
+      "Continue execution in sender context"
+    ]
+  },
+  "examples": [
+    {
+      "smalltalk": "method\n    ^42",
+      "bytecode_sequence": [
+        "PUSH_LITERAL 0      ; push 42",
+        "RETURN_STACK_TOP    ; return 42"
+      ],
+      "explanation": "Explicit return statement"
+    }
+  ],
+  "notes": [
+    "Terminates current method execution",
+    "Switches execution context to sender",
+    "Return value becomes result of message send",
+    "No instruction pointer advancement (context switch)",
+    "Can cause context unwinding in complex cases",
+    "Implicit returns added by compiler when needed"
+  ],
+  "related_opcodes": [6, 13, 14],
+  "frequency": "very high",
+  "complexity": "O(1) for simple return, O(n) for block non-local return (n = contexts to unwind)"
+}

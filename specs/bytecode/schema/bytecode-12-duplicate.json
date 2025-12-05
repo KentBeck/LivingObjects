@@ -1,0 +1,87 @@
+{
+  "opcode": 12,
+  "mnemonic": "DUPLICATE",
+  "description": "Duplicate the top value on the stack",
+  "format": {
+    "bytes": 1,
+    "encoding": "0C",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 12
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["...", "value"],
+    "after": ["...", "value", "value"],
+    "pops": 0,
+    "pushes": 1,
+    "net_effect": "+1"
+  },
+  "operation": {
+    "pseudocode": "value = stack.top(); stack.push(value)",
+    "steps": [
+      "Peek at top value on stack (don't pop)",
+      "Push a copy of that value onto stack",
+      "Advance instruction pointer by 1"
+    ]
+  },
+  "preconditions": [
+    "Stack has at least one value",
+    "Stack has space for one more value"
+  ],
+  "postconditions": [
+    "Stack top two values are identical",
+    "Stack depth increased by 1",
+    "Instruction pointer advanced by 1"
+  ],
+  "errors": [
+    {
+      "condition": "Stack is empty",
+      "error": "StackUnderflowError",
+      "message": "Cannot duplicate from empty stack"
+    },
+    {
+      "condition": "Stack overflow",
+      "error": "StackOverflowError",
+      "message": "Stack full"
+    }
+  ],
+  "examples": [
+    {
+      "smalltalk": "x := y := 5",
+      "bytecode_sequence": [
+        "PUSH_LITERAL 0               ; push 5",
+        "DUPLICATE                    ; duplicate 5",
+        "STORE_TEMPORARY_VARIABLE 1   ; store to y (returns 5)",
+        "STORE_TEMPORARY_VARIABLE 0   ; store to x"
+      ],
+      "explanation": "Chained assignment needs value duplicated"
+    },
+    {
+      "smalltalk": "collection add: (x := 10)",
+      "bytecode_sequence": [
+        "PUSH_TEMPORARY_VARIABLE 0    ; push collection",
+        "PUSH_LITERAL 0               ; push 10",
+        "DUPLICATE                    ; duplicate 10",
+        "STORE_TEMPORARY_VARIABLE 1   ; store to x",
+        "SEND_MESSAGE add: 1          ; send add: with 10"
+      ],
+      "explanation": "Assignment result used as message argument"
+    }
+  ],
+  "notes": [
+    "Creates shallow copy (reference, not deep clone)",
+    "Used for chained assignments",
+    "Used when value needed multiple times",
+    "Does not modify the original value",
+    "Fast operation (just copies reference)"
+  ],
+  "related_opcodes": [11, 0],
+  "frequency": "medium",
+  "complexity": "O(1)"
+}

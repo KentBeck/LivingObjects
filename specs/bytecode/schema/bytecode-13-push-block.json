@@ -1,0 +1,72 @@
+{
+  "opcode": 13,
+  "mnemonic": "PUSH_BLOCK",
+  "description": "Create and push a block closure onto the stack",
+  "format": {
+    "bytes": 13,
+    "encoding": "0D [argCount:uint32_le] [bytecodeOffset:uint32_le] [homeVarCount:uint32_le]",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 13
+      },
+      {
+        "name": "argCount",
+        "offset": 1,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Number of arguments the block accepts"
+      },
+      {
+        "name": "bytecodeOffset",
+        "offset": 5,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Offset to block's bytecode"
+      },
+      {
+        "name": "homeVarCount",
+        "offset": 9,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Number of variables from home context"
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["..."],
+    "after": ["...", "blockClosure"],
+    "pops": 0,
+    "pushes": 1,
+    "net_effect": "+1"
+  },
+  "operation": {
+    "pseudocode": "block = createBlock(argCount, bytecodeOffset, homeVarCount, currentContext); stack.push(block)",
+    "steps": [
+      "Read argCount, bytecodeOffset, homeVarCount from bytecode",
+      "Create new block closure object",
+      "Set block's home context to current context",
+      "Set block's bytecode offset",
+      "Set block's argument count",
+      "Set block's home variable count",
+      "Push block onto stack",
+      "Advance instruction pointer by 13"
+    ]
+  },
+  "notes": [
+    "Blocks capture their home context (closure)",
+    "Block execution starts at bytecodeOffset",
+    "Blocks can access home context variables",
+    "homeVarCount determines variable resolution",
+    "Blocks are first-class objects"
+  ],
+  "related_opcodes": [14, 6],
+  "frequency": "high",
+  "complexity": "O(1)"
+}

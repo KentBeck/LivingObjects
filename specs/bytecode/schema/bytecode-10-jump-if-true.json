@@ -1,0 +1,52 @@
+{
+  "opcode": 10,
+  "mnemonic": "JUMP_IF_TRUE",
+  "description": "Conditional jump if top of stack is not false or nil",
+  "format": {
+    "bytes": 5,
+    "encoding": "0A [target:uint32_le]",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 10
+      },
+      {
+        "name": "target",
+        "offset": 1,
+        "size": 4,
+        "type": "uint32",
+        "endianness": "little",
+        "description": "Absolute bytecode offset to jump to if condition is true"
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["...", "condition"],
+    "after": ["..."],
+    "pops": 1,
+    "pushes": 0,
+    "net_effect": "-1"
+  },
+  "operation": {
+    "pseudocode": "value = stack.pop(); if (value != false && value != nil) instructionPointer = target",
+    "steps": [
+      "Read 4-byte target offset from bytecode",
+      "Pop condition value from stack",
+      "If value is not false and not nil, set instruction pointer to target",
+      "Otherwise, advance instruction pointer by 5"
+    ]
+  },
+  "notes": [
+    "Only false and nil are considered false",
+    "All other values (including 0) are considered true",
+    "Pops the condition value from stack",
+    "Complement of JUMP_IF_FALSE",
+    "Used to implement ifFalse: and loop exits"
+  ],
+  "related_opcodes": [8, 9],
+  "frequency": "high",
+  "complexity": "O(1)"
+}

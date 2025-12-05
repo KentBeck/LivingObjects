@@ -1,0 +1,45 @@
+{
+  "opcode": 14,
+  "mnemonic": "BLOCK_RETURN",
+  "description": "Return from a block to its caller (not home method)",
+  "format": {
+    "bytes": 1,
+    "encoding": "0E",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 14
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["...", "returnValue"],
+    "after": "(caller context) [..., returnValue]",
+    "pops": 1,
+    "pushes": "1 (to caller stack)",
+    "net_effect": "Context switch",
+    "note": "Returns to block caller, not home method"
+  },
+  "operation": {
+    "pseudocode": "caller.stack.push(current.stack.pop()); switchTo(caller)",
+    "steps": [
+      "Pop return value from current stack",
+      "Switch to caller context (not home context)",
+      "Push return value onto caller's stack",
+      "Continue execution in caller context"
+    ]
+  },
+  "notes": [
+    "Different from RETURN_STACK_TOP (opcode 7)",
+    "Returns to block caller, not home method",
+    "Used for normal block completion",
+    "Implicit at end of block if no explicit return",
+    "Does not unwind to home method"
+  ],
+  "related_opcodes": [7, 13],
+  "frequency": "high",
+  "complexity": "O(1)"
+}

@@ -1,0 +1,75 @@
+{
+  "opcode": 3,
+  "mnemonic": "PUSH_SELF",
+  "description": "Push the receiver (self) onto the stack",
+  "format": {
+    "bytes": 1,
+    "encoding": "03",
+    "fields": [
+      {
+        "name": "opcode",
+        "offset": 0,
+        "size": 1,
+        "type": "uint8",
+        "value": 3
+      }
+    ]
+  },
+  "stack_effect": {
+    "before": ["..."],
+    "after": ["...", "self"],
+    "pops": 0,
+    "pushes": 1,
+    "net_effect": "+1"
+  },
+  "operation": {
+    "pseudocode": "stack.push(context.self)",
+    "steps": [
+      "Get self from current context",
+      "Push self onto stack",
+      "Advance instruction pointer by 1"
+    ]
+  },
+  "preconditions": [
+    "Current context has valid self",
+    "Stack has space for one more value"
+  ],
+  "postconditions": [
+    "Stack top == context.self",
+    "Stack depth increased by 1",
+    "Instruction pointer advanced by 1",
+    "Self unchanged"
+  ],
+  "errors": [
+    {
+      "condition": "Stack overflow",
+      "error": "StackOverflowError",
+      "message": "Stack full"
+    }
+  ],
+  "examples": [
+    {
+      "smalltalk": "self",
+      "bytecode_hex": "03",
+      "explanation": "Reference to self"
+    },
+    {
+      "smalltalk": "self class",
+      "bytecode_sequence": [
+        "PUSH_SELF                 ; push self",
+        "SEND_MESSAGE class 0      ; send class message"
+      ],
+      "explanation": "Get class of self"
+    }
+  ],
+  "notes": [
+    "Simplest bytecode instruction (no operands)",
+    "Self is always available in any method context",
+    "Self can be any object (instance, class, immediate value)",
+    "Blocks inherit self from their home context",
+    "Very common instruction (used for message sends to self)"
+  ],
+  "related_opcodes": [1, 2, 6],
+  "frequency": "very high",
+  "complexity": "O(1)"
+}
