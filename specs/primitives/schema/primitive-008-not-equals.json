@@ -1,0 +1,59 @@
+{
+  "primitive_number": 8,
+  "selector": "~=",
+  "receiver_class": "SmallInteger",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "comparand",
+      "type": "SmallInteger",
+      "description": "Value to compare against"
+    }
+  ],
+  "returns": {
+    "type": "Boolean",
+    "description": "true if receiver != argument, false otherwise"
+  },
+  "description": "Integer inequality comparison primitive",
+  "stack_diagram": {
+    "before": ["...", "receiver(int)", "arg(int)"],
+    "after": ["...", "result(boolean)"]
+  },
+  "operation": "result = (receiver != arg) ? true : false",
+  "examples": [
+    {
+      "smalltalk": "3 ~= 7",
+      "result": "true",
+      "explanation": "Different values"
+    },
+    {
+      "smalltalk": "5 ~= 5",
+      "result": "false",
+      "explanation": "Equal values"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not SmallInteger",
+    "Argument is not SmallInteger"
+  ],
+  "test_cases": [
+    {
+      "name": "different_values",
+      "receiver": 3,
+      "arguments": [7],
+      "expected_result": true
+    },
+    {
+      "name": "equal_values",
+      "receiver": 5,
+      "arguments": [5],
+      "expected_result": false
+    }
+  ],
+  "notes": [
+    "Complement of =",
+    "Logical negation of equality"
+  ],
+  "related_primitives": [3, 4, 5, 6, 7],
+  "complexity": "O(1)"
+}

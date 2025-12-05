@@ -1,0 +1,48 @@
+{
+  "primitive_number": 702,
+  "selector": "keys",
+  "receiver_class": "Dictionary",
+  "argument_count": 0,
+  "arguments": [],
+  "returns": {
+    "type": "Collection",
+    "description": "Collection of all keys"
+  },
+  "description": "Get all dictionary keys",
+  "stack_diagram": {
+    "before": ["...", "receiver(dict)"],
+    "after": ["...", "keys(collection)"]
+  },
+  "operation": "result = receiver.allKeys()",
+  "examples": [
+    {
+      "smalltalk": "| dict |\ndict := Dictionary new.\ndict at: #a put: 1.\ndict at: #b put: 2.\ndict keys",
+      "result": "#(#a #b)",
+      "explanation": "Returns collection of keys"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a Dictionary"
+  ],
+  "test_cases": [
+    {
+      "name": "get_keys",
+      "receiver": "dict with #a->1, #b->2",
+      "arguments": [],
+      "expected_result": "collection containing #a and #b"
+    },
+    {
+      "name": "empty_dictionary",
+      "receiver": "empty dict",
+      "arguments": [],
+      "expected_result": "empty collection"
+    }
+  ],
+  "notes": [
+    "Returns collection (typically Array or OrderedCollection)",
+    "Order of keys is implementation-defined",
+    "Empty dictionary returns empty collection"
+  ],
+  "related_primitives": [700, 701, 703],
+  "complexity": "O(n) where n is number of entries"
+}

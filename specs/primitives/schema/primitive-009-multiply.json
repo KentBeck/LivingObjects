@@ -1,0 +1,78 @@
+{
+  "primitive_number": 9,
+  "selector": "*",
+  "receiver_class": "SmallInteger",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "multiplier",
+      "type": "SmallInteger",
+      "description": "Value to multiply with receiver"
+    }
+  ],
+  "returns": {
+    "type": "SmallInteger",
+    "description": "Product of receiver times argument"
+  },
+  "description": "Integer multiplication primitive",
+  "stack_diagram": {
+    "before": ["...", "receiver(int)", "arg(int)"],
+    "after": ["...", "result(int)"]
+  },
+  "operation": "result = receiver * arg",
+  "examples": [
+    {
+      "smalltalk": "6 * 7",
+      "result": "42",
+      "explanation": "Basic multiplication"
+    },
+    {
+      "smalltalk": "5 * 0",
+      "result": "0",
+      "explanation": "Multiply by zero"
+    },
+    {
+      "smalltalk": "-3 * 4",
+      "result": "-12",
+      "explanation": "Negative multiplication"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not SmallInteger",
+    "Argument is not SmallInteger",
+    "Result overflows 31-bit signed integer range"
+  ],
+  "test_cases": [
+    {
+      "name": "basic_multiplication",
+      "receiver": 6,
+      "arguments": [7],
+      "expected_result": 42
+    },
+    {
+      "name": "multiply_by_zero",
+      "receiver": 5,
+      "arguments": [0],
+      "expected_result": 0
+    },
+    {
+      "name": "multiply_by_one",
+      "receiver": 42,
+      "arguments": [1],
+      "expected_result": 42
+    },
+    {
+      "name": "negative_multiplication",
+      "receiver": -3,
+      "arguments": [4],
+      "expected_result": -12
+    }
+  ],
+  "notes": [
+    "Commutative operation",
+    "Fails on overflow to large integer",
+    "Handles negative numbers"
+  ],
+  "related_primitives": [1, 2, 10],
+  "complexity": "O(1)"
+}

@@ -1,0 +1,57 @@
+{
+  "primitive_number": 111,
+  "selector": "class",
+  "receiver_class": "Object",
+  "argument_count": 0,
+  "arguments": [],
+  "returns": {
+    "type": "Class",
+    "description": "Receiver's class"
+  },
+  "description": "Get object's class",
+  "stack_diagram": {
+    "before": ["...", "receiver(any)"],
+    "after": ["...", "class(class)"]
+  },
+  "operation": "result = receiver.class",
+  "examples": [
+    {
+      "smalltalk": "42 class",
+      "result": "SmallInteger",
+      "explanation": "Class of integer"
+    },
+    {
+      "smalltalk": "'hello' class",
+      "result": "String",
+      "explanation": "Class of string"
+    },
+    {
+      "smalltalk": "true class",
+      "result": "True",
+      "explanation": "Class of true"
+    }
+  ],
+  "failure_conditions": [],
+  "test_cases": [
+    {
+      "name": "integer_class",
+      "receiver": 42,
+      "arguments": [],
+      "expected_result": "SmallInteger"
+    },
+    {
+      "name": "string_class",
+      "receiver": "hello",
+      "arguments": [],
+      "expected_result": "String"
+    }
+  ],
+  "notes": [
+    "Works for immediate values",
+    "Returns Class object",
+    "Used for type checking and introspection",
+    "Never fails"
+  ],
+  "related_primitives": [75],
+  "complexity": "O(1)"
+}

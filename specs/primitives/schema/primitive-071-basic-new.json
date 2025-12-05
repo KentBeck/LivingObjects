@@ -1,0 +1,44 @@
+{
+  "primitive_number": 71,
+  "selector": "basicNew",
+  "receiver_class": "Class",
+  "argument_count": 0,
+  "arguments": [],
+  "returns": {
+    "type": "Object",
+    "description": "New instance of receiver class (not initialized)"
+  },
+  "description": "Create new instance without initialization",
+  "stack_diagram": {
+    "before": ["...", "receiver(class)"],
+    "after": ["...", "instance(object)"]
+  },
+  "operation": "1. Allocate object\n2. Initialize instance variables to nil\n3. Return instance (NO initialize message)",
+  "examples": [
+    {
+      "smalltalk": "Object basicNew",
+      "result": "anObject",
+      "explanation": "Create new Object instance without initialization"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a Class",
+    "Memory allocation fails"
+  ],
+  "test_cases": [
+    {
+      "name": "create_object",
+      "receiver": "Object",
+      "arguments": [],
+      "expected_result": "instance of Object"
+    }
+  ],
+  "notes": [
+    "Does NOT send initialize message",
+    "Used when custom initialization needed",
+    "Faster than new for simple objects",
+    "Instance variables initialized to nil"
+  ],
+  "related_primitives": [70, 72],
+  "complexity": "O(n) where n is number of instance variables"
+}

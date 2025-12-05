@@ -1,0 +1,48 @@
+{
+  "primitive_number": 703,
+  "selector": "size",
+  "receiver_class": "Dictionary",
+  "argument_count": 0,
+  "arguments": [],
+  "returns": {
+    "type": "SmallInteger",
+    "description": "Number of key-value pairs"
+  },
+  "description": "Get dictionary size",
+  "stack_diagram": {
+    "before": ["...", "receiver(dict)"],
+    "after": ["...", "size(int)"]
+  },
+  "operation": "result = receiver.entryCount()",
+  "examples": [
+    {
+      "smalltalk": "| dict |\ndict := Dictionary new.\ndict at: #a put: 1.\ndict at: #b put: 2.\ndict size",
+      "result": "2",
+      "explanation": "Dictionary has 2 entries"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a Dictionary"
+  ],
+  "test_cases": [
+    {
+      "name": "non_empty_dictionary",
+      "receiver": "dict with 2 entries",
+      "arguments": [],
+      "expected_result": 2
+    },
+    {
+      "name": "empty_dictionary",
+      "receiver": "empty dict",
+      "arguments": [],
+      "expected_result": 0
+    }
+  ],
+  "notes": [
+    "Returns SmallInteger",
+    "Empty dictionary returns 0",
+    "Constant time operation"
+  ],
+  "related_primitives": [62, 66, 700, 701],
+  "complexity": "O(1)"
+}

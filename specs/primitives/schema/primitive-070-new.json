@@ -1,0 +1,43 @@
+{
+  "primitive_number": 70,
+  "selector": "new",
+  "receiver_class": "Class",
+  "argument_count": 0,
+  "arguments": [],
+  "returns": {
+    "type": "Object",
+    "description": "New instance of receiver class"
+  },
+  "description": "Create new instance with initialization",
+  "stack_diagram": {
+    "before": ["...", "receiver(class)"],
+    "after": ["...", "instance(object)"]
+  },
+  "operation": "1. Allocate object\n2. Initialize instance variables to nil\n3. Send #initialize message\n4. Return instance",
+  "examples": [
+    {
+      "smalltalk": "Object new",
+      "result": "anObject",
+      "explanation": "Create new Object instance"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a Class",
+    "Memory allocation fails"
+  ],
+  "test_cases": [
+    {
+      "name": "create_object",
+      "receiver": "Object",
+      "arguments": [],
+      "expected_result": "instance of Object"
+    }
+  ],
+  "notes": [
+    "Sends initialize message after creation",
+    "Instance variables initialized to nil",
+    "Use basicNew for no initialization"
+  ],
+  "related_primitives": [71, 72],
+  "complexity": "O(n) where n is number of instance variables"
+}

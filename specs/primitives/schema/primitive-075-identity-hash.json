@@ -1,0 +1,53 @@
+{
+  "primitive_number": 75,
+  "selector": "identityHash",
+  "receiver_class": "Object",
+  "argument_count": 0,
+  "arguments": [],
+  "returns": {
+    "type": "SmallInteger",
+    "description": "Identity hash code"
+  },
+  "description": "Get object's identity hash",
+  "stack_diagram": {
+    "before": ["...", "receiver(any)"],
+    "after": ["...", "hash(int)"]
+  },
+  "operation": "result = receiver.objectHeader.hash",
+  "examples": [
+    {
+      "smalltalk": "Object new identityHash",
+      "result": "12345",
+      "explanation": "Some hash value from object header"
+    },
+    {
+      "smalltalk": "42 identityHash",
+      "result": "42",
+      "explanation": "SmallInteger hash is the value itself"
+    }
+  ],
+  "failure_conditions": [],
+  "test_cases": [
+    {
+      "name": "object_hash",
+      "receiver": "anObject",
+      "arguments": [],
+      "expected_result": "some integer"
+    },
+    {
+      "name": "integer_hash",
+      "receiver": 42,
+      "arguments": [],
+      "expected_result": 42
+    }
+  ],
+  "notes": [
+    "Returns hash from object header",
+    "Hash is stable for object lifetime",
+    "Used for hashing in dictionaries",
+    "Immediate values have computed hashes",
+    "Never fails"
+  ],
+  "related_primitives": [111],
+  "complexity": "O(1)"
+}

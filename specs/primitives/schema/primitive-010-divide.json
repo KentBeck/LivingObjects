@@ -1,0 +1,86 @@
+{
+  "primitive_number": 10,
+  "selector": "/",
+  "receiver_class": "SmallInteger",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "divisor",
+      "type": "SmallInteger",
+      "description": "Value to divide receiver by"
+    }
+  ],
+  "returns": {
+    "type": "SmallInteger",
+    "description": "Quotient of receiver divided by argument (truncated toward zero)"
+  },
+  "description": "Integer division primitive",
+  "stack_diagram": {
+    "before": ["...", "receiver(int)", "arg(int)"],
+    "after": ["...", "result(int)"]
+  },
+  "operation": "result = receiver / arg (integer division, truncated toward zero)",
+  "examples": [
+    {
+      "smalltalk": "20 / 4",
+      "result": "5",
+      "explanation": "Exact division"
+    },
+    {
+      "smalltalk": "7 / 2",
+      "result": "3",
+      "explanation": "Truncated division"
+    },
+    {
+      "smalltalk": "-7 / 2",
+      "result": "-3",
+      "explanation": "Negative division truncates toward zero"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not SmallInteger",
+    "Argument is not SmallInteger",
+    "Argument is zero (signals ZeroDivisionError)"
+  ],
+  "test_cases": [
+    {
+      "name": "exact_division",
+      "receiver": 20,
+      "arguments": [4],
+      "expected_result": 5
+    },
+    {
+      "name": "truncated_division",
+      "receiver": 7,
+      "arguments": [2],
+      "expected_result": 3
+    },
+    {
+      "name": "negative_division",
+      "receiver": -7,
+      "arguments": [2],
+      "expected_result": -3
+    },
+    {
+      "name": "divide_by_one",
+      "receiver": 42,
+      "arguments": [1],
+      "expected_result": 42
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "divide_by_zero",
+      "receiver": 10,
+      "arguments": [0],
+      "expected_error": "ZeroDivisionError"
+    }
+  ],
+  "notes": [
+    "Integer division truncates toward zero",
+    "Division by zero throws exception",
+    "Use // for modulo operation"
+  ],
+  "related_primitives": [9, 11],
+  "complexity": "O(1)"
+}

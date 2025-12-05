@@ -1,0 +1,85 @@
+{
+  "primitive_number": 11,
+  "selector": "//",
+  "receiver_class": "SmallInteger",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "divisor",
+      "type": "SmallInteger",
+      "description": "Value to compute modulo with"
+    }
+  ],
+  "returns": {
+    "type": "SmallInteger",
+    "description": "Remainder of receiver divided by argument"
+  },
+  "description": "Integer modulo primitive",
+  "stack_diagram": {
+    "before": ["...", "receiver(int)", "arg(int)"],
+    "after": ["...", "result(int)"]
+  },
+  "operation": "result = receiver % arg",
+  "examples": [
+    {
+      "smalltalk": "10 // 3",
+      "result": "1",
+      "explanation": "10 mod 3 = 1"
+    },
+    {
+      "smalltalk": "7 // 2",
+      "result": "1",
+      "explanation": "7 mod 2 = 1"
+    },
+    {
+      "smalltalk": "-7 // 2",
+      "result": "-1",
+      "explanation": "Negative modulo"
+    },
+    {
+      "smalltalk": "8 // 4",
+      "result": "0",
+      "explanation": "Exact division has remainder 0"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not SmallInteger",
+    "Argument is not SmallInteger",
+    "Argument is zero (signals ZeroDivisionError)"
+  ],
+  "test_cases": [
+    {
+      "name": "basic_modulo",
+      "receiver": 10,
+      "arguments": [3],
+      "expected_result": 1
+    },
+    {
+      "name": "exact_division_remainder",
+      "receiver": 8,
+      "arguments": [4],
+      "expected_result": 0
+    },
+    {
+      "name": "negative_modulo",
+      "receiver": -7,
+      "arguments": [2],
+      "expected_result": -1
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "modulo_by_zero",
+      "receiver": 10,
+      "arguments": [0],
+      "expected_error": "ZeroDivisionError"
+    }
+  ],
+  "notes": [
+    "Returns remainder of division",
+    "Modulo by zero throws exception",
+    "Sign of result matches sign of receiver"
+  ],
+  "related_primitives": [10],
+  "complexity": "O(1)"
+}

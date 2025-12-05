@@ -1,0 +1,77 @@
+{
+  "primitive_number": 3,
+  "selector": "<",
+  "receiver_class": "SmallInteger",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "comparand",
+      "type": "SmallInteger",
+      "description": "Value to compare against"
+    }
+  ],
+  "returns": {
+    "type": "Boolean",
+    "description": "true if receiver < argument, false otherwise"
+  },
+  "description": "Integer less-than comparison primitive",
+  "stack_diagram": {
+    "before": ["...", "receiver(int)", "arg(int)"],
+    "after": ["...", "result(boolean)"]
+  },
+  "operation": "result = (receiver < arg) ? true : false",
+  "examples": [
+    {
+      "smalltalk": "3 < 5",
+      "result": "true",
+      "explanation": "3 is less than 5"
+    },
+    {
+      "smalltalk": "7 < 2",
+      "result": "false",
+      "explanation": "7 is not less than 2"
+    },
+    {
+      "smalltalk": "5 < 5",
+      "result": "false",
+      "explanation": "Equal values return false"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not SmallInteger",
+    "Argument is not SmallInteger"
+  ],
+  "test_cases": [
+    {
+      "name": "less_than_true",
+      "receiver": 3,
+      "arguments": [5],
+      "expected_result": true
+    },
+    {
+      "name": "less_than_false",
+      "receiver": 7,
+      "arguments": [2],
+      "expected_result": false
+    },
+    {
+      "name": "equal_values",
+      "receiver": 5,
+      "arguments": [5],
+      "expected_result": false
+    },
+    {
+      "name": "negative_numbers",
+      "receiver": -5,
+      "arguments": [-2],
+      "expected_result": true
+    }
+  ],
+  "notes": [
+    "Returns Boolean object (true or false)",
+    "Not less-than-or-equal (use <= for that)",
+    "Works with negative numbers"
+  ],
+  "related_primitives": [4, 5, 6, 7, 8],
+  "complexity": "O(1)"
+}

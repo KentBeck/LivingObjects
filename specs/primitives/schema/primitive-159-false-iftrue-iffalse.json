@@ -1,0 +1,55 @@
+{
+  "primitive_number": 159,
+  "selector": "ifTrue:ifFalse:",
+  "receiver_class": "False",
+  "argument_count": 2,
+  "arguments": [
+    {
+      "name": "trueBlock",
+      "type": "Block",
+      "description": "Block to execute if receiver is true"
+    },
+    {
+      "name": "falseBlock",
+      "type": "Block",
+      "description": "Block to execute if receiver is false"
+    }
+  ],
+  "returns": {
+    "type": "any",
+    "description": "Result of evaluating falseBlock"
+  },
+  "description": "Conditional execution for false - executes false block",
+  "stack_diagram": {
+    "before": ["...", "receiver(false)", "trueBlock(block)", "falseBlock(block)"],
+    "after": ["...", "result(any)"]
+  },
+  "operation": "1. Verify receiver is false\n2. Execute falseBlock\n3. Return falseBlock's result",
+  "examples": [
+    {
+      "smalltalk": "false ifTrue: [42] ifFalse: [99]",
+      "result": "99",
+      "explanation": "Executes false block, returns 99"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not false (exactly)",
+    "Arguments are not Blocks"
+  ],
+  "test_cases": [
+    {
+      "name": "false_iftrue_iffalse",
+      "receiver": false,
+      "arguments": ["[42]", "[99]"],
+      "expected_result": 99
+    }
+  ],
+  "notes": [
+    "Only falseBlock is evaluated",
+    "trueBlock is ignored",
+    "Short-circuit evaluation",
+    "Common pattern for if-then-else"
+  ],
+  "related_primitives": [154, 155, 156, 157, 158],
+  "complexity": "O(1) + O(n) for block execution"
+}

@@ -1,0 +1,54 @@
+{
+  "primitive_number": 67,
+  "selector": "asSymbol",
+  "receiver_class": "String",
+  "argument_count": 0,
+  "arguments": [],
+  "returns": {
+    "type": "Symbol",
+    "description": "Interned symbol"
+  },
+  "description": "Convert string to symbol",
+  "stack_diagram": {
+    "before": ["...", "receiver(string)"],
+    "after": ["...", "symbol(symbol)"]
+  },
+  "operation": "result = Symbol.intern(receiver)",
+  "examples": [
+    {
+      "smalltalk": "'hello' asSymbol",
+      "result": "#hello",
+      "explanation": "Convert string to symbol"
+    },
+    {
+      "smalltalk": "'test' asSymbol == 'test' asSymbol",
+      "result": "true",
+      "explanation": "Same string always returns same symbol object"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a String"
+  ],
+  "test_cases": [
+    {
+      "name": "string_to_symbol",
+      "receiver": "hello",
+      "arguments": [],
+      "expected_result": "#hello"
+    },
+    {
+      "name": "symbol_identity",
+      "receiver": "test",
+      "arguments": [],
+      "expected_result": "same object as 'test' asSymbol"
+    }
+  ],
+  "notes": [
+    "Symbols are interned (unique per string)",
+    "Same string always returns same symbol object",
+    "Symbol equality is pointer equality",
+    "Used for method selectors and identifiers"
+  ],
+  "related_primitives": [63, 65, 66],
+  "complexity": "O(n) where n is string length"
+}

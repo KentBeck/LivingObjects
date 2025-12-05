@@ -1,0 +1,57 @@
+{
+  "primitive_number": 700,
+  "selector": "at:",
+  "receiver_class": "Dictionary",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "key",
+      "type": "any",
+      "description": "Key to look up"
+    }
+  ],
+  "returns": {
+    "type": "any",
+    "description": "Value associated with key"
+  },
+  "description": "Dictionary lookup",
+  "stack_diagram": {
+    "before": ["...", "receiver(dict)", "key(any)"],
+    "after": ["...", "value(any)"]
+  },
+  "operation": "result = receiver.lookup(key); if not found: signal KeyNotFound",
+  "examples": [
+    {
+      "smalltalk": "| dict |\ndict := Dictionary new.\ndict at: #name put: 'Alice'.\ndict at: #name",
+      "result": "'Alice'",
+      "explanation": "Lookup value by key"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a Dictionary",
+    "Key not found (signals KeyNotFound)"
+  ],
+  "test_cases": [
+    {
+      "name": "lookup_existing_key",
+      "receiver": "dict with #name -> 'Alice'",
+      "arguments": ["#name"],
+      "expected_result": "'Alice'"
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "key_not_found",
+      "receiver": "empty dict",
+      "arguments": ["#missing"],
+      "expected_error": "KeyNotFound"
+    }
+  ],
+  "notes": [
+    "Uses key equality (=) for lookup",
+    "Signals exception if key not found",
+    "Use at:ifAbsent: for default values"
+  ],
+  "related_primitives": [701, 702, 703],
+  "complexity": "O(1) average, O(n) worst case"
+}

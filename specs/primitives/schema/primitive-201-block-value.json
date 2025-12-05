@@ -1,0 +1,55 @@
+{
+  "primitive_number": 201,
+  "selector": "value",
+  "receiver_class": "Block",
+  "argument_count": 0,
+  "arguments": [],
+  "returns": {
+    "type": "any",
+    "description": "Result of block execution"
+  },
+  "description": "Execute block with no arguments",
+  "stack_diagram": {
+    "before": ["...", "receiver(block)"],
+    "after": ["...", "result(any)"]
+  },
+  "operation": "1. Create execution context for block\n2. Set sender to current context\n3. Execute block bytecode\n4. Return result",
+  "examples": [
+    {
+      "smalltalk": "[3 + 4] value",
+      "result": "7",
+      "explanation": "Execute block, returns 7"
+    },
+    {
+      "smalltalk": "[42] value",
+      "result": "42",
+      "explanation": "Simple block evaluation"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a BlockContext",
+    "Block expects arguments (argument count mismatch)"
+  ],
+  "test_cases": [
+    {
+      "name": "simple_block",
+      "receiver": "[42]",
+      "arguments": [],
+      "expected_result": 42
+    },
+    {
+      "name": "expression_block",
+      "receiver": "[3 + 4]",
+      "arguments": [],
+      "expected_result": 7
+    }
+  ],
+  "notes": [
+    "Block executes with home context's self",
+    "Block can access home context variables",
+    "Creates new execution context",
+    "Returns to sender when complete"
+  ],
+  "related_primitives": [202],
+  "complexity": "O(1) setup + O(n) execution"
+}

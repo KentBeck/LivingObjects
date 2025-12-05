@@ -1,0 +1,71 @@
+{
+  "primitive_number": 4,
+  "selector": ">",
+  "receiver_class": "SmallInteger",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "comparand",
+      "type": "SmallInteger",
+      "description": "Value to compare against"
+    }
+  ],
+  "returns": {
+    "type": "Boolean",
+    "description": "true if receiver > argument, false otherwise"
+  },
+  "description": "Integer greater-than comparison primitive",
+  "stack_diagram": {
+    "before": ["...", "receiver(int)", "arg(int)"],
+    "after": ["...", "result(boolean)"]
+  },
+  "operation": "result = (receiver > arg) ? true : false",
+  "examples": [
+    {
+      "smalltalk": "7 > 2",
+      "result": "true",
+      "explanation": "7 is greater than 2"
+    },
+    {
+      "smalltalk": "3 > 5",
+      "result": "false",
+      "explanation": "3 is not greater than 5"
+    },
+    {
+      "smalltalk": "5 > 5",
+      "result": "false",
+      "explanation": "Equal values return false"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not SmallInteger",
+    "Argument is not SmallInteger"
+  ],
+  "test_cases": [
+    {
+      "name": "greater_than_true",
+      "receiver": 7,
+      "arguments": [2],
+      "expected_result": true
+    },
+    {
+      "name": "greater_than_false",
+      "receiver": 3,
+      "arguments": [5],
+      "expected_result": false
+    },
+    {
+      "name": "equal_values",
+      "receiver": 5,
+      "arguments": [5],
+      "expected_result": false
+    }
+  ],
+  "notes": [
+    "Returns Boolean object (true or false)",
+    "Not greater-than-or-equal (use >= for that)",
+    "Complement of <="
+  ],
+  "related_primitives": [3, 5, 6, 7, 8],
+  "complexity": "O(1)"
+}

@@ -1,0 +1,53 @@
+{
+  "primitive_number": 66,
+  "selector": "size",
+  "receiver_class": "String",
+  "argument_count": 0,
+  "arguments": [],
+  "returns": {
+    "type": "SmallInteger",
+    "description": "Number of characters in string"
+  },
+  "description": "Get string length",
+  "stack_diagram": {
+    "before": ["...", "receiver(string)"],
+    "after": ["...", "size(int)"]
+  },
+  "operation": "result = receiver.length",
+  "examples": [
+    {
+      "smalltalk": "'hello' size",
+      "result": "5",
+      "explanation": "String has 5 characters"
+    },
+    {
+      "smalltalk": "'' size",
+      "result": "0",
+      "explanation": "Empty string"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a String"
+  ],
+  "test_cases": [
+    {
+      "name": "non_empty_string",
+      "receiver": "hello",
+      "arguments": [],
+      "expected_result": 5
+    },
+    {
+      "name": "empty_string",
+      "receiver": "",
+      "arguments": [],
+      "expected_result": 0
+    }
+  ],
+  "notes": [
+    "Returns number of characters (not bytes)",
+    "Empty string returns 0",
+    "Constant time operation"
+  ],
+  "related_primitives": [62, 63, 65],
+  "complexity": "O(1)"
+}

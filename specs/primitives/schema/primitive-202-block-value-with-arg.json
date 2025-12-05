@@ -1,0 +1,62 @@
+{
+  "primitive_number": 202,
+  "selector": "value:",
+  "receiver_class": "Block",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "argument",
+      "type": "any",
+      "description": "Argument to pass to block"
+    }
+  ],
+  "returns": {
+    "type": "any",
+    "description": "Result of block execution"
+  },
+  "description": "Execute block with one argument",
+  "stack_diagram": {
+    "before": ["...", "receiver(block)", "arg(any)"],
+    "after": ["...", "result(any)"]
+  },
+  "operation": "1. Create execution context for block\n2. Copy argument to first temporary variable\n3. Set sender to current context\n4. Execute block bytecode\n5. Return result",
+  "examples": [
+    {
+      "smalltalk": "[:x | x + 1] value: 5",
+      "result": "6",
+      "explanation": "Block with parameter"
+    },
+    {
+      "smalltalk": "[:n | n * 2] value: 21",
+      "result": "42",
+      "explanation": "Block doubles input"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a BlockContext",
+    "Block expects different number of arguments",
+    "Argument count mismatch"
+  ],
+  "test_cases": [
+    {
+      "name": "block_with_parameter",
+      "receiver": "[:x | x + 1]",
+      "arguments": [5],
+      "expected_result": 6
+    },
+    {
+      "name": "block_doubles",
+      "receiver": "[:n | n * 2]",
+      "arguments": [21],
+      "expected_result": 42
+    }
+  ],
+  "notes": [
+    "Argument is bound to block parameter",
+    "Block executes with home context's self",
+    "Can access home context variables",
+    "Returns to sender when complete"
+  ],
+  "related_primitives": [201],
+  "complexity": "O(1) setup + O(n) execution"
+}

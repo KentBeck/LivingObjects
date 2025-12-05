@@ -1,0 +1,53 @@
+{
+  "primitive_number": 62,
+  "selector": "size",
+  "receiver_class": "Array",
+  "argument_count": 0,
+  "arguments": [],
+  "returns": {
+    "type": "SmallInteger",
+    "description": "Number of elements in array"
+  },
+  "description": "Get array size",
+  "stack_diagram": {
+    "before": ["...", "receiver(array)"],
+    "after": ["...", "size(int)"]
+  },
+  "operation": "result = receiver.length",
+  "examples": [
+    {
+      "smalltalk": "#(1 2 3 4 5) size",
+      "result": "5",
+      "explanation": "Array has 5 elements"
+    },
+    {
+      "smalltalk": "#() size",
+      "result": "0",
+      "explanation": "Empty array"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not an Array"
+  ],
+  "test_cases": [
+    {
+      "name": "non_empty_array",
+      "receiver": [1, 2, 3, 4, 5],
+      "arguments": [],
+      "expected_result": 5
+    },
+    {
+      "name": "empty_array",
+      "receiver": [],
+      "arguments": [],
+      "expected_result": 0
+    }
+  ],
+  "notes": [
+    "Returns SmallInteger",
+    "Empty array returns 0",
+    "Constant time operation"
+  ],
+  "related_primitives": [60, 61, 66],
+  "complexity": "O(1)"
+}

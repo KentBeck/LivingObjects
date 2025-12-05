@@ -1,0 +1,61 @@
+{
+  "primitive_number": 65,
+  "selector": ",",
+  "receiver_class": "String",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "otherString",
+      "type": "String",
+      "description": "String to concatenate"
+    }
+  ],
+  "returns": {
+    "type": "String",
+    "description": "New concatenated string"
+  },
+  "description": "String concatenation",
+  "stack_diagram": {
+    "before": ["...", "receiver(string)", "arg(string)"],
+    "after": ["...", "result(string)"]
+  },
+  "operation": "result = receiver + arg",
+  "examples": [
+    {
+      "smalltalk": "'hello' , ' world'",
+      "result": "'hello world'",
+      "explanation": "Concatenate two strings"
+    },
+    {
+      "smalltalk": "'a' , 'b' , 'c'",
+      "result": "'abc'",
+      "explanation": "Chain concatenation"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a String",
+    "Argument is not a String",
+    "Memory allocation fails"
+  ],
+  "test_cases": [
+    {
+      "name": "basic_concatenation",
+      "receiver": "hello",
+      "arguments": [" world"],
+      "expected_result": "hello world"
+    },
+    {
+      "name": "empty_string",
+      "receiver": "hello",
+      "arguments": [""],
+      "expected_result": "hello"
+    }
+  ],
+  "notes": [
+    "Creates new String object",
+    "Does not modify receiver or argument",
+    "Can be chained"
+  ],
+  "related_primitives": [63, 66],
+  "complexity": "O(n+m) where n,m are string lengths"
+}

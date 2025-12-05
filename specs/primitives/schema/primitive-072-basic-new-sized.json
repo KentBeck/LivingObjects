@@ -1,0 +1,71 @@
+{
+  "primitive_number": 72,
+  "selector": "basicNew:",
+  "receiver_class": "Class",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "size",
+      "type": "SmallInteger",
+      "description": "Number of elements/slots"
+    }
+  ],
+  "returns": {
+    "type": "Object",
+    "description": "New instance with specified size"
+  },
+  "description": "Create variable-sized instance (Array, String, etc.)",
+  "stack_diagram": {
+    "before": ["...", "receiver(class)", "size(int)"],
+    "after": ["...", "instance(object)"]
+  },
+  "operation": "1. Allocate object with specified size\n2. Initialize all slots to nil\n3. Return instance (NO initialize message)",
+  "examples": [
+    {
+      "smalltalk": "Array new: 5",
+      "result": "array with 5 elements",
+      "explanation": "Create array with 5 nil elements"
+    },
+    {
+      "smalltalk": "String new: 10",
+      "result": "string with 10 characters",
+      "explanation": "Create string with 10 null characters"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a Class",
+    "Size is not a SmallInteger",
+    "Size is negative (signals ArgumentError)",
+    "Memory allocation fails"
+  ],
+  "test_cases": [
+    {
+      "name": "create_array",
+      "receiver": "Array",
+      "arguments": [5],
+      "expected_result": "array of size 5"
+    },
+    {
+      "name": "create_string",
+      "receiver": "String",
+      "arguments": [10],
+      "expected_result": "string of size 10"
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "negative_size",
+      "receiver": "Array",
+      "arguments": [-1],
+      "expected_error": "ArgumentError"
+    }
+  ],
+  "notes": [
+    "Used for Array, String, ByteArray creation",
+    "Does NOT send initialize message",
+    "All elements/characters initialized to nil/zero",
+    "Size must be non-negative"
+  ],
+  "related_primitives": [70, 71],
+  "complexity": "O(n) where n is size"
+}

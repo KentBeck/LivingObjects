@@ -1,0 +1,72 @@
+{
+  "primitive_number": 64,
+  "selector": "at:put:",
+  "receiver_class": "String",
+  "argument_count": 2,
+  "arguments": [
+    {
+      "name": "index",
+      "type": "SmallInteger",
+      "description": "1-based index into string"
+    },
+    {
+      "name": "character",
+      "type": "SmallInteger",
+      "description": "Unicode code point to store"
+    }
+  ],
+  "returns": {
+    "type": "SmallInteger",
+    "description": "The character value"
+  },
+  "description": "Store character at index",
+  "stack_diagram": {
+    "before": ["...", "receiver(string)", "index(int)", "char(int)"],
+    "after": ["...", "char(int)"]
+  },
+  "operation": "receiver[index - 1] = char.toCharacter; result = char",
+  "examples": [
+    {
+      "smalltalk": "| str |\nstr := String new: 5.\nstr at: 1 put: 65",
+      "result": "65",
+      "explanation": "Sets first char to 'A', returns 65"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a String",
+    "Index is not a SmallInteger",
+    "Character is not a SmallInteger",
+    "Index < 1 or index > string length (signals IndexError)",
+    "String is immutable (signals error)",
+    "Character code point is invalid"
+  ],
+  "test_cases": [
+    {
+      "name": "store_character",
+      "receiver": "string of size 5",
+      "arguments": [1, 65],
+      "expected_result": 65
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "index_out_of_bounds",
+      "receiver": "hi",
+      "arguments": [5, 65],
+      "expected_error": "IndexError"
+    },
+    {
+      "name": "immutable_string",
+      "receiver": "'literal'",
+      "arguments": [1, 65],
+      "expected_error": "ImmutableError"
+    }
+  ],
+  "notes": [
+    "Returns the character code point",
+    "1-based indexing",
+    "Literal strings are immutable"
+  ],
+  "related_primitives": [61, 63, 66],
+  "complexity": "O(1)"
+}

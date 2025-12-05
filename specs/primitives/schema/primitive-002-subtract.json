@@ -1,0 +1,86 @@
+{
+  "primitive_number": 2,
+  "selector": "-",
+  "receiver_class": "SmallInteger",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "subtrahend",
+      "type": "SmallInteger",
+      "description": "Value to subtract from receiver"
+    }
+  ],
+  "returns": {
+    "type": "SmallInteger",
+    "description": "Difference of receiver minus argument"
+  },
+  "description": "Integer subtraction primitive",
+  "stack_diagram": {
+    "before": ["...", "receiver(int)", "arg(int)"],
+    "after": ["...", "result(int)"]
+  },
+  "operation": "result = receiver - arg",
+  "examples": [
+    {
+      "smalltalk": "10 - 3",
+      "result": "7",
+      "explanation": "Basic subtraction"
+    },
+    {
+      "smalltalk": "5 - 5",
+      "result": "0",
+      "explanation": "Subtract to zero"
+    },
+    {
+      "smalltalk": "3 - 10",
+      "result": "-7",
+      "explanation": "Negative result"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not SmallInteger",
+    "Argument is not SmallInteger",
+    "Result overflows 31-bit signed integer range"
+  ],
+  "test_cases": [
+    {
+      "name": "basic_subtraction",
+      "receiver": 10,
+      "arguments": [3],
+      "expected_result": 7
+    },
+    {
+      "name": "subtract_to_zero",
+      "receiver": 5,
+      "arguments": [5],
+      "expected_result": 0
+    },
+    {
+      "name": "negative_result",
+      "receiver": 3,
+      "arguments": [10],
+      "expected_result": -7
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "non_integer_receiver",
+      "receiver": "string",
+      "arguments": [5],
+      "expected_error": "PrimitiveFailure"
+    },
+    {
+      "name": "non_integer_argument",
+      "receiver": 10,
+      "arguments": ["string"],
+      "expected_error": "PrimitiveFailure"
+    }
+  ],
+  "notes": [
+    "Handles negative results",
+    "Fails on overflow to large integer",
+    "Symmetric with addition"
+  ],
+  "related_primitives": [1, 9],
+  "complexity": "O(1)"
+}

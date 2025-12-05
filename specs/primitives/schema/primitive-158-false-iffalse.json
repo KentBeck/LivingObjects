@@ -1,0 +1,50 @@
+{
+  "primitive_number": 158,
+  "selector": "ifFalse:",
+  "receiver_class": "False",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "block",
+      "type": "Block",
+      "description": "Block to execute if receiver is false"
+    }
+  ],
+  "returns": {
+    "type": "any",
+    "description": "Result of evaluating block"
+  },
+  "description": "Conditional execution for false - executes block",
+  "stack_diagram": {
+    "before": ["...", "receiver(false)", "block(block)"],
+    "after": ["...", "result(any)"]
+  },
+  "operation": "1. Verify receiver is false\n2. Execute block\n3. Return block's result",
+  "examples": [
+    {
+      "smalltalk": "false ifFalse: [42]",
+      "result": "42",
+      "explanation": "Block executed because receiver is false"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not false (exactly)",
+    "Argument is not a Block"
+  ],
+  "test_cases": [
+    {
+      "name": "false_iffalse",
+      "receiver": false,
+      "arguments": ["[42]"],
+      "expected_result": 42
+    }
+  ],
+  "notes": [
+    "Block is evaluated",
+    "Returns block's result",
+    "Short-circuit evaluation",
+    "Complement of ifTrue:"
+  ],
+  "related_primitives": [154, 155, 156, 157, 159],
+  "complexity": "O(1) + O(n) for block execution"
+}

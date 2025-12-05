@@ -1,0 +1,77 @@
+{
+  "primitive_number": 7,
+  "selector": "=",
+  "receiver_class": "SmallInteger",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "comparand",
+      "type": "SmallInteger",
+      "description": "Value to compare against"
+    }
+  ],
+  "returns": {
+    "type": "Boolean",
+    "description": "true if receiver == argument, false otherwise"
+  },
+  "description": "Integer equality comparison primitive",
+  "stack_diagram": {
+    "before": ["...", "receiver(int)", "arg(int)"],
+    "after": ["...", "result(boolean)"]
+  },
+  "operation": "result = (receiver == arg) ? true : false",
+  "examples": [
+    {
+      "smalltalk": "5 = 5",
+      "result": "true",
+      "explanation": "Equal values"
+    },
+    {
+      "smalltalk": "3 = 7",
+      "result": "false",
+      "explanation": "Different values"
+    },
+    {
+      "smalltalk": "0 = 0",
+      "result": "true",
+      "explanation": "Zero equals zero"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not SmallInteger",
+    "Argument is not SmallInteger"
+  ],
+  "test_cases": [
+    {
+      "name": "equal_values",
+      "receiver": 5,
+      "arguments": [5],
+      "expected_result": true
+    },
+    {
+      "name": "different_values",
+      "receiver": 3,
+      "arguments": [7],
+      "expected_result": false
+    },
+    {
+      "name": "zero_equals_zero",
+      "receiver": 0,
+      "arguments": [0],
+      "expected_result": true
+    },
+    {
+      "name": "negative_equals",
+      "receiver": -5,
+      "arguments": [-5],
+      "expected_result": true
+    }
+  ],
+  "notes": [
+    "Value equality, not identity",
+    "Complement of ~=",
+    "Reflexive, symmetric, transitive"
+  ],
+  "related_primitives": [3, 4, 5, 6, 8],
+  "complexity": "O(1)"
+}

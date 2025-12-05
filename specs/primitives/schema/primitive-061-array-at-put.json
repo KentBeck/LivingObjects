@@ -1,0 +1,57 @@
+{
+  "primitive_number": 61,
+  "selector": "at:put:",
+  "receiver_class": "Array",
+  "argument_count": 2,
+  "arguments": [
+    {
+      "name": "index",
+      "type": "SmallInteger",
+      "description": "1-based index into array"
+    },
+    {
+      "name": "value",
+      "type": "any",
+      "description": "Value to store at index"
+    }
+  ],
+  "returns": {
+    "type": "any",
+    "description": "The stored value"
+  },
+  "description": "Store element in array at index",
+  "stack_diagram": {
+    "before": ["...", "receiver(array)", "index(int)", "value(any)"],
+    "after": ["...", "value(any)"]
+  },
+  "operation": "receiver[index - 1] = value; result = value",
+  "examples": [
+    {
+      "smalltalk": "| arr |\narr := Array new: 3.\narr at: 2 put: 42",
+      "result": "42",
+      "explanation": "Store 42 at index 2, returns 42"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not an Array",
+    "Index is not a SmallInteger",
+    "Index < 1 or index > array size (signals IndexError)",
+    "Array is immutable (signals error)"
+  ],
+  "test_cases": [
+    {
+      "name": "store_at_index",
+      "receiver": ["array", 3],
+      "arguments": [2, 42],
+      "expected_result": 42,
+      "expected_array": [null, 42, null]
+    }
+  ],
+  "notes": [
+    "Returns the value that was stored",
+    "Assignment expression returns the assigned value",
+    "1-based indexing"
+  ],
+  "related_primitives": [60, 62],
+  "complexity": "O(1)"
+}

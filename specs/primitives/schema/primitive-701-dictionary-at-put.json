@@ -1,0 +1,60 @@
+{
+  "primitive_number": 701,
+  "selector": "at:put:",
+  "receiver_class": "Dictionary",
+  "argument_count": 2,
+  "arguments": [
+    {
+      "name": "key",
+      "type": "any",
+      "description": "Key to store under"
+    },
+    {
+      "name": "value",
+      "type": "any",
+      "description": "Value to store"
+    }
+  ],
+  "returns": {
+    "type": "any",
+    "description": "The stored value"
+  },
+  "description": "Dictionary store",
+  "stack_diagram": {
+    "before": ["...", "receiver(dict)", "key(any)", "value(any)"],
+    "after": ["...", "value(any)"]
+  },
+  "operation": "receiver.store(key, value); result = value",
+  "examples": [
+    {
+      "smalltalk": "| dict |\ndict := Dictionary new.\ndict at: #name put: 'Alice'",
+      "result": "'Alice'",
+      "explanation": "Store value, returns value"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a Dictionary",
+    "Dictionary is immutable (signals error)"
+  ],
+  "test_cases": [
+    {
+      "name": "store_new_key",
+      "receiver": "empty dict",
+      "arguments": ["#name", "'Alice'"],
+      "expected_result": "'Alice'"
+    },
+    {
+      "name": "update_existing_key",
+      "receiver": "dict with #name -> 'Bob'",
+      "arguments": ["#name", "'Alice'"],
+      "expected_result": "'Alice'"
+    }
+  ],
+  "notes": [
+    "Creates new entry if key doesn't exist",
+    "Updates existing entry if key exists",
+    "Returns the value that was stored"
+  ],
+  "related_primitives": [700, 702, 703],
+  "complexity": "O(1) average, O(n) worst case"
+}

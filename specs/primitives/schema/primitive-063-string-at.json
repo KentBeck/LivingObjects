@@ -1,0 +1,69 @@
+{
+  "primitive_number": 63,
+  "selector": "at:",
+  "receiver_class": "String",
+  "argument_count": 1,
+  "arguments": [
+    {
+      "name": "index",
+      "type": "SmallInteger",
+      "description": "1-based index into string"
+    }
+  ],
+  "returns": {
+    "type": "SmallInteger",
+    "description": "Unicode code point of character at index"
+  },
+  "description": "Get character at index as Unicode code point",
+  "stack_diagram": {
+    "before": ["...", "receiver(string)", "index(int)"],
+    "after": ["...", "character(int)"]
+  },
+  "operation": "result = receiver[index - 1].codePoint",
+  "examples": [
+    {
+      "smalltalk": "'hello' at: 2",
+      "result": "101",
+      "explanation": "Code point for 'e'"
+    },
+    {
+      "smalltalk": "'ABC' at: 1",
+      "result": "65",
+      "explanation": "Code point for 'A'"
+    }
+  ],
+  "failure_conditions": [
+    "Receiver is not a String",
+    "Index is not a SmallInteger",
+    "Index < 1 or index > string length (signals IndexError)"
+  ],
+  "test_cases": [
+    {
+      "name": "get_character",
+      "receiver": "hello",
+      "arguments": [2],
+      "expected_result": 101
+    },
+    {
+      "name": "first_character",
+      "receiver": "ABC",
+      "arguments": [1],
+      "expected_result": 65
+    }
+  ],
+  "error_test_cases": [
+    {
+      "name": "index_out_of_bounds",
+      "receiver": "hi",
+      "arguments": [5],
+      "expected_error": "IndexError"
+    }
+  ],
+  "notes": [
+    "Returns Unicode code point as SmallInteger",
+    "Smalltalk uses 1-based indexing",
+    "Similar to Array>>at: but returns code point"
+  ],
+  "related_primitives": [60, 64, 66],
+  "complexity": "O(1)"
+}
